@@ -9,24 +9,21 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark, SourceData } from 'vega';
-
-import { colorSchemes, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { Data, GroupMark, SourceData, View, expressionFunction, parse } from 'vega';
 
 import {
   BACKGROUND_COLOR,
   CHART_SIZE_BREAKPOINTS,
-  CHART_SIZE_POINT_SIZE,
-  CHART_SIZE_POINT_SIZES,
   CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_HOVER_STROKE_WIDTHS,
+  CHART_SIZE_POINT_SIZE,
+  CHART_SIZE_POINT_SIZES,
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTHS,
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_ITEM,
-  CONTROLLED_HIGHLIGHTED_TABLE,
   CONTROLLED_HIGHLIGHTED_SERIES,
-  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -38,12 +35,14 @@ import {
   LINE_WIDTH_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
+import { colorSchemes, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   addData,
@@ -60,9 +59,10 @@ import {
   getTwoDimensionalLineTypes,
   getTwoDimensionalOpacities,
 } from './chartSpecBuilder.js';
+import { getExpressionFunctions } from './expressionFunctions/expressionFunctions.js';
 import { defaultSignals } from './specTestUtils.js';
 import { baseData } from './specUtils.js';
-import { BarOptions, ChartSpecOptions, LineType } from './types/index.js';
+import { BarOptions, ChartOptions, ChartSpecOptions, LineType } from './types/index.js';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
@@ -89,6 +89,127 @@ const defaultSpecOptions: ChartSpecOptions = {
 };
 
 const defaultBarOptions: BarOptions = { markType: 'bar', dimension: 'browser', metric: 'downloads', color: 'series' };
+
+describe('hidden-series axis domains', () => {
+  const data = [
+    { series: 'A', x: 1, value: 1000 },
+    { series: 'A', x: 2, value: 1000 },
+    { series: 'B', x: 3, value: 10 },
+    { series: 'B', x: 4, value: 10 },
+    { series: 'C', x: 5, value: 100 },
+    { series: 'C', x: 6, value: 100 },
+  ];
+
+  beforeAll(() => {
+    Object.entries(getExpressionFunctions()).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', () => 360);
+  });
+
+  test.each([
+    { dualMetricAxis: false, metricAxis: undefined },
+    { dualMetricAxis: true, metricAxis: undefined },
+    { dualMetricAxis: true, metricAxis: 'customMetric' },
+    { dualMetricAxis: true, metricAxis: 'custom-metric' },
+  ])(
+    'line axes fit visible series and fall back only when empty with %j',
+    async ({ dualMetricAxis, metricAxis }) => {
+      const spec = buildSpec({
+        data,
+        marks: [{ markType: 'line', dimension: 'x', color: 'series', scaleType: 'linear', dualMetricAxis, metricAxis }],
+        legends: [{ isToggleable: true }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        const baseMetricScale = metricAxis ?? 'yLinear';
+        const scaleNames = [
+          'xLinear',
+          baseMetricScale,
+          ...(dualMetricAxis ? [`${baseMetricScale}Primary`, `${baseMetricScale}Secondary`] : []),
+        ];
+        const getDomains = () => scaleNames.map((name) => view.scale(name).domain().map(Number));
+        const fullDomains = getDomains();
+        expect(fullDomains).toEqual([[0, 6], [0, 1000], ...(dualMetricAxis ? [[0, 1000], [0, 100]] : [])]);
+        expect(view.data(FILTERED_TABLE)).toHaveLength(6);
+
+        await view.signal('hiddenSeries', ['A']).runAsync();
+        expect(view.data(FILTERED_TABLE)).toHaveLength(4);
+        expect(getDomains()).toEqual([[0, 6], [0, 100], ...(dualMetricAxis ? [[0, 10], [0, 100]] : [])]);
+
+        await view.signal('hiddenSeries', ['A', 'C']).runAsync();
+        expect(view.data(FILTERED_TABLE)).toHaveLength(2);
+        expect(getDomains()).toEqual([[0, 4], [0, 10], ...(dualMetricAxis ? [[0, 10], [0, 100]] : [])]);
+
+        await view.signal('hiddenSeries', ['A', 'B', 'C']).runAsync();
+        expect(view.data(FILTERED_TABLE)).toHaveLength(0);
+        expect(getDomains()).toEqual(fullDomains);
+
+        await view.signal('hiddenSeries', ['A', 'B']).runAsync();
+        expect(view.data(FILTERED_TABLE)).toHaveLength(2);
+        expect(getDomains()).toEqual([[0, 6], [0, 100], ...(dualMetricAxis ? [[0, 1000], [0, 100]] : [])]);
+
+        await view.signal('hiddenSeries', []).runAsync();
+        expect(view.data(FILTERED_TABLE)).toHaveLength(6);
+        expect(getDomains()).toEqual(fullDomains);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
+  test('controlled hidden series preserve domains on the initial render', async () => {
+    const spec = buildSpec({
+      data,
+      hiddenSeries: ['A', 'B', 'C'],
+      marks: [{ markType: 'line', dimension: 'x', color: 'series', scaleType: 'linear' }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+    try {
+      await view.runAsync();
+      expect(view.data(FILTERED_TABLE)).toHaveLength(0);
+      expect(view.scale('yLinear').domain()).toEqual([0, 1000]);
+      expect(view.scale('xLinear').domain()).toEqual([0, 6]);
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test('line axes share one additional domain dataset', () => {
+    const spec = buildSpec({
+      data,
+      marks: [{ markType: 'line', dimension: 'x', color: 'series', scaleType: 'linear' }],
+    });
+    expect(spec.scales?.find(({ name }) => name === 'xLinear')).toHaveProperty('domain.data', 'lineDomainTable');
+    expect(spec.scales?.find(({ name }) => name === 'yLinear')).toHaveProperty('domain.data', 'lineDomainTable');
+    expect(spec.data?.map(({ name }) => name)).toEqual([
+      TABLE,
+      FILTERED_TABLE,
+      CONTROLLED_HIGHLIGHTED_TABLE,
+      'lineDomainTable',
+    ]);
+  });
+
+  test.each(['bar', 'area'] as const)('%s charts keep their existing axis domain sources', (markType) => {
+    const marks: ChartOptions['marks'] = markType === 'bar' ? [defaultBarOptions] : [{ markType, color: 'series' }];
+    const spec = buildSpec({ data, marks, legends: [{ isToggleable: true }] });
+    expect(spec.scales?.find(({ name }) => name === 'yLinear')).toHaveProperty('domain.data', FILTERED_TABLE);
+  });
+
+  test('mixed charts keep their existing axis domain sources', () => {
+    const spec = buildSpec({
+      data,
+      marks: [{ markType: 'line', color: 'series' }, defaultBarOptions],
+      legends: [{ isToggleable: true }],
+    });
+    expect(spec.scales?.find(({ name }) => name === 'yLinear')).toHaveProperty('domain.data', FILTERED_TABLE);
+  });
+});
 
 jest.mock('./legend/legendHighlightUtils', () => {
   return {
@@ -544,7 +665,6 @@ describe('Chart spec builder', () => {
         `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${CHART_SIZE_POINT_SIZES.S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${CHART_SIZE_POINT_SIZES.M} : ${CHART_SIZE_POINT_SIZES.L}`
       );
     });
-
   });
 
   describe('axis label hover (AN-456589)', () => {

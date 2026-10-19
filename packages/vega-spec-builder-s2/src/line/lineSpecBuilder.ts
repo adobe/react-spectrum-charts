@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Data, Mark, Scale, Signal } from 'vega';
+import { Data, Mark, Scale, Signal, Transforms } from 'vega';
 
 import {
   AnimationType,
@@ -25,6 +25,7 @@ import {
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
@@ -366,10 +367,23 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
   }
 };
 
-/**
- * Adds data sources for dual metric axis feature
- * Creates filtered datasets for primary (all except last series) and secondary (last series only) scales
- */
+/** Gets visible Line domain rows, falling back to all eligible rows when none are visible. */
+export const getLineDomainData = (name: string, transforms: Transforms[] = []): Data => {
+  const visible = `${name}_visible`;
+  const visibleCount = `${name}_visibleCount`;
+  return {
+    name,
+    source: TABLE,
+    transform: [
+      ...transforms,
+      { type: 'formula', expr: `indexof(hiddenSeries, datum.${SERIES_ID}) === -1 ? 1 : 0`, as: visible },
+      { type: 'joinaggregate', fields: [visible], ops: ['sum'], as: [visibleCount] },
+      { type: 'filter', expr: `datum[${JSON.stringify(visible)}] || datum[${JSON.stringify(visibleCount)}] === 0` },
+    ],
+  };
+};
+
+/** Adds separate primary and secondary Line axis domains with independent empty-series fallbacks. */
 export const addDualMetricAxisData = (data: Data[], options: LineSpecOptions) => {
   if (isDualMetricAxis(options)) {
     const { metricAxis } = options;
@@ -378,16 +392,12 @@ export const addDualMetricAxisData = (data: Data[], options: LineSpecOptions) =>
 
     if (scaleNames.primaryDomain && scaleNames.secondaryDomain) {
       data.push(
-        {
-          name: scaleNames.primaryDomain,
-          source: FILTERED_TABLE,
-          transform: [{ type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` }],
-        },
-        {
-          name: scaleNames.secondaryDomain,
-          source: FILTERED_TABLE,
-          transform: [{ type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` }],
-        }
+        getLineDomainData(scaleNames.primaryDomain, [
+          { type: 'filter', expr: `datum.${SERIES_ID} !== ${LAST_RSC_SERIES_ID}` },
+        ]),
+        getLineDomainData(scaleNames.secondaryDomain, [
+          { type: 'filter', expr: `datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID}` },
+        ])
       );
     }
   }
