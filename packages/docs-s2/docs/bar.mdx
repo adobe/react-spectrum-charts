@@ -202,23 +202,19 @@ Trellised charts don't draw grid lines on the shared value axis.
 Add `BarDirectLabel` as a child of `Bar` to print each bar's value on or next to it.
 
 - `position` places the label: `end-outside` (default) outside the tip, `end` inside near the tip,
-  `middle` centered in the bar, or `start` inside near the baseline. A `start` label that doesn't
-  fit spills outside the tip.
+  `middle` centered in the bar, or `start` inside near the baseline.
+- `overflow` sets what happens to an inside label that doesn't fit in its bar: `hide` it, or
+  `spill` it outside the tip. The default is `spill` for `start` and `hide` otherwise.
+- `dataKey` labels only the rows where that field is truthy, for example to call out one bar.
 - `format` formats the value. It accepts `shortNumber`, `standardNumber`, `currency`,
   `shortCurrency`, `percentage`, or a [d3-format](https://d3js.org/d3-format) specifier. The default
   is `,.2~f`.
 
-Labels outside the bar use the bar's color; labels inside use the background color. For negative
-values, labels flip to the other side of the baseline. Numbers follow the chart's `locale`, like
-axis labels do.
+Labels outside the bar use the bar's color; labels inside use the background color. Labels outside
+the bar are hidden if they would overlap a bar or another label. For negative values, labels flip
+to the other side of the baseline. Numbers follow the chart's `locale`, like axis labels do.
 
 <BarDirectLabelPlayground />
-
-:::note
-`BarDirectLabel` labels each row at the center of its category, using the row's own value. Use it
-on single-series bars; on stacked, dodged, or trellised bars the labels don't line up with their
-segments.
-:::
 
 ## Axis and ReferenceLine
 

@@ -21,6 +21,8 @@ export const barChannelData = [
   { channel: 'Display', visits: 2200 },
 ];
 
+export const barChannelCalloutData = barChannelData.map((row) => ({ ...row, callout: row.channel === 'Social' }));
+
 export const barChannelDeviceData = [
   { id: 'search-desktop', channel: 'Search', device: 'Desktop', visits: 6200, stackOrder: 3 },
   { id: 'search-mobile', channel: 'Search', device: 'Mobile', visits: 4800, stackOrder: 2 },

@@ -28,6 +28,7 @@ import { DocsChart as Chart } from '../components/examples/DocsChart';
 import { PlaygroundControl, PreviewSize, PropPlayground } from '../components/examples/PropPlayground';
 import {
   barChangeData,
+  barChannelCalloutData,
   barChannelData,
   barChannelDeviceData,
   barChannelVisitorData,
@@ -582,6 +583,14 @@ const directLabelControls: PlaygroundControl[] = [
     defaultValue: 'end-outside',
   },
   { name: 'format', type: 'select', options: [',.2~f', '.3~s', ',.1f'], defaultValue: ',.2~f' },
+  {
+    name: 'overflow',
+    type: 'select',
+    options: ['default', 'hide', 'spill'],
+    defaultValue: 'default',
+    isDisabled: (values) => !values.position || values.position === 'end-outside',
+  },
+  { name: 'dataKey', type: 'select', options: ['none', 'callout'], defaultValue: 'none' },
   orientationControl,
 ];
 
@@ -594,11 +603,16 @@ export const BarDirectLabelPlayground = () => (
     previewSize={getBarPreviewSize}
     controls={directLabelControls}
     component="BarDirectLabel"
-    render={({ position, format, orientation }) => (
-      <Chart data={barChannelData}>
+    render={({ position, format, overflow, dataKey, orientation }) => (
+      <Chart data={optional(dataKey) ? barChannelCalloutData : barChannelData}>
         {renderAxes(orientation, 'Channel', 'Visits')}
         <Bar dimension="channel" metric="visits" orientation={orientation as Orientation | undefined}>
-          <BarDirectLabel position={position as LabelPosition | undefined} format={format as string | undefined} />
+          <BarDirectLabel
+            position={position as LabelPosition | undefined}
+            format={format as string | undefined}
+            overflow={overflow === 'default' ? undefined : (overflow as 'hide' | 'spill')}
+            dataKey={optional(dataKey)}
+          />
         </Bar>
       </Chart>
     )}
