@@ -26,7 +26,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { Chart } from '../../../Chart.js';
+import { Chart } from '../../../../Chart.js';
 import {
   Axis,
   Bar,
@@ -36,13 +36,13 @@ import {
   Legend,
   Line,
   SegmentLabel,
-} from '../../../components/index.js';
-import { Combo } from '../../../lab/index.js';
-import { basicDonutData } from '../../../storyShared/Donut/data.js';
-import { barData, channelDeviceData, newSubscribersData } from '../../../storyShared/components/Bar/data.js';
-import { bindWithProps } from '../../../test-utils/index.js';
-import { ChartChildElement } from '../../../types/index.js';
-import { visitsByChannelData } from '../../Line/lineData.js';
+} from '../../../../components/index.js';
+import { Combo } from '../../../../lab/index.js';
+import { basicDonutData } from '../../../../storyShared/Donut/data.js';
+import { barData, channelDeviceData, newSubscribersData } from '../../../../storyShared/components/Bar/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartChildElement } from '../../../../types/index.js';
+import { visitsByChannelData } from '../../../../stories/Line/lineData.js';
 
 type Variant =
   | 'barSimple'
@@ -196,7 +196,7 @@ const variants: Record<Variant, VariantConfig> = {
 };
 
 export default {
-  title: 'React Spectrum Charts 2/Chart/Features/Draw In Stability',
+  title: 'React Spectrum Charts 2/Chart/Performance/Draw In Stability',
   tags: ['alpha'],
   component: Chart,
   argTypes: {
