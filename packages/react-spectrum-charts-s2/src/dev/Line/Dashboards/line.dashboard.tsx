@@ -1141,7 +1141,7 @@ const legendVariations: Variation[] = [
   {
     id: 'legend-toggleable',
     title: 'Toggleable legend',
-    description: 'Click entries to hide series; the first series starts hidden.',
+    description: 'Axes fit visible lines and stay valid when all are hidden; the first series starts hidden.',
     dataset: 'standard',
     coverage: ['Legend.isToggleable', 'Legend.defaultHiddenSeries=[first]'],
     render: () => (
@@ -1153,7 +1153,7 @@ const legendVariations: Variation[] = [
   {
     id: 'legend-hidden-entries',
     title: 'Hidden legend entry',
-    description: 'Omits the last series from the legend while its line still renders.',
+    description: 'Omits the last legend entry without hiding its line; a single series renders with no legend.',
     dataset: 'standard',
     coverage: ['Legend.hiddenEntries=[last]'],
     render: () => <LineVariationChart legend={(data) => <Legend hiddenEntries={getLineSeries(data).slice(-1)} />} />,

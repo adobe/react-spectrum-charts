@@ -41,7 +41,15 @@ import * as signalSpecBuilder from '../signal/signalSpecBuilder.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
 import { LineOptions, ScSpec } from '../types/index.js';
-import { addData, addLine, addLineMarks, addSignals, getAlternateSegmentData, setScales } from './lineSpecBuilder.js';
+import {
+  addData,
+  addLine,
+  addLineMarks,
+  addSignals,
+  getAlternateSegmentData,
+  getLineDomainData,
+  setScales,
+} from './lineSpecBuilder.js';
 import { defaultLineOptions } from './lineTestUtils.js';
 
 describe('fixed metric axis hover', () => {
@@ -163,6 +171,32 @@ describe('without a fixed metric axis', () => {
 
 const startingSpec: ScSpec = initializeSpec({
   scales: [{ name: COLOR_SCALE, type: 'ordinal' }],
+});
+
+describe('getLineDomainData()', () => {
+  test('filters by visibility only when eligible rows remain visible', () => {
+    expect(getLineDomainData('lineDomainTable')).toEqual({
+      name: 'lineDomainTable',
+      source: TABLE,
+      transform: [
+        {
+          type: 'formula',
+          expr: `indexof(hiddenSeries, datum.${SERIES_ID}) === -1 ? 1 : 0`,
+          as: 'lineDomainTable_visible',
+        },
+        {
+          type: 'joinaggregate',
+          fields: ['lineDomainTable_visible'],
+          ops: ['sum'],
+          as: ['lineDomainTable_visibleCount'],
+        },
+        {
+          type: 'filter',
+          expr: 'datum["lineDomainTable_visible"] || datum["lineDomainTable_visibleCount"] === 0',
+        },
+      ],
+    });
+  });
 });
 
 const defaultSpec = initializeSpec({
