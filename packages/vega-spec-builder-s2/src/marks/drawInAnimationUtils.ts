@@ -13,8 +13,8 @@ import { Clip, NewSignal, NumericValueRef, ProductionRule, Signal, SourceData, T
 
 import {
   ANIMATION_TIMER,
-  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   CubicBezierEasing,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
   DRAW_IN_CLIP_OVERFLOW,
@@ -48,7 +48,8 @@ export const getDrawInAnimationActiveCondition = (): string => `${DRAW_IN_ANIM_T
  * @param t - expression for linear 0-1 progress
  * @returns expression string
  */
-export const getCubicBezierExpr = (curve: CubicBezierEasing, t: string): string => `cubicBezier(${curve.join(', ')}, ${t})`;
+export const getCubicBezierExpr = (curve: CubicBezierEasing, t: string): string =>
+  `cubicBezier(${curve.join(', ')}, ${t})`;
 
 /**
  * Gets an expression for the linear progress at which the curve reaches eased progress `p` (the curve mirrored on y = x).
@@ -363,7 +364,9 @@ export const getBarMarkDataSource = ({ name, isDrawInAnimate }: BarSpecOptions):
 export const getBarDrawInData = (name: string, metric: string, stacked: boolean): SourceData => ({
   name: getBarDrawInDataName(name),
   source: FILTERED_TABLE,
-  transform: [{ type: 'formula', as: getBarDrawInValueField(name), expr: getBarDrawInMetricExpr(name, metric, stacked) }],
+  transform: [
+    { type: 'formula', as: getBarDrawInValueField(name), expr: getBarDrawInMetricExpr(name, metric, stacked) },
+  ],
 });
 
 /**
@@ -371,12 +374,18 @@ export const getBarDrawInData = (name: string, metric: string, stacked: boolean)
  * @param name - bar name
  * @param metric
  * @param stacked - whether the bar is stacked
+ * @param datum - expression path to the data row
  * @returns expression string
  */
-export const getBarDrawInSettleProgressExpr = (name: string, metric: string, stacked: boolean): string => {
+export const getBarDrawInSettleProgressExpr = (
+  name: string,
+  metric: string,
+  stacked: boolean,
+  datum = 'datum'
+): string => {
   if (!stacked) return '1';
   const [stackMax, stackMin] = getBarDrawInStackFields(name);
-  const v1 = `datum.${metric}1`;
-  const total = `(${v1} > 0 ? datum.${stackMax} : datum.${stackMin})`;
+  const v1 = `${datum}.${metric}1`;
+  const total = `(${v1} > 0 ? ${datum}.${stackMax} : ${datum}.${stackMin})`;
   return `(${total} ? ${v1} / ${total} : 1)`;
 };
