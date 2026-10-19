@@ -59,7 +59,12 @@ import {
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
 import { getHoverMarkNames } from '../marks/hoverMarkUtils.js';
-import { getInteractiveMarkName, isAnimationTypeEnabled, isInteractive } from '../marks/markUtils.js';
+import {
+  getInteractiveMarkName,
+  isDrawInAnimationEnabled,
+  isHoverAnimationEnabled,
+  isInteractive,
+} from '../marks/markUtils.js';
 import { getMetricRangeData, getMetricRangeGroupMarks, getMetricRanges } from '../metricRange/metricRangeUtils.js';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
@@ -226,7 +231,14 @@ export const addLine = produce<
       ...options,
     };
     lineOptions.isHighlightedByGroup = isHighlightedByGroup(lineOptions) || dimensionHover;
-    lineOptions.isHoverAnimate = usesHoverAnimation(animations, animationTypes, lineOptions);
+    lineOptions.isHoverAnimate = isHoverAnimationEnabled(
+      animations,
+      animationTypes,
+      isInteractive(lineOptions) ||
+        lineOptions.highlightedItem !== undefined ||
+        lineOptions.highlightedSeries !== undefined ||
+        Boolean(lineOptions.legendHighlightSignals?.length)
+    );
     lineOptions.isDrawInAnimate = isLineDrawInSupported(animations, animationTypes, lineOptions);
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, lineOptions.interactiveMarkName);
     if (lineOptions.isHoverAnimate) spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, lineName);
@@ -273,27 +285,6 @@ const hasFixedMetricAxis = (
 };
 
 /**
- * Whether the line participates in the hover-animation system.
- * Computed once in `addLine` and stored on `options.isHoverAnimate`; every downstream gate reads that
- * resolved boolean. A highlight legend counts (via legendHighlightSignals) so both the legend and the line animate.
- * `highlightedItem`/`highlightedSeries` are the chart-level controlled-highlight props; either one alone
- * is enough to animate, since `getLineHoverRules` always wires both `controlledTableMatch` and
- * `controlledSeriesMatch` regardless of which is set.
- * `animations === false` is the master kill switch and opts out unconditionally; otherwise hover is
- * gated on `animationTypes` including `'hover'` (defaults to `DEFAULT_ANIMATION_TYPES`, which does).
- */
-const usesHoverAnimation = (
-  animations: boolean | undefined,
-  animationTypes: AnimationType[] | undefined,
-  options: LineSpecOptions
-): boolean =>
-  isAnimationTypeEnabled(animations, animationTypes, 'hover') &&
-  (isInteractive(options) ||
-    options.highlightedItem !== undefined ||
-    options.highlightedSeries !== undefined ||
-    (options.legendHighlightSignals?.length ?? 0) > 0);
-
-/**
  * Whether the line participates in the draw-in animation system.
  * Unlike hover animation, this is opt-in — `animationTypes` must explicitly include `'drawIn'` — since
  * draw-in is still gated to a subset of scale types. `animations === false` still overrides unconditionally.
@@ -303,7 +294,7 @@ const isLineDrawInSupported = (
   animationTypes: AnimationType[] | undefined,
   options: LineSpecOptions
 ): boolean =>
-  isAnimationTypeEnabled(animations, animationTypes, 'drawIn') &&
+  isDrawInAnimationEnabled(animations, animationTypes) &&
   (options.scaleType === 'time' || options.scaleType === 'linear' || options.scaleType === 'point');
 
 /**

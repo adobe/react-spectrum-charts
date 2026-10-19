@@ -37,7 +37,7 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { isAnimationTypeEnabled, isInteractive } from '../marks/markUtils.js';
+import { isDrawInAnimationEnabled, isHoverAnimationEnabled, isInteractive } from '../marks/markUtils.js';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark } from '../specUtils.js';
@@ -128,12 +128,14 @@ export const addDonut = produce<
       segmentIds: data?.map((_, index) => index + 1) ?? [],
       ...options,
     };
-    donutOptions.isHoverAnimate =
-      isAnimationTypeEnabled(animations, animationTypes, 'hover') &&
-      (isDonutInteractive(donutOptions) ||
+    donutOptions.isHoverAnimate = isHoverAnimationEnabled(
+      animations,
+      animationTypes,
+      isDonutInteractive(donutOptions) ||
         donutOptions.highlightedItem !== undefined ||
-        donutOptions.highlightedSeries !== undefined);
-    donutOptions.isDrawInAnimate = isAnimationTypeEnabled(animations, animationTypes, 'drawIn');
+        donutOptions.highlightedSeries !== undefined
+    );
+    donutOptions.isDrawInAnimate = isDrawInAnimationEnabled(animations, animationTypes);
 
     if (isDonutInteractive(donutOptions)) {
       spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);

@@ -40,6 +40,7 @@ import {
   getCursor,
   getDirectLabelFontSizeProductionRule,
   getHighlightOpacityValue,
+  getInspectEncoding,
   getInteractiveMarkName,
   getItemHoverArea,
   getLineWidthProductionRule,
@@ -47,29 +48,38 @@ import {
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   getSymbolSizeProductionRule,
-  getInspectEncoding,
   getXProductionRule,
   getYProductionRule,
   hasInspect,
-  isAnimationTypeEnabled,
+  isDrawInAnimationEnabled,
+  isHoverAnimationEnabled,
   isInteractive,
 } from './markUtils.js';
 
-describe('isAnimationTypeEnabled()', () => {
+describe('isHoverAnimationEnabled()', () => {
+  test('animates an interactive mark with the default animation types', () => {
+    expect(isHoverAnimationEnabled(undefined, undefined, true)).toBe(DEFAULT_ANIMATION_TYPES.includes('hover'));
+  });
+
+  test('does not animate a mark that is not interactive', () => {
+    expect(isHoverAnimationEnabled(undefined, ['hover'], false)).toBe(false);
+  });
+
+  test('respects animations and animationTypes', () => {
+    expect(isHoverAnimationEnabled(false, ['hover'], true)).toBe(false);
+    expect(isHoverAnimationEnabled(undefined, ['drawIn'], true)).toBe(false);
+  });
+});
+
+describe('isDrawInAnimationEnabled()', () => {
   test('uses the default animation types when none are set', () => {
-    expect(isAnimationTypeEnabled(undefined, undefined, 'hover')).toBe(DEFAULT_ANIMATION_TYPES.includes('hover'));
-    expect(isAnimationTypeEnabled(undefined, undefined, 'drawIn')).toBe(DEFAULT_ANIMATION_TYPES.includes('drawIn'));
+    expect(isDrawInAnimationEnabled(undefined, undefined)).toBe(DEFAULT_ANIMATION_TYPES.includes('drawIn'));
   });
 
-  test('follows animationTypes', () => {
-    expect(isAnimationTypeEnabled(undefined, ['drawIn'], 'drawIn')).toBe(true);
-    expect(isAnimationTypeEnabled(true, ['drawIn'], 'hover')).toBe(false);
-    expect(isAnimationTypeEnabled(undefined, [], 'hover')).toBe(false);
-  });
-
-  test('animations false turns every type off', () => {
-    expect(isAnimationTypeEnabled(false, ['hover', 'drawIn'], 'hover')).toBe(false);
-    expect(isAnimationTypeEnabled(false, ['hover', 'drawIn'], 'drawIn')).toBe(false);
+  test('respects animations and animationTypes', () => {
+    expect(isDrawInAnimationEnabled(undefined, ['drawIn'])).toBe(true);
+    expect(isDrawInAnimationEnabled(undefined, ['hover'])).toBe(false);
+    expect(isDrawInAnimationEnabled(false, ['drawIn'])).toBe(false);
   });
 });
 
@@ -369,7 +379,7 @@ describe('getInteractiveMarkName()', () => {
 });
 
 describe('getItemHoverArea()', () => {
-  test('clips the hover shapes to the plot so edge points don\'t grow the chart bounds', () => {
+  test("clips the hover shapes to the plot so edge points don't grow the chart bounds", () => {
     expect(getItemHoverArea([], 'table', 'datetime', 'value', 'line0', 'time')).toHaveProperty('clip', true);
   });
 });

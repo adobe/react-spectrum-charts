@@ -59,7 +59,12 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { getInteractiveMarkName, isAnimationTypeEnabled, isInteractive } from '../marks/markUtils.js';
+import {
+  getInteractiveMarkName,
+  isDrawInAnimationEnabled,
+  isHoverAnimationEnabled,
+  isInteractive,
+} from '../marks/markUtils.js';
 import {
   addDomainFields,
   addFieldToFacetScaleDomain,
@@ -194,8 +199,15 @@ export const addBar = produce<
       ...options,
     };
     barOptions.isHighlightedByGroup = isHighlightedByGroup(barOptions);
-    barOptions.isHoverAnimate = usesBarHoverAnimation(animations, animationTypes, barOptions);
-    barOptions.isDrawInAnimate = isAnimationTypeEnabled(animations, animationTypes, 'drawIn');
+    barOptions.isHoverAnimate = isHoverAnimationEnabled(
+      animations,
+      animationTypes,
+      isInteractive(barOptions) ||
+        barOptions.highlightedItem !== undefined ||
+        barOptions.highlightedSeries !== undefined ||
+        Boolean(barOptions.legendHighlightSignals?.length)
+    );
+    barOptions.isDrawInAnimate = isDrawInAnimationEnabled(animations, animationTypes);
 
     spec.usermeta = {
       ...spec.usermeta,
@@ -229,24 +241,6 @@ export const addBar = produce<
     spec.marks = addMarks(spec.marks ?? [], barOptions);
   }
 );
-
-/**
- * Whether the bar participates in the hover-animation system.
- * @param animations
- * @param animationTypes
- * @param options
- * @returns boolean
- */
-const usesBarHoverAnimation = (
-  animations: boolean | undefined,
-  animationTypes: AnimationType[] | undefined,
-  options: BarSpecOptions
-): boolean =>
-  isAnimationTypeEnabled(animations, animationTypes, 'hover') &&
-  (isInteractive(options) ||
-    options.highlightedItem !== undefined ||
-    options.highlightedSeries !== undefined ||
-    (options.legendHighlightSignals?.length ?? 0) > 0);
 
 /** Unique composite hover-animation identity per rendered bar, computed from the real data (see `BarSpecOptions.barIds`). */
 const getUniqueBarIds = (

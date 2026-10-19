@@ -138,17 +138,28 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
 };
 
 /**
- * Whether an animation type is on: `animations={false}` turns everything off, otherwise `animationTypes` decides.
+ * Whether hover animates: `animations={false}` turns it off, otherwise `animationTypes` and interactivity decide.
  * @param animations
  * @param animationTypes
- * @param type
+ * @param isInteractive whether the mark responds to hover or is highlighted
  * @returns boolean
  */
-export const isAnimationTypeEnabled = (
+export const isHoverAnimationEnabled = (
   animations: boolean | undefined,
   animationTypes: AnimationType[] | undefined,
-  type: AnimationType
-): boolean => animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes(type);
+  isInteractive: boolean
+): boolean => animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') && isInteractive;
+
+/**
+ * Whether draw-in animates: `animations={false}` turns it off, otherwise `animationTypes` decides.
+ * @param animations
+ * @param animationTypes
+ * @returns boolean
+ */
+export const isDrawInAnimationEnabled = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined
+): boolean => animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
 
 /**
  * Checks if there are any inspects, popovers, or action bars on the mark
