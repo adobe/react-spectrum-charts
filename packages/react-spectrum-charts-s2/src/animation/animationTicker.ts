@@ -203,6 +203,19 @@ function detach(entry: TickerEntry): void {
 }
 
 /**
+ * Gets the latest time a fresh draw-in waits for on-time frames before it starts.
+ * @returns deadline for `attachAnimationTicker`
+ */
+export const getDrawInHoldDeadline = (): number => clock() + DRAW_IN_MAX_HOLD_MS;
+
+/**
+ * Checks whether a deadline from `getDrawInHoldDeadline` has passed.
+ * @param deadline - hold deadline
+ * @returns boolean
+ */
+export const isDrawInHoldOver = (deadline: number): boolean => clock() >= deadline;
+
+/**
  * Checks whether a spec contains the shared animation timer that the ticker drives.
  * @param spec - vega spec
  * @returns boolean
@@ -224,10 +237,10 @@ export const removeAnimationTimerEvents = (spec: Spec): void => {
  * Registers a view with the shared animation ticker; its spec should have had `removeAnimationTimerEvents` applied.
  * @param view - vega view whose spec contains the animation timer and animationActive signals
  * @param container - element the view renders into, used to pause ticking while off-screen
- * @param holdUntilSteady - wait for on-time frames before the first tick, so a fresh draw-in doesn't start during mount work
+ * @param holdUntil - deadline from `getDrawInHoldDeadline`; until then the first tick waits for on-time frames, so a fresh draw-in doesn't start during mount work
  * @returns function that detaches the view from the ticker
  */
-export const attachAnimationTicker = (view: View, container: Element, holdUntilSteady = false): (() => void) => {
+export const attachAnimationTicker = (view: View, container: Element, holdUntil?: number): (() => void) => {
   // re-attaching the same view replaces its entry
   const existing = entries.get(view);
   if (existing) detach(existing);
@@ -239,7 +252,7 @@ export const attachAnimationTicker = (view: View, container: Element, holdUntilS
     // assume visible until the observer's first callback so the first frames aren't skipped
     visible: true,
     running: false,
-    holdUntil: holdUntilSteady ? clock() + DRAW_IN_MAX_HOLD_MS : undefined,
+    holdUntil: holdUntil !== undefined && holdUntil > clock() ? holdUntil : undefined,
     steadyFrames: 0,
     // only wakes; sleeping waits for a tick to see animationActive false so the final grace tick still runs
     onActiveChange: (_name, active) => {

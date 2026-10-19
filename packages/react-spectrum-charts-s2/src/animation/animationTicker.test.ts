@@ -245,7 +245,7 @@ describe('animationTicker', () => {
   describe('start gate', () => {
     test('holds a view until it sees steady on-time frames', async () => {
       const { view, timerValues } = createMockView({ activeTicks: 10 });
-      detachers.push(ticker.attachAnimationTicker(view, document.createElement('div'), true));
+      detachers.push(ticker.attachAnimationTicker(view, document.createElement('div'), ticker.getDrawInHoldDeadline()));
       // the first frame has no previous frame to measure, so it never counts as on time
       await flushFrames(DRAW_IN_STEADY_FRAMES);
       expect(timerValues).toHaveLength(0);
@@ -257,8 +257,19 @@ describe('animationTicker', () => {
       let clockMs = 0;
       jest.spyOn(performance, 'now').mockImplementation(() => clockMs);
       const { view, timerValues } = createMockView({ activeTicks: 10 });
-      detachers.push(ticker.attachAnimationTicker(view, document.createElement('div'), true));
+      detachers.push(ticker.attachAnimationTicker(view, document.createElement('div'), ticker.getDrawInHoldDeadline()));
       clockMs = DRAW_IN_MAX_HOLD_MS;
+      await flushFrames(1);
+      expect(timerValues).toHaveLength(1);
+    });
+
+    test('does not hold a view whose deadline already passed', async () => {
+      let clockMs = 0;
+      jest.spyOn(performance, 'now').mockImplementation(() => clockMs);
+      const { view, timerValues } = createMockView({ activeTicks: 10 });
+      const deadline = ticker.getDrawInHoldDeadline();
+      clockMs = DRAW_IN_MAX_HOLD_MS;
+      detachers.push(ticker.attachAnimationTicker(view, document.createElement('div'), deadline));
       await flushFrames(1);
       expect(timerValues).toHaveLength(1);
     });
@@ -266,7 +277,9 @@ describe('animationTicker', () => {
     test('does not hold views attached without the gate', async () => {
       const held = createMockView({ activeTicks: 10 });
       const free = createMockView({ activeTicks: 10 });
-      detachers.push(ticker.attachAnimationTicker(held.view, document.createElement('div'), true));
+      detachers.push(
+        ticker.attachAnimationTicker(held.view, document.createElement('div'), ticker.getDrawInHoldDeadline())
+      );
       attach(free.view);
       await flushFrames(1);
       expect(held.timerValues).toHaveLength(0);

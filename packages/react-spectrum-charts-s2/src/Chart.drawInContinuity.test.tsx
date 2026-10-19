@@ -19,6 +19,7 @@ import {
   DRAW_IN_ANIM_T,
   DRAW_IN_DONUT_DURATION_MS,
   DRAW_IN_GROW_DURATION_MS,
+  DRAW_IN_MAX_HOLD_MS,
   DRAW_IN_PAINT_FADE_MS,
   DRAW_IN_START,
   DRAW_IN_SWEEP_DURATION_MS,
@@ -233,28 +234,29 @@ describe.each(['bar', 'line', 'donut'] satisfies MarkType[])('%s draw-in continu
 });
 
 describe('draw-in continuity edge cases', () => {
-  test('rebuilds before the first tick keep the first embed time', async () => {
+  test('rebuilds before the first tick draw in fresh', async () => {
     const mountedAt = Date.now();
     const { rerender } = render(chart('bar'));
     for (let i = 0; i < 5; i++) rerender(withProvider(chart('bar', { title: `Fast ${i}` })));
+    const rebuiltAt = Date.now();
     await waitForView();
 
     const start = await waitForStart();
 
-    expect(start).toBeGreaterThanOrEqual(mountedAt);
-    expect(start).toBeLessThan(mountedAt + 50);
+    expect(start).toBeGreaterThanOrEqual(rebuiltAt);
+    expect(start).toBeLessThan(mountedAt + DRAW_IN_MAX_HOLD_MS + 150);
   });
 
-  test('streaming updates faster than a frame still draw in from mount', async () => {
+  test('rebuilds that never let a view tick still start draw-in once the hold is over', async () => {
     const mountedAt = Date.now();
     const { rerender } = render(chart('bar'));
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; Date.now() < mountedAt + DRAW_IN_MAX_HOLD_MS * 2; i++) {
       rerender(withProvider(chart('bar', { title: `Stream ${i}` })));
       await sleep(5);
     }
     await waitForView();
 
-    expect(await waitForStart()).toBeLessThan(mountedAt + 50);
+    expect(await waitForStart()).toBeLessThan(mountedAt + DRAW_IN_MAX_HOLD_MS + 150);
   });
 
   test('StrictMode double effects do not delay or replay draw-in', async () => {
