@@ -56,6 +56,20 @@ const PrimaryAndSecondaryStory: StoryFn<typeof ReferenceLine> = (args): ReactEle
   );
 };
 
+const VerticalStory: StoryFn<typeof ReferenceLine> = (args): ReactElement => {
+  const chartProps = useChartProps({ data: channelPerformanceData, width: 700, height: 360 });
+  return (
+    <Chart {...chartProps}>
+      <Axis position="left" grid title="Conversion rate" labelFormat="percentage" />
+      <Axis position="bottom" labelFormat="time" granularity="month" baseline>
+        <ReferenceLine {...args} />
+      </Axis>
+      <Line dimension="datetime" metric="conversionRate" color="channel" scaleType="time" />
+      <Legend />
+    </Chart>
+  );
+};
+
 const Basic = bindWithProps(ConversionTargetStory);
 Basic.args = { value: 0.04 };
 Object.assign(Basic, controls('value'));
@@ -68,4 +82,8 @@ const Secondary = bindWithProps(PrimaryAndSecondaryStory);
 Secondary.args = { value: 0.035, label: 'Last year', secondary: true };
 Object.assign(Secondary, controls('secondary'));
 
-export { Basic, Label, Secondary };
+const Vertical = bindWithProps(VerticalStory);
+Vertical.args = { value: new Date(2025, 8, 1).getTime(), label: 'Campaign launch' };
+Object.assign(Vertical, controls('value', 'label'));
+
+export { Basic, Label, Secondary, Vertical };
