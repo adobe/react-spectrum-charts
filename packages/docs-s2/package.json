@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "docusaurus start",
-    "build": "docusaurus build --out-dir dist",
+    "build": "echo 'S2 package - skipping default build. Use yarn build:docs:s2 to build explicitly.'",
+    "build:s2": "docusaurus build --out-dir dist",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "clean": "rm -rf dist",
