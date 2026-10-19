@@ -14,6 +14,7 @@ import { SignalRef } from 'vega';
 import {
   CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_OPACITY_RULE,
@@ -39,6 +40,7 @@ import {
   getCursor,
   getDirectLabelFontSizeProductionRule,
   getHighlightOpacityValue,
+  getInspectEncoding,
   getInteractiveMarkName,
   getItemHoverArea,
   getLineWidthProductionRule,
@@ -46,12 +48,40 @@ import {
   getOpacityProductionRule,
   getStrokeDashProductionRule,
   getSymbolSizeProductionRule,
-  getInspectEncoding,
   getXProductionRule,
   getYProductionRule,
   hasInspect,
+  isDrawInAnimationEnabled,
+  isHoverAnimationEnabled,
   isInteractive,
 } from './markUtils.js';
+
+describe('isHoverAnimationEnabled()', () => {
+  test('animates an interactive mark with the default animation types', () => {
+    expect(isHoverAnimationEnabled(undefined, undefined, true)).toBe(DEFAULT_ANIMATION_TYPES.includes('hover'));
+  });
+
+  test('does not animate a mark that is not interactive', () => {
+    expect(isHoverAnimationEnabled(undefined, ['hover'], false)).toBe(false);
+  });
+
+  test('respects animations and animationTypes', () => {
+    expect(isHoverAnimationEnabled(false, ['hover'], true)).toBe(false);
+    expect(isHoverAnimationEnabled(undefined, ['drawIn'], true)).toBe(false);
+  });
+});
+
+describe('isDrawInAnimationEnabled()', () => {
+  test('uses the default animation types when none are set', () => {
+    expect(isDrawInAnimationEnabled(undefined, undefined)).toBe(DEFAULT_ANIMATION_TYPES.includes('drawIn'));
+  });
+
+  test('respects animations and animationTypes', () => {
+    expect(isDrawInAnimationEnabled(undefined, ['drawIn'])).toBe(true);
+    expect(isDrawInAnimationEnabled(undefined, ['hover'])).toBe(false);
+    expect(isDrawInAnimationEnabled(false, ['drawIn'])).toBe(false);
+  });
+});
 
 describe('getColorProductionRule', () => {
   test('should return scale reference if color is a string', () => {
@@ -349,7 +379,7 @@ describe('getInteractiveMarkName()', () => {
 });
 
 describe('getItemHoverArea()', () => {
-  test('clips the hover shapes to the plot so edge points don\'t grow the chart bounds', () => {
+  test("clips the hover shapes to the plot so edge points don't grow the chart bounds", () => {
     expect(getItemHoverArea([], 'table', 'datetime', 'value', 'line0', 'time')).toHaveProperty('clip', true);
   });
 });

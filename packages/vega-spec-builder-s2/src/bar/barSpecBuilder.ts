@@ -15,7 +15,6 @@ import { BandScale, Data, FormulaTransform, JoinAggregateTransform, Mark, Ordina
 import {
   AnimationType,
   COLOR_SCALE,
-  DEFAULT_ANIMATION_TYPES,
   DRAW_IN_GROW_DURATION_MS,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR_SCHEME,
@@ -60,7 +59,12 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
+import {
+  getInteractiveMarkName,
+  isDrawInAnimationEnabled,
+  isHoverAnimationEnabled,
+  isInteractive,
+} from '../marks/markUtils.js';
 import {
   addDomainFields,
   addFieldToFacetScaleDomain,
@@ -195,9 +199,15 @@ export const addBar = produce<
       ...options,
     };
     barOptions.isHighlightedByGroup = isHighlightedByGroup(barOptions);
-    barOptions.isHoverAnimate = usesBarHoverAnimation(animations, animationTypes, barOptions);
-    barOptions.isDrawInAnimate =
-      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
+    barOptions.isHoverAnimate = isHoverAnimationEnabled(
+      animations,
+      animationTypes,
+      isInteractive(barOptions) ||
+        barOptions.highlightedItem !== undefined ||
+        barOptions.highlightedSeries !== undefined ||
+        Boolean(barOptions.legendHighlightSignals?.length)
+    );
+    barOptions.isDrawInAnimate = isDrawInAnimationEnabled(animations, animationTypes);
 
     spec.usermeta = {
       ...spec.usermeta,
@@ -231,23 +241,6 @@ export const addBar = produce<
     spec.marks = addMarks(spec.marks ?? [], barOptions);
   }
 );
-
-/**
- * Whether the bar participates in the hover-animation system. Unlike line's `usesHoverAnimation`
- * (opt-out via `animations === false`), bar requires an explicit `animations={true}` -- bar's
- * animated path is new and not yet the default experience, so it must be opted into per chart.
- */
-const usesBarHoverAnimation = (
-  animations: boolean | undefined,
-  animationTypes: AnimationType[] | undefined,
-  options: BarSpecOptions
-): boolean =>
-  animations === true &&
-  (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
-  (isInteractive(options) ||
-    options.highlightedItem !== undefined ||
-    options.highlightedSeries !== undefined ||
-    (options.legendHighlightSignals?.length ?? 0) > 0);
 
 /** Unique composite hover-animation identity per rendered bar, computed from the real data (see `BarSpecOptions.barIds`). */
 const getUniqueBarIds = (

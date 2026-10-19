@@ -15,7 +15,6 @@ import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal } from 'vega'
 import {
   AnimationType,
   COLOR_SCALE,
-  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HOLE_RATIO,
@@ -38,7 +37,7 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { isInteractive } from '../marks/markUtils.js';
+import { isDrawInAnimationEnabled, isHoverAnimationEnabled, isInteractive } from '../marks/markUtils.js';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark } from '../specUtils.js';
@@ -129,14 +128,14 @@ export const addDonut = produce<
       segmentIds: data?.map((_, index) => index + 1) ?? [],
       ...options,
     };
-    donutOptions.isHoverAnimate =
-      animations !== false &&
-      (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
-      (isDonutInteractive(donutOptions) ||
+    donutOptions.isHoverAnimate = isHoverAnimationEnabled(
+      animations,
+      animationTypes,
+      isDonutInteractive(donutOptions) ||
         donutOptions.highlightedItem !== undefined ||
-        donutOptions.highlightedSeries !== undefined);
-    donutOptions.isDrawInAnimate =
-      animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
+        donutOptions.highlightedSeries !== undefined
+    );
+    donutOptions.isDrawInAnimate = isDrawInAnimationEnabled(animations, animationTypes);
 
     if (isDonutInteractive(donutOptions)) {
       spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);

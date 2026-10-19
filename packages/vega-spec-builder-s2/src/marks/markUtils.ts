@@ -23,10 +23,12 @@ import {
 } from 'vega';
 
 import {
+  AnimationType,
   BACKGROUND_COLOR,
   CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
   COMPONENT_NAME,
+  DEFAULT_ANIMATION_TYPES,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
@@ -134,6 +136,30 @@ export const getBorderStrokeEncodings = (isStacked: boolean, isArea = false): Ar
     };
   return {};
 };
+
+/**
+ * Whether hover animates: `animations={false}` turns it off, otherwise `animationTypes` and interactivity decide.
+ * @param animations
+ * @param animationTypes
+ * @param isInteractive whether the mark responds to hover or is highlighted
+ * @returns boolean
+ */
+export const isHoverAnimationEnabled = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined,
+  isInteractive: boolean
+): boolean => animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') && isInteractive;
+
+/**
+ * Whether draw-in animates: `animations={false}` turns it off, otherwise `animationTypes` decides.
+ * @param animations
+ * @param animationTypes
+ * @returns boolean
+ */
+export const isDrawInAnimationEnabled = (
+  animations: boolean | undefined,
+  animationTypes: AnimationType[] | undefined
+): boolean => animations !== false && (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('drawIn');
 
 /**
  * Checks if there are any inspects, popovers, or action bars on the mark
