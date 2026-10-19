@@ -30,7 +30,6 @@ import {
   AxisThumbnail,
   Bar,
   BarDirectLabel,
-  ChartActionBar,
   ChartInspect,
   ChartPopover,
   Donut,
@@ -47,6 +46,7 @@ import {
 import {
   Area,
   Bullet,
+  ChartActionBar,
   Combo,
   Scatter,
   ScatterAnnotation,

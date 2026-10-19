@@ -16,7 +16,6 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import {
   Axis,
-  ChartActionBar,
   ChartInspect,
   ChartPopover,
   Legend,
@@ -27,6 +26,7 @@ import {
   ReferenceLine,
   Title,
 } from '../../../components/index.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
 import {
   AxisProps,

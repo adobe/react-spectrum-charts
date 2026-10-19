@@ -11,7 +11,7 @@
  */
 import { produce } from 'immer';
 
-import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
+import { AnimationType, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addBar } from '../bar/barSpecBuilder.js';
@@ -30,17 +30,21 @@ export const addCombo = produce<
   ScSpec,
   [
     ComboOptions & {
+      animations?: boolean;
+      animationTypes?: AnimationType[];
       axes?: AxisOptions[];
       colorScheme?: ColorScheme;
       highlightedItem?: HighlightedItem;
       index?: number;
       idKey: string;
-    }
+    },
   ]
 >(
   (
     spec,
     {
+      animations,
+      animationTypes,
       axes,
       colorScheme = DEFAULT_COLOR_SCHEME,
       highlightedItem,
@@ -85,6 +89,8 @@ export const addCombo = produce<
           markName = allMarkNames[markIndex];
           return addBar(acc, {
             ...mark,
+            animations,
+            animationTypes,
             colorScheme,
             comboSiblingNames,
             highlightedItem,
@@ -99,6 +105,8 @@ export const addCombo = produce<
           markName = allMarkNames[markIndex];
           return addLine(acc, {
             ...mark,
+            animations,
+            animationTypes,
             axes,
             colorScheme,
             comboSiblingNames,

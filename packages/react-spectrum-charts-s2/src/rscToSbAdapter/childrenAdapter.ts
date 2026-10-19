@@ -37,7 +37,7 @@ import { Axis } from '../components/Axis/index.js';
 import { AxisThumbnail } from '../components/AxisThumbnail/index.js';
 import { Bar } from '../components/Bar/index.js';
 import { BarDirectLabel } from '../components/BarDirectLabel/index.js';
-import { ChartActionBar } from '../components/ChartActionBar/index.js';
+import { ChartActionBar } from '../lab/components/ChartActionBar/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
 import { ChartPopover } from '../components/ChartPopover/index.js';
 import { Donut } from '../components/Donut/index.js';
