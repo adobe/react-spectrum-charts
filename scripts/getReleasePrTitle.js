@@ -41,7 +41,9 @@ const absoluteOutputPath = path.join(rootDir, outputPath);
 const { releases } = JSON.parse(fs.readFileSync(absoluteOutputPath, 'utf8'));
 fs.unlinkSync(absoluteOutputPath);
 
-const pending = new Map(releases.map(({ name, newVersion }) => [name, newVersion]));
+const pending = new Map(
+  releases.filter(({ type }) => type !== 'none').map(({ name, newVersion }) => [name, newVersion])
+);
 const titleParts = [];
 
 function addFixedPair(label, firstPackage, secondPackage) {
