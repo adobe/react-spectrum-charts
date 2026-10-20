@@ -1,0 +1,152 @@
+---
+title: Getting started
+description: Install React Spectrum Charts for Spectrum 2, set up your app, and render your first chart.
+---
+
+import TabItem from '@theme/TabItem';
+import Tabs from '@theme/Tabs';
+
+import { DataCode } from '@site/src/components/examples/DataCode';
+import { GuideFirstChartExample } from '@site/src/playgrounds/guides-start';
+
+# Getting started
+
+## Install
+
+Install the package and its peer dependencies:
+
+<Tabs groupId="package-manager">
+<TabItem value="npm" label="npm">
+
+```bash
+npm install @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
+```
+
+</TabItem>
+<TabItem value="pnpm" label="pnpm">
+
+```bash
+pnpm add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
+```
+
+</TabItem>
+</Tabs>
+
+### Requirements
+
+| Package                 | Version                                              |
+| ----------------------- | ---------------------------------------------------- |
+| `react`, `react-dom`    | `>= 19.0.0`                                          |
+| `@react-spectrum/s2`    | `>= 1.0.0`                                           |
+| `react-aria-components` | `^1.14.0`, the same version `@react-spectrum/s2` uses |
+| `vega`                  | `^6.2.0`                                             |
+| `vega-lite`             | `^6.4.2`                                             |
+
+Since version 1.3.0, `@react-spectrum/s2` depends on an exact `react-aria-components` version.
+Install that same version so your app has a single copy, which charts need to share React Aria
+context with Spectrum 2 components. To find the version `@react-spectrum/s2` uses:
+
+<Tabs groupId="package-manager">
+<TabItem value="npm" label="npm">
+
+```bash
+npm ls react-aria-components
+npm install react-aria-components@<that version>
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn why react-aria-components
+yarn add react-aria-components@<that version>
+```
+
+</TabItem>
+<TabItem value="pnpm" label="pnpm">
+
+```bash
+pnpm why react-aria-components
+pnpm add react-aria-components@<that version>
+```
+
+</TabItem>
+</Tabs>
+
+## ES modules
+
+The package is published as ES modules only (`"type": "module"` in its `package.json`), with one
+file per source module, so your bundler includes only the components you import.
+
+- Load it with `import`. There's no CommonJS build, so `require()` and UMD script-tag globals
+  aren't supported.
+- There are two entry points: `@spectrum-charts/react-spectrum-charts-s2` and
+  `@spectrum-charts/react-spectrum-charts-s2/lab`. The package's `exports` map blocks deep imports
+  into `dist`.
+- Type declarations are included for both entry points.
+- Like Spectrum 2, the modules import their own CSS files, so your bundler needs to handle CSS
+  imports. Vite and Parcel do by default; webpack needs a CSS loader.
+- Node.js 20.19.0 or later is required.
+- Jest runs CommonJS by default, so it has to transform the package and stub its CSS. Vitest needs
+  the package inlined. See [Testing and troubleshooting](./testing-and-troubleshooting.mdx#testing).
+
+## Dark mode
+
+`Chart` renders its own Spectrum 2 `Provider` and loads its own styles, so charts don't need any
+Spectrum 2 setup in your app. It also means `Chart` doesn't read the color scheme from your app.
+Its `colorScheme` prop defaults to `light`; if your app supports dark mode, pass the current color
+scheme to every chart:
+
+```tsx
+<Chart data={data} colorScheme={isDark ? 'dark' : 'light'}>
+  {/* ... */}
+</Chart>
+```
+
+See [Colors and theming](./colors-and-theming.mdx).
+
+## Your first chart
+
+`Chart` takes the data as an array of objects, one per data point:
+
+<DataCode name="guideVisitsData" />
+
+Its children describe what to draw. In the chart below, `Line` plots `visits` for each `date`, with
+one line for each `device`. The two `Axis` components label the x and y scales, and `Legend` names each
+line.
+
+<GuideFirstChartExample />
+
+`Chart` fills the width of its container and is 300px tall by default. See [Sizing](./sizing.mdx).
+
+## Imports
+
+Import most components from the package root:
+
+```tsx
+import { Axis, Bar, Chart, Donut, Legend, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+```
+
+Lab components come from `@spectrum-charts/react-spectrum-charts-s2/lab`: `Area`, `Bullet`, `Combo`, `Scatter`,
+`ScatterAnnotation`, `ScatterPath`, `Trendline`, and `TrendlineAnnotation`.
+
+```tsx
+import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+```
+
+Lab components are experimental, so their APIs may change. See [Stages and lab](./stages-and-lab.mdx).
+
+## Next steps
+
+- [Data](./data.mdx): field names, dates, missing values, and updates.
+- [Sizing](./sizing.mdx): responsive charts and size-dependent styles.
+- [Chart](../chart.mdx): every `Chart` prop.
+- Chart types: [Line](../line.mdx), [Bar](../bar.mdx), and [Donut](../donut.mdx).

@@ -49,10 +49,10 @@ export interface LineProps
     | 'markType'
   > {
   children?: Children<LineChildElement>;
-  /** Callback that will be run when a point/section is clicked */
+  /** Called with the row's data when a point is clicked. */
   onClick?: MarkCallback;
   /**
-   * Callback that will be run when a point/section is right-clicked. Use to show a custom context menu.
+   * Called with the event and the row's data when a point is right-clicked. Use it to show a custom context menu.
    * Use `contextMenuMode` to control which marks can trigger it.
    */
   onContextMenu?: ContextMenuCallback;

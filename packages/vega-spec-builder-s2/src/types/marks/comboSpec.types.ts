@@ -15,9 +15,9 @@ import { LineOptions } from './lineSpec.types.js';
 export interface ComboOptions {
   markType: 'combo';
 
-  /** Data field that the metrics are trended against (x-axis for horizontal orientation) */
+  /** Data field for the x-axis, used by child marks that don't set their own `dimension`. Defaults to `datetime`. */
   dimension?: string;
-  /** Sets the name of the component. */
+  /** Prefix for child mark names, like `combo0Bar0`. Defaults to `combo0`. */
   name?: string;
 
   // children

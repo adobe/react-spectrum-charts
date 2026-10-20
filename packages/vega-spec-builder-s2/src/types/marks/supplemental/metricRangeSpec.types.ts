@@ -16,17 +16,17 @@ import { SpectrumColor } from '../../spectrumVizColor.types.js';
 export interface MetricRangeOptions {
   /** The color of the metric line and range. If undefined, will default to the color of the series that it represents. */
   color?: SpectrumColor | string;
-  /** The line type of the metric line. (dashed, solid, etc..) */
+  /** The line type of the metric line. Defaults to `'dashed'`. */
   lineType?: LineType;
-  /** The line width of the metric line. */
+  /** The line width of the metric line. Defaults to `'S'`. */
   lineWidth?: LineWidth;
-  /** The opacity of the area around the metric */
+  /** The opacity of the area around the metric. Defaults to `0.2`. */
   rangeOpacity?: number;
   /** The key for the upper range in the data */
   metricEnd: string;
   /** The key for the lower range in the data */
   metricStart: string;
-  /** The key for the metric value in the data */
+  /** Data field for the range's center line. Defaults to `'value'`, not the parent line's `metric`. */
   metric?: string;
   /** Whether the metric range should only be visible when hovering over the parent line */
   displayOnHover?: boolean;

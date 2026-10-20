@@ -20,6 +20,7 @@ import { LineElement } from './line.types.js';
 export type ComboChildElement = BarElement | LineElement;
 
 export interface ComboProps extends Omit<ComboOptions, 'marks' | 'markType'> {
+  /** Bar and Line marks to draw against the shared dimension. */
   children?: Children<ComboChildElement>;
 }
 

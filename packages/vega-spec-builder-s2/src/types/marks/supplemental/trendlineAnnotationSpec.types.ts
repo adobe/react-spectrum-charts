@@ -16,14 +16,14 @@ import { TrendlineSpecOptions } from './trendlineSpec.types.js';
 export interface TrendlineAnnotationOptions {
   /** Adds a badge around the annotation */
   badge?: boolean;
-  /** where along the dimension scale to label the trendline value */
+  /** Where along the trendline to place the label: `start`, `end`, or a `dimension` value. */
   dimensionValue?: number | 'start' | 'end';
   /** d3 number format specifier. Only valid if labelFormat is linear or undefined.
    *
    * @see https://d3js.org/d3-format#locale_format
    */
   numberFormat?: string;
-  /** text that will be prepended to the trendline value */
+  /** Text shown before the trendline value. */
   prefix?: string;
 }
 

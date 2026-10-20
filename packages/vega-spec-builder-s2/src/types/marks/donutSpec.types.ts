@@ -21,10 +21,9 @@ export interface DonutOptions {
 
   /** Key in the data that is used as the color facet */
   color?: string;
-  /** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+  /** Inner radius as a share of the outer radius. `0` draws a pie. Defaults to `0.85`. */
   holeRatio?: number;
-  /** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
-   * Also, if true, will display the first datapoint as a percent */
+  /** Shows the first row's value as a percent in the center. Use with two rows whose values sum to 1. */
   isBoolean?: boolean;
   /** Key in the data that is used as the metric */
   metric?: string;

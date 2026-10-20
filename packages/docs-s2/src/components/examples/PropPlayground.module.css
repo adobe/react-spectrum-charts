@@ -1,0 +1,117 @@
+.playground {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    'preview controls'
+    'code controls';
+  gap: 16px;
+  padding: 16px;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 16px;
+  margin-bottom: var(--ifm-leading);
+}
+
+.preview {
+  grid-area: preview;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 4px;
+  min-width: 0;
+  /* Matches the Spectrum 2 gray-25 that chart strokes use with a transparent backgroundColor. */
+  background: white;
+  border-radius: 12px;
+}
+
+[data-theme='dark'] .preview {
+  background: #111111;
+}
+
+.preview > div {
+  display: flex;
+  justify-content: safe center;
+  overflow-x: auto;
+}
+
+.fallback {
+  height: 300px;
+}
+
+.controls {
+  grid-area: controls;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.groupTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions > * {
+  flex-shrink: 0;
+}
+
+.code {
+  grid-area: code;
+  min-width: 0;
+  background: var(--ifm-background-surface-color);
+  border-radius: 8px;
+}
+
+.code pre {
+  background-color: var(--ifm-background-surface-color) !important;
+}
+
+.code :global(.theme-code-block) {
+  margin-bottom: 0;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .playground {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'preview'
+      'controls'
+      'code';
+  }
+}

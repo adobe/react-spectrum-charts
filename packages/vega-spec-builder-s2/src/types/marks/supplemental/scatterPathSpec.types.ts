@@ -18,7 +18,7 @@ export interface ScatterPathOptions {
   color?: SpectrumColor | string;
   /** The width on the links. Link width can vary by point. */
   pathWidth?: PathWidthFacet;
-  /** Data keys that should be used to create the groups that get connected by links. */
+  /** Data fields that group points; each group's points are connected by a path. */
   groupBy?: string[];
   /** The opacity of the links. */
   opacity?: number;

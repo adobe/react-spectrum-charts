@@ -68,46 +68,46 @@ export type MarkOptions =
 // Notice that things like data and width/height are not included here
 // This is intentional as we don't want to have to rebuild the entire spec anytime data updates or the width/height change
 export interface ChartOptions {
-  /** Master kill switch for all chart animations. Reduced motion preferences disable motion (e.g. draw-in) automatically. */
+  /** Set to `false` to turn off every animation, including hover and draw-in. Draw-in is skipped for users who prefer reduced motion. */
   animations?: boolean;
-  /** Which animation types are enabled. Defaults to `['hover', 'drawIn']`. */
+  /** Animations to play: `hover`, `drawIn`, or both. Defaults to `['hover', 'drawIn']`. */
   animationTypes?: AnimationType[];
-  /** Background color of the chart. */
+  /** Background color of the chart, as a Spectrum color token or CSS color. Defaults to `transparent`. */
   backgroundColor?: string;
-  /** Color scale: a named scale, a list of Spectrum color tokens or CSS colors, or a 2D list. Defaults to `s2Categorical20`. */
+  /** Colors for series: a named palette, a list of Spectrum color tokens or CSS colors, or a list of lists when a mark's `color` uses two fields. Defaults to `s2Categorical20`. */
   colors?: ChartColors;
-  /** react-spectrum color scheme. @see https://react-spectrum.adobe.com/react-spectrum/Provider.html#props */
+  /** Light or dark colors. Set it to match your app, since the chart doesn't read your app's theme. Defaults to `light`. */
   colorScheme?: ColorScheme;
   data?: ChartData[];
-  /** Chart description. Sets the aria-label attribute for the chart container. @see https://vega.github.io/vega/docs/specification/ */
+  /** Accessible name for the chart, read by screen readers. Describe what the chart shows. */
   description?: string;
-  /** Symbol shape scale. */
+  /** Shapes assigned to series when a mark's `symbolShape` uses a field. Defaults to `['rounded-square']`. */
   symbolShapes?: SymbolShapes;
-  /** Symbol size scale. Values define the min and max size in that order. */
+  /** Smallest and largest symbol size when a mark's `size` uses a field. Defaults to `['XS', 'XL']`. */
   symbolSizes?: [SymbolSize, SymbolSize];
-  /** Line type scale. */
+  /** Line types assigned to series when a mark's `lineType` uses a field. Defaults to `['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash']`. */
   lineTypes?: LineTypes;
-  /** Line width scale. */
+  /** Line widths assigned to series when a mark's `lineWidth` uses a field. Defaults to `['M']`. */
   lineWidths?: LineWidth[];
-  /** Opacity scale*/
+  /** Opacities assigned to series when a mark's `opacity` uses a field. Defaults to `[1]`. */
   opacities?: Opacities;
-  /** Chart title. If the `Title` component is provided as a child, the component will override this prop. */
+  /** Title shown above the chart. A `Title` child replaces it. */
   title?: string;
-  /** Vega spec to be used instead of generating one using the component API. */
+  /** Vega spec to render instead of building one from children. Can't be combined with children. */
   UNSAFE_vegaSpec?: Spec;
-  /** Series names to hide from the chart (controlled). */
+  /** Names of series to hide. Defaults to `[]`. */
   hiddenSeries?: string[];
-  /** Data item id or ids that should be highlighted on the chart (controlled). Be sure to supply an `idKey` where each data point has a unique ID if you are using controlled highlighting of items. */
+  /** ID or IDs of rows to highlight. Set `idKey` to a field with a unique value for each row. */
   highlightedItem?: HighlightedItem;
-  /** height of chart*/
+  /** Internal: set by `Chart` from `height`. Use `height` instead. */
   chartHeight?: number;
-  /** Series name to highlight on the chart (controlled). */
+  /** Name of the series to highlight. */
   highlightedSeries?: string | number;
-  /** Data key that contains a unique ID for each data point in the array. */
+  /** Field with a unique ID for each row. Defaults to an ID the chart adds to each row. */
   idKey?: string;
-  /** Width of chart */
+  /** Internal: set by `Chart` from `width`. Use `width` instead. */
   chartWidth?: number;
-  /** Enables experimental keyboard navigation via data-navigator. Only basic bar charts are currently supported. Defaults to `false`. */
+  /** Experimental keyboard navigation. Only basic bar charts are supported. Defaults to `false`. */
   accessibleNavigation?: boolean;
 
   // children

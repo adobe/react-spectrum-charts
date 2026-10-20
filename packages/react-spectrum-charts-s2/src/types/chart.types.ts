@@ -59,23 +59,23 @@ export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' 
   // we have a check at the beginning of Chart to make sure this isn't undefined
   // if it is undefined, we log an error and render nothing
   children?: Children<ChartChildElement>;
-  /** Vega config that can be used to tweak the style of the chart. @see https://vega.github.io/vega/docs/config/ */
+  /** Vega config for low-level style overrides. @see https://vega.github.io/vega/docs/config/ */
   config?: Config;
-  /** Chart data array. */
+  /** Rows of data to chart. */
   data: ChartData[];
-  /** Enables debug mode which will console log things like the generated vega spec and the datums for inspects. */
+  /** Logs the generated Vega spec and inspected rows to the console. Defaults to `false`. */
   debug?: boolean;
-  /** Number and time locales to use */
+  /** Number and time locales for formatting, as a locale code, separate number and time locales, or a Vega locale. Defaults to `en-US`. */
   locale?: Locale | LocaleCode | { number?: NumberLocaleCode | NumberLocale; time?: TimeLocaleCode | TimeLocale };
-  /** Chart padding */
+  /** Space around the chart contents in pixels, as one number or per side. Defaults to `0`. */
   padding?: Padding;
-  /** Called when the Vega view is created or recreated (e.g. after spec/data change) */
+  /** Called with the Vega view each time the chart creates one, such as after data or props change. */
   onVegaViewReady?: (view: View) => void;
-  /** Method to use for rendering the chart. 'canvas' is ideal for large data sets. */
+  /** Draws the chart as `svg` or `canvas`. `canvas` is faster for large data sets but exposes less to screen readers. Defaults to `svg`. */
   renderer?: 'svg' | 'canvas';
-  /** Sets what the tooltip should be anchored to. Defaults to `cursor`. */
+  /** Whether `ChartInspect` content follows the cursor or anchors to the hovered mark. Defaults to `cursor`. */
   tooltipAnchor?: TooltipAnchor;
-  /** The placement of the tooltip with respect to the mark. Only applicable if `tooltipAnchor = 'mark'`. */
+  /** Where `ChartInspect` content sits relative to the mark when `tooltipAnchor` is `mark`. Defaults to `top`. */
   tooltipPlacement?: TooltipPlacement;
 }
 
@@ -118,23 +118,23 @@ export interface SanitizedSpecProps
 }
 
 export interface ChartProps extends SharedChartProps {
-  /** Test id */
+  /** Value for the chart container's `data-testid` attribute. */
   dataTestId?: string;
-  /** Optional text to display when the data set is empty and loading is complete. */
+  /** Text to display when the data set is empty and loading is complete. Defaults to `No data found`. */
   emptyStateText?: string;
-  /** Loading state. If true, a spinner will render in place of the chart. */
+  /** Shows a loading spinner in place of the chart. Defaults to `false`. */
   loading?: boolean;
-  /** Maximum chart width */
+  /** Maximum chart width in pixels when `width` is `auto` or a percentage. */
   maxWidth?: number;
-  /** Minimum chart width. */
+  /** Minimum chart width in pixels when `width` is `auto` or a percentage. Defaults to `100`. */
   minWidth?: number;
-  /** Chart height */
+  /** Chart height in pixels, or a percentage of the container height. Defaults to `300`. */
   height?: Height;
-  /** Maximum height of the chart */
+  /** Maximum chart height in pixels when `height` is a percentage. */
   maxHeight?: number;
-  /** Minimum height of the chart */
+  /** Minimum chart height in pixels when `height` is a percentage. Defaults to `100`. */
   minHeight?: number;
-  /** Chart width */
+  /** Chart width in pixels, `auto` to fill the container, or a percentage of the container width. Defaults to `auto`. */
   width?: Width;
 }
 

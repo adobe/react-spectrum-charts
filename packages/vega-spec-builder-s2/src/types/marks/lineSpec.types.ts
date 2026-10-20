@@ -56,24 +56,25 @@ export interface LineOptions {
   opacity?: OpacityFacet;
   /** Sets the chart area padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
   padding?: number;
+  /** Area of static points in square pixels. When omitted, points scale with chart width. */
   pointSize?: number;
-  /** Line to be interpreted and rendered as a sparkline. For example, Changes the fill of static points. */
+  /** Renders the line as a sparkline. With `isMethodLast`, draws a static point on the last data point. */
   isSparkline?: boolean;
-  /** Sparkline's method is last - meaning that last element of data has the static point */
+  /** With `isSparkline`, draws a static point on the last row of the chart data. */
   isMethodLast?: boolean;
-  /** Sets the type of scale that should be used for the trend */
+  /** Sets the x scale type: `'time'`, `'linear'`, or `'point'`. */
   scaleType?: ScaleType;
-  /** Key in the data that if it exists and the value resolves to true for each data object, a point will be drawn for that data point on the line. */
+  /** Data field that marks rows to highlight; a point is drawn on the line for each row where it's true. */
   staticPoint?: string;
-  /** Sets the interaction mode for the line */
+  /** Sets how hovering picks a point: `'nearest'` uses the closest point, `'item'` only the point under the pointer. */
   interactionMode?: InteractionMode;
   /** Axis that the metric is trended against (y-axis) */
   metricAxis?: string;
   /** Enables dual metric axis mode where the last series uses a secondary axis with independent scale */
   dualMetricAxis?: boolean;
-  /** If true, displays a gradient fill beneath the line fading from the line color to transparent */
+  /** Fills the area under the line with its color, fading to transparent. Use on charts with a single line. */
   gradient?: boolean;
-  /** Sets the interpolation method for the line */
+  /** Sets the interpolation method for the line. `basis` doesn't pass through the data, so it draws no points. */
   interpolate?: InterpolationType;
   /**
    * Sets the stroke line cap style for the line ends and gap boundaries.
@@ -95,17 +96,9 @@ export interface LineOptions {
    * No default — omitting means no append.
    */
   alternateSegmentLabel?: string;
-  /**
-   * Designates which series render with full color. Remaining series render in a de-emphasized gray
-   * color with direct labels suppressed.
-   * - `number`: the first N series by color scale order are primary.
-   * - `string[]`: the named series are primary, regardless of color scale order.
-   */
+  /** Series to keep in color; the rest turn gray and lose their direct labels. Pass a number N for the first N series, or a list of series names. */
   primarySeries?: number | string[];
-  /**
-   * Overrides the default gray color used for series beyond the `primarySeries`.
-   * Accepts any Spectrum 2 color token (e.g. `'gray-400'`) or CSS color value.
-   */
+  /** Color for series outside `primarySeries`, as a Spectrum color token or CSS color. */
   otherSeriesColor?: string;
   /**
    * If `true`, all series at the hovered x-dimension highlight simultaneously instead of
@@ -132,6 +125,7 @@ export interface LineOptions {
   forecasts?: LineForecastOptions[];
   lineDirectLabels?: LineDirectLabelOptions[];
   linePointAnnotations?: LinePointAnnotationOptions[];
+  /** Shaded ranges drawn around the line, each between two data fields. */
   metricRanges?: MetricRangeOptions[];
   trendlines?: TrendlineOptions[];
 }

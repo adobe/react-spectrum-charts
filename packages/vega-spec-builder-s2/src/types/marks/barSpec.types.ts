@@ -23,53 +23,49 @@ export type BarType = 'dodged' | 'stacked';
 export interface BarOptions {
   markType: 'bar';
 
-  /** Key in the data that is used as the metric */
+  /** Key in the data that is used as the metric. Defaults to `value`. */
   metric?: string;
-  /** Bar color or key in the data that is used as the color facet */
+  /** Bar color or key in the data that is used as the color facet; a two-key list dodges by the first key and stacks by the second. Defaults to `categorical-100`. */
   color?: ColorFacet | DualFacet;
-  /**
-   * Data field whose value is the CSS color for each bar (one color per row).
-   * When set, bar fill uses this field instead of the color scale; takes precedence over {@link color}.
-   * Distinct from {@link color} (which maps through the color scale).
-   */
+  /** Data field whose value is the CSS color for each bar; overrides the color scale for the bar fill. */
   colorOverride?: string;
-  /** Data field used for the bar categories (x-axis for a vertical bar) */
+  /** Data field used for the bar categories (x-axis for a vertical bar). Defaults to `category`. */
   dimension?: string;
-  /** Data type field used for the bar categories (x-axis for a vertical bar) */
+  /** Set to `time` when the dimension values are dates, so the axis can format them with `labelFormat="time"`. */
   dimensionDataType?: string;
-  /** Whether to scale the last series in the data separately using the secondary metric axis */
+  /** Whether to scale the last series separately on a secondary metric axis. Only applies to dodged bars with a single facet key and no trellis. Defaults to `false`. */
   dualMetricAxis?: boolean;
-  /** Sets the inner padding between bars in a group */
+  /** Inner padding between dodged bars in a group, as a ratio between 0 and 1. Defaults to `paddingRatio`. */
   groupedPadding?: number;
   /** `true` if BarProps has an onClick callback. Will add the mouse pointer to the bar on hover. */
   hasOnClick?: boolean;
-  /** Should the top-left and top-right corners of the bars be square? Round by default */
+  /** Whether the corners at the end of each bar are square instead of rounded. Defaults to `false`. */
   hasSquareCorners?: boolean;
-  /** Line type or key in the data that is used as the line type facet */
+  /** Border line type or key in the data that is used as the line type facet. Only visible when `lineWidth` is greater than 0. Defaults to `solid`. */
   lineType?: LineTypeFacet | DualFacet;
-  /** Border width of the bar */
+  /** Border width of the bar, drawn in the bar's color. Defaults to `0`. */
   lineWidth?: LineWidth;
-  /** Sets the name of the component. */
+  /** Name used for the bar's marks and signals in the Vega spec. Defaults to `bar0`, `bar1`, and so on. */
   name?: string;
-  /** Optional field used to set the stack order of the bar (higher order = higher on bar) */
+  /** Data field that sets the stack order; higher values stack on top. Defaults to data order. */
   order?: string;
-  /** The direction of the bars. Defaults to "vertical". */
+  /** Direction of the bars. Defaults to `vertical`. */
   orientation?: Orientation;
-  /** Opacity or key in the data that is used as the opacity facet */
+  /** Bar opacity, or a data field that assigns an opacity to each series. Defaults to `1`. */
   opacity?: OpacityFacet | DualFacet;
-  /** Sets inner padding (https://vega.github.io/vega/docs/scales/#band) */
+  /** Space between bars, as a share of each category's width from 0 to 1. Defaults to `0.4`. */
   paddingRatio?: number;
-  /** Sets the chart area padding, this is a ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band) */
+  /** Space before the first bar and after the last, as a share of each category's width. Defaults to half of `paddingRatio`. */
   paddingOuter?: number;
-  /** The data field used for the trellis categories */
+  /** Data field that splits the chart into small multiples, one per value. */
   trellis?: string;
-  /** Orientation of the trellis. Only applicable if `trellis` is also defined. Defaults to "horizontal". */
+  /** Whether trellis groups sit side by side or stacked. Only applies with `trellis`. Defaults to `horizontal`. */
   trellisOrientation?: Orientation;
-  /** Padding between trellis groups; ratio between 0 and 1 (https://vega.github.io/vega/docs/scales/#band). Only applicable if `trellis` is also defined. Defaults to 0.2. */
+  /** Space between trellis groups, from 0 to 1. Only applies with `trellis`. Defaults to `0.2`. */
   trellisPadding?: number;
-  /** Bar type. */
+  /** Whether series stack on top of each other or sit side by side (dodged). Defaults to `stacked`. */
   type?: BarType;
-  /** Diverging bar chart (metric spans positive and negative): moves the dimension axis to the zero baseline and flips each label to the opposite side of its bar. Single-series bars only; a no-op on dodged/stacked/multi-series bars. */
+  /** Diverging bar chart (metric spans positive and negative): moves the dimension axis to the zero baseline and flips each label to the opposite side of its bar. Single-series bars only; a no-op on dodged or faceted bars. Defaults to `false`. */
   diverging?: boolean;
   /** Axis that the metric is trended against (y-axis for a vertical bar) */
   metricAxis?: string;

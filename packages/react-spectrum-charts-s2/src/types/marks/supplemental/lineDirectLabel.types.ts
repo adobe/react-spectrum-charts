@@ -30,9 +30,9 @@ export interface LineDirectLabelProps {
    * @default 'end'
    */
   position?: LineDirectLabelPosition;
-  /** Number format string (matches axis formatting). */
+  /** d3 number format for the value. Defaults to `',.2~f'`. */
   format?: string;
-  /** Text prepended to the value. */
+  /** Text prepended to the value, separated by a space. */
   prefix?: string;
   /** Series values to exclude from labeling. */
   excludeSeries?: string[];

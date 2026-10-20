@@ -1,0 +1,15 @@
+.link {
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.provider {
+  display: inline-block;
+  background: none;
+}
+
+/* Reserves the badge's space until it renders in the browser. */
+.fallback {
+  display: inline-block;
+  height: 24px;
+}

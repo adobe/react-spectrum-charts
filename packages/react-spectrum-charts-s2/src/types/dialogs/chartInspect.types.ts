@@ -18,6 +18,6 @@ export type ChartInspectElement = ReactElement<ChartInspectProps, JSXElementCons
 export type InspectHandler = (datum: Datum) => ReactNode;
 
 export interface ChartInspectProps extends ChartInspectOptions {
-  /** Callback that displays the inspect panel content */
+  /** Function that returns the inspect content for the hovered `datum`. */
   children?: InspectHandler;
 }

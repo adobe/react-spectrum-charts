@@ -18,7 +18,7 @@ export interface LineForecastOptions {
   metric: string;
   /** Dimension value (timestamp for time scale, number for linear) where the forecast begins */
   start: number;
-  /** Label text shown at the forecast boundary. Defaults to 'Forecast'. */
+  /** Label text shown at the forecast boundary. Defaults to `Forecast`. */
   label?: string;
 }
 

@@ -360,11 +360,13 @@ Run `yarn verify` once before pushing — not after every file or every test wri
 
 ## S2 Docs Pages
 
-When adding a new page under `packages/docs/docs/spectrum2/`:
+S2 docs live in `packages/docs-s2`. Follow `.claude/commands/write-s2-docs-page.md` when writing
+or updating a component page; `docs/donut.mdx` is the reference page. In short: cover every prop,
+child, and relevant sibling with interactive playgrounds, register the page in `sidebars.ts`, add
+chart types to the search cards (`src/search/chartExamples.tsx`), and set `stage` in frontmatter.
 
-1. **Register it in the sidebar** — add the page to `packages/docs/sidebars.ts` under the `'Spectrum 2 (Alpha)'` category. The page will not appear in the docs site otherwise.
-
-2. **Accurately document supported props** — before writing a props table, cross-reference the S2 types (`vega-spec-builder-s2/src/types/marks/`) against the s1 equivalent (`vega-spec-builder/src/types/marks/`) to identify anything not yet supported. Add a `:::note` callout listing unsupported props or child components, following the pattern in `line.md`.
+**Any change to an S2 component's props or behavior** must also update that component's docs page
+and dev dashboard (`src/dev/<Component>/Dashboards/`). See Step 9 of the skill.
 
 ---
 
@@ -374,7 +376,7 @@ Every exported S2 component, including `lab`, shows its stage (see `packages/doc
 
 1. **TSDoc** — a one-line description plus `@experimental` (lab), `@alpha`, or `@beta` on the component declaration, e.g. `components/Line/Line.tsx` or `lab/components/Scatter/Scatter.tsx`.
 2. **Storybook** — `tags: ['alpha']` (or `'lab'`, `'beta'`, `'rc'`) in the meta of every story file for the component, in both `src/stories/` and `src/dev/`. This one tag drives the sidebar and canvas-toolbar badges (`.storybook-s2/stageBadge.ts`) and the autodocs page badge (`.storybook-s2/StageDocsPage.tsx`); stage labels live in `.storybook-s2/stages.ts`.
-3. **Docs** — a badge line under the page's H1: `[<span className="badge badge--primary">Alpha</span>](./stages.md)`, or `[<span className="badge badge--secondary">Lab</span>](./stages.md#lab)` for lab.
+3. **Docs** — `stage: alpha` (or `lab`, `beta`, `rc`, `stable`) in the frontmatter of the component's `packages/docs-s2` page, which `<StageBadge />` renders under the H1. Stage labels and badge variants live in `packages/docs-s2/src/stages.json`, kept in sync with `.storybook-s2/stages.ts`.
 
 ---
 

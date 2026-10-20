@@ -1,0 +1,221 @@
+---
+stage: alpha
+sidebar_position: 3
+title: Donut
+description: Donut, pie, and semicircle charts that show how categories contribute to a whole.
+---
+
+import { PropsTable } from '@site/src/components/PropsTable';
+import { DataCode } from '@site/src/components/examples/DataCode';
+import {
+  DonutAnimationPlayground,
+  DonutBooleanPlayground,
+  DonutEmphasisPlayground,
+  DonutHiddenSeriesPlayground,
+  DonutHighlightPlayground,
+  DonutHoleRatioPlayground,
+  DonutInteractionPlayground,
+  DonutLegendPlayground,
+  DonutPlayground,
+  DonutSizePlayground,
+  DonutStatesPlayground,
+  DonutSummaryPlayground,
+  DonutSurveyPlayground,
+  SegmentLabelKeyPlayground,
+  SegmentLabelPlayground,
+} from '@site/src/playgrounds/donut';
+
+# Donut
+
+<StageBadge />
+
+Donuts show how categories contribute to a whole. Each data point becomes a segment sized by its
+`metric` value.
+
+<DonutPlayground />
+
+## Data
+
+`data` goes on `Chart` as an array of objects, one per segment. On `Donut`, `metric` names the
+numeric field that sizes each segment (default `value`) and `color` names the field that
+identifies it in the legend, labels, and tooltips (default `series`). Most examples on this page
+use `browserData`:
+
+<DataCode name="browserData" />
+
+```tsx
+<Chart data={browserData}>
+  <Donut metric="count" color="browser" />
+</Chart>
+```
+
+### Boolean data
+
+For a single rate, like a success rate, pass exactly two points whose values sum to 1 and set
+`isBoolean`. `DonutSummary` then shows the first point as a percentage instead of the total.
+
+<DataCode name="booleanData" />
+
+<DonutBooleanPlayground />
+
+### Zero, empty, and loading
+
+When every value is 0, the donut draws an empty gray ring and `DonutSummary` shows 0. When `data`
+is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a
+spinner while data loads.
+
+<DataCode name="zeroData" />
+
+<DonutStatesPlayground />
+
+## Shape
+
+### holeRatio
+
+`holeRatio` is the inner radius as a fraction of the outer radius. The default is `0.85`; `0`
+renders a pie chart.
+
+<DonutHoleRatioPlayground />
+
+### Semicircle
+
+`variant="semicircle"` draws the top half of the circle, from 9 o'clock to 3 o'clock. Semicircles
+sort segments largest-first by default. For ordered categories like survey responses, set
+`sortOrder="data"` to keep the source order. Full circles always use the source order, starting
+at 12 o'clock.
+
+<DataCode name="surveyData" />
+
+<DonutSurveyPlayground />
+
+:::note
+Semicircles don't support `SegmentLabel`.
+:::
+
+### Size
+
+`Chart` fills the width of its container and is 300px tall by default. The donut grows to fit
+the smaller of the two, so a semicircle in a wide container can be much larger than a full circle
+at the same height. Use `width`, `height`, `minWidth`, and `maxWidth` on `Chart` to constrain it.
+`DonutSummary` text scales with the donut.
+
+<DonutSizePlayground />
+
+## DonutSummary
+
+`DonutSummary` shows a label and the sum of all segments in the center of the donut.
+
+- `numberFormat` formats the value. It accepts `shortNumber`, `standardNumber`, or a
+  [d3-format](https://d3js.org/d3-format) specifier.
+- `delta` adds a change below the label, green when zero or positive and red when negative
+  (`0.025` shows as `+2.5%`).
+- `hideValue` shows only the label.
+
+Numbers follow the chart's `locale`, which also applies to segment labels, `ChartInspect`, and
+`ChartPopover`.
+
+<DonutSummaryPlayground />
+
+## SegmentLabel
+
+`SegmentLabel` labels each segment with its name and value.
+
+- `value` and `percent` choose what follows the name; format them with `valueFormat` and
+  `percentFormat`.
+- `swatch` adds the segment color before the name.
+- `showValueRow` adds a smaller row below with the segment's value, and `showTotal` adds the total
+  to that row, like `10,390 / 36,083`.
+
+<SegmentLabelPlayground />
+
+Labels sit at the middle of each segment. A label is hidden when it would overlap a label for a
+larger segment or when its segment is narrower than about 17°. Hovering a segment always shows
+its label and hides any labels that overlap it.
+
+### labelKey
+
+Labels show the `color` field by default. To show different text, such as a longer display name,
+set `labelKey` to another field in the data.
+
+<DataCode name="browserLabelData" />
+
+<SegmentLabelKeyPlayground />
+
+### Emphasized segments
+
+`emphasizedItems` on `Donut` keeps the listed segments in color and grays out the rest. Add two
+`SegmentLabel` children with `labelMode="emphasized"` and `labelMode="deemphasized"` to label
+each group differently, or set `hideDeemphasizedLabels` to label only the emphasized segments.
+
+<DonutEmphasisPlayground />
+
+## Legend
+
+Add `Legend` as a sibling of `Donut` to list the segments. The donut shrinks to make room for it.
+
+- `isToggleable` lets users click an entry to hide or show its segment. The remaining segments fill
+  the circle and `DonutSummary` updates its total.
+- `highlight` highlights a segment while its entry is hovered.
+
+<DonutLegendPlayground />
+
+### Hiding segments
+
+`hiddenSeries` on `Chart` hides segments from outside the chart, for example from a filter
+control. The remaining segments fill the circle and `DonutSummary` totals only what's visible. To
+start with segments hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable
+`Legend` instead.
+
+<DonutHiddenSeriesPlayground />
+
+## Interaction
+
+### ChartInspect and ChartPopover
+
+Add `ChartInspect` to show details on hover and `ChartPopover` to show details on click. Without
+children, both show the segment's color, name, share of the total, and value (for Chrome,
+`28.8% (10.4K)`), formatted with the chart's `locale`. Pass a function as children to render your
+own content.
+
+`rightClick` on `ChartPopover` opens it on right-click instead of click.
+
+<DonutInteractionPlayground />
+
+Hovering an interactive segment fades the other segments and their labels. A donut without
+`ChartInspect`, `ChartPopover`, `SegmentLabel`, or a `Legend` with `highlight` doesn't respond to
+the pointer.
+
+### Highlighting
+
+`highlightedSeries` on `Chart` highlights a segment from outside the chart, for example from a
+table row. `highlightedItem` does the same by row ID and can take a list; set `idKey` on `Chart`
+to the field that uniquely identifies each row. `Legend` with `highlight` highlights a segment
+when its entry is hovered.
+
+<DonutHighlightPlayground />
+
+## Animation
+
+The chart's `animationTypes` lists which animations play. By default, `hover` eases segments in
+and out of their faded state on hover, and `drawIn` sweeps the segments in over 750ms when the
+chart mounts. Labels fade in as their segment finishes; `DonutSummary` stays visible throughout.
+
+<DonutAnimationPlayground />
+
+Draw-in plays once when the chart mounts; re-renders, data updates, and resizing don't replay it.
+Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all
+animation. See [Animation](./guides/animation.mdx).
+
+## API
+
+### Donut
+
+<PropsTable component="Donut" />
+
+### DonutSummary
+
+<PropsTable component="DonutSummary" />
+
+### SegmentLabel
+
+<PropsTable component="SegmentLabel" />

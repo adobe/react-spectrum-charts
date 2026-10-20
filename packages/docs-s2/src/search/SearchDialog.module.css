@@ -1,0 +1,162 @@
+.provider {
+  background: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.triggerWrapper {
+  position: relative;
+}
+
+.trigger {
+  min-width: 180px;
+  justify-content: flex-start;
+}
+
+/* Sizes S2's modal wrapper so the dialog stays fixed while results change. */
+div:has(> .dialog) {
+  width: min(70vw, 1040px);
+  max-width: calc(100vw - 32px);
+  height: 75vh;
+  max-height: calc(100vh - 32px);
+}
+
+.dialog {
+  width: 100%;
+  height: 100%;
+}
+
+/* Drops S2's empty footer so the bottom inset matches the top. */
+.dialog > div:last-child:empty {
+  display: none;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Padding keeps the search field's focus ring out of the scroll area's clip. */
+.field {
+  flex: none;
+  padding: 4px 4px 12px;
+}
+
+.fieldInput {
+  width: 100%;
+}
+
+.results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-inline: 4px;
+  margin-bottom: 32px;
+}
+
+.groupLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ifm-color-emphasis-700);
+  margin: 16px 0 8px;
+}
+
+.divider {
+  margin: 16px 0 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  /* Room for card shadows inside the dialog's scroll area. */
+  padding: 2px 2px 12px;
+}
+
+.preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 8px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.sections {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.section:hover,
+.section:focus-visible {
+  background: var(--ifm-color-emphasis-100);
+  color: inherit;
+  text-decoration: none;
+}
+
+.sectionText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sectionTitle {
+  font-weight: 600;
+}
+
+.sectionContext {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.empty {
+  color: var(--ifm-color-emphasis-700);
+  margin: 16px 0;
+}
+
+.shortcut {
+  position: absolute;
+  inset-inline-end: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Overrides Docusaurus's global link underline, which would otherwise propagate into the card text. */
+.card,
+.card:hover {
+  text-decoration: none;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

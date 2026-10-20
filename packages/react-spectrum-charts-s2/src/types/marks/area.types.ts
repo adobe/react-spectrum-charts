@@ -19,6 +19,7 @@ import { Children } from '../util.types.js';
 type AreaChildElement = ChartInspectElement | ChartPopoverElement;
 
 export interface AreaProps extends Omit<AreaOptions, 'chartInspects' | 'chartPopovers' | 'markType'> {
+  /** `ChartInspect` and `ChartPopover` children that add hover and click details. */
   children?: Children<AreaChildElement>;
 }
 

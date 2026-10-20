@@ -21,62 +21,41 @@ export interface BulletOptions {
   /** Chart inspects for the bullet */
   chartInspects?: ChartInspectOptions[];
 
-  /** Key in the data that is used as the color facet */
+  /** Color of the metric bars, as a Spectrum color name or CSS color. Defaults to `blue-900`. */
   color?: string;
-  /** Data field that the metric is trended against (x-axis for horizontal orientation) */
+  /** Key in the data for each bullet's label. Defaults to `graphLabel`. */
   dimension?: string;
-  /** Specifies the direction the bars should be ordered (row/column) */
+  /** Stacks bullets in a `column` or places them side by side in a `row`. Defaults to `column`. */
   direction?: 'row' | 'column';
-  /** Specifies if the labels should be in top of the bullet chart or to the side. Side labels are not supported in row mode. */
+  /** Shows each bullet's label and value above it (`top`) or on either side (`side`, column direction only). Defaults to `top`. */
   labelPosition?: 'side' | 'top';
-  /** Maximum value for the scale. This value must be greater than zero. */
+  /** Scale maximum when `scaleType` is `fixed` or `flexible`; must be greater than zero. Defaults to `100`. */
   maxScaleValue?: number;
-  /** Key in the data that is used as the metric */
+  /** Key in the data for the metric bar's value. Defaults to `currentAmount`. */
   metric?: string;
-  /** Key in the data that contains a custom label for the metric value. When provided, this label will be displayed instead of the metric value. */
+  /** Key in the data for preformatted text shown instead of the formatted metric value. */
   metricLabel?: string;
-  /** Adds an axis that follows the max target in basic mode */
+  /** Adds a value axis below the bullets in column direction; not shown with `showTargetValue`. Defaults to `false`. */
   metricAxis?: boolean;
-  /** Sets the name of the component. */
+  /** Names the bullet's marks and signals in the Vega spec. Defaults to `bullet0`, `bullet1`, and so on. */
   name?: string;
-  /** d3 number format specifier.
-   * Sets the number format for the summary value.
-   *
-   * see {@link https://d3js.org/d3-format#locale_format}
-   */
+  /** Format for values, target values, and the metric axis: `standardNumber`, `shortNumber`, `currency`, `shortCurrency`, or a d3-format specifier. Defaults to `standardNumber`. */
   numberFormat?: NumberFormat;
-  /** Specifies if the scale should be normal, fixed, or flexible.
-   *
-   * In normal mode the maximum scale value will be calculated using the maximum value of the metric and target data fields.
-   *
-   * In fixed mode the maximum scale value will be set as the maxScaleValue prop.
-   *
-   * In flexible mode the maximum scale value will be calculated using the maximum value of either the maxScaleValue prop or maximum value of the metric and target data fields.
-   * This means that the scale max will be set to be the maxScaleValue prop until the data values overtake it.
-   */
+  /** Sets the scale maximum from the data (`normal`), from `maxScaleValue` (`fixed`), or the larger of the two (`flexible`). Defaults to `normal`. */
   scaleType?: 'normal' | 'fixed' | 'flexible';
-  /** Flag to control whether the target is shown */
+  /** Shows the target line. Defaults to `true`. */
   showTarget?: boolean;
-  /** Flag to control whether the target value is shown. */
+  /** Shows the target value below the target line. Defaults to `false`. */
   showTargetValue?: boolean;
-  /** Target line */
+  /** Key in the data for the target value. Defaults to `target`. */
   target?: string;
-  /** Key in the data that contains a label for the target value. When provided, this label will be displayed instead of the target value. */
+  /** Key in the data for preformatted text shown instead of the formatted target value when `showTargetValue` is set. */
   targetLabel?: string;
-  /** changes color based on threshold */
-  /** If true, the metric bar will be colored according to the thresholds. */
+  /** Colors each metric bar with the `fill` of the threshold band its value falls in. Defaults to `false`. */
   thresholdBarColor?: boolean;
-  /** Array of threshold definitions to be rendered as background bands on the bullet chart.
-   *
-   *  Each threshold object supports:
-   * `thresholdMin` (optional): The lower bound of the threshold. If undefined, the threshold starts from the beginning of the x-scale.
-   *
-   * `thresholdMax` (optional): The upper bound of the threshold. If undefined, the threshold extends to the end of the x-scale.
-   *
-   * `fill` : The fill color to use for the threshold background.
-   */
+  /** Background bands `{ thresholdMin?, thresholdMax?, fill }`; an omitted bound extends to the edge of the scale and `fill` is a CSS color. */
   thresholds?: ThresholdBackground[];
-  /** Color regions that sit behind the bullet bar */
+  /** Draws a gray track behind each metric bar; ignored when `thresholds` is set. Defaults to `false`. */
   track?: boolean;
 }
 

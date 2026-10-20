@@ -11,13 +11,21 @@
  */
 import { createElement } from 'react';
 
-import { addons, types, useStorybookApi, useStorybookState } from 'storybook/manager-api';
 import type { API_HashEntry } from 'storybook/internal/types';
+import { addons, types, useStorybookApi, useStorybookState } from 'storybook/manager-api';
+import { useTheme } from 'storybook/theming';
 
-import { STAGE_BADGE_STYLE, getStageLabel } from './stages';
+import { STAGES, getStageBadgeStyle, getStageFromTags } from './stages';
 
-const badge = (label: string) =>
-  createElement('span', { style: STAGE_BADGE_STYLE, title: `${label} component` }, label);
+// The manager runs its own React 18, so it can't render S2 components; this mirrors the S2 Badge instead.
+const ManagerBadge = ({ stage, compact }: { stage: string; compact?: boolean }) => {
+  const { base } = useTheme();
+  return createElement(
+    'span',
+    { style: getStageBadgeStyle(stage, base === 'dark', compact), title: `${STAGES[stage].label} component` },
+    STAGES[stage].label
+  );
+};
 
 /**
  * Renders a sidebar label with a stage badge on top-level component folders.
@@ -26,16 +34,25 @@ const badge = (label: string) =>
  */
 export const renderStageLabel = (item: API_HashEntry) => {
   if (item.depth !== 1 || item.type === 'story' || item.type === 'docs') return item.name;
-  const label = getStageLabel(item.tags);
-  if (!label) return item.name;
-  return createElement('span', null, item.name, createElement('span', { style: { marginLeft: 6 } }, badge(label)));
+  const stage = getStageFromTags(item.tags);
+  if (!stage) return item.name;
+  return createElement(
+    'span',
+    { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } },
+    item.name,
+    createElement(ManagerBadge, { stage, compact: true })
+  );
 };
 
 const StageTool = () => {
   const { storyId, refId } = useStorybookState();
-  const label = getStageLabel(useStorybookApi().getData(storyId, refId)?.tags);
-  if (!label) return null;
-  return createElement('span', { style: { display: 'flex', alignItems: 'center', padding: '0 8px' } }, badge(label));
+  const stage = getStageFromTags(useStorybookApi().getData(storyId, refId)?.tags);
+  if (!stage) return null;
+  return createElement(
+    'span',
+    { style: { display: 'flex', alignItems: 'center', padding: '0 8px' } },
+    createElement(ManagerBadge, { stage })
+  );
 };
 
 addons.register('rsc/stage-badge', () => {
