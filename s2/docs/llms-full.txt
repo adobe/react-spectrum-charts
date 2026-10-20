@@ -44,6 +44,10 @@ See [Getting started](/react-spectrum-charts/s2/docs/docs/guides/getting-started
 -   [Testing and troubleshooting](/react-spectrum-charts/s2/docs/docs/guides/testing-and-troubleshooting)
 -   [Stages and lab](/react-spectrum-charts/s2/docs/docs/guides/stages-and-lab)
 
+## Release notes
+
+-   [0.10.0](/react-spectrum-charts/s2/docs/docs/release-notes/0-10-0)
+
 ## Migration
 
 -   [Migrating from S1](/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1)
@@ -2056,7 +2060,9 @@ import {
 
 ### Semicircle
 
-`variant="semicircle"` draws the top half of the circle, from 9 o'clock to 3 o'clock. Semicircles sort segments largest-first by default. For ordered categories like survey responses, set `sortOrder="data"` to keep the source order. Full circles always use the source order, starting at 12 o'clock.
+`variant="semicircle"` draws the top half of the circle, from 9 o'clock to 3 o'clock. Full circles start at 12 o'clock.
+
+Both variants sort segments largest-first by default. For ordered categories like survey responses, set `sortOrder="data"` to keep the source order. Boolean donuts always use the source order.
 
 ```ts
 const surveyData = [
@@ -7244,6 +7250,75 @@ RC confirms a component works in real apps; it isn't for adding features. Featur
 
 ---
 
+# 0.10.0
+
+Donut is now an alpha component. This release also turns on animation by default and ships the package as ES modules for smaller bundles. It includes breaking changes; to update your app, see [Upgrading to 0.10.0](/react-spectrum-charts/s2/docs/docs/guides/upgrading-to-0-10-0).
+
+## Breaking changes
+
+-   **ESM only.** The package ships as ES modules and requires Node `>=20.19.0`.
+-   **New peer dependency.** `react-aria-components` `^1.14.0`.
+-   **Entry points.** `Donut`, `DonutSummary`, and `SegmentLabel` move to the package root. The `pre-alpha` entry point is renamed `lab`, and `ChartActionBar` is imported from `lab`.
+-   **Donut.** `startAngle` and `otherItemColor` are removed.
+
+## Highlights
+
+-   **Donut is alpha.** `Donut`, `DonutSummary`, and `SegmentLabel` are imported from the package root and follow the alpha stage's stability rules. This release adds default `ChartInspect` and `ChartPopover` content, labels revealed on hover, size-based ring and label spacing, and many layout fixes. See [Donut](/react-spectrum-charts/s2/docs/docs/donut) and [Stages and lab](/react-spectrum-charts/s2/docs/docs/guides/stages-and-lab).
+-   **Animation on by default.** Lines, bars, donuts, and combos draw in when the chart mounts, and hover fades animate, following Spectrum 2 motion. Draw-in plays once per mount. When the user prefers reduced motion, draw-in is skipped and hover fades still play. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
+-   **Smaller bundles.** The package no longer bundles its own copies of React Spectrum S2, React Aria, or Vega, so it adds about half as much to an app that already uses React Spectrum S2.
+-   **ChartActionBar (lab).** A floating toolbar of actions for a clicked line point. See [ChartActionBar](/react-spectrum-charts/s2/docs/docs/chart-action-bar).
+
+## Changed defaults
+
+-   Top and bottom legends align to the start of the chart instead of the center.
+-   Donut segments are sorted largest first. Set `sortOrder="data"` to keep data order.
+-   `Chart` props set to `undefined` fall back to their defaults.
+
+## Donut
+
+-   New semicircle variant: `variant="semicircle"`. See [Semicircle](/react-spectrum-charts/s2/docs/docs/donut#semicircle).
+-   `ChartInspect` and `ChartPopover` show the segment's color, name, share, and value when they have no children. See [Default content](/react-spectrum-charts/s2/docs/docs/interaction#default-content).
+-   Hovering a segment shows its label, even when the label was hidden to avoid overlap. Hovering or clicking a label behaves like hovering or clicking its segment.
+-   Ring thickness, label spacing, and donut size scale with the chart size, and side legends stay next to the donut.
+-   Pie donuts have a 1px gap between segments.
+-   Semicircle `DonutSummary` deltas sit inside the arc, and summary text that would truncate completely is hidden.
+-   Fixed label overlap, tiny segments, and donuts growing or shifting on resize.
+
+## Bar
+
+-   `BarDirectLabel` follows each bar in stacked and dodged bars, and hides labels that overlap or don't fit. New `overflow` and `dataKey` props. See [BarDirectLabel](/react-spectrum-charts/s2/docs/docs/bar#bardirectlabel).
+-   Better keyboard and screen reader support: dodged bars can be focused, focused bars and groups are described by their values, and Shift+Tab returns to the last focused bar.
+-   Fixed `highlightedItem` (which now respects `idKey`), `ChartInspect` group highlighting, and short-number label formats.
+
+## Line
+
+-   Fixed hover with `interactionMode="item"`, series highlighting, single-series lines, and `interpolate="basis"`.
+-   Fixed charts collapsing or flickering with fixed metric-axis ranges or when every series is hidden.
+-   Fixed crashes with `highlightedItem` on a line without `ChartInspect` or `ChartPopover`, and with `MetricRange`.
+-   Hovering a point at the chart edge no longer shifts the chart.
+
+## Axis and reference lines
+
+-   Reference lines outside the axis range no longer collapse the chart or flicker on hover.
+-   A right axis lines up with a gridded left axis.
+
+## Lab charts
+
+-   **Area**: fixed a crash with `highlightedItem`, and band hover points sit on the band's upper edge.
+-   **Bullet**: fixed hidden and missing targets, and value labels always use gray-900.
+-   **Combo** respects the chart's `animations` and `animationTypes`.
+-   **Scatter**: fixed `highlightedItem`, `stroke` set to a data field, and dotted outlines.
+-   **Trendline**: dotted trendlines are visible again.
+
+## Performance and stability
+
+-   Charts render once when first displayed instead of twice, so they appear faster and no longer stay blank until hovered.
+-   Hover animations stay smooth on charts with many points or series, and charts with many bars render faster.
+-   Off-screen and idle charts do no animation work.
+-   A chart with no children logs an error instead of throwing.
+
+---
+
 # Migrating from S1
 
 This guide moves a chart from `@adobe/react-spectrum-charts` (S1) to `@spectrum-charts/react-spectrum-charts-s2` (S2). It also applies if you used the S1 `s2` prop: S2 always uses Spectrum 2 styling, so that prop is gone.
@@ -7487,14 +7562,22 @@ Spectrum 2 aligns top and bottom legends to the start of the chart. Left and rig
 
 ## Changed defaults
 
-| Prop | S1 | S2 |
-| --- | --- | --- |
-| `Chart` `colors` | `categorical16` | `s2Categorical20` |
-| `Legend` `align` (top and bottom) | `middle` | `start` |
-| `Line` stroke width | Fixed | Scales with chart width |
-| `Line` `showHoverLabel` | Not available | `true` |
-| `Chart` `animationTypes` | Not available | `['hover', 'drawIn']` |
-| `Donut` inspect and popover content | Empty | Default segment details |
+The S2 defaults are the recommended Spectrum 2 behavior. Don't keep an S1 default just to avoid a visual change. The last column says whether the S1 behavior can be kept.
+
+If you're an agent applying this guide:
+
+-   If a changed default can be turned off, tell the user what changed and ask whether to adopt the S2 default (recommended) or keep the S1 behavior. Change the code only to match their answer.
+-   If a changed default can't be turned off, tell the user what changed. Don't ask, and don't try to recreate the S1 behavior.
+
+| Prop | S1 | S2 | Keep the S1 behavior |
+| --- | --- | --- | --- |
+| `Chart` `colors` | `categorical16` | `s2Categorical20` | Not possible. Remove S1 palettes. |
+| `Legend` `align` (top and bottom) | `middle` | `start` | `align="middle"` on `Legend`. |
+| `Line` stroke width | Fixed | Scales with chart width | Not possible. |
+| `Line` hover label | None | Shown (`showHoverLabel`) | `showHoverLabel={false}`. |
+| Draw-in animation | None | On (`animationTypes`) | `animationTypes={['hover']}`. To turn off all animation, `animations={false}`. |
+| `Donut` inspect and popover content | Empty | Default segment details | Not possible. Pass children to show your own content. |
+| `Donut` segment order | Data order | Largest first | `sortOrder="data"`. |
 
 Charts with `s2` already used `s2Categorical20`.
 
@@ -7502,7 +7585,7 @@ Charts with `s2` already used `s2Categorical20`.
 
 -   `Chart` props explicitly set to `undefined` fall back to their defaults instead of overriding them.
 -   Charts render their own S2 `Provider` with the chart's `colorScheme`, so they don't read an outer React Spectrum v3 `Provider`.
--   Hover fades and draw-in animate by default. Draw-in plays once per mount and is skipped when the user prefers reduced motion. Set `animationTypes={['hover']}` to turn it off. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
+-   Hover fades and draw-in animate by default. Draw-in plays once per mount and is skipped when the user prefers reduced motion. See [Changed defaults](#changed-defaults) and [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
 
 ## Checklist
 
@@ -7521,16 +7604,27 @@ Charts with `s2` already used `s2Categorical20`.
 -   [ ]  Replace Donut `startAngle` with `variant="semicircle"` or remove it.
 -   [ ]  Remove Legend `_labelWrap`, `_preferredColumns`, and `_maxRows`.
 -   [ ]  Check line widths at your chart sizes.
+-   [ ]  For each [changed default](#changed-defaults), ask the user whether to adopt the S2 default (recommended) or keep the S1 behavior where that's possible. Otherwise, tell them what changed.
 
 ---
 
 # Upgrading to 0.10.0
 
-This page lists the code changes that keep your charts building and working when you upgrade `@spectrum-charts/react-spectrum-charts-s2`: breaking changes, removed or renamed props, and peer dependency bumps. Changed defaults are listed too, so you know what will look different; adopt them rather than overriding them. Bug fixes and new features that need no code changes are left out; see the package changelog for those.
+This page lists the code changes that keep your charts building and working when you upgrade `@spectrum-charts/react-spectrum-charts-s2`: breaking changes, removed or renamed props, and peer dependency bumps. It also lists changed defaults. Bug fixes and new features that need no code changes are left out; see the [release notes](/react-spectrum-charts/s2/docs/docs/release-notes/0-10-0) for those.
 
 Find the section for the version you're on, then apply it and every section above it. For example, from 0.7.0, apply [From 0.7.0](#from-070), [From 0.8.0](#from-080), and [From 0.9.0](#from-090).
 
 Coming from `@adobe/react-spectrum-charts` instead? See [Migrating from S1](/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1).
+
+## Changed defaults
+
+Each changed default is marked **Changed default** and says what's new, what it was, and whether you can keep the old behavior. The new defaults are the recommended Spectrum 2 behavior. Don't override them just to keep a chart looking the same as before.
+
+If you're an agent applying this guide:
+
+-   Don't keep an old default on your own.
+-   If a changed default can be turned off, tell the user what changed and ask whether to adopt the new default (recommended) or keep the old behavior. Change the code only to match their answer.
+-   If a changed default can't be turned off, tell the user what changed. Don't ask, and don't try to work around it.
 
 ## From 0.9.0
 
@@ -7587,29 +7681,54 @@ import { Scatter, ScatterPath } from '@spectrum-charts/react-spectrum-charts-s2/
 <Donut metric="count" color="browser" />
 ```
 
-`ChartInspect` and `ChartPopover` on a `Donut` now show the segment's color, name, share, and value when they have no children. If you added an empty one only to turn on hover or click, it now shows content. See [Default content](/react-spectrum-charts/s2/docs/docs/interaction#default-content).
+**Changed default: segment order.** Segments are sorted largest-first. They were in data order. Boolean donuts still use data order. See [Semicircle](/react-spectrum-charts/s2/docs/docs/donut#semicircle).
+
+-   Keep the old behavior: set `sortOrder="data"`, for example for ordered categories like survey responses.
+
+```tsx
+<Donut metric="count" color="response" sortOrder="data" />
+```
+
+**Changed default: inspect and popover content.** `ChartInspect` and `ChartPopover` on a `Donut` show the segment's color, name, share, and value when they have no children. They were empty. See [Default content](/react-spectrum-charts/s2/docs/docs/interaction#default-content).
+
+-   Keep the old behavior: not possible. To show your own content instead, pass children.
+
+### Bar
+
+**Changed default: hover animation.** Bar hover fades animate, like Line and Donut. They were instant.
+
+-   Keep the old behavior: leave `'hover'` out of `animationTypes`, or set `animations={false}`. Either one also turns off hover animation for the other marks in the chart.
+
+**Changed default: BarDirectLabel visibility.** Labels outside the bar are hidden when they would overlap a bar or another label. Labels inside the bar that don't fit are hidden, except at `position="start"`, where they move outside the bar tip. All labels used to show. See [BarDirectLabel](/react-spectrum-charts/s2/docs/docs/bar#bardirectlabel).
+
+-   Keep the old behavior for labels inside the bar: set `overflow="spill"` to move them outside instead of hiding them.
+-   Keep the old behavior for labels outside the bar: not possible.
 
 ### Legend alignment
 
-Top and bottom legends are now aligned to the start of the chart, matching Spectrum 2. They were centered. No code change is needed. See [Position and alignment](/react-spectrum-charts/s2/docs/docs/legend#position-and-alignment).
+**Changed default.** Top and bottom legends align to the start of the chart, matching Spectrum 2. They were centered. See [Position and alignment](/react-spectrum-charts/s2/docs/docs/legend#position-and-alignment).
+
+-   Keep the old behavior: set `align="middle"` on `Legend`.
 
 ### Undefined Chart props
 
 `Chart` props explicitly set to `undefined` now fall back to their defaults instead of overriding them. Code like `height={settings.height}` now gets the default `height` when `settings.height` is missing. If you relied on `undefined` overriding a default, pass the value you want instead.
 
-### Draw-in on by default
+### Draw-in
 
-`animationTypes` now defaults to `['hover', 'drawIn']`, so lines, bars, donuts, and combos animate in when the chart mounts. Draw-in plays once per mount; re-renders and data updates don't replay it. No code change is needed. To turn off draw-in only:
+**Changed default.** `animationTypes` defaults to `['hover', 'drawIn']`, so lines, bars, donuts, and combos animate in when the chart mounts. Draw-in plays once per mount; re-renders and data updates don't replay it. Charts used to appear without drawing in. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
+
+-   Keep the old behavior: set `animationTypes={['hover']}`.
 
 ```tsx
 <Chart data={data} animationTypes={['hover']}>
 ```
 
-See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
-
 ### Reduced motion
 
-If the user prefers reduced motion, draw-in is skipped and hover animation still plays. No code change is needed. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation#reduced-motion).
+**Changed default.** Charts now honor the user's reduced-motion setting: draw-in is skipped and hover animation still plays. The setting used to be ignored. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation#reduced-motion).
+
+-   Keep the old behavior: not possible. To turn off hover animation as well, set `animations={false}`.
 
 ## From 0.8.0
 
@@ -7676,7 +7795,9 @@ The `theme` prop on `Chart` is removed. Use `colorScheme`. See [Color and theme]
 
 ### Line size
 
-Line stroke width, point size, and hover rings now scale with the chart's width. Check your charts at the sizes you use. See [Size](/react-spectrum-charts/s2/docs/docs/line#size).
+**Changed default.** Line stroke width, point size, and hover rings scale with the chart's width. They were fixed. Check your charts at the sizes you use. See [Size](/react-spectrum-charts/s2/docs/docs/line#size).
+
+-   Keep the old behavior: not possible.
 
 ## From 0.2.0
 

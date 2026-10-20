@@ -241,14 +241,22 @@ Spectrum 2 aligns top and bottom legends to the start of the chart. Left and rig
 
 ## Changed defaults
 
-| Prop | S1 | S2 |
-| --- | --- | --- |
-| `Chart` `colors` | `categorical16` | `s2Categorical20` |
-| `Legend` `align` (top and bottom) | `middle` | `start` |
-| `Line` stroke width | Fixed | Scales with chart width |
-| `Line` `showHoverLabel` | Not available | `true` |
-| `Chart` `animationTypes` | Not available | `['hover', 'drawIn']` |
-| `Donut` inspect and popover content | Empty | Default segment details |
+The S2 defaults are the recommended Spectrum 2 behavior. Don't keep an S1 default just to avoid a visual change. The last column says whether the S1 behavior can be kept.
+
+If you're an agent applying this guide:
+
+-   If a changed default can be turned off, tell the user what changed and ask whether to adopt the S2 default (recommended) or keep the S1 behavior. Change the code only to match their answer.
+-   If a changed default can't be turned off, tell the user what changed. Don't ask, and don't try to recreate the S1 behavior.
+
+| Prop | S1 | S2 | Keep the S1 behavior |
+| --- | --- | --- | --- |
+| `Chart` `colors` | `categorical16` | `s2Categorical20` | Not possible. Remove S1 palettes. |
+| `Legend` `align` (top and bottom) | `middle` | `start` | `align="middle"` on `Legend`. |
+| `Line` stroke width | Fixed | Scales with chart width | Not possible. |
+| `Line` hover label | None | Shown (`showHoverLabel`) | `showHoverLabel={false}`. |
+| Draw-in animation | None | On (`animationTypes`) | `animationTypes={['hover']}`. To turn off all animation, `animations={false}`. |
+| `Donut` inspect and popover content | Empty | Default segment details | Not possible. Pass children to show your own content. |
+| `Donut` segment order | Data order | Largest first | `sortOrder="data"`. |
 
 Charts with `s2` already used `s2Categorical20`.
 
@@ -256,7 +264,7 @@ Charts with `s2` already used `s2Categorical20`.
 
 -   `Chart` props explicitly set to `undefined` fall back to their defaults instead of overriding them.
 -   Charts render their own S2 `Provider` with the chart's `colorScheme`, so they don't read an outer React Spectrum v3 `Provider`.
--   Hover fades and draw-in animate by default. Draw-in plays once per mount and is skipped when the user prefers reduced motion. Set `animationTypes={['hover']}` to turn it off. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
+-   Hover fades and draw-in animate by default. Draw-in plays once per mount and is skipped when the user prefers reduced motion. See [Changed defaults](#changed-defaults) and [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
 
 ## Checklist
 
@@ -275,3 +283,4 @@ Charts with `s2` already used `s2Categorical20`.
 -   [ ]  Replace Donut `startAngle` with `variant="semicircle"` or remove it.
 -   [ ]  Remove Legend `_labelWrap`, `_preferredColumns`, and `_maxRows`.
 -   [ ]  Check line widths at your chart sizes.
+-   [ ]  For each [changed default](#changed-defaults), ask the user whether to adopt the S2 default (recommended) or keep the S1 behavior where that's possible. Otherwise, tell them what changed.

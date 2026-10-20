@@ -44,6 +44,10 @@ See [Getting started](/react-spectrum-charts/s2/docs/docs/guides/getting-started
 -   [Testing and troubleshooting](/react-spectrum-charts/s2/docs/docs/guides/testing-and-troubleshooting)
 -   [Stages and lab](/react-spectrum-charts/s2/docs/docs/guides/stages-and-lab)
 
+## Release notes
+
+-   [0.10.0](/react-spectrum-charts/s2/docs/docs/release-notes/0-10-0)
+
 ## Migration
 
 -   [Migrating from S1](/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1)

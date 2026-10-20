@@ -114,7 +114,9 @@ import {
 
 ### Semicircle
 
-`variant="semicircle"` draws the top half of the circle, from 9 o'clock to 3 o'clock. Semicircles sort segments largest-first by default. For ordered categories like survey responses, set `sortOrder="data"` to keep the source order. Full circles always use the source order, starting at 12 o'clock.
+`variant="semicircle"` draws the top half of the circle, from 9 o'clock to 3 o'clock. Full circles start at 12 o'clock.
+
+Both variants sort segments largest-first by default. For ordered categories like survey responses, set `sortOrder="data"` to keep the source order. Boolean donuts always use the source order.
 
 ```ts
 const surveyData = [
