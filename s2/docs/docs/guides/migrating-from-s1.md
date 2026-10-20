@@ -16,7 +16,7 @@ S2 is a separate package. It's built on [React Spectrum S2](https://react-spectr
 | `react-aria-components` | not needed | `^1.14.0` |
 | `vega`, `vega-lite` | `^6.2.0`, `^6.4.2` | `^6.2.0`, `^6.4.2` (same) |
 | Module format | `require` or `import` | ESM only (`import`) |
-| Node | No requirement | `>=20.19.0` |
+| Node | No requirement | `>=22.12.0` |
 
 ```bash
 yarn remove @adobe/react-spectrum-charts
@@ -268,7 +268,7 @@ Charts with `s2` already used `s2Categorical20`.
 
 ## Checklist
 
--   [ ]  Install `@spectrum-charts/react-spectrum-charts-s2`, `@react-spectrum/s2`, and `react-aria-components`, and upgrade to React 19 and Node 20.19 or later.
+-   [ ]  Install `@spectrum-charts/react-spectrum-charts-s2`, `@react-spectrum/s2`, and `react-aria-components`, and upgrade to React 19 and Node 22.12 or later.
 -   [ ]  Change imports to `@spectrum-charts/react-spectrum-charts-s2`, and import `Area`, `Scatter`, `Bullet`, `Combo`, `Trendline`, and their children from `@spectrum-charts/react-spectrum-charts-s2/lab`.
 -   [ ]  Configure Jest to transform the package. See [Testing and troubleshooting](/react-spectrum-charts/s2/docs/docs/guides/testing-and-troubleshooting#jest).
 -   [ ]  Remove `s2` and `theme` from `Chart`.

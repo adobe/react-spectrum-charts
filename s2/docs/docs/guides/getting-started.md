@@ -59,7 +59,7 @@ The package is published as ES modules only (`"type": "module"` in its `package.
 -   There are two entry points: `@spectrum-charts/react-spectrum-charts-s2` and `@spectrum-charts/react-spectrum-charts-s2/lab`. The package's `exports` map blocks deep imports into `dist`.
 -   Type declarations are included for both entry points.
 -   Like Spectrum 2, the modules import their own CSS files, so your bundler needs to handle CSS imports. Vite and Parcel do by default; webpack needs a CSS loader.
--   Node.js 20.19.0 or later is required.
+-   Node.js 22.12.0 or later is required.
 -   Jest runs CommonJS by default, so it has to transform the package and stub its CSS. Vitest needs the package inlined. See [Testing and troubleshooting](/react-spectrum-charts/s2/docs/docs/guides/testing-and-troubleshooting#testing).
 
 ## Dark mode
