@@ -1,6 +1,6 @@
 # React Spectrum Charts for Spectrum 2
 
-`@spectrum-charts/react-spectrum-charts-s2` is React Spectrum Charts built on [Spectrum 2](https://react-spectrum.adobe.com/). You describe a chart as a tree of components, like `Chart`, `Axis`, `Line`, and `Legend`, and the library draws it with Spectrum 2 colors, type, and interactions.
+`@spectrum-charts/react-spectrum-charts-s2` is React Spectrum Charts built on Spectrum 2. You describe a chart as a tree of components, like `Chart`, `Axis`, `Line`, and `Legend`, and the library draws it with Spectrum 2 colors, type, and interactions.
 
 If you use `@adobe/react-spectrum-charts` today, see [Migrating from S1](/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1).
 
