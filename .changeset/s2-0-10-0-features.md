@@ -6,8 +6,9 @@
 
 New features and changed defaults.
 
-- Charts are much smaller in an app that already uses React Spectrum S2: about half the added bundle size.
+- Donut is now an alpha component: `Donut`, `DonutSummary`, and `SegmentLabel` are exported from the package root.
 - Animation is on by default: lines, bars, donuts, and combos draw in once per mount, and hover fades animate, following Spectrum 2 motion. Users who prefer reduced motion skip draw-in but keep hover fades.
+- Charts are much smaller in an app that already uses React Spectrum S2: about half the added bundle size.
 - Add `ChartActionBar` (lab): a floating toolbar of actions for a clicked line point.
 - Top and bottom legends align to the start of the chart by default.
 - Donut segments sort largest first by default; set `sortOrder="data"` to keep data order.

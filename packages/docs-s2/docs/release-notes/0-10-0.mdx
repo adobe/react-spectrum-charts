@@ -5,8 +5,8 @@ description: What's new, changed, and fixed in @spectrum-charts/react-spectrum-c
 
 # 0.10.0
 
-This release turns on animation by default, makes Donut an alpha component, and ships the package
-as ES modules for smaller bundles. It includes breaking changes; to update your app, see
+Donut is now an alpha component. This release also turns on animation by default and ships the
+package as ES modules for smaller bundles. It includes breaking changes; to update your app, see
 [Upgrading to 0.10.0](../guides/upgrading-to-0-10-0.mdx).
 
 ## Breaking changes
@@ -19,14 +19,16 @@ as ES modules for smaller bundles. It includes breaking changes; to update your 
 
 ## Highlights
 
+- **Donut is alpha.** `Donut`, `DonutSummary`, and `SegmentLabel` are imported from the package
+  root and follow the alpha stage's stability rules. This release adds default `ChartInspect` and
+  `ChartPopover` content, labels revealed on hover, size-based ring and label spacing, and many
+  layout fixes. See [Donut](../donut.mdx) and [Stages and lab](../guides/stages-and-lab.mdx).
+- **Animation on by default.** Lines, bars, donuts, and combos draw in when the chart mounts, and
+  hover fades animate, following Spectrum 2 motion. Draw-in plays once per mount. When the user
+  prefers reduced motion, draw-in is skipped and hover fades still play. See
+  [Animation](../guides/animation.mdx).
 - **Smaller bundles.** The package no longer bundles its own copies of React Spectrum S2, React
   Aria, or Vega, so it adds about half as much to an app that already uses React Spectrum S2.
-- **Animation on by default.** Lines, bars, donuts, and combos draw in when the chart mounts, and
-  hover fades animate, following Spectrum 2 motion. Draw-in plays once per mount. See
-  [Animation](../guides/animation.mdx).
-- **Reduced motion.** When the user prefers reduced motion, draw-in is skipped and hover fades
-  still play.
-- **Donut is alpha.** See [Stages and lab](../guides/stages-and-lab.mdx).
 - **ChartActionBar (lab).** A floating toolbar of actions for a clicked line point. See
   [ChartActionBar](../chart-action-bar.mdx).
 
@@ -35,14 +37,6 @@ as ES modules for smaller bundles. It includes breaking changes; to update your 
 - Top and bottom legends align to the start of the chart instead of the center.
 - Donut segments are sorted largest first. Set `sortOrder="data"` to keep data order.
 - `Chart` props set to `undefined` fall back to their defaults.
-
-## Bar
-
-- `BarDirectLabel` follows each bar in stacked and dodged bars, and hides labels that overlap or
-  don't fit. New `overflow` and `dataKey` props. See [BarDirectLabel](../bar.mdx#bardirectlabel).
-- Better keyboard and screen reader support: dodged bars can be focused, focused bars and groups
-  are described by their values, and Shift+Tab returns to the last focused bar.
-- Fixed `highlightedItem`, `ChartInspect` group highlighting, and short-number label formats.
 
 ## Donut
 
@@ -54,6 +48,14 @@ as ES modules for smaller bundles. It includes breaking changes; to update your 
 - Semicircle `DonutSummary` deltas sit inside the arc, and summary text that would truncate
   completely is hidden.
 - Fixed label overlap, tiny segments, and donuts growing or shifting on resize.
+
+## Bar
+
+- `BarDirectLabel` follows each bar in stacked and dodged bars, and hides labels that overlap or
+  don't fit. New `overflow` and `dataKey` props. See [BarDirectLabel](../bar.mdx#bardirectlabel).
+- Better keyboard and screen reader support: dodged bars can be focused, focused bars and groups
+  are described by their values, and Shift+Tab returns to the last focused bar.
+- Fixed `highlightedItem`, `ChartInspect` group highlighting, and short-number label formats.
 
 ## Line
 
