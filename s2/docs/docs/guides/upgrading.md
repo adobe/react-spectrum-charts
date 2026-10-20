@@ -1,8 +1,8 @@
-# Upgrading to 0.10.0
+# Upgrading
 
-This page lists the code changes that keep your charts building and working when you upgrade `@spectrum-charts/react-spectrum-charts-s2`: breaking changes, removed or renamed props, and peer dependency bumps. It also lists changed defaults. Bug fixes and new features that need no code changes are left out; see the [release notes](/react-spectrum-charts/s2/docs/docs/release-notes/0-10-0) for those.
+This page lists the code changes that keep your charts building and working when you upgrade `@spectrum-charts/react-spectrum-charts-s2`: breaking changes, removed or renamed props, and peer dependency and Node version bumps. It also lists changed defaults. Bug fixes and new features that need no code changes are left out; see the release notes ([0.11.0](/react-spectrum-charts/s2/docs/docs/release-notes/0-11-0), [0.10.0](/react-spectrum-charts/s2/docs/docs/release-notes/0-10-0)) for those.
 
-Find the section for the version you're on, then apply it and every section above it. For example, from 0.7.0, apply [From 0.7.0](#from-070), [From 0.8.0](#from-080), and [From 0.9.0](#from-090).
+Find the section for the version you're on, then apply it and every section above it. For example, from 0.8.0, apply [From 0.8.0](#from-080), [From 0.9.0](#from-090), and [From 0.10.0](#from-0100).
 
 Coming from `@adobe/react-spectrum-charts` instead? See [Migrating from S1](/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1).
 
@@ -15,6 +15,16 @@ If you're an agent applying this guide:
 -   Don't keep an old default on your own.
 -   If a changed default can be turned off, tell the user what changed and ask whether to adopt the new default (recommended) or keep the old behavior. Change the code only to match their answer.
 -   If a changed default can't be turned off, tell the user what changed. Don't ask, and don't try to work around it.
+
+## From 0.10.0
+
+### Node version
+
+Node `>=22.12.0` is required. Installs on Node 20 fail with an engine error. No code changes are needed.
+
+```bash
+yarn add @spectrum-charts/react-spectrum-charts-s2@latest
+```
 
 ## From 0.9.0
 
@@ -38,7 +48,7 @@ Jest must transform `@spectrum-charts/*` and stub CSS imports. See [Testing and 
 -   `react-aria-components` `^1.14.0` is a new peer dependency.
 
 ```bash
-yarn add @spectrum-charts/react-spectrum-charts-s2@^0.10.0 react-aria-components@^1.14.0
+yarn add @spectrum-charts/react-spectrum-charts-s2@latest react-aria-components@^1.14.0
 ```
 
 ### Entry points

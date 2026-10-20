@@ -29,6 +29,7 @@
 - [Exporting](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/exporting.md): Download, copy, or capture a chart as a PNG or SVG through a ref.
 - [Testing and troubleshooting](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/testing-and-troubleshooting.md): Set up Jest or Vitest for charts, debug the generated Vega spec, and fix common rendering problems.
 - [Stages and lab](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/stages-and-lab.md): What the lab, alpha, beta, RC, and stable stages mean, how to import lab components, and how components graduate.
+- [0.11.0](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/release-notes/0-11-0.md): What's new, changed, and fixed in @spectrum-charts/react-spectrum-charts-s2 0.11.0.
 - [0.10.0](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/release-notes/0-10-0.md): What's new, changed, and fixed in @spectrum-charts/react-spectrum-charts-s2 0.10.0.
 - [Migrating from S1](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1.md): Move a chart from @adobe/react-spectrum-charts to @spectrum-charts/react-spectrum-charts-s2, component by component.
-- [Upgrading to 0.10.0](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/upgrading-to-0-10-0.md): The code changes needed to upgrade @spectrum-charts/react-spectrum-charts-s2 from any earlier 0.x release to 0.10.0.
+- [Upgrading](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/upgrading.md): The code changes needed to upgrade @spectrum-charts/react-spectrum-charts-s2 from any earlier 0.x release to the latest version.

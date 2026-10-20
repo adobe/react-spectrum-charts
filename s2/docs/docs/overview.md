@@ -46,12 +46,13 @@ See [Getting started](/react-spectrum-charts/s2/docs/docs/guides/getting-started
 
 ## Release notes
 
+-   [0.11.0](/react-spectrum-charts/s2/docs/docs/release-notes/0-11-0)
 -   [0.10.0](/react-spectrum-charts/s2/docs/docs/release-notes/0-10-0)
 
 ## Migration
 
 -   [Migrating from S1](/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1)
--   [Upgrading to 0.10.0](/react-spectrum-charts/s2/docs/docs/guides/upgrading-to-0-10-0)
+-   [Upgrading](/react-spectrum-charts/s2/docs/docs/guides/upgrading)
 
 ## Components
 
