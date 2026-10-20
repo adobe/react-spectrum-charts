@@ -170,7 +170,7 @@ describe('addLineDrawInAnimationSignals()', () => {
     expect(signals[6]).toStrictEqual({
       name: 'line0_drawInClipX',
       update:
-        "lerp([scale('xTime', extent(domain('xTime'))[0]), scale('xTime', extent(domain('xTime'))[1])], drawInAnimTEased)",
+        "lerp([scale('xTime', extent(domain('xTime'))[0]), scale('xTime', extent(domain('xTime'))[1]) + rscChartSizeHoverStrokeWidth / 2], drawInAnimTEased)",
     });
   });
 
@@ -179,7 +179,7 @@ describe('addLineDrawInAnimationSignals()', () => {
     addLineDrawInAnimationSignals(signals, { ...defaultLineOptions, scaleType: 'point' });
     expect(signals.at(-1)).toHaveProperty(
       'update',
-      "lerp([scale('xPoint', domain('xPoint')[0]), scale('xPoint', peek(domain('xPoint')))], drawInAnimTEased)"
+      "lerp([scale('xPoint', domain('xPoint')[0]), scale('xPoint', peek(domain('xPoint'))) + rscChartSizeHoverStrokeWidth / 2], drawInAnimTEased)"
     );
   });
 

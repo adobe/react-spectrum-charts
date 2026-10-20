@@ -13,6 +13,7 @@ import { Clip, NewSignal, NumericValueRef, ProductionRule, Signal, SourceData, T
 
 import {
   ANIMATION_TIMER,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   CubicBezierEasing,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIM_T,
@@ -156,7 +157,9 @@ export const addLineDrawInAnimationSignals = (signals: Signal[], { name, scaleTy
   const clipXSignal = `${name}_${DRAW_IN_CLIP_X}`;
   if (hasSignalByName(signals, clipXSignal)) return;
   const [start, end] = getDrawInPixelExtent(scaleType);
-  signals.push({ name: clipXSignal, update: `lerp([${start}, ${end}], ${DRAW_IN_ANIM_T_EASED})` });
+  // sweep past the last point by half the thickest stroke so the end cap is revealed before the clip opens fully
+  const capEnd = `${end} + ${CHART_SIZE_HOVER_STROKE_WIDTH} / 2`;
+  signals.push({ name: clipXSignal, update: `lerp([${start}, ${capEnd}], ${DRAW_IN_ANIM_T_EASED})` });
 };
 
 /**
