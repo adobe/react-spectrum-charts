@@ -196,7 +196,7 @@ describe('getLineDrawInClip()', () => {
     expect(getLineDrawInClip('line0')).toStrictEqual({
       path: {
         signal:
-          "'M-1000,-1000' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + 1000) + 'H-1000' + 'Z'",
+          "'M' + (width + 1000) + ',-1000' + 'M-1000,-1000' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + 1000) + 'H-1000' + 'Z'",
       },
     });
   });
@@ -205,7 +205,7 @@ describe('getLineDrawInClip()', () => {
     expect(getLineDrawInClip('line0', true)).toStrictEqual({
       path: {
         signal:
-          "'M-1000,0' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + height + 'H-1000' + 'Z'",
+          "'M' + (width + 1000) + ',0' + 'M-1000,0' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + height + 'H-1000' + 'Z'",
       },
     });
   });

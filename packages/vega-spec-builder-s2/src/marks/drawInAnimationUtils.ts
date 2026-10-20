@@ -235,8 +235,12 @@ export const getLineDrawInClip = (name: string, clipToPlotHeight = false): Clip 
   const right = `(${DRAW_IN_ANIM_T} >= 1 ? width + ${o} : ${name}_${DRAW_IN_CLIP_X})`;
   const top = clipToPlotHeight ? '0' : `-${o}`;
   const bottom = clipToPlotHeight ? 'height' : `(height + ${o})`;
+  // a lone move to the final right edge keeps the clip's bounds, and so the chart's layout, the same during the sweep
+  const finalBounds = `'M' + (width + ${o}) + ',${top}'`;
   // the clip is a rectangle from (-o, top) to (right, bottom), written as an SVG path
-  return { path: { signal: `'M-${o},${top}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` } };
+  return {
+    path: { signal: `${finalBounds} + 'M-${o},${top}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` },
+  };
 };
 
 /**
