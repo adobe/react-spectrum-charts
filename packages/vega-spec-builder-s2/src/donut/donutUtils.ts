@@ -22,6 +22,7 @@ import {
   DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
   DONUT_RING_WIDTHS,
+  DONUT_SEMICIRCLE_BOTTOM_INSET,
   DONUT_SEMICIRCLE_RADIUS,
   DONUT_SIZE_TIER_CUTPOINTS,
   DONUT_SIZE_TIER_LABELED_CHART_SIZES,
@@ -444,7 +445,7 @@ export const getDonutDrawInLabelVisibilityRules = (options: DonutSpecOptions): (
  * @returns vega signal string
  */
 export const getDonutCenterYSignal = (options: DonutSpecOptions): string =>
-  options.variant === 'semicircle' ? 'height' : 'height / 2';
+  options.variant === 'semicircle' ? `height - ${DONUT_SEMICIRCLE_BOTTOM_INSET}` : 'height / 2';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
   const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;

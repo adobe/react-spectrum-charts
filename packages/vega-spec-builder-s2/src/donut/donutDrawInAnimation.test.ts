@@ -21,8 +21,8 @@ import {
   DRAW_IN_START,
   FADE_FACTOR,
   FILTERED_TABLE,
-  SELECTED_ITEM,
   S2_EASE_IN_OUT,
+  SELECTED_ITEM,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
@@ -230,8 +230,7 @@ describe('donut draw-in animations', () => {
     expect(getMarkItems(chart, 'donut')[0].endAngle).toBe(2 * Math.PI);
     expect(getMarkItems(chart, 'donut')[0].opacity).toBe(1);
   });
-  const getCompletionMs = (progress: number) =>
-    DRAW_IN_DONUT_DURATION_MS * cubicBezier(0, 0.45, 1, 0.4, progress);
+  const getCompletionMs = (progress: number) => DRAW_IN_DONUT_DURATION_MS * cubicBezier(0, 0.45, 1, 0.4, progress);
 
   test('hides all label rows and swatches until their fade begins', () => {
     const options = { ...defaultDonutOptions, isDrawInAnimate: true };
@@ -252,73 +251,77 @@ describe('donut draw-in animations', () => {
     expect(getDonutDrawInLabelVisibilityRules(defaultDonutOptions)).toEqual([]);
   });
 
-  test.each([
-    { value: true },
-    { percent: true, value: false, swatch: true, showValueRow: true, showTotal: true },
-  ])('fades all label rows and swatches linearly after their slice finishes: %o', async (label) => {
-    const options = { ...defaultDonutOptions, name: 'donut', segmentLabels: [label] };
-    const labels = [...getSegmentLabelMarks(options), ...getRichSegmentLabelMarks(options)].flatMap(
-      ({ marks }) => marks ?? []
-    );
-    expect(labels.length).toBeGreaterThan(1);
-    const chart = await createView({ marks: [{ ...donut, segmentLabels: [label] }] });
-    const expectLabels = (index: number, opacity: number) => {
-      labels.forEach(({ name, type }) => {
-        if (!name) throw new Error('Expected a named label mark');
-        const item = getMarkItems(chart, name)[index];
-        expect(item.opacity).toBeCloseTo(opacity);
-        const size = type === 'symbol' ? item.size : item.fontSize;
-        if (opacity > 0) expect(size).toBeGreaterThan(0);
-        else expect(size).toBe(0);
-      });
-    };
-    const fade = DRAW_IN_LABEL_FADE_DURATION_MS;
-    // slices are 50%, 25%, 25% of the sweep
-    const finishes = [getCompletionMs(0.5), getCompletionMs(0.75), DRAW_IN_DONUT_DURATION_MS];
-    for (const [index, finish] of finishes.entries()) {
-      await advance(chart, finish - 1);
-      expectLabels(index, 0);
-      for (const fraction of [0.25, 0.5, 0.75, 1]) {
-        const now = finish + fade * fraction;
-        await advance(chart, now);
-        expectLabels(index, fraction);
-        // earlier fades can still be running, since neighbouring slices may finish less than a fade apart
-        finishes
-          .slice(0, index)
-          .forEach((previousFinish, previous) => expectLabels(previous, Math.min((now - previousFinish) / fade, 1)));
+  test.each([{ value: true }, { percent: true, value: false, swatch: true, showValueRow: true, showTotal: true }])(
+    'fades all label rows and swatches linearly after their slice finishes: %o',
+    async (label) => {
+      const options = { ...defaultDonutOptions, name: 'donut', segmentLabels: [label] };
+      const labels = [...getSegmentLabelMarks(options), ...getRichSegmentLabelMarks(options)].flatMap(
+        ({ marks }) => marks ?? []
+      );
+      expect(labels.length).toBeGreaterThan(1);
+      const chart = await createView({ marks: [{ ...donut, segmentLabels: [label] }] });
+      const expectLabels = (index: number, opacity: number) => {
+        labels.forEach(({ name, type }) => {
+          if (!name) throw new Error('Expected a named label mark');
+          const item = getMarkItems(chart, name)[index];
+          expect(item.opacity).toBeCloseTo(opacity);
+          const size = type === 'symbol' ? item.size : item.fontSize;
+          if (opacity > 0) expect(size).toBeGreaterThan(0);
+          else expect(size).toBe(0);
+        });
+      };
+      const fade = DRAW_IN_LABEL_FADE_DURATION_MS;
+      // slices are 50%, 25%, 25% of the sweep
+      const finishes = [getCompletionMs(0.5), getCompletionMs(0.75), DRAW_IN_DONUT_DURATION_MS];
+      for (const [index, finish] of finishes.entries()) {
+        await advance(chart, finish - 1);
+        expectLabels(index, 0);
+        for (const fraction of [0.25, 0.5, 0.75, 1]) {
+          const now = finish + fade * fraction;
+          await advance(chart, now);
+          expectLabels(index, fraction);
+          // earlier fades can still be running, since neighbouring slices may finish less than a fade apart
+          finishes
+            .slice(0, index)
+            .forEach((previousFinish, previous) => expectLabels(previous, Math.min((now - previousFinish) / fade, 1)));
+        }
       }
+      await advance(chart, DRAW_IN_DONUT_DURATION_MS + 500);
+      [0, 1, 2].forEach((index) => expectLabels(index, 1));
     }
-    await advance(chart, DRAW_IN_DONUT_DURATION_MS + 500);
-    [0, 1, 2].forEach((index) => expectLabels(index, 1));
-  });
+  );
 
-  test.each([0.1, 0.25, 0.75, 0.9, 1])('starts the fade when a segment occupying %p of the sweep finishes', async (fraction) => {
-    const chart = await createView({
-      data: [
-        { id: 'a', series: 'A', value: fraction },
-        { id: 'b', series: 'B', value: 1 - fraction },
-      ],
-      marks: [{ ...donut, sortOrder: 'data', segmentLabels: [{ value: true }] }],
-    });
-    const getLabel = () => {
-      const item = getMarkItems(chart, 'donut_segmentLabel').find(({ datum }) => datum?.id === 'a');
-      if (!item) throw new Error('Expected the first segment label');
-      return item;
-    };
-    const finish = getCompletionMs(fraction);
-    await advance(chart, finish - 1);
-    expect(getLabel().fontSize).toBe(0);
-    expect(getLabel().opacity).toBe(0);
-    const arc = getMarkItems(chart, 'donut').find(({ datum }) => datum?.id === 'a');
-    if (arc?.startAngle === undefined || arc.endAngle === undefined) throw new Error('Expected the first segment arc');
-    await advance(chart, finish);
-    expect(arc.endAngle - arc.startAngle).toBeLessThan(2 * Math.PI * fraction + 1e-9);
-    await advance(chart, finish + DRAW_IN_LABEL_FADE_DURATION_MS / 2);
-    expect(getLabel().fontSize).toBeGreaterThan(0);
-    expect(getLabel().opacity).toBeCloseTo(0.5);
-    await advance(chart, finish + DRAW_IN_LABEL_FADE_DURATION_MS);
-    expect(getLabel().opacity).toBeCloseTo(1);
-  });
+  test.each([0.1, 0.25, 0.75, 0.9, 1])(
+    'starts the fade when a segment occupying %p of the sweep finishes',
+    async (fraction) => {
+      const chart = await createView({
+        data: [
+          { id: 'a', series: 'A', value: fraction },
+          { id: 'b', series: 'B', value: 1 - fraction },
+        ],
+        marks: [{ ...donut, sortOrder: 'data', segmentLabels: [{ value: true }] }],
+      });
+      const getLabel = () => {
+        const item = getMarkItems(chart, 'donut_segmentLabel').find(({ datum }) => datum?.id === 'a');
+        if (!item) throw new Error('Expected the first segment label');
+        return item;
+      };
+      const finish = getCompletionMs(fraction);
+      await advance(chart, finish - 1);
+      expect(getLabel().fontSize).toBe(0);
+      expect(getLabel().opacity).toBe(0);
+      const arc = getMarkItems(chart, 'donut').find(({ datum }) => datum?.id === 'a');
+      if (arc?.startAngle === undefined || arc.endAngle === undefined)
+        throw new Error('Expected the first segment arc');
+      await advance(chart, finish);
+      expect(arc.endAngle - arc.startAngle).toBeLessThan(2 * Math.PI * fraction + 1e-9);
+      await advance(chart, finish + DRAW_IN_LABEL_FADE_DURATION_MS / 2);
+      expect(getLabel().fontSize).toBeGreaterThan(0);
+      expect(getLabel().opacity).toBeCloseTo(0.5);
+      await advance(chart, finish + DRAW_IN_LABEL_FADE_DURATION_MS);
+      expect(getLabel().opacity).toBeCloseTo(1);
+    }
+  );
 
   test.each([
     { values: [98, 1, 1], label: { value: true }, name: 'donut_segmentLabel' },
@@ -352,25 +355,22 @@ describe('donut draw-in animations', () => {
   test.each<Pick<ChartOptions, 'animationTypes'>>([
     { animationTypes: ['hover', 'drawIn'] },
     { animationTypes: ['drawIn'] },
-  ])(
-    'multiplies the label fade by hover dimming with animation types %p',
-    async ({ animationTypes }) => {
-      const chart = await createView({
-        animationTypes,
-        marks: [{ ...donut, chartInspects: [{}], segmentLabels: [{ value: true }] }],
-      });
-      await advance(chart, 100);
-      await chart.signal('donut_hoveredItem', chart.data(FILTERED_TABLE)[1]).runAsync();
-      await advance(chart, getCompletionMs(0.5) + DRAW_IN_LABEL_FADE_DURATION_MS / 2);
-      expect(getMarkItems(chart, 'donut_segmentLabel')[0].opacity).toBeCloseTo(FADE_FACTOR * 0.5);
-      expect(getMarkItems(chart, 'donut')[0].opacity).toBeCloseTo(FADE_FACTOR);
-      await advance(chart, getCompletionMs(0.5) + DRAW_IN_LABEL_FADE_DURATION_MS);
-      expect(getMarkItems(chart, 'donut_segmentLabel')[0].opacity).toBeCloseTo(FADE_FACTOR);
-      await chart.signal('donut_hoveredItem', null).runAsync();
-      await advance(chart, 1500);
-      getMarkItems(chart, 'donut_segmentLabel').forEach(({ opacity }) => expect(opacity).toBe(1));
-    }
-  );
+  ])('multiplies the label fade by hover dimming with animation types %p', async ({ animationTypes }) => {
+    const chart = await createView({
+      animationTypes,
+      marks: [{ ...donut, chartInspects: [{}], segmentLabels: [{ value: true }] }],
+    });
+    await advance(chart, 100);
+    await chart.signal('donut_hoveredItem', chart.data(FILTERED_TABLE)[1]).runAsync();
+    await advance(chart, getCompletionMs(0.5) + DRAW_IN_LABEL_FADE_DURATION_MS / 2);
+    expect(getMarkItems(chart, 'donut_segmentLabel')[0].opacity).toBeCloseTo(FADE_FACTOR * 0.5);
+    expect(getMarkItems(chart, 'donut')[0].opacity).toBeCloseTo(FADE_FACTOR);
+    await advance(chart, getCompletionMs(0.5) + DRAW_IN_LABEL_FADE_DURATION_MS);
+    expect(getMarkItems(chart, 'donut_segmentLabel')[0].opacity).toBeCloseTo(FADE_FACTOR);
+    await chart.signal('donut_hoveredItem', null).runAsync();
+    await advance(chart, 1500);
+    getMarkItems(chart, 'donut_segmentLabel').forEach(({ opacity }) => expect(opacity).toBe(1));
+  });
 
   test('keeps the existing label opacity when draw-in is disabled', async () => {
     expect(getDonutLabelOpacity(defaultDonutOptions)).toEqual(getDonutOpacity(defaultDonutOptions));
@@ -442,6 +442,25 @@ describe('donut draw-in animations', () => {
     if (!label) throw new Error('Expected the hovered zero-span label');
     expect(label.fontSize).toBe(0);
     expect(label.opacity).toBe(0);
+  });
+
+  test('keeps a semicircle inside the plot so autosize does not shift it while drawing in', async () => {
+    const spec = buildSpec({ ...chartOptions, marks: [{ ...donut, variant: 'semicircle' }] });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    view = new View(parse({ ...spec, autosize: { type: 'fit', contains: 'padding', resize: true } }), {
+      renderer: 'none',
+    })
+      .width(400)
+      .height(200);
+    await view.runAsync();
+    await view.signal(ANIMATION_TIMER, now).runAsync();
+    for (const elapsed of [0, 50, DRAW_IN_DONUT_DURATION_MS / 2, DRAW_IN_DONUT_DURATION_MS]) {
+      await advance(view, elapsed);
+      expect(view.height()).toBe(200);
+      getMarkItems(view, 'donut').forEach((arc) => expect(arc).toHaveProperty('y', 198));
+    }
   });
 
   test('does not replay on resize or legend filtering, but a new view restarts from zero', async () => {

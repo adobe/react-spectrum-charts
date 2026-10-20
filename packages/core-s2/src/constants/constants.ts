@@ -248,8 +248,10 @@ export const DRAW_IN_LABEL_FADE_DURATION_MS = 50;
 export const DONUT_BASE_PADDING = 10;
 /** Radius of a donut without segment labels. */
 export const DONUT_RADIUS = `(min(width, height) / 2 - ${DONUT_BASE_PADDING})`;
+/** Bottom inset (px) of a semicircle donut, wide enough to keep the widest slice stroke inside the plot. */
+export const DONUT_SEMICIRCLE_BOTTOM_INSET = 2;
 /** Radius of a bottom-aligned semicircle donut with top and side insets. */
-export const DONUT_SEMICIRCLE_RADIUS = `(min(width / 2, height) - ${DONUT_BASE_PADDING})`;
+export const DONUT_SEMICIRCLE_RADIUS = `(min(width / 2, height - ${DONUT_SEMICIRCLE_BOTTOM_INSET}) - ${DONUT_BASE_PADDING})`;
 /** Base radius used when reserving space for segment labels. */
 export const DONUT_LABELED_RADIUS = '(min(width, height) / 2 - 2)';
 /** Fill color of a boolean donut's secondary segment */
