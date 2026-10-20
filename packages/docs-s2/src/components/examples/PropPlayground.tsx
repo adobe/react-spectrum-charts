@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import React, { ReactElement, ReactNode, cloneElement, useMemo, useRef, useState } from 'react';
+import React, { ReactElement, ReactNode, RefObject, cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useColorMode } from '@docusaurus/theme-common';
@@ -203,6 +203,38 @@ const ControlInput = ({
   }
 };
 
+const DEFAULT_PREVIEW_HEIGHT = 300;
+const PREVIEW_ROOT_MARGIN = '600px 0px';
+
+/**
+ * Returns true once the element comes within PREVIEW_ROOT_MARGIN of the viewport.
+ * @param ref
+ * @returns whether the element has been near the viewport
+ */
+const useNearViewport = (ref: RefObject<HTMLElement | null>) => {
+  const [isNear, setIsNear] = useState(false);
+  useEffect(() => {
+    const element = ref.current;
+    if (isNear || !element) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsNear(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: PREVIEW_ROOT_MARGIN }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [isNear, ref]);
+  return isNear;
+};
+
 /**
  * Interactive chart example with S2 controls for a set of props and the matching JSX.
  * @param props
@@ -214,6 +246,7 @@ export const PropPlayground = ({ controls, render, replay, previewSize, componen
   const [values, setValues] = useState(defaults);
   const [mountKey, setMountKey] = useState(0);
   const previewRef = useRef<HTMLDivElement>(null);
+  const isNearViewport = useNearViewport(previewRef);
 
   const replayChart = () => {
     const preview = previewRef.current;
@@ -230,6 +263,8 @@ export const PropPlayground = ({ controls, render, replay, previewSize, componen
   );
   const element = render(changedValues);
   const previewElement = previewSize ? cloneElement(element, previewSize(element)) : element;
+  const previewHeight = (previewElement.props as { height?: unknown }).height;
+  const placeholderHeight = typeof previewHeight === 'number' ? previewHeight : DEFAULT_PREVIEW_HEIGHT;
   const groups = [...new Set(controls.map((control) => control.group ?? ''))];
   const code = `${getImportStatement(element, S2_PACKAGE, LAB)}\n\n${elementToJsx(element, datasets)}`;
 
@@ -237,7 +272,13 @@ export const PropPlayground = ({ controls, render, replay, previewSize, componen
     <div className={styles.playground}>
       <div ref={previewRef} className={styles.preview}>
         <BrowserOnly fallback={<div className={styles.fallback} />}>
-          {() => <div key={mountKey}>{previewElement}</div>}
+          {() =>
+            isNearViewport ? (
+              <div key={mountKey}>{previewElement}</div>
+            ) : (
+              <div style={{ height: placeholderHeight }} />
+            )
+          }
         </BrowserOnly>
       </div>
       <BrowserOnly fallback={<div className={styles.controls} />}>
