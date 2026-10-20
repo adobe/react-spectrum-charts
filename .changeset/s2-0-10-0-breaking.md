@@ -4,7 +4,7 @@
 '@spectrum-charts/vega-spec-builder-s2': minor
 ---
 
-Breaking changes. See "Upgrading to 0.10.0" in the S2 docs for the code changes.
+Breaking changes. To update your app, see "Upgrading to 0.10.0" in the S2 docs.
 
 - The S2 packages ship as ES modules only and require Node `>=20.19.0`. `require()`, the UMD global, and deep imports into `dist/` are no longer supported.
 - `react-aria-components` `^1.14.0` is a new peer dependency of `@spectrum-charts/react-spectrum-charts-s2`.
