@@ -393,25 +393,17 @@ export const getLineStrokeWidth = ({
   return strokeWidthRules;
 };
 
-/** Data sources that defer a line's voronoi until draw-in finishes. */
-export interface LineDrawInVoronoiSources {
-  points: string;
-  extent: string;
-}
-
 /**
  * All the marks that get displayed when hovering or selecting a point on a line
  * @param lineMarkOptions
  * @param dataSource
  * @param secondaryHighlightedMetric
- * @param drawInVoronoi - data that defers the voronoi points until draw-in finishes
  * @returns
  */
 export const getLineHoverMarks = (
   lineOptions: LineMarkOptions,
   dataSource: string,
-  secondaryHighlightedMetric?: string,
-  drawInVoronoi?: LineDrawInVoronoiSources
+  secondaryHighlightedMetric?: string
 ): Mark[] => {
   const { dimension, interpolate, isHighlightedByGroup, name, scaleType, showHoverLabel = true } = lineOptions;
   // highlighting by series (or other keys) emphasizes whole lines, not a single point
@@ -432,7 +424,7 @@ export const getLineHoverMarks = (
     // hover value label: background halo + foreground text — omitted when showHoverLabel is false
     ...(showsPoints && showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
-    ...getInteractiveMarks(dataSource, lineOptions, drawInVoronoi),
+    ...getInteractiveMarks(dataSource, lineOptions),
   ];
 };
 
@@ -498,55 +490,25 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
   };
 };
 
-const getInteractiveMarks = (
-  dataSource: string,
-  lineOptions: LineMarkOptions,
-  drawInVoronoi?: LineDrawInVoronoiSources
-): Mark[] => {
+const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): Mark[] => {
   const { interactionMode = DEFAULT_INTERACTION_MODE } = lineOptions;
 
   const inspectMarks = {
-    nearest: () => getVoronoiMarks(lineOptions, dataSource, drawInVoronoi),
+    nearest: () => getVoronoiMarks(lineOptions, dataSource),
     item: () => getItemHoverMarks(lineOptions, dataSource),
   };
 
   return inspectMarks[interactionMode]();
 };
 
-const getVoronoiMarks = (
-  lineOptions: LineMarkOptions,
-  dataSource: string,
-  drawInVoronoi?: LineDrawInVoronoiSources
-): Mark[] => {
+const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
   const { name } = lineOptions;
 
   return [
-    // stand in for the voronoi's bounds until its points load after draw-in
-    ...(drawInVoronoi ? getDrawInExtentMarks(lineOptions, drawInVoronoi.extent) : []),
     // points used for the voronoi transform
-    getLinePointsForVoronoi(lineOptions, drawInVoronoi?.points ?? dataSource),
+    getLinePointsForVoronoi(lineOptions, dataSource),
     // voronoi transform used to get nearest point paths
     getVoronoiPath(lineOptions, `${name}_pointsForVoronoi`),
-  ];
-};
-
-/**
- * Gets non-interactive copies of the voronoi marks that keep the voronoi's bounds during draw-in.
- * @param lineOptions
- * @param dataSource - each series' extreme points
- * @returns Mark[]
- */
-const getDrawInExtentMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
-  const { name } = lineOptions;
-  const pointsName = `${name}_drawInExtentPoints`;
-  return [
-    getLinePointsForVoronoi(lineOptions, dataSource, pointsName),
-    {
-      ...getVoronoiPath(lineOptions, pointsName),
-      name: `${name}_drawInExtentVoronoi`,
-      description: `${name}_drawInExtentVoronoi`,
-      interactive: false,
-    },
   ];
 };
 
@@ -554,19 +516,14 @@ const getDrawInExtentMarks = (lineOptions: LineMarkOptions, dataSource: string):
  * Gets the points used for the voronoi calculation for line charts with dual metric axis support
  * @param lineOptions - Line options including dual metric axis settings
  * @param dataSource - the name of the data source that will be used in the voronoi calculation
- * @param markName
  * @returns SymbolMark
  */
-const getLinePointsForVoronoi = (
-  lineOptions: LineMarkOptions,
-  dataSource: string,
-  markName = `${lineOptions.name}_pointsForVoronoi`
-): Mark => {
-  const { dimension, metric, pointSize, scaleType } = lineOptions;
+const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: string): Mark => {
+  const { dimension, metric, name, pointSize, scaleType } = lineOptions;
 
   return {
-    name: markName,
-    description: markName,
+    name: `${name}_pointsForVoronoi`,
+    description: `${name}_pointsForVoronoi`,
     type: 'symbol',
     from: { data: dataSource },
     interactive: false,

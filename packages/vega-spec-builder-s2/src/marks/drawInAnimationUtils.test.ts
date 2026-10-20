@@ -20,7 +20,6 @@ import {
   DRAW_IN_LABEL_FADE_DURATION_MS,
   FILTERED_TABLE,
   S2_EASE_IN_OUT,
-  SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
 import { defaultBarOptions } from '../bar/barTestUtils.js';
@@ -29,9 +28,9 @@ import { defaultLineOptions } from '../line/lineTestUtils.js';
 import {
   addDrawInClockSignals,
   addDrawInDoneSignal,
+  addDrawInLabelFadeTimer,
   addLineDrawInAnimationSignals,
   applyDrawInReveal,
-  addDrawInLabelFadeTimer,
   getBarDrawInData,
   getBarDrawInMetricExpr,
   getBarDrawInSettleProgressExpr,
@@ -41,8 +40,6 @@ import {
   getDrawInLabelFadeExpr,
   getInverseCubicBezierExpr,
   getLineDrawInClip,
-  getLineDrawInExtentData,
-  getLineDrawInVoronoiData,
   getLineDrawInRevealExpr,
   getLineGeometryClip,
 } from './drawInAnimationUtils.js';
@@ -50,12 +47,11 @@ import {
 /** Evaluates a Vega expression with the given signals/datum in scope. */
 const evalExpr = (expr: string, scope: Record<string, unknown> = {}): number =>
   // eslint-disable-next-line no-new-func
-  new Function(
-    ...Object.keys(scope),
-    'clamp',
-    'cubicBezier',
-    `return ${expr};`
-  )(...Object.values(scope), (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi), cubicBezier);
+  new Function(...Object.keys(scope), 'clamp', 'cubicBezier', `return ${expr};`)(
+    ...Object.values(scope),
+    (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi),
+    cubicBezier
+  );
 
 describe('getCubicBezierExpr()', () => {
   test('calls the registered cubicBezier function with the curve control points', () => {
@@ -265,68 +261,6 @@ describe('addDrawInDoneSignal()', () => {
     addDrawInDoneSignal(signals);
     addDrawInDoneSignal(signals);
     expect(signals).toStrictEqual([{ name: DRAW_IN_DONE, value: false, update: 'drawInAnimT >= 1' }]);
-  });
-});
-
-describe('getLineDrawInVoronoiData()', () => {
-  test('filters the inspect data until draw-in finishes', () => {
-    expect(getLineDrawInVoronoiData('line0')).toStrictEqual({
-      name: 'line0_drawInVoronoiData',
-      source: `${FILTERED_TABLE}ForInspect`,
-      transform: [{ type: 'filter', expr: DRAW_IN_DONE }],
-    });
-  });
-
-  test('reads from the provided source', () => {
-    expect(getLineDrawInVoronoiData('line0', 'line0_visibleHoverData')).toHaveProperty(
-      'source',
-      'line0_visibleHoverData'
-    );
-    expect(
-      getLineDrawInExtentData(
-        { name: 'line0', dimension: 'datetime', metric: 'value', scaleType: 'time' },
-        'line0_visibleHoverData'
-      )
-    ).toHaveProperty('source', 'line0_visibleHoverData');
-  });
-});
-
-describe('getLineDrawInExtentData()', () => {
-  const extentOptions = { name: 'line0', dimension: 'datetime', metric: 'value' };
-
-  test('keeps each series min/max points until draw-in finishes', () => {
-    expect(getLineDrawInExtentData({ ...extentOptions, scaleType: 'time' })).toStrictEqual({
-      name: 'line0_drawInExtentData',
-      source: `${FILTERED_TABLE}ForInspect`,
-      transform: [
-        {
-          type: 'joinaggregate',
-          groupby: [SERIES_ID],
-          fields: ['value', 'value', DEFAULT_TRANSFORMED_TIME_DIMENSION, DEFAULT_TRANSFORMED_TIME_DIMENSION],
-          ops: ['min', 'max', 'min', 'max'],
-          as: ['rscDrawInYMin', 'rscDrawInYMax', 'rscDrawInXMin', 'rscDrawInXMax'],
-        },
-        {
-          type: 'filter',
-          expr: `!${DRAW_IN_DONE} && (datum.value === datum.rscDrawInYMin || datum.value === datum.rscDrawInYMax || datum.${DEFAULT_TRANSFORMED_TIME_DIMENSION} === datum.rscDrawInXMin || datum.${DEFAULT_TRANSFORMED_TIME_DIMENSION} === datum.rscDrawInXMax)`,
-        },
-      ],
-    });
-  });
-
-  test('uses the dimension field for a linear scale', () => {
-    const { transform } = getLineDrawInExtentData({ ...extentOptions, dimension: 'x', scaleType: 'linear' });
-    expect(transform?.[0]).toHaveProperty('fields', ['value', 'value', 'x', 'x']);
-  });
-
-  test('uses the domain position for a point scale', () => {
-    const { transform } = getLineDrawInExtentData({ ...extentOptions, dimension: 'category', scaleType: 'point' });
-    expect(transform?.[0]).toStrictEqual({
-      type: 'formula',
-      as: 'rscDrawInXIndex',
-      expr: "indexof(domain('xPoint'), datum.category)",
-    });
-    expect(transform?.[1]).toHaveProperty('fields', ['value', 'value', 'rscDrawInXIndex', 'rscDrawInXIndex']);
   });
 });
 
