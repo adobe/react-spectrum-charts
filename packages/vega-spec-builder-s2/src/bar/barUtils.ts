@@ -421,15 +421,29 @@ const getBarDeemphasisOpacitySignal = (name: string, keyField: string): Producti
 });
 
 /**
+ * Hides a bar while its draw-in has zero length, so its outline doesn't paint as a line.
+ * @param options - the bar spec options
+ * @returns opacity rules
+ */
+const getBarDrawInHiddenRules = (options: BarSpecOptions): ({ test: string } & NumericValueRef)[] => {
+  const { isDrawInAnimate, metric, name, type } = options;
+  if (!isDrawInAnimate) return [];
+  const start = type === 'stacked' || isDodgedAndStacked(options) ? `datum.${metric}0` : '0';
+  return [{ test: `datum.${getBarDrawInValueField(name)} === ${start}`, value: 0 }];
+};
+
+/**
  * Bar's opacity encoding: the animated per-bar fraction when hover-animated, else `getMarkOpacity`.
  * @param options - the bar spec options
  * @returns ProductionRule<NumericValueRef>
  */
 export const getBarOpacity = (options: BarSpecOptions): ProductionRule<NumericValueRef> => {
-  if (options.isHoverAnimate) {
-    return getBarDeemphasisOpacitySignal(options.name, getBarAnimIdField(options.name));
-  }
-  return getMarkOpacity(options);
+  const opacity = options.isHoverAnimate
+    ? getBarDeemphasisOpacitySignal(options.name, getBarAnimIdField(options.name))
+    : getMarkOpacity(options);
+  const hiddenRules = getBarDrawInHiddenRules(options);
+  if (!hiddenRules.length) return opacity;
+  return [...hiddenRules, ...(Array.isArray(opacity) ? opacity : [opacity])];
 };
 
 export const getStroke = (options: BarSpecOptions): ProductionRule<ColorValueRef> => {

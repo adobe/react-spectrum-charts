@@ -48,8 +48,8 @@ import {
   getBarAnimIdField,
   getBarBackgroundDrawInUpdateEncodings,
   getBarDimensionAreaPositionEncodings,
-  getBarDrawInUpdateEncodings,
   getBarDimensionHoverArea,
+  getBarDrawInUpdateEncodings,
   getBarFillEncoding,
   getBarHoverRules,
   getBarItemSelectionBackdrop,
@@ -537,7 +537,10 @@ describe('barUtils', () => {
     });
     test('returns true for an array (custom keys) popover', () => {
       expect(
-        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: ['operatingSystem'] }] })
+        shouldShowItemSelectionRing({
+          ...defaultBarOptions,
+          chartPopovers: [{ UNSAFE_highlightBy: ['operatingSystem'] }],
+        })
       ).toBe(true);
     });
     test('returns false when any popover highlights by dimension', () => {
@@ -1016,6 +1019,24 @@ describe('getBarOpacity()', () => {
   test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {
     const opacity = getBarOpacity(defaultBarOptions);
     expect(opacity).toStrictEqual([{ value: 1 }]);
+  });
+
+  test('hides stacked segments the draw-in has not reached', () => {
+    const opacity = getBarOpacity({
+      ...defaultBarOptions,
+      type: 'stacked',
+      isDrawInAnimate: true,
+      isHoverAnimate: true,
+    });
+    expect(opacity).toStrictEqual([
+      { test: 'datum.bar0_drawInValue === datum.value0', value: 0 },
+      { signal: getHoverDeemphasisOpacitySignal('bar0', 'bar0_rscBarAnimId') },
+    ]);
+  });
+
+  test('hides unstacked bars until the draw-in grows them from zero', () => {
+    const opacity = getBarOpacity({ ...defaultBarOptions, type: 'dodged', isDrawInAnimate: true });
+    expect(opacity).toStrictEqual([{ test: 'datum.bar0_drawInValue === 0', value: 0 }, { value: 1 }]);
   });
 });
 

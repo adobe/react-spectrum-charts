@@ -15,6 +15,7 @@ import {
   COLOR_SCALE,
   DONUT_LABEL_COLLISION_GAP,
   DONUT_LABEL_MIN_SPACE_RATIO,
+  DONUT_SEMICIRCLE_BOTTOM_INSET,
   FILTERED_TABLE,
   HOVERED_ITEM,
   MARK_ID,
@@ -86,13 +87,14 @@ describe('addData', () => {
       for (const [width, height] of [[1200, 420], [420, 420], [1000, 300], [140, 140], [80, 80], [220, 220], [1200, 420]]) {
         await view.width(width).height(height).runAsync();
         const outerRadius = view.signal('centeredDonut_outerRadius');
-        const top = height - outerRadius;
+        const centerY = height - DONUT_SEMICIRCLE_BOTTOM_INSET;
+        const top = centerY - outerRadius;
         expect(top).toBeGreaterThanOrEqual(10);
         expect(width / 2 - outerRadius).toBeGreaterThanOrEqual(10);
         for (const name of ['centeredDonut', 'centeredDonut_emptyState']) {
           for (const item of getMarkItems(name)) {
             expect(item.x).toBe(width / 2);
-            expect(item.y).toBe(height);
+            expect(item.y).toBe(centerY);
           }
         }
         for (const item of getMarkItems('centeredDonut')) {
@@ -111,7 +113,7 @@ describe('addData', () => {
         if (summary.y === undefined || summary.dy === undefined || summary.fontSize === undefined) {
           throw new Error('Expected resolved summary position and font size');
         }
-        expect(summary.y + summary.dy + view.signal('centeredDonut_summaryLabelFontSize') / 2).toBeCloseTo(height - 2, 10);
+        expect(summary.y + summary.dy + view.signal('centeredDonut_summaryLabelFontSize') / 2).toBeCloseTo(centerY - 2, 10);
         if (delta !== undefined) {
           expect(getMarkItems(`${prefix}Delta`)[0].fontSize).toBe(
             deltaVisible ? view.signal('centeredDonut_summaryLabelFontSize') : 0

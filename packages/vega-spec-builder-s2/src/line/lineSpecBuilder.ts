@@ -51,6 +51,11 @@ import {
   getLineForecastSpecOptions,
 } from '../lineForecast/index.js';
 import {
+  addDrawInDoneSignal,
+  addLineDrawInAnimationSignals,
+  getLineGeometryClip,
+} from '../marks/drawInAnimationUtils.js';
+import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
   getHoverAnimStateData,
@@ -106,15 +111,6 @@ import {
 import { getLinePointAnnotationMarks } from './linePointAnnotation/index.js';
 import { getLineStaticPoint, getLineStaticPointBackground } from './linePointUtils.js';
 import { getPopoverMarkName, isDualMetricAxis } from './lineUtils.js';
-import {
-  addDrawInDoneSignal,
-  addLineDrawInAnimationSignals,
-  getLineGeometryClip,
-  getLineDrawInExtentData,
-  getLineDrawInExtentDataName,
-  getLineDrawInVoronoiData,
-  getLineDrawInVoronoiDataName,
-} from '../marks/drawInAnimationUtils.js';
 
 export const addLine = produce<
   ScSpec,
@@ -391,12 +387,6 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
     if (showHoverLabel) {
       data.push(getHoverLabelData(options));
     }
-    if (options.isDrawInAnimate) {
-      data.push(
-        getLineDrawInVoronoiData(name, getLineHoverDataSource(options)),
-        getLineDrawInExtentData({ ...options, metric: getEffectiveMetricField(options) }, getLineHoverDataSource(options))
-      );
-    }
   }
   if (isHoverAnimate) {
     data.push(
@@ -527,10 +517,7 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
   }
   // hover marks are last so hollow points and interaction marks always render above everything
   if (hasInteractiveHighlight) {
-    const drawInVoronoi = options.isDrawInAnimate
-      ? { points: getLineDrawInVoronoiDataName(name), extent: getLineDrawInExtentDataName(name) }
-      : undefined;
-    marks.push(...getLineHoverMarks(markOptions, getLineHoverDataSource(options), undefined, drawInVoronoi));
+    marks.push(...getLineHoverMarks(markOptions, getLineHoverDataSource(options)));
   }
   // forecast labels are drawn last so they appear on top of other marks
   addLineForecastLabelMarks(marks, forecasts, options);
@@ -658,11 +645,7 @@ const addLineHighlightOverlayMarks = (
   );
 };
 
-const addLineForecastLabelMarks = (
-  marks: Mark[],
-  forecasts: LineForecastOptions[],
-  options: LineSpecOptions
-): void => {
+const addLineForecastLabelMarks = (marks: Mark[], forecasts: LineForecastOptions[], options: LineSpecOptions): void => {
   for (const [i, forecast] of forecasts.entries()) {
     marks.push(...getLineForecastLabelMarks(getLineForecastSpecOptions(forecast, i, options)));
   }

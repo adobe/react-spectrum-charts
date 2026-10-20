@@ -63,13 +63,7 @@ describe('fixed metric axis hover', () => {
     ['data below the range', [-12000, -15000, -20000, -30000], { chartInspects: [{}], interactionMode: 'item' }, false],
     ['crossing lines with hover labels', [-20000, 5000, 20000, 1000], { chartPopovers: [{}] }, false],
     ['points on the range boundaries', [-100, 0, 10000, 10100], { chartInspects: [{}] }, false],
-    [
-      'range crossing zero',
-      [-1000, -500, -250, 0, 5000, 10000, 11000],
-      { chartInspects: [{}] },
-      false,
-      [-500, 10000],
-    ],
+    ['range crossing zero', [-1000, -500, -250, 0, 5000, 10000, 11000], { chartInspects: [{}] }, false, [-500, 10000]],
     [
       'static points and labels',
       [-20000, 5000, 20000, 1000],
@@ -159,13 +153,17 @@ describe('without a fixed metric axis', () => {
       animations: false,
       data: [{ datetime: 0, value: 1, showPoint: true }],
       axes: [{ position: 'left' }],
-      marks: [{ markType: 'line', name: 'line0', staticPoint: 'showPoint', lineDirectLabels: [{}], chartInspects: [{}] }],
+      marks: [
+        { markType: 'line', name: 'line0', staticPoint: 'showPoint', lineDirectLabels: [{}], chartInspects: [{}] },
+      ],
     });
     spec.marks?.forEach((mark) => expect(mark).not.toHaveProperty('clip'));
     expect(spec.data?.find(({ name }) => name === 'line0_visibleHoverData')).toBeUndefined();
     expect(spec.data?.find(({ name }) => name === 'line0_staticPointData')?.transform).toHaveLength(1);
     const labelData = spec.data?.find(({ name }) => name === 'line0DirectLabel0_data');
-    labelData?.transform?.forEach((transform) => expect(transform).not.toHaveProperty('expr', expect.stringContaining('inrange')));
+    labelData?.transform?.forEach((transform) =>
+      expect(transform).not.toHaveProperty('expr', expect.stringContaining('inrange'))
+    );
   });
 });
 
@@ -921,29 +919,6 @@ describe('lineSpecBuilder', () => {
         const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, staticPoint: 'point' });
         expect(resultData.find((d) => d.name === 'line0_staticPointData')).toHaveProperty('source', FILTERED_TABLE);
       });
-
-      test('an interactive line adds voronoi data gated on drawInDone', () => {
-        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, hasOnClick: true });
-        expect(resultData.find((d) => d.name === 'line0_drawInVoronoiData')).toStrictEqual({
-          name: 'line0_drawInVoronoiData',
-          source: `${FILTERED_TABLE}ForInspect`,
-          transform: [{ type: 'filter', expr: 'drawInDone' }],
-        });
-      });
-
-      test('an interactive line adds extent data from the inspect data', () => {
-        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: true, hasOnClick: true });
-        expect(resultData.find((d) => d.name === 'line0_drawInExtentData')).toHaveProperty(
-          'source',
-          `${FILTERED_TABLE}ForInspect`
-        );
-      });
-
-      test('an interactive line without draw-in adds no voronoi or extent data', () => {
-        const resultData = addData(baseData, { ...defaultLineOptions, isDrawInAnimate: false, hasOnClick: true });
-        expect(resultData.find((d) => d.name === 'line0_drawInVoronoiData')).toBeUndefined();
-        expect(resultData.find((d) => d.name === 'line0_drawInExtentData')).toBeUndefined();
-      });
     });
   });
 
@@ -1142,38 +1117,11 @@ describe('lineSpecBuilder', () => {
       expect(voronoiPointsMark?.description).toBe('line0_pointsForVoronoi');
     });
 
-    test('with draw-in, only the voronoi points read the draw-in voronoi data', () => {
+    test('with draw-in, the voronoi is available from the start', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true, isDrawInAnimate: true });
-      expect(marks.find((mark) => mark.name === 'line0_pointsForVoronoi')?.from).toStrictEqual({
-        data: 'line0_drawInVoronoiData',
-      });
-      expect(marks.find((mark) => mark.name === 'line0_point_highlight')?.from).toStrictEqual({
-        data: 'line0_highlightedData',
-      });
-    });
-
-    test('with draw-in, non-interactive extent marks precede the voronoi marks', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true, isDrawInAnimate: true });
-      expect(marks.slice(-4).map((mark) => mark.name)).toEqual([
-        'line0_drawInExtentPoints',
-        'line0_drawInExtentVoronoi',
-        'line0_pointsForVoronoi',
-        'line0_voronoi',
-      ]);
-      const extentPoints = marks.find((mark) => mark.name === 'line0_drawInExtentPoints');
-      const extentVoronoi = marks.find((mark) => mark.name === 'line0_drawInExtentVoronoi');
-      expect(extentPoints?.from).toStrictEqual({ data: 'line0_drawInExtentData' });
-      expect(extentPoints?.encode).toStrictEqual(marks.find((mark) => mark.name === 'line0_pointsForVoronoi')?.encode);
-      expect(extentVoronoi?.from).toStrictEqual({ data: 'line0_drawInExtentPoints' });
-      expect(extentVoronoi).toHaveProperty('interactive', false);
-    });
-
-    test('without draw-in, voronoi points read the inspect data and there are no extent marks', () => {
-      const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true });
       expect(marks.find((mark) => mark.name === 'line0_pointsForVoronoi')?.from).toStrictEqual({
         data: `${FILTERED_TABLE}ForInspect`,
       });
-      expect(marks.some((mark) => mark.name?.includes('drawInExtent'))).toBe(false);
     });
 
     test('voronoi points should reserve the same extent as the highlight point', () => {

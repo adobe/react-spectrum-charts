@@ -11,16 +11,12 @@
  */
 import { useCallback, useMemo } from 'react';
 
-import { Item, View } from 'vega';
-import { Handler, Options as TooltipOptions } from 'vega-tooltip';
-
-import { TOOLTIP_DELAY } from '@spectrum-charts/core-s2/constants';
+import { View } from 'vega';
 
 import { Legend } from '../components/index.js';
 import { useChartContext } from '../context/RscChartContext.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import {
-  getItemBounds,
   getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
@@ -38,11 +34,9 @@ import usePopovers from './usePopovers.js';
 const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  inspectOptions: TooltipOptions,
   legendProps: UseLegendProps
 ) => {
-  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId, setHoveredAxisLabel } =
-    useChartContext();
+  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const actionBars = useActionBars(sanitizedChildren);
   const popovers = usePopovers(sanitizedChildren);
   const {
@@ -74,30 +68,6 @@ const useNewChartView = (
   return useCallback(
     (view: View) => {
       chartView.current = view;
-      // Add a delay before displaying legend tooltips on hover.
-      let inspectTimeout: ReturnType<typeof setTimeout> | undefined;
-      view.tooltip((viewRef, event, item, value) => {
-        const inspectHandler = new Handler(inspectOptions);
-        // Cancel delayed tooltips if the mouse moves before the delay is resolved.
-        if (inspectTimeout) {
-          clearTimeout(inspectTimeout);
-          inspectTimeout = undefined;
-        }
-        // Axis labels use a real Tooltip, not vega-tooltip's popup.
-        if (item && itemIsAxisLabel(item) && value !== undefined && value !== null) {
-          setHoveredAxisLabel({ bounds: getItemBounds(item), content: String(value) });
-          return;
-        }
-        setHoveredAxisLabel(null);
-        if (event?.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
-          inspectTimeout = setTimeout(() => {
-            inspectHandler.call(viewRef, event, item, value);
-            inspectTimeout = undefined;
-          }, TOOLTIP_DELAY);
-        } else {
-          inspectHandler.call(viewRef, event, item, value);
-        }
-      });
       if (popovers.length || actionBars.length || legendIsToggleable || onLegendClick) {
         if (legendIsToggleable) {
           view.signal('hiddenSeries', legendHiddenSeries);
@@ -184,17 +154,9 @@ const useNewChartView = (
       selectedData,
       selectedDataBounds,
       selectedDataName,
-      setHoveredAxisLabel,
       setLegendHiddenSeries,
-      inspectOptions,
     ]
   );
 };
 
 export default useNewChartView;
-
-const itemIsLegendItem = (item: Item<unknown>): boolean => {
-  return 'name' in item.mark && typeof item.mark.name === 'string' && item.mark.name.includes('legend');
-};
-
-const itemIsAxisLabel = (item: Item<unknown>): boolean => 'role' in item.mark && item.mark.role === 'axis-label';

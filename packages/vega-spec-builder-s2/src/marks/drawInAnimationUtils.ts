@@ -9,10 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Clip, NewSignal, NumericValueRef, ProductionRule, Signal, SourceData, Transforms } from 'vega';
+import { Clip, NewSignal, NumericValueRef, ProductionRule, Signal, SourceData } from 'vega';
 
 import {
   ANIMATION_TIMER,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   CubicBezierEasing,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIM_T,
@@ -21,14 +22,11 @@ import {
   DRAW_IN_CLIP_X,
   DRAW_IN_DONE,
   DRAW_IN_DURATION,
-  DRAW_IN_EXTENT_DATA,
   DRAW_IN_LABEL_FADE_DURATION_MS,
   DRAW_IN_START,
   DRAW_IN_SWEEP_DURATION_MS,
-  DRAW_IN_VORONOI_DATA,
   FILTERED_TABLE,
   S2_EASE_IN_OUT,
-  SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
@@ -156,70 +154,9 @@ export const addLineDrawInAnimationSignals = (signals: Signal[], { name, scaleTy
   const clipXSignal = `${name}_${DRAW_IN_CLIP_X}`;
   if (hasSignalByName(signals, clipXSignal)) return;
   const [start, end] = getDrawInPixelExtent(scaleType);
-  signals.push({ name: clipXSignal, update: `lerp([${start}, ${end}], ${DRAW_IN_ANIM_T_EASED})` });
-};
-
-/**
- * Gets the name of the data that feeds a line's voronoi once draw-in finishes.
- * @param name - line name
- * @returns string
- */
-export const getLineDrawInVoronoiDataName = (name: string): string => `${name}_${DRAW_IN_VORONOI_DATA}`;
-
-/**
- * Gets the data that feeds a line's voronoi, empty until draw-in finishes so the hover layer isn't repainted every frame.
- * @param name - line name
- * @param source - hover data source
- * @returns SourceData
- */
-export const getLineDrawInVoronoiData = (name: string, source = `${FILTERED_TABLE}ForInspect`): SourceData => ({
-  name: getLineDrawInVoronoiDataName(name),
-  source,
-  transform: [{ type: 'filter', expr: DRAW_IN_DONE }],
-});
-
-/**
- * Gets the name of the data that reserves a line's voronoi point bounds during draw-in.
- * @param name - line name
- * @returns string
- */
-export const getLineDrawInExtentDataName = (name: string): string => `${name}_${DRAW_IN_EXTENT_DATA}`;
-
-/**
- * Gets each series' min/max points on both axes until draw-in finishes, which span the same bounds as every point.
- * @param options - line name, dimension, metric and scale type
- * @param source - hover data source
- * @returns SourceData
- */
-export const getLineDrawInExtentData = (
-  { dimension, metric, name, scaleType }: Pick<LineSpecOptions, 'dimension' | 'metric' | 'name' | 'scaleType'>,
-  source = `${FILTERED_TABLE}ForInspect`
-): SourceData => {
-  const transform: Transforms[] = [];
-  let xField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
-  if (scaleType === 'point') {
-    // point scales order by domain position, not value
-    transform.push({
-      type: 'formula',
-      as: 'rscDrawInXIndex',
-      expr: `indexof(domain('${getScaleName('x', scaleType)}'), datum.${dimension})`,
-    });
-    xField = 'rscDrawInXIndex';
-  }
-  transform.push(
-    {
-      type: 'joinaggregate',
-      groupby: [SERIES_ID],
-      fields: [metric, metric, xField, xField],
-      ops: ['min', 'max', 'min', 'max'],
-      as: ['rscDrawInYMin', 'rscDrawInYMax', 'rscDrawInXMin', 'rscDrawInXMax'],
-    },
-    {
-      type: 'filter',
-      expr: `!${DRAW_IN_DONE} && (datum.${metric} === datum.rscDrawInYMin || datum.${metric} === datum.rscDrawInYMax || datum.${xField} === datum.rscDrawInXMin || datum.${xField} === datum.rscDrawInXMax)`,
-    }
-  );
-  return { name: getLineDrawInExtentDataName(name), source, transform };
+  // sweep past the last point by half the thickest stroke so the end cap is revealed before the clip opens fully
+  const capEnd = `${end} + ${CHART_SIZE_HOVER_STROKE_WIDTH} / 2`;
+  signals.push({ name: clipXSignal, update: `lerp([${start}, ${capEnd}], ${DRAW_IN_ANIM_T_EASED})` });
 };
 
 /**
@@ -235,8 +172,12 @@ export const getLineDrawInClip = (name: string, clipToPlotHeight = false): Clip 
   const right = `(${DRAW_IN_ANIM_T} >= 1 ? width + ${o} : ${name}_${DRAW_IN_CLIP_X})`;
   const top = clipToPlotHeight ? '0' : `-${o}`;
   const bottom = clipToPlotHeight ? 'height' : `(height + ${o})`;
+  // a lone move to the final right edge keeps the clip's bounds, and so the chart's layout, the same during the sweep
+  const finalBounds = `'M' + (width + ${o}) + ',${top}'`;
   // the clip is a rectangle from (-o, top) to (right, bottom), written as an SVG path
-  return { path: { signal: `'M-${o},${top}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` } };
+  return {
+    path: { signal: `${finalBounds} + 'M-${o},${top}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` },
+  };
 };
 
 /**
