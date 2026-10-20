@@ -1,7 +1,5 @@
 ---
 '@spectrum-charts/constants': minor
-'@spectrum-charts/react-spectrum-charts-s2': minor
-'@spectrum-charts/vega-spec-builder-s2': minor
 ---
 
 S2 Donut `ChartInspect` and `ChartPopover` now render default content (color swatch, series name, and share of the visible total with its short-number value, e.g. `65.2% (23K)`, formatted with the chart locale) without requiring children.
