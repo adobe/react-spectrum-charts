@@ -1,0 +1,74 @@
+# Data
+
+Every chart reads its data from the `data` prop on `Chart`. Marks, axes, and legends inside it name the fields they use.
+
+## Shape
+
+`data` is a flat array of objects, one per data point. Each object has the same fields, and each value is a string, number, boolean, or `null`:
+
+```ts
+const data = [
+  { date: '2026-03-02T00:00:00', device: 'Desktop', visits: 3120 },
+  { date: '2026-03-02T00:00:00', device: 'Mobile', visits: 2280 },
+  { date: '2026-03-03T00:00:00', device: 'Desktop', visits: 3480 },
+  { date: '2026-03-03T00:00:00', device: 'Mobile', visits: 2410 },
+];
+```
+
+Use one row per point, not one row per date with a column per series. A line chart with two series has a row for each series at each date, as above.
+
+## Field names
+
+Marks take the names of the fields to draw:
+
+-   `dimension`: the field for the x-axis, or the categories.
+-   `metric`: the numeric field that sets each point's value.
+-   `color`: the field that splits rows into series. Each distinct value gets its own color and legend entry.
+
+```tsx
+<Chart data={data}>
+  <Line dimension="date" metric="visits" color="device" />
+</Chart>
+```
+
+If your data already uses the default names, you can leave the props off. `Line` reads `datetime` and `value`, `Bar` reads `category` and `value`, and `Donut` reads `value` and colors by `series`. Without `color`, `Line` and `Bar` draw every row as one series. Each chart's page lists its fields and defaults: [Line](/react-spectrum-charts/s2/docs/docs/line#data), [Bar](/react-spectrum-charts/s2/docs/docs/bar#data), [Donut](/react-spectrum-charts/s2/docs/docs/donut#data).
+
+## Dates
+
+Pass dates as milliseconds since the epoch, like `Date.now()` returns. ISO strings, like `'2026-03-02T09:00:00'`, also work on time scales; they're parsed with the browser's `Date`.
+
+`Chart` copies `data` with `JSON.stringify`, so `Date` objects become ISO strings. Convert dates to timestamps before you pass them in.
+
+Dates display in the user's local time zone. A timestamp at UTC midnight, or a date-only string like `'2026-03-02'` (which parses as UTC), shows as the previous day in time zones west of UTC. For daily data, use timestamps for local midnight or include a time in the string, like the examples on this page.
+
+## Missing values
+
+To leave a value out of an `Area`, set it to `null`. A stacked `Area` treats it as 0, and a floating `Area` leaves a gap ([Area](/react-spectrum-charts/s2/docs/docs/area#missing-values)). `undefined` and `NaN` are treated the same as `null`. A `Line` doesn't support gaps yet; leave the row out and the line connects the points on either side.
+
+## Reserved fields
+
+The chart adds fields to each row as it draws. Don't use these names in your data:
+
+-   Any field that starts with `rsc`, like `rscMarkId` and `rscSeriesId`.
+-   `datetime0` and `datetime1`, on charts with a time scale.
+-   The metric name followed by `0` or `1`, like `value0` and `value1`, on stacked bars and areas.
+
+## Row IDs
+
+The chart gives each row its own ID. To refer to rows from outside the chart, for example with `highlightedItem`, give each row a unique ID field and name it with `idKey` on `Chart`. See [idKey](/react-spectrum-charts/s2/docs/docs/chart#idkey).
+
+## Empty data and loading
+
+An empty `data` array shows an empty state with `emptyStateText` instead of the chart. Set `loading` while you fetch data to show a progress circle. See [Empty and loading](/react-spectrum-charts/s2/docs/docs/chart#empty-and-loading).
+
+## Updating data
+
+To update the chart, pass a new array. The chart redraws whenever `data` is a different array than on the last render, and doesn't notice changes made to the same array in place.
+
+Because every new array redraws the chart, keep `data` stable across renders. Build it outside the component, or memoize it:
+
+```tsx
+const data = useMemo(() => rows.map((row) => ({ ...row, date: Date.parse(row.date) })), [rows]);
+```
+
+Redrawing calls `onVegaViewReady` with a new view. It doesn't replay the draw-in animation; see [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).

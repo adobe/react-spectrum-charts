@@ -1,0 +1,33 @@
+# React Spectrum Charts S2
+
+> Spectrum 2 charts for React — alpha package documentation
+
+## Docs
+
+- [Overview](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/overview.md): React Spectrum Charts for Spectrum 2, a declarative React library for building Spectrum 2 data visualizations.
+- [Chart](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/chart.md): The Chart container that holds data, sizing, theming, and shared state for every chart.
+- [Line](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/line.md): Line charts that show how one or more series change over time or across ordered categories.
+- [Bar](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/bar.md): Vertical and horizontal bar charts, stacked or dodged, for comparing values across categories.
+- [Donut](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/donut.md): Donut, pie, and semicircle charts that show how categories contribute to a whole.
+- [Area](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/area.md): Stacked and floating area charts that show how series add up over time or fill a range between two values.
+- [Bullet](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/bullet.md): Bullet charts that compare one or more metrics against a target, with optional threshold bands.
+- [Combo](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/combo.md): Bar and line marks that share a dimension in one chart, with an optional second axis.
+- [Scatter](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/scatter.md): Scatter plots that show the relationship between two numeric values, with optional size, color, paths, labels, and trendlines.
+- [Axis](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/axis.md): Axes that label a chart's scales with formatted values, gridlines, reference lines, and thumbnails.
+- [Legend](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/legend.md): A key that names each series in a chart, with options to hide, highlight, and describe series.
+- [Title](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/title.md): A text title drawn on any side of a chart, with its alignment, weight, and size.
+- [ChartInspect and ChartPopover](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/interaction.md): Show details about a data point on hover with ChartInspect and on click with ChartPopover.
+- [ChartActionBar](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/chart-action-bar.md): A floating toolbar of actions that opens when a user clicks a point on a line chart.
+- [Getting started](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/getting-started.md): Install React Spectrum Charts for Spectrum 2, set up your app, and render your first chart.
+- [Data](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/data.md): The shape of chart data, how marks find their fields, and how to handle dates, missing values, and updates.
+- [Sizing](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/sizing.md): How charts fill their container, set width and height, and adapt line and label sizes to the chart's width.
+- [Colors and theming](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/colors-and-theming.md): Match a chart to light or dark themes, pick palettes, and control colors, line types, and other style scales.
+- [Localization](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/localization.md): Format numbers, currency, and dates for a locale, and translate the text a chart shows.
+- [Interactivity](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/interactivity.md): Choose between tooltips, popovers, and action bars, and control highlighting and hidden series from your app.
+- [Animation](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/animation.md): Which animations charts play, how to turn them on and off, and how they respect reduced motion.
+- [Accessibility](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/accessibility.md): What charts expose to assistive technology today, what's still missing, and how they handle reduced motion.
+- [Exporting](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/exporting.md): Download, copy, or capture a chart as a PNG or SVG through a ref.
+- [Testing and troubleshooting](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/testing-and-troubleshooting.md): Set up Jest or Vitest for charts, debug the generated Vega spec, and fix common rendering problems.
+- [Stages and lab](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/stages-and-lab.md): What the lab, alpha, beta, RC, and stable stages mean, how to import lab components, and how components graduate.
+- [Migrating from S1](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1.md): Move a chart from @adobe/react-spectrum-charts to @spectrum-charts/react-spectrum-charts-s2, component by component.
+- [Upgrading to 0.10.0](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/upgrading-to-0-10-0.md): The code changes needed to upgrade @spectrum-charts/react-spectrum-charts-s2 from any earlier 0.x release to 0.10.0.

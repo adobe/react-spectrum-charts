@@ -1,0 +1,175 @@
+# Upgrading to 0.10.0
+
+This page lists the code changes that keep your charts building and working when you upgrade `@spectrum-charts/react-spectrum-charts-s2`: breaking changes, removed or renamed props, and peer dependency bumps. Changed defaults are listed too, so you know what will look different; adopt them rather than overriding them. Bug fixes and new features that need no code changes are left out; see the package changelog for those.
+
+Find the section for the version you're on, then apply it and every section above it. For example, from 0.7.0, apply [From 0.7.0](#from-070), [From 0.8.0](#from-080), and [From 0.9.0](#from-090).
+
+Coming from `@adobe/react-spectrum-charts` instead? See [Migrating from S1](/react-spectrum-charts/s2/docs/docs/guides/migrating-from-s1).
+
+## From 0.9.0
+
+### ESM only
+
+The package ships as ES modules only (`"type": "module"`). `require()`, the UMD global, and imports from inside `dist/` no longer work. Import from the package entry points instead.
+
+```ts
+// Before
+const { Chart } = require('@spectrum-charts/react-spectrum-charts-s2');
+
+// After
+import { Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+```
+
+Jest must transform `@spectrum-charts/*` and stub CSS imports. See [Testing and troubleshooting](/react-spectrum-charts/s2/docs/docs/guides/testing-and-troubleshooting#jest).
+
+### Node and peer dependencies
+
+-   Node `>=20.19.0` is required.
+-   `react-aria-components` `^1.14.0` is a new peer dependency.
+
+```bash
+yarn add @spectrum-charts/react-spectrum-charts-s2@^0.10.0 react-aria-components@^1.14.0
+```
+
+### Entry points
+
+The `@spectrum-charts/react-spectrum-charts-s2/pre-alpha` entry point is renamed `@spectrum-charts/react-spectrum-charts-s2/lab`, and `Donut`, `DonutSummary`, and `SegmentLabel` move to `@spectrum-charts/react-spectrum-charts-s2`. The `alpha` and `beta` subpaths are removed; they never pointed at published files. See [Stages and lab](/react-spectrum-charts/s2/docs/docs/guides/stages-and-lab).
+
+| Component | 0.9.0 import | 0.10.0 import |
+| --- | --- | --- |
+| `Donut`, `DonutSummary`, `SegmentLabel` | `@spectrum-charts/react-spectrum-charts-s2/pre-alpha` | `@spectrum-charts/react-spectrum-charts-s2` |
+| `Area`, `Bullet`, `Combo`, `Scatter`, `ScatterAnnotation`, `ScatterPath`, `Trendline`, `TrendlineAnnotation` | `@spectrum-charts/react-spectrum-charts-s2/pre-alpha` | `@spectrum-charts/react-spectrum-charts-s2/lab` |
+
+```ts
+// Before
+import { Donut, DonutSummary, Scatter, ScatterPath } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+
+// After
+import { Donut, DonutSummary } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter, ScatterPath } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+```
+
+### Donut
+
+`startAngle` and `otherItemColor` are removed. For a half donut, use `variant="semicircle"`. See [Semicircle](/react-spectrum-charts/s2/docs/docs/donut#semicircle).
+
+```tsx
+// Before
+<Donut metric="count" color="browser" startAngle={-Math.PI / 2} otherItemColor="gray-300" />
+
+// After
+<Donut metric="count" color="browser" />
+```
+
+`ChartInspect` and `ChartPopover` on a `Donut` now show the segment's color, name, share, and value when they have no children. If you added an empty one only to turn on hover or click, it now shows content. See [Default content](/react-spectrum-charts/s2/docs/docs/interaction#default-content).
+
+### Legend alignment
+
+Top and bottom legends are now aligned to the start of the chart, matching Spectrum 2. They were centered. No code change is needed. See [Position and alignment](/react-spectrum-charts/s2/docs/docs/legend#position-and-alignment).
+
+### Undefined Chart props
+
+`Chart` props explicitly set to `undefined` now fall back to their defaults instead of overriding them. Code like `height={settings.height}` now gets the default `height` when `settings.height` is missing. If you relied on `undefined` overriding a default, pass the value you want instead.
+
+### Draw-in on by default
+
+`animationTypes` now defaults to `['hover', 'drawIn']`, so lines, bars, donuts, and combos animate in when the chart mounts. Draw-in plays once per mount; re-renders and data updates don't replay it. No code change is needed. To turn off draw-in only:
+
+```tsx
+<Chart data={data} animationTypes={['hover']}>
+```
+
+See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
+
+### Reduced motion
+
+If the user prefers reduced motion, draw-in is skipped and hover animation still plays. No code change is needed. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation#reduced-motion).
+
+## From 0.8.0
+
+No changes need action.
+
+## From 0.7.0
+
+No changes need action.
+
+## From 0.6.0
+
+No changes need action.
+
+## From 0.5.0
+
+No changes need action. 0.6.0 added the `@spectrum-charts/react-spectrum-charts-s2/pre-alpha` entry point; it's `@spectrum-charts/react-spectrum-charts-s2/lab` in 0.10.0. See [From 0.9.0](#entry-points).
+
+## From 0.4.0
+
+No changes need action. 0.5.0 added `animationTypes`; its default, `['hover']`, keeps the hover animation and leaves draw-in off.
+
+## From 0.3.0
+
+### Peer dependencies
+
+0.4.0 replaced `@adobe/react-spectrum` with `@react-spectrum/s2` `>=1.0.0`. Charts render their own S2 `Provider`, so build `ChartInspect` and `ChartPopover` content with `@react-spectrum/s2` components.
+
+```bash
+yarn remove @adobe/react-spectrum
+yarn add @react-spectrum/s2
+```
+
+### ChartTooltip → ChartInspect
+
+`ChartTooltip` is renamed `ChartInspect`. Props and the children function are the same. Types are renamed too: `ChartTooltipProps` → `ChartInspectProps`, `ChartTooltipElement` → `ChartInspectElement`, and `TooltipHandler` → `InspectHandler`. See [ChartInspect](/react-spectrum-charts/s2/docs/docs/interaction#chartinspect).
+
+```tsx
+// Before
+import { ChartTooltip } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Line dimension="datetime" metric="value">
+  <ChartTooltip>{(datum) => <div>{datum.value}</div>}</ChartTooltip>
+</Line>
+
+// After
+import { ChartInspect } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Line dimension="datetime" metric="value">
+  <ChartInspect>{(datum) => <div>{datum.value}</div>}</ChartInspect>
+</Line>
+```
+
+### Chart theme
+
+The `theme` prop on `Chart` is removed. Use `colorScheme`. See [Color and theme](/react-spectrum-charts/s2/docs/docs/chart#color-and-theme).
+
+```tsx
+// Before
+<Chart data={data} theme={darkTheme} colorScheme="dark">
+
+// After
+<Chart data={data} colorScheme="dark">
+```
+
+### Line size
+
+Line stroke width, point size, and hover rings now scale with the chart's width. Check your charts at the sizes you use. See [Size](/react-spectrum-charts/s2/docs/docs/line#size).
+
+## From 0.2.0
+
+### React 19
+
+0.3.0 raised the `react` and `react-dom` peer dependencies to `>=19.0.0`. Upgrade React before upgrading the package.
+
+Skip 0.3.0 itself, which was published without its build output. Use 0.3.2 or later.
+
+## From 0.1.0
+
+### ReferenceLine
+
+0.2.0 removed `ReferenceLine`'s `color`, `icon`, `iconColor`, `layer`, `labelColor`, `labelFontWeight`, and `lineType`. Reference lines use a fixed Spectrum 2 style. 0.4.0 added `secondary` for a lighter line and `size`. See [ReferenceLine](/react-spectrum-charts/s2/docs/docs/axis#referenceline).
+
+```tsx
+// Before
+<ReferenceLine value={100} label="Target" color="gray-500" lineType="dashed" />
+
+// After
+<ReferenceLine value={100} label="Target" />
+```

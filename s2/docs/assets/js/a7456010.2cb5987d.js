@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_spectrum_charts_docs_s2=self.webpackChunk_spectrum_charts_docs_s2||[]).push([[235],{8552:s=>{s.exports=JSON.parse('{"name":"docusaurus-plugin-content-pages","id":"default"}')}}]);
