@@ -1,0 +1,21 @@
+/*!
+ * https://github.com/Starcounter-Jack/JSON-Patch
+ * (c) 2017-2021 Joachim Wester
+ * MIT license
+ */
+
+/*!
+ * https://github.com/Starcounter-Jack/JSON-Patch
+ * (c) 2017-2022 Joachim Wester
+ * MIT licensed
+ */
+
+/**
+ * @license React
+ * use-sync-external-store-shim.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
