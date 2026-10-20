@@ -40,11 +40,14 @@ package as ES modules for smaller bundles. It includes breaking changes; to upda
 
 ## Donut
 
+- New semicircle variant: `variant="semicircle"`. See [Semicircle](../donut.mdx#semicircle).
 - `ChartInspect` and `ChartPopover` show the segment's color, name, share, and value when they have
   no children. See [Default content](../interaction.mdx#default-content).
-- Hovering a segment shows its label, even when the label was hidden to avoid overlap.
+- Hovering a segment shows its label, even when the label was hidden to avoid overlap. Hovering or
+  clicking a label behaves like hovering or clicking its segment.
 - Ring thickness, label spacing, and donut size scale with the chart size, and side legends stay
   next to the donut.
+- Pie donuts have a 1px gap between segments.
 - Semicircle `DonutSummary` deltas sit inside the arc, and summary text that would truncate
   completely is hidden.
 - Fixed label overlap, tiny segments, and donuts growing or shifting on resize.
@@ -55,7 +58,8 @@ package as ES modules for smaller bundles. It includes breaking changes; to upda
   don't fit. New `overflow` and `dataKey` props. See [BarDirectLabel](../bar.mdx#bardirectlabel).
 - Better keyboard and screen reader support: dodged bars can be focused, focused bars and groups
   are described by their values, and Shift+Tab returns to the last focused bar.
-- Fixed `highlightedItem`, `ChartInspect` group highlighting, and short-number label formats.
+- Fixed `highlightedItem` (which now respects `idKey`), `ChartInspect` group highlighting, and
+  short-number label formats.
 
 ## Line
 
@@ -63,21 +67,29 @@ package as ES modules for smaller bundles. It includes breaking changes; to upda
   `interpolate="basis"`.
 - Fixed charts collapsing or flickering with fixed metric-axis ranges or when every series is
   hidden.
+- Fixed crashes with `highlightedItem` on a line without `ChartInspect` or `ChartPopover`, and with
+  `MetricRange`.
+- Hovering a point at the chart edge no longer shifts the chart.
 
 ## Axis and reference lines
 
-- Reference lines outside the axis range no longer collapse the chart.
+- Reference lines outside the axis range no longer collapse the chart or flicker on hover.
 - A right axis lines up with a gridded left axis.
 
 ## Lab charts
 
-- **Area**, **Bullet**, and **Scatter**: fixes for `highlightedItem`, hidden or missing targets,
-  and outlines.
+- **Area**: fixed a crash with `highlightedItem`, and band hover points sit on the band's upper
+  edge.
+- **Bullet**: fixed hidden and missing targets, and value labels always use gray-900.
 - **Combo** respects the chart's `animations` and `animationTypes`.
+- **Scatter**: fixed `highlightedItem`, `stroke` set to a data field, and dotted outlines.
+- **Trendline**: dotted trendlines are visible again.
 
 ## Performance and stability
 
-- Charts render once when first displayed instead of twice, and hover animations stay smooth on
-  charts with many points or series.
+- Charts render once when first displayed instead of twice, so they appear faster and no longer
+  stay blank until hovered.
+- Hover animations stay smooth on charts with many points or series, and charts with many bars
+  render faster.
 - Off-screen and idle charts do no animation work.
 - A chart with no children logs an error instead of throwing.

@@ -13,8 +13,9 @@ New features and changed defaults.
 - Top and bottom legends align to the start of the chart by default.
 - Donut segments sort largest first by default; set `sortOrder="data"` to keep data order.
 - `Chart` props set to `undefined` fall back to their defaults.
-- Donut `ChartInspect` and `ChartPopover` show default content (color, name, share, and value) when they have no children.
-- Hovering a donut segment shows its label even when it was hidden to avoid overlap.
+- Add the semicircle donut variant (`variant="semicircle"`).
+- Donut `ChartInspect` and `ChartPopover` show default content (color, name, share, and value) when they have no children. `@spectrum-charts/vega-spec-builder-s2` exports the `formatPercentWithValue(locale)` formatter used for it.
+- Hovering a donut segment shows its label even when it was hidden to avoid overlap, and donut labels respond to hover and click like their segments.
 - Donut ring thickness, label spacing, and size scale with the chart size.
 - `BarDirectLabel` follows each bar in stacked and dodged bars and hides labels that overlap or don't fit. Adds `overflow` and `dataKey`.
 - Better bar keyboard and screen reader support, including focusable dodged bars and value summaries for focused bars and groups.
