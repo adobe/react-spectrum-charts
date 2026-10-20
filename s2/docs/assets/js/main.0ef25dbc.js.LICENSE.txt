@@ -13,11 +13,11 @@
  * MIT licensed
  */
 
-/*! @spectrum-charts/core-s2@v0.10.0 */
+/*! @spectrum-charts/core-s2@v0.11.0 */
 
-/*! @spectrum-charts/react-spectrum-charts-s2@v0.10.0 */
+/*! @spectrum-charts/react-spectrum-charts-s2@v0.11.0 */
 
-/*! @spectrum-charts/vega-spec-builder-s2@v0.10.0 */
+/*! @spectrum-charts/vega-spec-builder-s2@v0.11.0 */
 
 /**
  * @license React
