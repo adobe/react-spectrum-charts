@@ -53,6 +53,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Release notes',
+      collapsed: false,
+      items: ['release-notes/0-10-0'],
+    },
+    {
+      type: 'category',
       label: 'Migration',
       collapsed: false,
       items: ['guides/migrating-from-s1', 'guides/upgrading-to-0-10-0'],
