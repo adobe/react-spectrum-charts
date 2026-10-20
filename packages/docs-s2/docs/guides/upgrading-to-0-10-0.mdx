@@ -88,6 +88,24 @@ import { Scatter, ScatterPath } from '@spectrum-charts/react-spectrum-charts-s2/
 when they have no children. If you added an empty one only to turn on hover or click, it now shows
 content. See [Default content](../interaction.mdx#default-content).
 
+Segments are now sorted largest-first. To keep the order of your data, for example for ordered
+categories like survey responses, set `sortOrder="data"`. Boolean donuts keep the data order. See
+[Semicircle](../donut.mdx#semicircle).
+
+```tsx
+<Donut metric="count" color="response" sortOrder="data" />
+```
+
+### Bar
+
+Bar hover fades now animate by default, like Line and Donut. No code change is needed. To turn off
+hover animation, leave `'hover'` out of `animationTypes` or set `animations={false}`.
+
+`BarDirectLabel` now hides labels outside the bar that would overlap a bar or another label. Labels
+inside the bar that don't fit are hidden too, except at `position="start"`, where they move
+outside the bar tip. To move them outside instead of hiding them, set `overflow="spill"`. See
+[BarDirectLabel](../bar.mdx#bardirectlabel).
+
 ### Legend alignment
 
 Top and bottom legends are now aligned to the start of the chart, matching Spectrum 2. They were
