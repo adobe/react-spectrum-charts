@@ -13,7 +13,8 @@ import { render, waitFor } from '@testing-library/react';
 import { Spec, View, expressionFunction } from 'vega';
 import embed from 'vega-embed';
 
-import { VegaChart, VegaChartProps, resizeView } from './VegaChart.js';
+import { VegaChart, VegaChartProps } from './VegaChart.js';
+import { resizeView } from './viewHost/index.js';
 import { ANIMATION_TIMER } from '@spectrum-charts/core-s2/constants';
 
 import { attachAnimationTicker } from './animation/animationTicker.js';

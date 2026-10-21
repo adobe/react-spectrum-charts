@@ -6,9 +6,11 @@ Assumes you've already read `architecture-core.md`.
 
 ---
 
-## VegaChart Rendering: Two Separate Effects
+## VegaChart Rendering
 
-`VegaChart.tsx` has two effects that must never be merged:
+### S1: Two Separate Effects
+
+S1's `VegaChart.tsx` has two effects that must never be merged:
 
 **Embed effect** (deps: spec, data, config, signals — NOT width/height)
 Calls `vega-embed`. Creates a new Vega `View`. Destroys the old one. Expensive. Any flicker or unnecessary full re-render traces to something that should be in the resize effect accidentally appearing in this dep array.
@@ -16,9 +18,20 @@ Calls `vega-embed`. Creates a new Vega `View`. Destroys the old one. Expensive. 
 **Resize effect** (deps: width, height only)
 Calls `view.width(w).height(h).resize().runAsync()`. No teardown. Cheap.
 
-The spec must never depend on `chartWidth`/`chartHeight`. The only exception is Venn, which bakes circle positions into the spec itself.
-
 **`hasMounted` / `needsInitEmbed` pattern**: handles the case where dimensions start at 0. The chart waits for a non-zero size before running the embed effect for the first time.
+
+### S2: the View Host
+
+S2's `VegaChart.tsx` is a thin React wrapper around `viewHost/createViewHost` (framework-agnostic; ESLint bans React imports there). One effect creates and destroys the host; another passes every input (spec, table, signals, config, locale, padding, renderer, size, tooltip, `onNewView`) to `host.update()`, which routes it:
+
+- **Rebuild** (new `vega-embed` view, old one finalized): the *program* changed — the spec JSON with TABLE values and signal values removed (`viewHost/updateRouting.ts`) — or config, locale, padding, renderer, tooltip or `onNewView` changed, or a draw-in chart went empty ↔ non-empty.
+- **Incremental**: changed signal values go through `view.signal`, changed table content through `view.change`, size through `resizeView`, then one run. No new view; `onNewView` isn't called.
+- **No-op**: equal inputs (table compared by content).
+- **None**: zero width or height, until the chart has a size.
+
+Updates that arrive during an embed are applied once it resolves. `hiddenSeries` stays in the program (`PROGRAM_SIGNALS`) because Vega's legend layout doesn't re-measure symbols after a signal change. The host also owns the animation ticker and carries draw-in across rebuilds.
+
+In both, the spec must never depend on `chartWidth`/`chartHeight`, or every resize rebuilds. The only exception is Venn (S1 only), which bakes circle positions into the spec itself.
 
 ---
 
