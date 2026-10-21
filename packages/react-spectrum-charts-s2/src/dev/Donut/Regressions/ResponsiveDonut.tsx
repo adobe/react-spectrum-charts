@@ -32,7 +32,7 @@ const countReached = (breakpoints: number[], size: number): number =>
   breakpoints.filter((breakpoint) => size >= breakpoint).length;
 
 /** Mirrors the spec builder: the tier comes from chart size, not the donut's own diameter. */
-const getSizeTierIndex = (containerWidth: number): number =>
+export const getSizeTierIndex = (containerWidth: number): number =>
   countReached(DONUT_SIZE_TIER_LABELED_CHART_SIZES, containerWidth);
 
 export const getEffectiveDiameter = (containerWidth: number): number => {
@@ -90,7 +90,7 @@ const HANDLE_STYLES = `
   }
 `;
 
-const TIER_LABELS = ['XS', 'S', 'M', 'L', 'XL'];
+export const TIER_LABELS = ['XS', 'S', 'M', 'L', 'XL'];
 const THRESHOLDS = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint, i) => ({
   px: DONUT_SIZE_TIER_LABELED_CHART_SIZES[i],
   label: TIER_LABELS[i + 1],

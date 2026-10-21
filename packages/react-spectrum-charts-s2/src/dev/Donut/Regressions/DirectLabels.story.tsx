@@ -16,6 +16,7 @@ import { StoryFn } from '@storybook/react';
 import { SegmentLabel } from '../../../components/index.js';
 import { basicDonutData, sliveredDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
+import { ResizableDonut } from './ResizableDonut.js';
 import { ResponsiveDonut } from './ResponsiveDonut.js';
 
 export default {
@@ -31,9 +32,9 @@ const ResponsiveStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
 );
 
 const AdvancedStory: StoryFn<typeof SegmentLabel> = (args): ReactElement => (
-  <ResponsiveDonut data={basicDonutData} initialWidth={500}>
+  <ResizableDonut data={basicDonutData} initialWidth={500} initialHeight={500}>
     <SegmentLabel {...args} />
-  </ResponsiveDonut>
+  </ResizableDonut>
 );
 
 // sliveredDonutData has 15 segments (vs. basicDonutData's 7) - a denser stress test for label
