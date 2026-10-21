@@ -15,7 +15,7 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useColorMode } from '@docusaurus/theme-common';
 import { useMove } from 'react-aria';
 
-import { ActionButton, Badge, Provider, Switch, Text } from '@react-spectrum/s2';
+import { ActionButton, Badge, Card, Provider, Switch, Text } from '@react-spectrum/s2';
 import {
   DONUT_BASE_PADDING,
   DONUT_LABEL_MIN_SPACE_RATIO,
@@ -83,7 +83,11 @@ const ResizableDonut = () => {
   });
 
   return (
-    <Provider colorScheme={colorMode} background="base">
+    <Provider
+      colorScheme={colorMode}
+      background="layer-1"
+      UNSAFE_style={{ width: 'fit-content', padding: 16, borderRadius: 16 }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8, flexWrap: 'wrap' }}>
         <Switch isSelected={labeled} onChange={setLabeled}>
           Segment labels
@@ -101,57 +105,58 @@ const ResizableDonut = () => {
         <Text>{`Donut diameter: ${diameter}px`}</Text>
         <Text>{`Ring width: ${DONUT_RING_WIDTHS[tierIndex]}px`}</Text>
       </div>
-      <div style={{ overflowX: 'auto' }}>
-        <div style={{ position: 'relative', width: MAX_SIZE + HANDLE_SIZE, height: MAX_SIZE + HANDLE_SIZE }}>
-          {showBreakpoints &&
-            breakpoints.map((breakpoint, index) => (
-              <div
-                key={TIERS[index + 1]}
+      <div style={{ position: 'relative', width: MAX_SIZE, height: MAX_SIZE }}>
+        {showBreakpoints &&
+          breakpoints.map((breakpoint, index) => (
+            <div
+              key={TIERS[index + 1]}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: breakpoint,
+                height: breakpoint,
+                boxSizing: 'border-box',
+                border: `1px dashed ${ACCENT}`,
+                opacity: chartSize >= breakpoint ? 1 : 0.4,
+                pointerEvents: 'none',
+                zIndex: 10,
+              }}
+            >
+              <span
                 style={{
                   position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: breakpoint,
-                  height: breakpoint,
-                  boxSizing: 'border-box',
-                  border: `1px dashed ${ACCENT}`,
-                  opacity: chartSize >= breakpoint ? 1 : 0.4,
-                  pointerEvents: 'none',
-                  zIndex: 10,
+                  bottom: 2,
+                  right: 4,
+                  fontFamily: ADOBE_CLEAN_FONT,
+                  fontSize: 11,
+                  lineHeight: 1,
+                  color: ACCENT,
+                  whiteSpace: 'nowrap',
                 }}
               >
-                <span
-                  style={{
-                    position: 'absolute',
-                    bottom: 2,
-                    right: 4,
-                    fontFamily: ADOBE_CLEAN_FONT,
-                    fontSize: 11,
-                    lineHeight: 1,
-                    color: ACCENT,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {`${TIERS[index + 1]} ≥ ${breakpoint}px`}
-                </span>
-              </div>
-            ))}
-          <div style={{ position: 'absolute', top: 0, left: 0 }}>
-            <Chart data={browserLongTailData} width={size.width} height={size.height}>
-              <Donut metric="count" color="browser">
-                <DonutSummary label="Visitors" />
-                {labeled ? <SegmentLabel percent value={false} swatch showValueRow /> : undefined}
-              </Donut>
-            </Chart>
-          </div>
+                {`${TIERS[index + 1]} ≥ ${breakpoint}px`}
+              </span>
+            </div>
+          ))}
+        <Card
+          variant="primary"
+          UNSAFE_style={{ position: 'absolute', top: 0, left: 0, width: size.width, height: size.height, padding: 0 }}
+        >
+          <Chart data={browserLongTailData} width={size.width} height={size.height}>
+            <Donut metric="count" color="browser">
+              <DonutSummary label="Visitors" />
+              {labeled ? <SegmentLabel percent value={false} swatch showValueRow /> : undefined}
+            </Donut>
+          </Chart>
           <button
             type="button"
             aria-label={`Resize chart, ${size.width} by ${size.height} pixels. Use arrow keys to resize.`}
             {...moveProps}
             style={{
               position: 'absolute',
-              left: size.width - HANDLE_SIZE,
-              top: size.height - HANDLE_SIZE,
+              right: 0,
+              bottom: 0,
               width: HANDLE_SIZE,
               height: HANDLE_SIZE,
               cursor: 'nwse-resize',
@@ -169,7 +174,7 @@ const ResizableDonut = () => {
               <path d="M14 4 4 14M14 9l-5 5" style={{ stroke: GRIP_COLOR, strokeWidth: 1.5, strokeLinecap: 'round' }} />
             </svg>
           </button>
-        </div>
+        </Card>
       </div>
     </Provider>
   );
@@ -180,15 +185,8 @@ const ResizableDonut = () => {
  * @returns example element
  */
 export const ResizableDonutExample = () => (
-  <div
-    style={{
-      padding: 16,
-      marginBottom: 'var(--ifm-leading)',
-      background: 'var(--ifm-color-emphasis-100)',
-      borderRadius: 16,
-    }}
-  >
-    <BrowserOnly fallback={<div style={{ height: MAX_SIZE + HANDLE_SIZE + 100 }} />}>
+  <div style={{ maxWidth: '100%', overflowX: 'auto', marginBottom: 'var(--ifm-leading)' }}>
+    <BrowserOnly fallback={<div style={{ width: MAX_SIZE, height: MAX_SIZE + 100 }} />}>
       {() => <ResizableDonut />}
     </BrowserOnly>
   </div>

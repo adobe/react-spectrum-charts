@@ -13,7 +13,7 @@ import { ReactElement, useRef, useState } from 'react';
 
 import { useMove } from 'react-aria';
 
-import { ActionButton, Badge, Switch, Text } from '@react-spectrum/s2';
+import { ActionButton, Badge, Card, Switch, Text } from '@react-spectrum/s2';
 import {
   DONUT_BASE_PADDING,
   DONUT_LABEL_MIN_SPACE_RATIO,
@@ -116,7 +116,7 @@ export const ResizableDonut = ({
         <Text>{`Donut diameter: ${diameter}px`}</Text>
         <Text>{`Ring width: ${DONUT_RING_WIDTHS[tierIndex]}px`}</Text>
       </div>
-      <div style={{ position: 'relative', width: MAX_SIZE + HANDLE_SIZE, height: MAX_SIZE + HANDLE_SIZE }}>
+      <div style={{ position: 'relative', width: MAX_SIZE, height: MAX_SIZE }}>
         {showBreakpoints &&
           breakpoints.map((breakpoint, index) => (
             <div
@@ -151,39 +151,42 @@ export const ResizableDonut = ({
               </span>
             </div>
           ))}
-        <div style={{ position: 'absolute', top: 0, left: 0 }}>
+        <Card
+          variant="primary"
+          UNSAFE_style={{ position: 'absolute', top: 0, left: 0, width: size.width, height: size.height, padding: 0 }}
+        >
           <Chart {...chartProps} width={size.width} height={size.height}>
             <Donut metric="count" color="browser">
               {summary}
               {labeled ? segmentLabel : undefined}
             </Donut>
           </Chart>
-        </div>
-        <button
-          type="button"
-          aria-label={`Resize chart, ${size.width} by ${size.height} pixels. Use arrow keys to resize.`}
-          {...moveProps}
-          style={{
-            position: 'absolute',
-            left: size.width - HANDLE_SIZE,
-            top: size.height - HANDLE_SIZE,
-            width: HANDLE_SIZE,
-            height: HANDLE_SIZE,
-            cursor: 'nwse-resize',
-            touchAction: 'none',
-            padding: 0,
-            border: 'none',
-            zIndex: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'transparent',
-          }}
-        >
-          <svg viewBox="0 0 16 16" width={HANDLE_SIZE} height={HANDLE_SIZE} aria-hidden="true">
-            <path d="M14 4 4 14M14 9l-5 5" style={{ stroke: GRIP_COLOR, strokeWidth: 1.5, strokeLinecap: 'round' }} />
-          </svg>
-        </button>
+          <button
+            type="button"
+            aria-label={`Resize chart, ${size.width} by ${size.height} pixels. Use arrow keys to resize.`}
+            {...moveProps}
+            style={{
+              position: 'absolute',
+              right: 0,
+              bottom: 0,
+              width: HANDLE_SIZE,
+              height: HANDLE_SIZE,
+              cursor: 'nwse-resize',
+              touchAction: 'none',
+              padding: 0,
+              border: 'none',
+              zIndex: 20,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+            }}
+          >
+            <svg viewBox="0 0 16 16" width={HANDLE_SIZE} height={HANDLE_SIZE} aria-hidden="true">
+              <path d="M14 4 4 14M14 9l-5 5" style={{ stroke: GRIP_COLOR, strokeWidth: 1.5, strokeLinecap: 'round' }} />
+            </svg>
+          </button>
+        </Card>
       </div>
     </div>
   );
