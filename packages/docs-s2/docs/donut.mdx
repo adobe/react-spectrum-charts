@@ -7,6 +7,7 @@ description: Donut, pie, and semicircle charts that show how categories contribu
 
 import { PropsTable } from '@site/src/components/PropsTable';
 import { DataCode } from '@site/src/components/examples/DataCode';
+import { ResizableDonutExample } from '@site/src/components/examples/ResizableDonut';
 import {
   DonutAnimationPlayground,
   DonutBooleanPlayground,
@@ -99,7 +100,7 @@ Semicircles don't support `SegmentLabel`.
 `Chart` fills the width of its container and is 300px tall by default. The donut grows to fit
 the smaller of the two, so a semicircle in a wide container can be much larger than a full circle
 at the same height. Use `width`, `height`, `minWidth`, and `maxWidth` on `Chart` to constrain it.
-`DonutSummary` text scales with the donut.
+Ring width and `DonutSummary` text change with the donut's size; see [Responsive](#responsive).
 
 <DonutSizePlayground />
 
@@ -150,6 +151,68 @@ set `labelKey` to another field in the data.
 each group differently, or set `hideDeemphasizedLabels` to label only the emphasized segments.
 
 <DonutEmphasisPlayground />
+
+## Responsive
+
+A donut has five size tiers: XS, S, M, L, and XL. Each tier sets the ring width, the gap
+between segments, the `DonutSummary` and `SegmentLabel` font sizes, and how much label detail is
+shown. The donut's tier depends on the chart's smaller side, so a wide but short chart stays in
+the tier of its height. For semicircles, the smaller side is the smaller of the width and twice
+the height.
+
+Drag the bottom-right corner to resize the chart. The dashed squares show the chart size at which
+each tier starts. Turn off segment labels to see the breakpoints for a donut without labels.
+
+<ResizableDonutExample />
+
+### Breakpoints
+
+Without segment labels, the donut fills the chart's smaller side, less a 10px inset on each side,
+and changes tier when its diameter reaches 120px, 200px, 280px, or 400px.
+
+`SegmentLabel` reserves room on each side of the donut for labels: 60% of the donut's radius,
+plus the gap between the ring and its labels. The donut is smaller in the same chart, so each tier
+needs a larger chart. A labeled donut also stops growing when it reaches the next tier's diameter
+and stays that size until the chart reaches the next breakpoint. For example, an S donut stays at
+200px from a 334px chart until the chart reaches 344px and the donut becomes M.
+
+| Tier | Donut diameter | Chart size without labels | Chart size with `SegmentLabel` |
+| ---- | -------------- | ------------------------- | ------------------------------ |
+| XS   | Under 120px    | Under 140px               | Under 206px                    |
+| S    | 120–199px      | 140px                     | 206px                          |
+| M    | 200–279px      | 220px                     | 344px                          |
+| L    | 280–399px      | 300px                     | 472px                          |
+| XL   | 400px and up   | 420px                     | 674px                          |
+
+### Ring and summary
+
+| Tier | Ring width | Gap between segments | Summary value | Summary label |
+| ---- | ---------- | -------------------- | ------------- | ------------- |
+| XS   | 16px       | 1px                  | 18px          | 12px          |
+| S    | 18px       | 2px                  | 20px          | 14px          |
+| M    | 20px       | 2px                  | 22px          | 16px          |
+| L    | 22px       | 2px                  | 36px          | 20px          |
+| XL   | 40px       | 2px                  | 50px          | 24px          |
+
+- The ring width is fixed per tier only at the default `holeRatio` of `0.85`. With any other
+  `holeRatio`, the ring stays proportional to the donut.
+- Pies (`holeRatio={0}`) always use a 1px gap between segments.
+- `DonutSummary` is hidden when the hole's radius is under 40px. Text that doesn't fit in the
+  hole is truncated with an ellipsis.
+- On semicircles, the `DonutSummary` delta is hidden below M.
+
+### Segment labels
+
+| Tier | Labels | Name / value | Name / value / value row (`swatch` or `showValueRow`) | Swatch | Value row | Gap to ring |
+| ---- | ------ | ------------ | ----------------------------------------------------- | ------ | --------- | ----------- |
+| XS   | Hidden | —            | —                                                     | —      | —         | 5px         |
+| S    | Shown  | 9 / 12px     | 10 / 13.5px                                           | Hidden | Hidden    | 5px         |
+| M    | Shown  | 10.5 / 14px  | 12 / 15.75px                                          | Shown  | Hidden    | 10px        |
+| L    | Shown  | 12 / 16px    | 14 / 18 / 11px                                        | Shown  | Shown     | 10px        |
+| XL   | Shown  | 15 / 20px    | 16 / 22.5 / 13.75px                                   | Shown  | Shown     | 15px        |
+
+At every tier, labels for segments narrower than about 17° and labels that would overlap a
+larger segment's label are hidden.
 
 ## Legend
 

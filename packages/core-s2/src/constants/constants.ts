@@ -262,7 +262,7 @@ export const DONUT_SUMMARY_MIN_RADIUS = 45;
 export const DEFAULT_HOLE_RATIO = 0.85;
 /**
  * S2 donut named size-tier (XS/S/M/L/XL) minimum-diameter cutpoints (the S/M/L/XL tiers' own named
- * diameters - 120/160/200/400), keyed off the donut's outer diameter. A diameter is "sticky" at a
+ * diameters - 120/200/280/400), keyed off the donut's outer diameter. A diameter is "sticky" at a
  * tier from that tier's own minimum up to (not including) the next tier's minimum - e.g. a diameter
  * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by every donut
  * feature that scales by size tier (ring width, slice gap, donut summary, direct/advanced labels).
@@ -296,7 +296,7 @@ export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
 export const DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT = 700;
 /** Minimum space reserved for segment label text on each side of an S2 donut, as a fraction of its radius (also caps a rich label's height) */
 export const DONUT_LABEL_MIN_SPACE_RATIO = 0.6;
-/** S2 labeled-donut chart size (min of width/height) where each tier starts, i.e. where the donut reaches the cutpoint with that tier's gap (206/280/344/674) */
+/** S2 labeled-donut chart size (min of width/height) where each tier starts, i.e. where the donut reaches the cutpoint with that tier's gap (206/344/472/674) */
 export const DONUT_SIZE_TIER_LABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map(
   // donut + widest labels on both sides, + the tier's label gap on both sides, + 2px padding on both sides
   (cutpoint, index) => cutpoint * (1 + DONUT_LABEL_MIN_SPACE_RATIO) + 2 * DONUT_LABEL_RING_GAPS[index + 1] + 4
