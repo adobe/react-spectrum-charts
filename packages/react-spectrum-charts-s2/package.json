@@ -92,7 +92,7 @@
   },
   "devDependencies": {
     "@internationalized/string-compiler": "^3.4.1",
-    "react-aria": "^3.48.0"
+    "react-aria": "3.48.0"
   },
   "resolutions": {
     "jackspeak": "2.1.1"
