@@ -23,7 +23,7 @@ import {
   DONUT_SIZE_TIER_LABELED_CHART_SIZES,
   DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
 } from '@spectrum-charts/core-s2/constants';
-import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { ADOBE_CLEAN_FONT, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart.js';
@@ -140,6 +140,7 @@ export const ResizableDonut = ({
                   position: 'absolute',
                   bottom: 2,
                   right: 4,
+                  fontFamily: ADOBE_CLEAN_FONT,
                   fontSize: 11,
                   lineHeight: 1,
                   color: ACCENT,

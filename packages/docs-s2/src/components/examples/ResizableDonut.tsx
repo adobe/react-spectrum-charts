@@ -25,11 +25,11 @@ import {
   DONUT_SIZE_TIER_LABELED_CHART_SIZES,
   DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
 } from '@spectrum-charts/core-s2/constants';
-import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { ADOBE_CLEAN_FONT, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
 
 import { DocsChart as Chart } from './DocsChart';
-import { browserData } from './data';
+import { browserLongTailData } from './data';
 
 const TIERS = ['XS', 'S', 'M', 'L', 'XL'];
 const MIN_SIZE = 80;
@@ -125,6 +125,7 @@ const ResizableDonut = () => {
                     position: 'absolute',
                     bottom: 2,
                     right: 4,
+                    fontFamily: ADOBE_CLEAN_FONT,
                     fontSize: 11,
                     lineHeight: 1,
                     color: ACCENT,
@@ -136,10 +137,10 @@ const ResizableDonut = () => {
               </div>
             ))}
           <div style={{ position: 'absolute', top: 0, left: 0 }}>
-            <Chart data={browserData} width={size.width} height={size.height}>
+            <Chart data={browserLongTailData} width={size.width} height={size.height}>
               <Donut metric="count" color="browser">
                 <DonutSummary label="Visitors" />
-                {labeled ? <SegmentLabel percent swatch showValueRow /> : undefined}
+                {labeled ? <SegmentLabel percent value={false} swatch showValueRow /> : undefined}
               </Donut>
             </Chart>
           </div>

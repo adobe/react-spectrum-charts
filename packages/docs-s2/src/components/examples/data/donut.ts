@@ -20,6 +20,16 @@ export const browserData = [
   { count: 4201, browser: 'Other' },
 ];
 
+export const browserLongTailData = [
+  { count: 10390, browser: 'Chrome' },
+  { count: 8281, browser: 'Firefox' },
+  { count: 7045, browser: 'Safari' },
+  { count: 6166, browser: 'Opera' },
+  { count: 4201, browser: 'Other' },
+  { count: 3261, browser: 'Brave' },
+  { count: 1021, browser: 'Unknown' },
+];
+
 export const booleanData = [
   { id: 'Success', value: 0.68 },
   { id: 'Failure', value: 0.32 },
