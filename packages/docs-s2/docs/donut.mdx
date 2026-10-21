@@ -170,50 +170,76 @@ labels.
 The size is set by the chart's shorter side. To show a donut at a given size, make the chart at
 least this tall and this wide:
 
-| Size | Without segment labels | With segment labels |
-| ---- | ---------------------- | ------------------- |
-| XS   | Under 140px            | Under 206px         |
-| S    | 140px                  | 206px               |
-| M    | 220px                  | 344px               |
-| L    | 300px                  | 472px               |
-| XL   | 420px                  | 674px               |
+| Size | Donut diameter | Chart size without segment labels | Chart size with segment labels |
+| ---- | -------------- | --------------------------------- | ------------------------------ |
+| XS   | Under 120px    | Under 140px                       | Under 206px                    |
+| S    | 120–200px      | 140px                             | 206px                          |
+| M    | 200–280px      | 220px                             | 344px                          |
+| L    | 280–400px      | 300px                             | 472px                          |
+| XL   | 400px and up   | 420px                             | 674px                          |
 
-- Segment labels sit outside the ring, so a labeled donut needs a larger chart to reach the same
-  size.
+- Without segment labels, the donut has 10px of padding on every side.
+- With segment labels, the donut leaves room on each side for its labels: the size's label gap
+  (see [Segment labels](#segment-labels)) plus 30% of the donut's diameter. The donut stops
+  growing once it reaches the next size's diameter, and stays there until the chart is large
+  enough to switch sizes. Room is reserved even at XS, where labels are hidden.
 - A semicircle only needs half the height, because it's half as tall as a full donut. A semicircle
   that's 300px wide and 150px tall is size L.
 - Semicircles and boolean donuts don't show segment labels, so they always use the sizes without
   labels.
 
-### What changes at each size
+### Ring
 
-| Size | Ring thickness | Gap between segments | Summary value | Summary label and delta |
-| ---- | -------------- | -------------------- | ------------- | ----------------------- |
-| XS   | 16px           | 1px                  | 18px          | 12px                    |
-| S    | 18px           | 2px                  | 20px          | 14px                    |
-| M    | 20px           | 2px                  | 22px          | 16px                    |
-| L    | 22px           | 2px                  | 36px          | 20px                    |
-| XL   | 40px           | 2px                  | 50px          | 24px                    |
+| Size | Ring thickness | Gap between segments |
+| ---- | -------------- | -------------------- |
+| XS   | 16px           | 1px                  |
+| S    | 18px           | 2px                  |
+| M    | 20px           | 2px                  |
+| L    | 22px           | 2px                  |
+| XL   | 40px           | 2px                  |
 
-- The ring thickness follows these sizes only at the default `holeRatio`. Pies always use a 1px gap.
-- The summary is hidden when the hole is too small to fit it, and long text is truncated.
-- On a semicircle, the summary delta is hidden at XS and S.
+- These ring thicknesses apply at the default `holeRatio` of `0.85`. With another `holeRatio`, the
+  ring stays proportional to the donut instead.
+- Pies (`holeRatio={0}`) always use a 1px gap.
 
-### Segment labels at each size
+### DonutSummary
 
-Labels show more detail as the donut grows. With `swatch` or `showValueRow`, labels use larger
-text than the default name-and-value labels.
+| Size | Value (extra bold) | Label | Delta | Delta on a semicircle |
+| ---- | ------------------ | ----- | ----- | --------------------- |
+| XS   | 18px               | 12px  | 12px  | Hidden                |
+| S    | 20px               | 14px  | 14px  | Hidden                |
+| M    | 22px               | 16px  | 16px  | 16px                  |
+| L    | 36px               | 20px  | 20px  | 20px                  |
+| XL   | 50px               | 24px  | 24px  | 24px                  |
 
-| Size | Shown                                       | Name / value text | With `swatch` or `showValueRow` |
-| ---- | ------------------------------------------- | ----------------- | ------------------------------- |
-| XS   | No labels                                   | —                 | —                               |
-| S    | Name and value                              | 9 / 12px          | 10 / 13.5px                     |
-| M    | Adds `swatch`                               | 10.5 / 14px       | 12 / 15.75px                    |
-| L    | Adds the `showValueRow` value row           | 12 / 16px         | 14 / 18px, value row 11px       |
-| XL   | Same as L, with larger text                 | 15 / 20px         | 16 / 22.5px, value row 13.75px  |
+- The summary is hidden when the hole is under 80px across. At the default `holeRatio`, that's a
+  chart under 132px without segment labels, or under 194px with them.
+- Text that doesn't fit in the hole is truncated with an ellipsis.
 
-- Very small segments (under about 17° of the ring) aren't labeled until they're hovered.
-- When labels would overlap, labels for larger segments are kept.
+### Segment labels
+
+Labels appear at size S and show more detail as the donut grows.
+
+| Size | Gap to ring | Name / value (default) | Name / value / value row (`swatch` or `showValueRow`) | Swatch | Value row |
+| ---- | ----------- | ---------------------- | ----------------------------------------------------- | ------ | --------- |
+| XS   | —           | Hidden                 | Hidden                                                | Hidden | Hidden    |
+| S    | 5px         | 9 / 12px               | 10 / 13.5px                                           | Hidden | Hidden    |
+| M    | 10px        | 10.5 / 14px            | 12 / 15.75px                                          | 16px   | Hidden    |
+| L    | 10px        | 12 / 16px              | 14 / 18 / 11px                                        | 16px   | Shown     |
+| XL   | 15px        | 15 / 20px              | 16 / 22.5 / 13.75px                                   | 16px   | Shown     |
+
+- **Default labels** show the name (regular) above the percent or value (bold), both gray-700.
+- **With `swatch` or `showValueRow`**, labels use larger text: the name (regular, gray-700), then
+  4px below it the percent or value (extra bold, gray-800). The swatch is a 16px rounded square,
+  8px from the name. The value row shows the segment's value (extra bold, gray-700), followed by
+  the total (regular) with `showTotal`. If a label is too tall for the donut, the space between its
+  lines shrinks but the text sizes don't.
+- When a segment is hovered, its label's percent or value takes the segment's color.
+- Segments smaller than about 17° of the ring aren't labeled until they're hovered.
+- Labels stay at least 4px apart. When labels would overlap, the hovered segment's label is kept
+  first, then labels for larger segments.
+- Labels stay at least 10px from the chart's left and right edges, and are truncated with an
+  ellipsis if needed.
 
 ## Legend
 
