@@ -16,7 +16,6 @@ import { useColorMode } from '@docusaurus/theme-common';
 import { useMove } from 'react-aria';
 
 import { ActionButton, Badge, Provider, Switch, Text } from '@react-spectrum/s2';
-import Resize from '@react-spectrum/s2/icons/Resize';
 import {
   DONUT_BASE_PADDING,
   DONUT_LABEL_MIN_SPACE_RATIO,
@@ -26,6 +25,7 @@ import {
   DONUT_SIZE_TIER_LABELED_CHART_SIZES,
   DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
 } from '@spectrum-charts/core-s2/constants';
+import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
 
 import { DocsChart as Chart } from './DocsChart';
@@ -36,7 +36,8 @@ const MIN_SIZE = 80;
 const KEY_STEP = 10;
 // just past the labeled XL breakpoint so every tier can be reached
 const MAX_SIZE = (DONUT_SIZE_TIER_LABELED_CHART_SIZES.at(-1) ?? 0) + 26;
-const HANDLE_SIZE = 20;
+const HANDLE_SIZE = 16;
+const GRIP_COLOR = `light-dark(${spectrum2Colors.light['gray-700']}, ${spectrum2Colors.dark['gray-700']})`;
 const ACCENT = 'rgb(220, 60, 60)';
 const INITIAL_SIZE = { width: 400, height: 400 };
 
@@ -148,8 +149,8 @@ const ResizableDonut = () => {
             {...moveProps}
             style={{
               position: 'absolute',
-              left: size.width - HANDLE_SIZE / 2,
-              top: size.height - HANDLE_SIZE / 2,
+              left: size.width - HANDLE_SIZE,
+              top: size.height - HANDLE_SIZE,
               width: HANDLE_SIZE,
               height: HANDLE_SIZE,
               cursor: 'nwse-resize',
@@ -163,7 +164,9 @@ const ResizableDonut = () => {
               background: 'transparent',
             }}
           >
-            <Resize />
+            <svg viewBox="0 0 16 16" width={HANDLE_SIZE} height={HANDLE_SIZE} aria-hidden="true">
+              <path d="M14 4 4 14M14 9l-5 5" style={{ stroke: GRIP_COLOR, strokeWidth: 1.5, strokeLinecap: 'round' }} />
+            </svg>
           </button>
         </div>
       </div>
