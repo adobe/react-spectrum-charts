@@ -13,7 +13,7 @@ import { Spec } from 'vega';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { getChangedSignals, prepareSpec, splitSpec } from './updateRouting.js';
+import { prepareSpec, splitSpec } from './vegaViewAdapter.js';
 
 const spec: Spec = {
   data: [
@@ -85,22 +85,5 @@ describe('splitSpec()', () => {
 
   test('should return an undefined table when the spec has no inline table', () => {
     expect(splitSpec({ data: [{ name: TABLE, url: 'data.json' }] }).table).toBeUndefined();
-  });
-});
-
-describe('getChangedSignals()', () => {
-  test('should return only signals whose values differ by content', () => {
-    const previous = new Map<string, unknown>([
-      ['a', 1],
-      ['b', ['x']],
-      ['c', null],
-    ]);
-    const next = new Map<string, unknown>([
-      ['a', 1],
-      ['b', ['x']],
-      ['c', 'y'],
-    ]);
-
-    expect(getChangedSignals(previous, next)).toEqual([['c', 'y']]);
   });
 });

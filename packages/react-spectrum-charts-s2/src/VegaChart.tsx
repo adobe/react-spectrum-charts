@@ -105,16 +105,12 @@ export const VegaChart: FC<VegaChartProps> = ({
   // the host compares what changed and rebuilds the view, updates it in place, resizes it or does nothing
   useEffect(() => {
     host.current?.update({
-      config,
+      environment: { config, locale, padding, renderer, tooltip },
       height,
-      locale,
       onNewView,
-      padding,
-      renderer,
       signals,
       spec,
       table: chartData.table,
-      tooltip,
       width,
     });
   }, [chartData.table, config, height, locale, onNewView, padding, renderer, signals, spec, tooltip, width]);

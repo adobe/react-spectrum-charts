@@ -9,12 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Spec } from 'vega';
+import { Spec, View } from 'vega';
 import * as vegaEmbed from 'vega-embed';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { ViewHostInputs, createViewHost } from './viewHost.js';
+import { VegaEnvironment, vegaViewAdapter } from './vegaViewAdapter.js';
+import { ViewHostAdapter, ViewHostInputs, createViewHost } from './viewHost.js';
 
 type FakeView = { [K in 'signal' | 'change' | 'resize' | 'runAsync' | 'width' | 'height' | 'finalize']: jest.Mock };
 
@@ -53,15 +54,11 @@ describe('createViewHost()', () => {
         })
     );
     base = {
-      config: {},
+      environment: { config: {}, locale: 'en-US', padding: 0, renderer: 'svg', tooltip: jest.fn() },
       height: 300,
-      locale: 'en-US',
       onNewView: jest.fn(),
-      padding: 0,
-      renderer: 'svg',
       spec,
       table: [{ x: 1 }],
-      tooltip: jest.fn(),
       width: 400,
     };
   });
@@ -97,22 +94,27 @@ describe('createViewHost()', () => {
 
     expect(host.update(base)).toBe('noop');
     expect(host.update({ ...base, table: [{ x: 1 }] })).toBe('noop');
+    expect(host.update({ ...base, environment: { ...base.environment } })).toBe('noop');
     expect(embedSpy).toHaveBeenCalledTimes(1);
     expect(fakeViews[0].change).not.toHaveBeenCalled();
   });
 
-  test.each<[string, Partial<ViewHostInputs>]>([
-    ['the program', { spec: { ...spec, marks: [{ type: 'symbol', from: { data: TABLE } }] } }],
-    ['the config', { config: { background: 'red' } }],
-    ['the locale', { locale: 'de-DE' }],
-    ['the padding', { padding: 4 }],
-    ['the renderer', { renderer: 'canvas' }],
-    ['the tooltip handler', { tooltip: jest.fn() }],
-    ['onNewView', { onNewView: jest.fn() }],
+  const withEnvironment = (change: Partial<VegaEnvironment>): Partial<ViewHostInputs> => ({
+    environment: { ...base.environment, ...change },
+  });
+
+  test.each<[string, () => Partial<ViewHostInputs>]>([
+    ['the program', () => ({ spec: { ...spec, marks: [{ type: 'symbol', from: { data: TABLE } }] } })],
+    ['the config', () => withEnvironment({ config: { background: 'red' } })],
+    ['the locale', () => withEnvironment({ locale: 'de-DE' })],
+    ['the padding', () => withEnvironment({ padding: 4 })],
+    ['the renderer', () => withEnvironment({ renderer: 'canvas' })],
+    ['the tooltip handler', () => withEnvironment({ tooltip: jest.fn() })],
+    ['onNewView', () => ({ onNewView: jest.fn() })],
   ])('should rebuild when %s changes', async (_, change) => {
     const host = await mount();
 
-    expect(host.update({ ...base, ...change })).toBe('rebuild');
+    expect(host.update({ ...base, ...change() })).toBe('rebuild');
     expect(embedSpy).toHaveBeenCalledTimes(2);
     expect(fakeViews[0].finalize).toHaveBeenCalled();
   });
@@ -159,7 +161,7 @@ describe('createViewHost()', () => {
   test('should discard a view whose embed resolves after a rebuild', async () => {
     const host = createViewHost(document.createElement('div'));
     host.update(base);
-    host.update({ ...base, padding: 4 });
+    host.update({ ...base, ...withEnvironment({ padding: 4 }) });
 
     resolvers[0]();
     resolvers[1]();
@@ -187,7 +189,7 @@ describe('createViewHost()', () => {
     host.destroy();
 
     expect(fakeViews[0].finalize).toHaveBeenCalled();
-    expect(host.update({ ...base, padding: 4 })).toBe('none');
+    expect(host.update({ ...base, ...withEnvironment({ padding: 4 }) })).toBe('none');
     expect(embedSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -200,5 +202,31 @@ describe('createViewHost()', () => {
 
     expect(fakeViews[0].finalize).toHaveBeenCalled();
     expect(base.onNewView).not.toHaveBeenCalled();
+  });
+
+  test('should create, update and destroy views through the given adapter', async () => {
+    const view = createFakeView() as unknown as View;
+    const adapter: ViewHostAdapter = {
+      ...vegaViewAdapter,
+      createView: jest.fn(() => Promise.resolve(view)),
+      startView: jest.fn(),
+      updateView: jest.fn(),
+      destroyView: jest.fn(),
+    };
+    const host = createViewHost(document.createElement('div'), adapter);
+    host.update(base);
+    await flush();
+    host.update({ ...base, table: [{ x: 2 }], width: 500 });
+    host.destroy();
+
+    expect(adapter.createView).toHaveBeenCalledTimes(1);
+    expect(adapter.startView).toHaveBeenCalledWith(view);
+    expect(adapter.updateView).toHaveBeenCalledWith(view, {
+      signals: [],
+      table: [{ x: 2 }],
+      size: { width: 500, height: 300 },
+    });
+    expect(adapter.destroyView).toHaveBeenCalledWith(view);
+    expect(embedSpy).not.toHaveBeenCalled();
   });
 });

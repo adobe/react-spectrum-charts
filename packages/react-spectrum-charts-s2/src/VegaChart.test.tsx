@@ -218,9 +218,8 @@ describe('VegaChart init render cycle', () => {
 
 			unmount();
 			resolveEmbed({ view } as unknown as Awaited<ReturnType<typeof embed>>);
-			await Promise.resolve();
 
-			expect(view.finalize).toHaveBeenCalledTimes(1);
+			await waitFor(() => expect(view.finalize).toHaveBeenCalledTimes(1));
 			expect(mockAttachAnimationTicker).not.toHaveBeenCalled();
 			expect(defaultProps.onNewView).not.toHaveBeenCalled();
 		});

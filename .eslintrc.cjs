@@ -139,6 +139,25 @@ module.exports = {
       },
     },
     {
+      // The adapter contract is shared by every rendering library, so it can't depend on one.
+      files: ['packages/react-spectrum-charts-s2/src/viewHost/viewAdapter.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            ...s2RestrictedImports,
+            patterns: [
+              ...s2RestrictedImports.patterns,
+              {
+                group: ['react', 'react-dom', 'react/*', 'react-dom/*', 'vega', 'vega-*', 'vega/*'],
+                message: 'viewAdapter must not depend on React or a rendering library.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
       // S2 publish closure: circular imports are not allowed. Type-definition folders hold recursive types.
       files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}'],
       excludedFiles: ['**/src/types/**'],
