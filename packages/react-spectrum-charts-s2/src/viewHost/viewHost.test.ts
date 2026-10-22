@@ -12,9 +12,10 @@
 import { Spec, View } from 'vega';
 import * as vegaEmbed from 'vega-embed';
 
-import { TABLE } from '@spectrum-charts/core-s2/constants';
+import { ANIMATION_TIMER, DRAW_IN_START, TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { VegaEnvironment, vegaViewAdapter } from './vegaViewAdapter.js';
+import { ViewAnimation } from './viewAdapter.js';
 import { ViewHostAdapter, ViewHostInputs, createViewHost } from './viewHost.js';
 
 type FakeView = { [K in 'signal' | 'change' | 'resize' | 'runAsync' | 'width' | 'height' | 'finalize']: jest.Mock };
@@ -228,5 +229,54 @@ describe('createViewHost()', () => {
     });
     expect(adapter.destroyView).toHaveBeenCalledWith(view);
     expect(embedSpy).not.toHaveBeenCalled();
+  });
+
+  describe('animation', () => {
+    const animatedSpec: Spec = {
+      ...spec,
+      data: [{ name: TABLE, values: [{ x: 1 }] }],
+      signals: [
+        { name: ANIMATION_TIMER, value: 0, on: [{ events: 'timer', update: 'now()' }] },
+        { name: DRAW_IN_START, value: 0 },
+      ],
+    };
+
+    const createAdapter = (animation: ViewHostAdapter['animation']): ViewHostAdapter => ({
+      ...vegaViewAdapter,
+      animation,
+      createView: jest.fn(() => Promise.resolve(createFakeView() as unknown as View)),
+      startView: jest.fn(),
+    });
+
+    test('should prepare the spec and attach the ticker through the adapter', async () => {
+      const detach = jest.fn();
+      const animation = {
+        ...(vegaViewAdapter.animation as ViewAnimation<Spec, View>),
+        prepareSpec: jest.fn(),
+        attachTicker: jest.fn(() => detach),
+      };
+      const container = document.createElement('div');
+      const host = createViewHost(container, createAdapter(animation));
+      host.update({ ...base, spec: animatedSpec });
+      await flush();
+      host.destroy();
+
+      expect(animation.prepareSpec).toHaveBeenCalledWith(expect.any(Object), undefined, expect.any(Number));
+      expect(animation.attachTicker).toHaveBeenCalledWith(expect.any(Object), container, expect.any(Number));
+      expect(detach).toHaveBeenCalledTimes(1);
+    });
+
+    test('should not draw in or prepare the spec when the adapter has no animation support', async () => {
+      const container = document.createElement('div');
+      const adapter = createAdapter(undefined);
+      const host = createViewHost(container, adapter);
+      host.update({ ...base, spec: animatedSpec });
+
+      expect(container.style.opacity).toBe('');
+      await flush();
+      const builtSpec = jest.mocked(adapter.createView).mock.calls[0][1];
+      expect(builtSpec.signals?.[0]).toHaveProperty('on');
+      host.destroy();
+    });
   });
 });

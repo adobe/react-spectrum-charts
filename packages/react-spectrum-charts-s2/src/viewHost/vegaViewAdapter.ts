@@ -15,7 +15,9 @@ import embed from 'vega-embed';
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 import { UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { SplitSpec, ViewAdapter, ViewSize } from './viewAdapter.js';
+import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from '../animation/animationTicker.js';
+import { getDrawInStart, hasDrawIn, hasTableRows, restoreDrawInStart } from '../animation/drawInContinuity.js';
+import { SplitSpec, ViewAdapter, ViewAnimation, ViewSize } from './viewAdapter.js';
 
 // The view host's Vega views, embedded with vega-embed. Must not depend on React.
 
@@ -131,7 +133,23 @@ const createView = (
   return embed(container, spec, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => view);
 };
 
+const vegaViewAnimation: ViewAnimation<Spec, View> = {
+  isAnimated: isAnimatedSpec,
+  hasDrawIn,
+  hasRows: hasTableRows,
+  prepareSpec: (spec, drawInStart, now) => {
+    restoreDrawInStart(spec, drawInStart, now);
+    // animated charts are driven by the shared animation ticker instead of Vega's always-on timer
+    if (isAnimatedSpec(spec)) {
+      removeAnimationTimerEvents(spec);
+    }
+  },
+  getDrawInStart,
+  attachTicker: attachAnimationTicker,
+};
+
 export const vegaViewAdapter: ViewAdapter<Spec, View, VegaEnvironment> = {
+  animation: vegaViewAnimation,
   prepareSpec,
   splitSpec,
   isSameEnvironment: (previous, next) =>

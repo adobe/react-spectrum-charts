@@ -13,16 +13,9 @@ import { Spec, View } from 'vega';
 
 import { DRAW_IN_PAINT_FADE_MS, S2_EASE_OUT } from '@spectrum-charts/core-s2/constants';
 
-import {
-  attachAnimationTicker,
-  getDrawInHoldDeadline,
-  isAnimatedSpec,
-  isDrawInHoldOver,
-  removeAnimationTimerEvents,
-} from '../animation/animationTicker.js';
-import { getDrawInStart, hasDrawIn, hasTableRows, restoreDrawInStart } from '../animation/drawInContinuity.js';
+import { getDrawInHoldDeadline, isDrawInHoldOver } from '../animation/animationTicker.js';
 import { VegaEnvironment, vegaViewAdapter } from './vegaViewAdapter.js';
-import { SplitSpec, ViewAdapter, getChangedSignals } from './viewAdapter.js';
+import { SplitSpec, ViewAdapter, ViewAnimation, getChangedSignals } from './viewAdapter.js';
 
 // Framework-agnostic owner of a chart's view: creation, update routing, the animation ticker and teardown.
 // Views are created and updated through a ViewAdapter. Must not depend on React.
@@ -109,11 +102,18 @@ const fadeInFirstPaint = (container: HTMLElement, pending: PendingDrawIn | undef
 
 /**
  * Gets the draw-in start for the next view; past the hold, rebuilds too fast to tick start from this embed instead.
+ * @param animation - adapter's draw-in support
  * @param active - the view being retired
  * @returns start time, or undefined to draw in fresh
  */
-const getCarriedDrawInStart = ({ view, spec, pending, embeddedAt }: ActiveView): number | undefined => {
-  const start = getDrawInStart(view, spec);
+const getCarriedDrawInStart = (
+  animation: ViewAnimation<Spec, View> | undefined,
+  { view, spec, pending, embeddedAt }: ActiveView
+): number | undefined => {
+  if (!animation) {
+    return undefined;
+  }
+  const start = animation.getDrawInStart(view, spec);
   if (start || !pending) {
     return start;
   }
@@ -139,7 +139,7 @@ const needsRebuild = (
   !adapter.isSameEnvironment(active.inputs.environment, inputs.environment) ||
   active.inputs.onNewView !== inputs.onNewView ||
   // an empty chart has nothing drawn, so data arriving or leaving restarts draw-in in a new view
-  (hasDrawIn(active.spec) && active.hasRows !== Boolean(split.table?.length));
+  (Boolean(adapter.animation?.hasDrawIn(active.spec)) && active.hasRows !== Boolean(split.table?.length));
 
 /**
  * Creates the host that owns the view rendered into a container.
@@ -148,6 +148,7 @@ const needsRebuild = (
  * @returns ViewHost
  */
 export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter = vegaViewAdapter): ViewHost => {
+  const { animation } = adapter;
   let active: ActiveView | undefined;
   let latest: ViewHostInputs | undefined;
   let destroyed = false;
@@ -165,7 +166,7 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
     retired.cancelled = true;
     container.style.opacity = '';
     retired.detachTicker?.();
-    drawInStart ??= getCarriedDrawInStart(retired);
+    drawInStart ??= getCarriedDrawInStart(animation, retired);
     if (drawInStart) {
       pendingDrawIn = undefined;
     }
@@ -178,21 +179,17 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
     retire();
     const { environment, height, width } = inputs;
     const embeddedAt = Date.now();
-    const isAnimated = isAnimatedSpec(spec);
-    const hasRows = hasTableRows(spec);
+    const isAnimated = Boolean(animation?.isAnimated(spec));
+    const hasRows = Boolean(animation?.hasRows(spec));
     if (!hasRows) {
       drawInStart = undefined;
       pendingDrawIn = undefined;
     }
-    const freshDrawIn = hasDrawIn(spec) && hasRows && !drawInStart;
+    const freshDrawIn = Boolean(animation?.hasDrawIn(spec)) && hasRows && !drawInStart;
     const pending = getPendingDrawIn(freshDrawIn, pendingDrawIn);
     pendingDrawIn = pending ?? pendingDrawIn;
     const fadeIn = pending?.faded === false;
-    restoreDrawInStart(spec, drawInStart, embeddedAt);
-    // animated charts are driven by the shared animation ticker instead of Vega's always-on timer
-    if (isAnimated) {
-      removeAnimationTimerEvents(spec);
-    }
+    animation?.prepareSpec(spec, drawInStart, embeddedAt);
     // hidden until the first paint, which then fades in instead of flickering in
     if (fadeIn) {
       container.style.opacity = '0';
@@ -226,8 +223,8 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
         if (fadeIn) {
           fadeInFirstPaint(container, pending);
         }
-        if (isAnimated) {
-          next.detachTicker = attachAnimationTicker(view, container, pending?.holdUntil);
+        if (animation && isAnimated) {
+          next.detachTicker = animation.attachTicker(view, container, pending?.holdUntil);
         }
         inputs.onNewView(view);
         adapter.startView(view);
