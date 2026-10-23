@@ -11,10 +11,10 @@
  */
 import React from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import { ThemeClassNames } from '@docusaurus/theme-common';
 import TOC from '@theme/TOC';
 
+import { ClientOnly } from '../../../../components/ClientOnly';
 import PageActions from '../../../../components/PageActions';
 import { useTocWithTitle } from '../useTocWithTitle';
 import styles from './styles.module.css';
@@ -27,7 +27,9 @@ export default function DocItemTOCDesktop() {
   const { toc, frontMatter } = useTocWithTitle();
   return (
     <div className={styles.sidebar}>
-      <BrowserOnly>{() => <PageActions inSidebar />}</BrowserOnly>
+      <ClientOnly markdown={null} noMarkdownReason="Page chrome outside the doc content.">
+        {() => <PageActions inSidebar />}
+      </ClientOnly>
       <div className={styles.heading}>On this page</div>
       <TOC
         toc={toc}

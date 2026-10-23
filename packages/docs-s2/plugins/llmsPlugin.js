@@ -24,16 +24,19 @@ turndown.addRule('tableCellBlocks', {
 });
 
 /**
- * Converts a built doc page to Markdown; playgrounds become their default code.
+ * Converts a built doc page to Markdown; playgrounds become their default code and a list of their controls.
  * @param html
+ * @param problems collects content the export lost, so the build can fail on it
  * @returns markdown string
  */
-const htmlToMarkdown = (html) => {
+const htmlToMarkdown = (html, problems = []) => {
   const $ = cheerio.load(html);
   const article = $('.theme-doc-markdown').first();
-  article.find('.hash-link, button, nav').remove();
+  article.find('.hash-link, button, nav, [data-web-only]').remove();
   article.find('a[aria-label$=" stage"]').each((_, badge) => {
-    const stage = $(badge).attr('aria-label').replace(/ stage$/, '');
+    const stage = $(badge)
+      .attr('aria-label')
+      .replace(/ stage$/, '');
     $(badge).replaceWith(`<p><strong>Stage:</strong> ${stage}</p>`);
   });
   article.find('.theme-code-block').each((_, block) => {
@@ -56,9 +59,44 @@ const htmlToMarkdown = (html) => {
     $(code).text($(code).text().replaceAll('|', '\\|'));
   });
   article.find('[class*="playground_"]').each((_, playground) => {
-    $(playground).replaceWith($(playground).find('pre').first());
+    const code = $(playground)
+      .find('pre')
+      .filter((__, pre) => $(pre).closest('[data-markdown-only]').length === 0)
+      .first();
+    if (code.length === 0) problems.push('an example has no code block');
+    $(playground).replaceWith([code, ...$(playground).find('[data-markdown-only]')]);
+  });
+  article.find('.tabs-container').each((_, tabs) => {
+    const labels = $(tabs)
+      .find('[role="tab"]')
+      .map((__, tab) => $(tab).text().trim())
+      .get();
+    const panels = $(tabs)
+      .find('[role="tabpanel"]')
+      .map((index, panel) => `<p><strong>${labels[index]}:</strong></p>${$(panel).html()}`)
+      .get();
+    $(tabs).replaceWith(panels.join(''));
+  });
+  article.find('[data-markdown-only]').each((_, element) => {
+    $(element).replaceWith($(element).html());
   });
   return `${turndown.turndown(article.html() ?? '').trim()}\n`;
+};
+
+/**
+ * Finds headings with nothing under them before the next heading of the same or higher level.
+ * @param markdown
+ * @returns problem descriptions
+ */
+const findEmptySections = (markdown) => {
+  const headings = [...markdown.matchAll(/^(#{2,6}) (.+)$/gm)];
+  return headings
+    .filter((heading, index) => {
+      const next = headings.slice(index + 1).find((other) => other[1].length <= heading[1].length);
+      const body = markdown.slice(heading.index + heading[0].length, next?.index ?? markdown.length);
+      return body.trim() === '';
+    })
+    .map((heading) => `"${heading[2]}" has no content`);
 };
 
 /** Flattens a docs sidebar into doc ids in display order. */
@@ -122,14 +160,25 @@ module.exports = function llmsPlugin(context) {
       const ids = [...new Set([...orderedIds, ...docsById.keys()])];
       const siteUrl = `${siteConfig.url}${siteConfig.baseUrl}`;
 
+      const exportProblems = [];
       const pages = ids.map((id) => {
         const doc = docsById.get(id);
         const route = doc.permalink.slice(siteConfig.baseUrl.length);
         const html = fs.readFileSync(path.join(outDir, route, 'index.html'), 'utf8');
-        const markdown = htmlToMarkdown(html);
+        const problems = [];
+        const markdown = htmlToMarkdown(html, problems);
+        problems.push(...findEmptySections(markdown));
+        if (problems.length) exportProblems.push(`${doc.source}: ${problems.join('; ')}`);
         fs.writeFileSync(path.join(outDir, `${route}.md`), markdown);
         return { doc, url: `${siteUrl}${route}.md`, markdown };
       });
+      if (exportProblems.length) {
+        throw new Error(
+          `Markdown export is missing content. Client-only content needs a markdown prop on ClientOnly:\n${exportProblems.join(
+            '\n'
+          )}`
+        );
+      }
 
       const index = [
         `# ${siteConfig.title}`,

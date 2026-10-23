@@ -105,6 +105,10 @@ per example, named `<Component><Topic>Playground`. Each uses `PropPlayground`
 - **Data** — add datasets to `src/components/examples/data.ts` and show them with
   `<DataCode name="..." />`. Reuse existing datasets when they fit. Keep data realistic and
   small; avoid data that triggers known bugs.
+- **Markdown export** — agents implement from the page's `.md` export, which is built from the
+  rendered HTML. Wrap custom browser-only examples in `ClientOnly` and pass `markdown` with the
+  code, data, and tables an agent needs; `PropPlayground` already exports its code and controls.
+  Wrap interaction-only instructions in `WebOnly`.
 
 ## Step 5 — TSDoc
 
@@ -137,7 +141,8 @@ Then, from the repo root, `yarn lint --quiet`. In the built site, check:
 - Every playground renders, every control changes the chart, and disabled controls are
   disabled only when they should be.
 - Generated code matches the rendered chart.
-- `/llms.txt` lists the page and `/<page>.md` reads cleanly as Markdown.
+- `/llms.txt` lists the page and `/<page>.md` reads cleanly as Markdown, with every example's
+  code, data, and controls.
 - The page and its props show up in search, and the chart card appears.
 
 ## Step 8 — File bugs found along the way

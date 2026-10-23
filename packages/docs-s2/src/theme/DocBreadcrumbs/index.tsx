@@ -11,9 +11,9 @@
  */
 import React from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import DocBreadcrumbs from '@theme-original/DocBreadcrumbs';
 
+import { ClientOnly } from '../../components/ClientOnly';
 import PageActions from '../../components/PageActions';
 import styles from './styles.module.css';
 
@@ -26,7 +26,9 @@ export default function DocBreadcrumbsWrapper() {
     <div className={styles.row}>
       <DocBreadcrumbs />
       <div className={styles.actions}>
-        <BrowserOnly>{() => <PageActions />}</BrowserOnly>
+        <ClientOnly markdown={null} noMarkdownReason="Page chrome outside the doc content.">
+          {() => <PageActions />}
+        </ClientOnly>
       </div>
     </div>
   );

@@ -11,7 +11,6 @@
  */
 import React from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useDoc } from '@docusaurus/plugin-content-docs/client';
 import { useColorMode } from '@docusaurus/theme-common';
 import useBaseUrl from '@docusaurus/useBaseUrl';
@@ -19,6 +18,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import { Badge, BadgeProps, Provider } from '@react-spectrum/s2';
 
 import STAGES from '../stages.json';
+import { ClientOnly } from './ClientOnly';
 import styles from './StageBadge.module.css';
 
 // Mirrors the Storybook stage badge in .storybook-s2/stages.ts; keep them in sync.
@@ -60,7 +60,6 @@ export const StageLabelBadge = ({ stage }: { stage: Stage }) => {
   );
 };
 
-
 const ThemedBadge = ({ stage }: { stage: Stage }) => {
   const { colorMode } = useColorMode();
   return (
@@ -81,7 +80,13 @@ export const StageBadge = () => {
   if (!isStage(stage) || !hasStageBadge(stage)) return null;
   return (
     <a href={stagesUrl} aria-label={`${getStageLabel(stage)} stage`} className={styles.link}>
-      <BrowserOnly fallback={<span className={styles.fallback} />}>{() => <ThemedBadge stage={stage} />}</BrowserOnly>
+      <ClientOnly
+        fallback={<span className={styles.fallback} />}
+        markdown={null}
+        noMarkdownReason="The Markdown export reads the stage from the link's aria-label."
+      >
+        {() => <ThemedBadge stage={stage} />}
+      </ClientOnly>
     </a>
   );
 };
