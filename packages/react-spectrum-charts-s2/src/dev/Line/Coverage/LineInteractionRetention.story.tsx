@@ -44,7 +44,7 @@ const data = [
   { datetime: 2, value: 2, series: 'c' },
 ];
 
-// Used by browser/interactionRetention.spec.ts, which reads the status line.
+// Used by browser/interactionRetention.test.ts, which reads the status line.
 // The status is written to the DOM rather than React state, so the chart only re-renders when args change.
 const InteractionRetentionStory: StoryFn<StoryArgs> = ({
   renderer,

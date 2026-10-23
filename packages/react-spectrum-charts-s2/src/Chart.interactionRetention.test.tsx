@@ -50,7 +50,7 @@ const updates: [string, Props][] = [...keepingUpdates, ...clearingUpdates];
 
 const harness = setupChartHarness();
 
-// Canvas clicks after a rebuild are covered by browser/interactionRetention.spec.ts, which needs real hit-testing.
+// Canvas clicks after a rebuild are covered by browser/interactionRetention.test.ts, which needs real hit-testing.
 describe('svg renderer', () => {
   const chart = ({ defaultHiddenSeries, ...props }: Props = {}) => (
     <Chart data={data} width={400} height={300} animations={false} onVegaViewReady={harness.onVegaViewReady} {...props}>
