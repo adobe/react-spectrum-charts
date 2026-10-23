@@ -14,3 +14,4 @@ export * from './customQueries.js';
 export * from './utils.js';
 export * from './spectrumRender.js';
 export * from './bindWithProps.js';
+export * from './chartStability.js';
