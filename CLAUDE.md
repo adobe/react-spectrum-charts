@@ -184,6 +184,11 @@ yarn verify
 # Run tests, targeted (default for agents/dev — no coverage, quiet)
 yarn test:quiet --testPathPattern=line
 
+# S2 browser tests (Playwright, packages/react-spectrum-charts-s2/browser/). Starts the dev Storybook, or reuses one
+# already on STORYBOOK_PORT (default 6011). First run: yarn playwright install chromium, then record the uncommitted
+# screenshot baselines with --update-snapshots
+yarn test:browser
+
 # Full suite with coverage — CI/Sonar only, or when the user explicitly asks (e.g. "run all")
 yarn test
 
