@@ -238,12 +238,12 @@ These are the acceptance criteria. Tests 2, 3, 6 and 7 are what prevent aggressi
 | Issue | Description                                                                                                   | Stage                 |
 | ----- | ------------------------------------------------------------------------------------------------------------- | --------------------- |
 | #987  | Render once on mount; stable tooltip handler                                                                  | alpha                 |
-| TBD   | Clear the legend-delay tooltip timeout on rebuild, not only unmount                                           | alpha                 |
-| TBD   | View count and scene-equivalence test harness                                                                 | alpha                 |
+| #1062 | Clear the legend-delay tooltip timeout on rebuild, not only unmount                                           | alpha                 |
+| #1060 | View count and scene-equivalence test harness                                                                 | alpha                 |
 | TBD   | Declared update classifications for all marks, child components and chart options, plus generated docs matrix | alpha                 |
-| TBD   | Stable `onNewView` listeners, `onVegaViewReady` ref, single legend state                                      | alpha                 |
-| TBD   | View host module and program-based routing                                                                    | alpha                 |
-| TBD   | Signal-only controlled state (`hiddenSeries`, `highlightedItem`, `highlightedSeries`, legend toggle)          | alpha                 |
+| #1064 | Stable `onNewView` listeners, `onVegaViewReady` ref, single legend state                                      | alpha                 |
+| #1063 | View host module and program-based routing                                                                    | alpha                 |
+| #1065 | Signal-only controlled state (`hiddenSeries`, `highlightedItem`, `highlightedSeries`, legend toggle)          | alpha                 |
 | TBD   | In-place data updates                                                                                         | alpha                 |
 | TBD   | Set Vega mark `key` from row identity on interactive marks                                                    | alpha                 |
 | TBD   | State retention rules                                                                                         | alpha                 |

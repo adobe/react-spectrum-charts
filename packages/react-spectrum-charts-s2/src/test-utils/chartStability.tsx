@@ -16,7 +16,7 @@ import { RenderModule, View, renderModule } from 'vega';
 import * as vegaEmbed from 'vega-embed';
 
 import { Provider } from '@react-spectrum/s2';
-import { ANIMATION_ACTIVE, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
+import { ANIMATION_ACTIVE, DEFAULT_COLOR_SCHEME, MARK_ID } from '@spectrum-charts/core-s2/constants';
 
 import { render } from './spectrumRender.js';
 
@@ -79,7 +79,9 @@ export const setupChartHarness = () => {
 
   const latestView = (): View => {
     const view = views.at(-1);
-    if (!view) throw new Error('No view rendered');
+    if (!view) {
+      throw new Error('No view rendered');
+    }
     return view;
   };
 
@@ -95,14 +97,20 @@ export const setupChartHarness = () => {
         await sleep(0);
         const view = views.at(-1);
         await view?.runAsync();
-        if (view && isAnimating(view)) await sleep(16);
+        if (view && isAnimating(view)) {
+          await sleep(16);
+        }
       });
       const view = views.at(-1);
       const snapshot = `${views.length}:${renderCount()}`;
       const busy = pendingEmbeds > 0 || (view !== undefined && isAnimating(view));
       stableChecks = snapshot === previous && !busy ? stableChecks + 1 : 0;
-      if (stableChecks === 2) return;
-      if (Date.now() > deadline) throw new Error('Chart did not settle');
+      if (stableChecks === 2) {
+        return;
+      }
+      if (Date.now() > deadline) {
+        throw new Error('Chart did not settle');
+      }
       previous = snapshot;
     }
   };
@@ -129,7 +137,9 @@ export const setupChartHarness = () => {
     const mounted = await mount(initial);
     const mountViews = views.length;
     const mountRenders = renderCount();
-    for (const element of updates) await update(mounted, element);
+    for (const element of updates) {
+      await update(mounted, element);
+    }
     mounted.unmount();
     return { mountViews, mountRenders, views: views.length - mountViews, renders: renderCount() - mountRenders };
   };
@@ -168,13 +178,31 @@ export const setupChartHarness = () => {
   return { views, onVegaViewReady, latestView, renderCount, settle, mount, update, countUpdates, compareUpdateToMount };
 };
 
-// back-references, renderer state and generated ids; vega's sceneToJSON is avoided because its key list drops gradients, cursors and data
-const OMITTED_KEYS = new Set(['mark', 'group', 'source', 'context', 'dirty', '_svg', '_bounds', 'clip_id']);
+// back-references, renderer state and generated ids (MARK_ID counts up across a view's dataflow runs);
+// vega's sceneToJSON is avoided because its key list drops gradients, cursors and data
+const OMITTED_KEYS = new Set([
+  'mark',
+  'group',
+  'source',
+  'context',
+  'dirty',
+  '_svg',
+  '_update',
+  '_bounds',
+  'clip_id',
+  MARK_ID,
+]);
 
 const serialize = (value: unknown, path: Set<object>): unknown => {
-  if (typeof value === 'function' || typeof value === 'symbol') return undefined;
-  if (!value || typeof value !== 'object') return value;
-  if (path.has(value)) throw new Error('Scene graph contains a cycle');
+  if (typeof value === 'function' || typeof value === 'symbol') {
+    return undefined;
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  if (path.has(value)) {
+    throw new Error('Scene graph contains a cycle');
+  }
   path.add(value);
   const result = Array.isArray(value)
     ? value.map((entry) => serialize(entry, path))

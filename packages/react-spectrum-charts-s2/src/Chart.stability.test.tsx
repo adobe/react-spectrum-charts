@@ -48,6 +48,28 @@ const chart = (props: Partial<ChartProps> = {}, onVegaViewReady: (view: View) =>
   </Chart>
 );
 
+// hoisted so parent re-renders keep the same children, and therefore the same listeners and onNewView
+const stableChildren = [
+  <Axis key="left" position="left" />,
+  <Axis key="bottom" position="bottom" />,
+  <Line key="line" dimension="datetime" metric="value" color="series" scaleType="linear" />,
+  <Legend key="legend" isToggleable />,
+];
+
+// a toggleable legend's own hidden series override the controlled prop
+const untoggleableChildren = [
+  <Line key="line" dimension="datetime" metric="value" color="series" scaleType="linear" />,
+  <Legend key="legend" />,
+];
+
+const stableChart = (props: Partial<ChartProps> = {}, children = stableChildren) => (
+  <Chart data={data} width={400} height={300} animations={false} onVegaViewReady={harness.onVegaViewReady} {...props}>
+    {children}
+  </Chart>
+);
+
+const untoggleableChart = (props: Partial<ChartProps> = {}) => stableChart(props, untoggleableChildren);
+
 const append = (rows: Row[], i: number): Row[] => [
   ...rows,
   { datetime: 3 + i, value: i, series: 'a' },
@@ -63,7 +85,7 @@ describe('view counts', () => {
     expect({ mountViews, mountRenders }).toEqual({ mountViews: 1, mountRenders: 1 });
   });
 
-  // Baseline new views and renders on main; the RFC targets 0 new views for each.
+  // Inline children rebuild until listeners are stable (separate issue); the RFC targets 0 new views for each.
   test.each<[string, ReturnType<typeof chart>[], { views: number; renders: number }]>([
     ['a parent re-render with identical inline JSX', [chart(), chart()], { views: 1, renders: 1 }],
     ['a new data array with identical contents', [chart(), chart({ data: [...data] })], { views: 1, renders: 1 }],
@@ -99,13 +121,53 @@ describe('view counts', () => {
     mounted.unmount();
   });
 
-  // Baseline on main; the RFC targets 1 view in total.
+  // Inline children rebuild until listeners are stable (separate issue); the RFC targets 1 view in total.
   test('streaming 8 appends', async () => {
     const elements = [chart(), ...Array.from({ length: 8 }, (_, i) => chart({ data: streamed(i + 1) }))];
 
     const { mountViews, mountRenders, views, renders } = await harness.countUpdates(elements);
 
     expect({ views: mountViews + views, renders: mountRenders + renders }).toEqual({ views: 9, renders: 9 });
+  });
+});
+
+describe('view counts with stable children', () => {
+  test.each<[string, ReturnType<typeof stableChart>[], { views: number; renders: number }]>([
+    ['a parent re-render', [stableChart(), stableChart()], { views: 0, renders: 0 }],
+    [
+      'a new data array with identical contents',
+      [stableChart(), stableChart({ data: [...data] })],
+      { views: 0, renders: 0 },
+    ],
+    ['changed data values', [stableChart(), stableChart({ data: streamed(1) })], { views: 0, renders: 1 }],
+    ['a width change', [stableChart(), stableChart({ width: 500 })], { views: 0, renders: 1 }],
+    ['a title change', [stableChart(), stableChart({ title: 'Retitled' })], { views: 1, renders: 1 }],
+    [
+      'controlled hiddenSeries undefined → a → b (rebuilds: legend layout depends on it)',
+      [untoggleableChart(), untoggleableChart({ hiddenSeries: ['a'] }), untoggleableChart({ hiddenSeries: ['b'] })],
+      { views: 2, renders: 2 },
+    ],
+    [
+      'controlled highlightedSeries a → b → c',
+      [
+        untoggleableChart({ highlightedSeries: 'a' }),
+        untoggleableChart({ highlightedSeries: 'b' }),
+        untoggleableChart({ highlightedSeries: 'c' }),
+      ],
+      { views: 0, renders: 2 },
+    ],
+  ])('%s', async (_, elements, expected) => {
+    const { views, renders } = await harness.countUpdates(elements);
+
+    expect({ views, renders }).toEqual(expected);
+  });
+
+  test('streaming 8 appends', async () => {
+    const elements = [stableChart(), ...Array.from({ length: 8 }, (_, i) => stableChart({ data: streamed(i + 1) }))];
+
+    const { mountViews, views } = await harness.countUpdates(elements);
+
+    expect(mountViews + views).toBe(1);
   });
 });
 
@@ -122,6 +184,31 @@ describe('update equals fresh mount', () => {
     ['padding', {}, { padding: 12 }],
   ])('%s', async (_, a, b) => {
     const { updated, fresh } = await harness.compareUpdateToMount(chart, a, b);
+
+    expect(updated).toEqual(fresh);
+  });
+
+  // stable children route data and signal changes to the live view instead of rebuilding
+  test.each<[string, Partial<ChartProps>, Partial<ChartProps>]>([
+    ['changed values', {}, { data: data.map((row) => ({ ...row, value: row.value * 2 })) }],
+    ['an appended row', {}, { data: streamed(1) }],
+    ['a removed series', {}, { data: data.filter((row) => row.series === 'a') }],
+    ['emptied data', {}, { data: [] }],
+    ['restored data', { data: [] }, {}],
+    ['a width change', {}, { width: 500 }],
+  ])('%s with stable children', async (_, a, b) => {
+    const { updated, fresh } = await harness.compareUpdateToMount(stableChart, a, b);
+
+    expect(updated).toEqual(fresh);
+  });
+
+  test.each<[string, Partial<ChartProps>, Partial<ChartProps>]>([
+    ['controlled hiddenSeries', {}, { hiddenSeries: ['a'] }],
+    ['changed controlled hiddenSeries', { hiddenSeries: ['a'] }, { hiddenSeries: ['b'] }],
+    ['cleared controlled hiddenSeries', { hiddenSeries: ['a'] }, {}],
+    ['a controlled highlightedSeries', {}, { highlightedSeries: 'a' }],
+  ])('%s with an untoggleable legend', async (_, a, b) => {
+    const { updated, fresh } = await harness.compareUpdateToMount(untoggleableChart, a, b);
 
     expect(updated).toEqual(fresh);
   });
