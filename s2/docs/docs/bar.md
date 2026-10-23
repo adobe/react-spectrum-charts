@@ -22,6 +22,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+-   `color` on `Bar`: `by device` or `single`. Shown: `by device`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `left` or `top`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Visits by channel`.
+
 ## Data
 
 `data` goes on `Chart` as an array of objects, one per bar or bar segment. On `Bar`, `dimension` names the field for the categories (default `category`) and `metric` names the numeric field that sizes each bar (default `value`). Set `color` to a field to split each category into series; each row is one segment. Without a `color` field, every bar uses the first categorical color. Most examples on this page use `barChannelData` or `barChannelDeviceData`:
@@ -98,6 +106,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+
 > **Tip:**
 > 
 > Write dates without a time zone, like `'2025-01-01 00:00:00'`, so they're read in the viewer's local time. A date-only string like `'2025-01-01'` is read as UTC and can show as the previous day or month west of UTC.
@@ -125,6 +137,35 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `all zeros`, `empty` or `loading`. Shown: `all zeros`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No visits yet`.
+
+With **state** set to `empty`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={emptyData} emptyStateText="No visits yet">
+  <Axis position="bottom" baseline title="Channel" />
+  <Axis position="left" grid title="Visits" />
+  <Bar dimension="channel" metric="visits" />
+</Chart>
+```
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={barChannelData} loading>
+  <Axis position="bottom" baseline title="Channel" />
+  <Axis position="left" grid title="Visits" />
+  <Bar dimension="channel" metric="visits" />
+</Chart>
+```
+
 ## Orientation
 
 Bars are vertical by default. Set `orientation="horizontal"` to draw them left to right, which leaves more room for long category names. Swap the `Axis` positions to match: the category axis goes on the left and the value axis on the bottom.
@@ -138,6 +179,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" orientation="horizontal" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `horizontal`.
 
 ## Stacked and dodged
 
@@ -163,6 +208,12 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `order` on `Bar`: `none` or `stackOrder`. Shown: `none`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
 
 ### Dodged and stacked
 
@@ -213,6 +264,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `groupedPadding` on `Bar`: 0 to 0.9, in steps of 0.05. Shown: `0.4`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+
 `lineType` and `opacity` also accept two fields, and the same rule applies to them.
 
 ## Spacing
@@ -228,6 +284,11 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `paddingRatio` on `Bar`: 0 to 0.9, in steps of 0.05. Shown: `0.4`.
+-   `paddingOuter` on `Bar`: `auto`, `0`, `0.2`, `0.5` or `1`. Shown: `auto`.
 
 Bar width comes from the chart width, the number of categories, and the padding. There's no prop to set a fixed bar width.
 
@@ -246,6 +307,13 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hasSquareCorners` on `Bar`: `true` or `false`. Shown: `false`.
+-   `opacity` on `Bar`: 0.1 to 1, in steps of 0.1. Shown: `1`.
+-   `lineWidth` on `Bar`: 0 to 6, in steps of 1. Shown: `0`.
+-   `lineType` on `Bar`: `solid`, `dashed` or `dotted`. Shown: `solid`.
 
 ### colorOverride
 
@@ -271,6 +339,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" colorOverride="statusColor" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `colorOverride` on `Bar`: `true` or `false`. Shown: `true`.
 
 ## Diverging
 
@@ -302,6 +374,11 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `diverging` on `Bar`: `true` or `false`. Shown: `true`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `horizontal`.
 
 > **Note:**
 > 
@@ -352,6 +429,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `dualMetricAxis` on `Bar`: `true` or `false`. Shown: `true`.
+
 `dualMetricAxis` only applies when `type="dodged"`, `color` is a single field, and there's no `trellis`.
 
 ## Trellis
@@ -394,6 +475,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `trellisOrientation` on `Bar`: `horizontal` or `vertical`. Shown: `horizontal`.
+-   `trellisPadding` on `Bar`: 0 to 0.6, in steps of 0.05. Shown: `0.2`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+
 Trellised charts don't draw grid lines on the shared value axis.
 
 ## BarDirectLabel
@@ -424,6 +512,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `BarDirectLabel`: `end-outside`, `end`, `middle` or `start`. Shown: `end-outside`.
+-   `format` on `BarDirectLabel`: `,.2~f`, `.3~s` or `,.1f`. Shown: `,.2~f`.
+-   `overflow` on `BarDirectLabel`: `default`, `hide` or `spill`. Shown: `default`.
+-   `dataKey` on `BarDirectLabel`: `none` or `callout`. Shown: `none`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+
 ## Axis and ReferenceLine
 
 Bars need two `Axis` children on `Chart`: one for the categories and one for the values. Typical settings are `baseline` on the category axis and `grid` on the value axis. Hovering a category label on an interactive bar highlights that category.
@@ -446,6 +542,12 @@ import {
   <Bar dimension="channel" metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `ReferenceLine`: `5000`, `8000` or `10000`. Shown: `8000`.
+-   `label` on `ReferenceLine`: any text. Shown: `Goal`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
 
 ## Legend
 
@@ -470,6 +572,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `left` or `top`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `false`.
+
 See [Legend](/react-spectrum-charts/s2/docs/docs/legend) for more options.
 
 ### Hiding series
@@ -491,6 +599,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Mobile` or `Mobile, Tablet`. Shown: `Mobile`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
 
 ## Interaction
 
@@ -547,6 +660,15 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `targets` on `ChartInspect`: `item` or `dimensionArea, item`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+
 Hovering an interactive bar fades the other bars. A bar without `ChartInspect`, `ChartPopover`, `onClick`, `onContextMenu`, or highlighting doesn't respond to the pointer. See [Interaction](/react-spectrum-charts/s2/docs/docs/interaction) for more about inspects and popovers.
 
 ### Callbacks
@@ -585,6 +707,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Desktop`, `Mobile` or `Tablet`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none`, `social-mobile` or `search-desktop, email-desktop`. Shown: `none`.
+
 ## Animation
 
 The chart's `animationTypes` lists which animations play. By default, `hover` eases bars in and out of their faded state, and `drawIn` grows bars from the baseline over 700ms. Stacked segments fill in order from the baseline outward, and direct labels fade in as their own segment finishes.
@@ -604,6 +731,12 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
 
 Draw-in plays once when the chart mounts. Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all animation. When the user prefers reduced motion, draw-in is skipped. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
 

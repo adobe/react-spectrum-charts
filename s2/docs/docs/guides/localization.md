@@ -12,6 +12,11 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `locale` on `Chart`: `en-US`, `de-DE`, `fr-FR`, `ja-JP`, `pt-BR` or `zh-CN`. Shown: `de-DE`.
+-   `numberFormat` on `Axis`: `shortNumber`, `standardNumber`, `currency` or `shortCurrency`. Shown: `currency`.
+
 The example uses `guideMonthlyRevenueData`:
 
 ```ts

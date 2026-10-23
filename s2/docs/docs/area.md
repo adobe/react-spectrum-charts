@@ -31,6 +31,13 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.8`.
+-   `ChartInspect`: included or left out. Shown: included.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Sessions by channel`.
+
 `Area` is a lab component. Import it from the `lab` subpath:
 
 ```tsx
@@ -116,6 +123,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metricStart` on `Area`: `metric` or `metricStart, metricEnd`. Shown: `metric`.
+
 ### Empty and loading
 
 When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a spinner while data loads.
@@ -125,6 +136,24 @@ import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 <Chart data={emptyData} emptyStateText="No sessions in this range">
+  <Axis position="left" grid />
+  <Axis position="bottom" labelFormat="time" baseline />
+  <Area metric="sessions" color="channel" />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No sessions in this range`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={channelSessionsData} loading>
   <Axis position="left" grid />
   <Axis position="bottom" labelFormat="time" baseline />
   <Area metric="sessions" color="channel" />
@@ -150,6 +179,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `order` on `Area`: `none` or `stackOrder`. Shown: `stackOrder`.
 
 ### opacity
 
@@ -203,6 +236,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.5`.
+
 `metricStart` and `metricEnd` must be set together. If only one is set, `Area` logs an error and falls back to `metric`.
 
 ### With a line
@@ -235,6 +272,11 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Line metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.3`.
+-   `Line`: included or left out. Shown: included.
 
 ## Scale types
 
@@ -292,6 +334,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Area`: `time`, `linear` or `point`. Shown: `time`.
+
 > **Note:**
 > 
 > `scaleType="band"` isn't supported for areas yet and draws a broken chart. Use `point` for categories.
@@ -314,6 +360,12 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Area`: `time` or `point`. Shown: `point`.
+-   `padding` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.5`.
+-   `padding` on `Area`: 0 to 48, in steps of 4. Shown: `0`.
 
 ## Axis
 
@@ -338,6 +390,15 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `granularity` on `Axis` (Bottom axis): `day`, `week` or `month`. Shown: `week`.
+-   `numberFormat` on `Axis` (Left axis): `shortNumber` or `standardNumber`. Shown: `shortNumber`.
+-   `grid` on `Axis` (Left axis): `true` or `false`. Shown: `true`.
+-   `title` on `Axis` (Left axis): any text. Shown: `Sessions`.
+-   `ReferenceLine`: included or left out. Shown: included.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ## Legend
 
 Add `Legend` as a sibling of `Area` to list the series.
@@ -357,6 +418,12 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ### Hiding series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. The remaining series restack from the baseline. To start with series hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
@@ -372,6 +439,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Organic search` or `Paid search, Email`. Shown: `Organic search`.
 
 ## Interaction
 
@@ -425,6 +496,13 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 `excludeDataKeys` on `ChartInspect` turns off hover details for rows with a truthy value in any of the listed fields. See [Interaction](/react-spectrum-charts/s2/docs/docs/interaction) for more about `ChartInspect` and `ChartPopover`.
 
 ### Highlighting
@@ -456,6 +534,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Organic search`, `Paid search` or `Email`. Shown: `Paid search`.
+
 `highlightedItem` highlights a single point by row ID. Set `idKey` on `Chart` to the field that uniquely identifies each row. Hovering the chart replaces the controlled highlight.
 
 ```jsx
@@ -474,6 +556,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Area>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedItem` on `Chart`: `none`, `Jan 13`, `Feb 10` or `Mar 10`. Shown: `Feb 10`.
 
 ## Animation
 

@@ -20,6 +20,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `top`, `left` or `right`. Shown: `bottom`.
+-   `title` on `Legend`: any text. Shown: `Channel`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ## Data
 
 The legend reads its entries from the chart's data and marks, so it has no data of its own. Most examples on this page draw one line per marketing channel from `legendVisitsData`:
@@ -87,6 +94,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `top`, `left` or `right`. Shown: `bottom`.
+-   `align` on `Legend`: `default`, `start`, `middle` or `end`. Shown: `default`.
+
 ## Title
 
 `title` adds a heading above the entries. Long titles widen a side legend, which narrows the plot; `titleLimit` caps the title's width in pixels and truncates it with an ellipsis.
@@ -111,6 +123,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom` or `right`. Shown: `right`.
+-   `title` on `Legend`: any text. Shown: `Marketing channel (last 7 days)`.
+-   `titleLimit` on `Legend`: `none`, `80`, `120` or `160`. Shown: `120`.
+
 ## Entries
 
 The legend has one entry for each unique value of the fields the marks use for color, line type, opacity, or symbol shape. When a mark uses more than one of these fields, each combination gets an entry, named with the values joined by `|`, for example `Search | This week`.
@@ -134,6 +152,10 @@ import {
   <Legend hiddenEntries={['Direct']} />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenEntries` on `Legend`: `none`, `Direct` or `Email, Direct`. Shown: `Direct`.
 
 ### Labels
 
@@ -165,6 +187,12 @@ import {
   <Legend legendLabels={legendChannelLabels} />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `legendLabels` on `Legend`: `true` or `false`. Shown: `true`.
+-   `position` on `Legend`: `bottom` or `right`. Shown: `bottom`.
+-   `labelLimit` on `Legend`: `default`, `80`, `100` or `140`. Shown: `default`.
 
 ### keys
 
@@ -217,6 +245,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `keys` on `Legend`: `none`, `channel` or `period`. Shown: `channel`.
+
 ## Symbols
 
 Each entry's symbol matches its series: the color, line type, and opacity of the mark it represents. Symbol props on `Legend` override that for the legend only. Each takes a field name from the data or a static value such as `{ value: 'circle' }`:
@@ -244,6 +276,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `symbolShape` on `Legend`: `default`, `circle`, `diamond` or `channel`. Shown: `circle`.
+-   `color` on `Legend`: `default` or `gray-700`. Shown: `default`.
+-   `opacity` on `Legend`: `default`, `0.25` or `0.5`. Shown: `default`.
+-   `lineType` on `Legend`: `default`, `dashed` or `dotted`. Shown: `default`.
+-   `lineWidth` on `Legend`: `default`, `S`, `M`, `L` or `XL`. Shown: `default`.
+
 ## Hiding series
 
 ### Toggleable legends
@@ -266,6 +306,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `defaultHiddenSeries` on `Legend`: `none`, `Email` or `Email, Direct`. Shown: `Email`.
+
 ### Controlled hidden series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. The legend shows the eye icon and grays the label for each hidden series. Don't combine it with `isToggleable`: a toggleable legend tracks its own hidden series and ignores `hiddenSeries`.
@@ -285,6 +329,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Email` or `Email, Direct`. Shown: `Email`.
 
 To let users toggle series from the legend while your app owns the state, handle `onClick` and pass the result to `hiddenSeries`:
 
@@ -331,6 +379,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+-   `ChartInspect`: included or left out. Shown: left out.
+
 ## Descriptions
 
 `descriptions` shows a tooltip when an entry is hovered. Each description is matched by `seriesName` and can have an optional `title`, which replaces the series name as the tooltip heading.
@@ -359,6 +412,11 @@ import {
   <Legend descriptions={legendChannelDescriptions} />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `descriptions` on `Legend`: `true` or `false`. Shown: `true`.
+-   `position` on `Legend`: `bottom` or `right`. Shown: `bottom`.
 
 > **Note:**
 > 
@@ -389,6 +447,13 @@ import {
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `onClick` on `Legend`: `true` or `false`. Shown: `true`.
+-   `onMouseOver` on `Legend`: `true` or `false`. Shown: `true`.
+-   `onMouseOut` on `Legend`: `true` or `false`. Shown: `true`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `false`.
 
 ## ChartPopover
 
@@ -431,6 +496,11 @@ import {
   </Legend>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `false`.
 
 ## Sizing
 

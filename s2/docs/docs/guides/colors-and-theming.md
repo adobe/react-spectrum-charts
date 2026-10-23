@@ -10,13 +10,18 @@ import {
   Legend,
 } from '@spectrum-charts/react-spectrum-charts-s2';
 
-<Chart data={guideSourceSessionsData} colorScheme="light">
+<Chart data={guideSourceSessionsData}>
   <Axis position="left" grid />
   <Axis position="bottom" baseline />
   <Bar dimension="quarter" metric="sessions" color="source" />
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `colors` on `Chart`: `s2Categorical6`, `s2Categorical12`, `s2Categorical16`, `s2Categorical20`, `divergentOrangeYellowSeafoam5`, `divergentOrangeYellowSeafoam9`, `divergentOrangeYellowSeafoam15`, `divergentRedBlue5`, `divergentRedBlue9`, `divergentRedBlue15`, `divergentRedYellowBlue5`, `divergentRedYellowBlue9`, `divergentRedYellowBlue15`, `sequentialViridis5`, `sequentialViridis9`, `sequentialViridis16`, `sequentialMagma5`, `sequentialMagma9`, `sequentialMagma16`, `sequentialRose5`, `sequentialRose9`, `sequentialRose16`, `sequentialCerulean5`, `sequentialCerulean9`, `sequentialCerulean16`, `sequentialForest5`, `sequentialForest9` or `sequentialForest16`. Shown: `s2Categorical20`.
+-   `backgroundColor` on `Chart`: `transparent`, `gray-25`, `gray-100` or `blue-100`. Shown: `transparent`.
 
 The example uses `guideSourceSessionsData`:
 
@@ -71,6 +76,10 @@ function Dashboard({ colorScheme }: { colorScheme: 'light' | 'dark' }) {
 }
 ```
 
+The examples on this site follow the site's light and dark theme.
+
+Spectrum color tokens, including the categorical colors in the default palette, have different values in light and dark. See [Color palettes](/react-spectrum-charts/s2/docs/docs/guides/color-palettes#categorical) for both sets of values.
+
 ### backgroundColor
 
 `backgroundColor` fills the chart. It takes a Spectrum color token, like `gray-25`, or any CSS color, and defaults to `transparent`.
@@ -81,13 +90,13 @@ Some marks draw in the background color, like the outlines between donut segment
 
 `colors` sets the palette that a mark's `color` field draws from. Each series gets the next color in the order it first appears in `data`, and colors repeat when there are more series than colors. The default is `s2Categorical20`.
 
-`colors` takes one of these named palettes:
+`colors` takes a named palette:
 
--   **Categorical** palettes are for unordered series.
--   **Sequential** palettes are for ordered values, like low to high.
--   **Diverging** palettes are for values above and below a midpoint.
+-   **Categorical** palettes, like `s2Categorical20`, are for unordered series.
+-   **Sequential** palettes, like `sequentialViridis9`, are for ordered values, like low to high.
+-   **Diverging** palettes, like `divergentRedBlue9`, are for values above and below a midpoint.
 
-The number at the end of each name is how many colors it has. Named palettes use the same colors in light and dark.
+See [Color palettes](/react-spectrum-charts/s2/docs/docs/guides/color-palettes) for every palette and its colors.
 
 ### Custom colors
 

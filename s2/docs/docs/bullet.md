@@ -14,6 +14,15 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `direction` on `Bullet`: `column` or `row`. Shown: `column`.
+-   `labelPosition` on `Bullet`: `top` or `side`. Shown: `top`.
+-   `color` on `Bullet`: `blue-900`, `purple-900` or `green-900`. Shown: `blue-900`.
+-   `showTargetValue` on `Bullet`: `true` or `false`. Shown: `false`.
+-   `track` on `Bullet`: `true` or `false`. Shown: `true`.
+-   `text` on `Title`: any text. Shown: `Customer health`.
+
 `Bullet` is a lab component. Import it from the `lab` subpath:
 
 ```tsx
@@ -54,6 +63,22 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No KPI data`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={bulletScoreData} loading>
+  <Bullet track metric="score" dimension="kpi" target="goal" />
+</Chart>
+```
+
 ## Layout
 
 `direction` stacks bullets in a `column` (the default) or places them side by side in a `row`.
@@ -75,6 +100,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `direction` on `Bullet`: `column` or `row`. Shown: `column`.
+-   `labelPosition` on `Bullet`: `top` or `side`. Shown: `side`.
+
 The examples on this page are 480px wide and exactly as tall as their bullets. Bullets keep a fixed height and spacing, so a taller `Chart` leaves empty space below them rather than stretching them.
 
 ## Target
@@ -89,6 +119,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Bullet track metric="score" dimension="kpi" target="goal" showTargetValue />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `showTarget` on `Bullet`: `true` or `false`. Shown: `true`.
+-   `showTargetValue` on `Bullet`: `true` or `false`. Shown: `true`.
 
 ## Scale
 
@@ -115,6 +150,12 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Bullet`: `normal`, `fixed` or `flexible`. Shown: `fixed`.
+-   `maxScaleValue` on `Bullet`: 50 to 150, in steps of 10. Shown: `100`.
+-   `metricAxis` on `Bullet`: `true` or `false`. Shown: `true`.
 
 > **Note:**
 > 
@@ -148,6 +189,12 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `thresholds` on `Bullet`: `true` or `false`. Shown: `true`.
+-   `thresholdBarColor` on `Bullet`: `true` or `false`. Shown: `false`.
+-   `track` on `Bullet`: `true` or `false`. Shown: `true`.
 
 ## Color
 
@@ -183,6 +230,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `numberFormat` on `Bullet`: `standardNumber`, `shortNumber`, `shortCurrency`, `currency` or `$,.0f`. Shown: `shortCurrency`.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ### metricLabel and targetLabel
 
 To show text you've already formatted, such as values with units, set `metricLabel` to a field holding the metric text and `targetLabel` to a field holding the target text. `targetLabel` only shows with `showTargetValue`.
@@ -212,6 +264,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metricLabel` on `Bullet`: `none` or `usedLabel`. Shown: `usedLabel`.
+-   `targetLabel` on `Bullet`: `none` or `quotaLabel`. Shown: `quotaLabel`.
+
 ## Title
 
 Add [`Title`](/react-spectrum-charts/s2/docs/docs/title) as a sibling of `Bullet` to label the chart. The main example at the top of this page has one.
@@ -238,6 +295,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Bullet>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `track` on `Bullet`: `true` or `false`. Shown: `true`.
 
 > **Note:**
 > 

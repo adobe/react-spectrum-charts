@@ -14,6 +14,16 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `Axis` (Left axis): any text. Shown: `Visits`.
+-   `grid` on `Axis` (Left axis): `true` or `false`. Shown: `true`.
+-   `numberFormat` on `Axis` (Left axis): `shortNumber`, `standardNumber` or `shortCurrency`. Shown: `shortNumber`.
+-   `title` on `Axis` (Bottom axis): any text. Shown: empty.
+-   `baseline` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
+-   `ticks` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
+-   `labelFormat` on `Axis` (Bottom axis): `time` or `linear`. Shown: `time`.
+
 ## Data
 
 Axes don't take data. Each axis reads the scale of the mark it sits beside, so its labels come from the mark's `dimension` and `metric` fields. Line charts on this page use `axisVisitsData`, one row per day with `datetime` in epoch milliseconds:
@@ -83,6 +93,58 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Chart**: `Line, time`, `Line, linear`, `Line, point`, `Bar, vertical` or `Bar, horizontal`. Shown: `Line, time`.
+
+With **Chart** set to `Line, linear`:
+
+```jsx
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisConversionData}>
+  <Axis position="left" grid labelFormat="percentage" />
+  <Axis position="bottom" baseline title="Week" />
+  <Line dimension="week" metric="rate" scaleType="linear" />
+</Chart>
+```
+
+With **Chart** set to `Line, point`:
+
+```jsx
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisBrowserData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline />
+  <Line dimension="browser" metric="downloads" scaleType="point" />
+</Chart>
+```
+
+With **Chart** set to `Bar, vertical`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisBrowserData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline />
+  <Bar dimension="browser" metric="downloads" />
+</Chart>
+```
+
+With **Chart** set to `Bar, horizontal`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisBrowserData}>
+  <Axis position="left" baseline />
+  <Axis position="bottom" grid />
+  <Bar dimension="browser" metric="downloads" orientation="horizontal" />
+</Chart>
+```
+
 Some props only apply to some scales. `range` works on linear and time scales, `tickMinStep` on linear scales, `granularity` on time scales, and `truncateLabels` and `AxisThumbnail` on band scales.
 
 ## Position and titles
@@ -99,6 +161,12 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Axis` (Value axis): `left`, `right` or `both`. Shown: `left`.
+-   `title` on `Axis` (Value axis): `none`, `Downloads` or `Downloads, Last 30 days`. Shown: `Downloads`.
+-   `position` on `Axis` (Category axis): `bottom` or `top`. Shown: `bottom`.
+
 ## Gridlines, ticks, and baseline
 
 -   `grid` draws a gridline at each tick across the plot. It also spaces ticks about 100px apart; without it, a value axis falls back to Vega's default tick count, which can crowd the labels.
@@ -114,6 +182,14 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `grid` on `Axis` (Left axis): `true` or `false`. Shown: `true`.
+-   `ticks` on `Axis` (Left axis): `true` or `false`. Shown: `false`.
+-   `baseline` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
+-   `baselineOffset` on `Axis` (Bottom axis): 0 to 20000, in steps of 2500. Shown: `0`.
+-   `ticks` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
 
 ## Label formats
 
@@ -135,6 +211,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labelFormat` on `Axis`: `linear`, `percentage` or `duration`. Shown: `linear`.
 
 The data and charts used here are `axisConversionData` and `axisDurationData`:
 
@@ -187,6 +267,13 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `numberFormat` on `Axis`: `shortNumber`, `standardNumber`, `shortCurrency`, `currency`, `,.0f`, `.2s` or `$,.0f`. Shown: `shortNumber`.
+-   `currencyCode` on `Axis`: `none`, `USD`, `EUR`, `GBP` or `JPY`. Shown: `none`.
+-   `currencyLocale` on `Axis`: `none`, `en-US`, `de-DE`, `fr-FR` or `ja-JP`. Shown: `none`.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ```ts
 const axisRevenueData = [
   { region: 'North America', revenue: 1284500 },
@@ -230,6 +317,23 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `granularity` on `Axis`: `minute`, `hour`, `day`, `week`, `month`, `quarter` or `year`. Shown: `day`.
+-   **mark** (Chart): `Line` or `Bar`. Shown: `Line`.
+
+With **mark** set to `Bar`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisVisitsData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline labelFormat="time" />
+  <Bar dimension="datetime" metric="visits" />
+</Chart>
+```
+
 > **Caution:**
 > 
 > `tickCountLimit` and `tickCountMinimum` on a time axis replace the granularity's tick interval and can repeat labels, such as `Q1 Q1 Q2`. Match the tick count to the data if you set them.
@@ -247,6 +351,10 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line dimension="week" metric="rate" scaleType="linear" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `range` on `Axis`: `none`, `0, 0.05`, `0, 0.1` or `0.02, 0.04`. Shown: `none`.
 
 ## Tick count
 
@@ -268,6 +376,12 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `tickCountMinimum` on `Axis` (Left axis): 0 to 12, in steps of 1. Shown: `0`.
+-   `tickCountLimit` on `Axis` (Left axis): 0 to 12, in steps of 1. Shown: `0`.
+-   `tickMinStep` on `Axis` (Bottom axis): 0 to 5, in steps of 1. Shown: `0`.
+
 ## Label layout
 
 -   `labelOrientation="vertical"` rotates labels 90° to fit long category names.
@@ -287,6 +401,14 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="region" metric="revenue" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labelOrientation` on `Axis`: `horizontal` or `vertical`. Shown: `horizontal`.
+-   `labelAlign` on `Axis`: `start`, `center` or `end`. Shown: `center`.
+-   `labelFontWeight` on `Axis`: `normal` or `bold`. Shown: `normal`.
+-   `truncateLabels` on `Axis`: `true` or `false`. Shown: `false`.
+-   `labelLimit` on `Axis`: 40 to 180, in steps of 20. Shown: `180`.
 
 ## Custom labels
 
@@ -309,6 +431,12 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labels` on `Axis` (Left axis): `none`, `values` or `label objects`. Shown: `none`.
+-   `hideDefaultLabels` on `Axis` (Left axis): `true` or `false`. Shown: `false`.
+-   `subLabels` on `Axis` (Bottom axis): `true` or `false`. Shown: `true`.
 
 > **Note:**
 > 
@@ -338,6 +466,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `ReferenceLine`: 0 to 3000, in steps of 100. Shown: `2500`.
+-   `label` on `ReferenceLine`: any text. Shown: `Target`.
+-   `size` on `ReferenceLine`: `auto`, `XS`, `S`, `M` or `L`. Shown: `auto`.
+-   `secondary` on `ReferenceLine`: `true` or `false`. Shown: `false`.
+
 ## AxisThumbnail
 
 `AxisThumbnail` is a child of `Axis` that shows an image next to each label on a band axis. The image URL comes from the data field named by `urlKey` (default `thumbnail`). Images are up to 42px square, shrink with the band, and are hidden when the band is narrower than 16px. Combine with `hideDefaultLabels` to show images only.
@@ -358,6 +493,11 @@ import {
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+-   `hideDefaultLabels` on `Axis`: `true` or `false`. Shown: `false`.
 
 ## Interaction
 
@@ -380,6 +520,11 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="region" metric="revenue" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hasTooltip` on `Axis`: `true` or `false`. Shown: `true`.
+-   `tooltipText` on `Axis`: `none` or `custom`. Shown: `custom`.
 
 ### Label clicks and hover
 
@@ -415,6 +560,11 @@ import {
   </Bar>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `onClick` on `Axis`: `true` or `false`. Shown: `true`.
+-   `ChartInspect`: included or left out. Shown: included.
 
 > **Note:**
 > 

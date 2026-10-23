@@ -22,6 +22,14 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `color` on `Scatter`: `channel` or `static`. Shown: `channel`.
+-   `size` on `Scatter`: `M` or `reach`. Shown: `M`.
+-   `method` on `Trendline`: `none`, `linear` or `average`. Shown: `none`.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Campaign revenue by spend`.
+
 `Scatter`, `ScatterAnnotation`, `ScatterPath`, `Trendline`, and `TrendlineAnnotation` are lab components. Import them from the `lab` subpath:
 
 ```tsx
@@ -110,6 +118,10 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `dimensionScaleType` on `Scatter`: `time` or `linear`. Shown: `time`.
+
 ### Empty and loading
 
 When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a spinner while data loads.
@@ -119,6 +131,23 @@ import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 <Chart data={emptyData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" grid />
+  <Scatter dimension="spend" metric="revenue" color="channel" />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData} loading>
   <Axis position="left" grid />
   <Axis position="bottom" grid />
   <Scatter dimension="spend" metric="revenue" color="channel" />
@@ -147,6 +176,12 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `color` on `Scatter`: `channel`, `roi` or `static`. Shown: `channel`.
+-   `color` on `Scatter`: `categorical-100`, `categorical-200` or `gray-700`. Shown: `categorical-100`.
+-   `colors` on `Chart`: `sequentialViridis5`, `sequentialMagma5` or `sequentialRose5`. Shown: `sequentialViridis5`.
+
 ### Size
 
 `size` sets the width of each point. It accepts `XS` (6px), `S` (8px), `M` (10px, default), `L` (12px), `XL` (16px), or a number of pixels.
@@ -164,6 +199,12 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend position="right" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `size` on `Scatter`: `M`, `XS`, `S`, `L`, `XL`, `24` or `reach`. Shown: `M`.
+-   `symbolSizes` on `Chart`: `XS`, `S` or `M`. Shown: `XS`.
+-   `symbolSizes` on `Chart`: `L`, `XL` or `32`. Shown: `XL`.
 
 ### Opacity
 
@@ -185,6 +226,11 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Scatter`: `1`, `0.5` or `audience`. Shown: `1`.
+-   `opacities` on `Chart`: `default`, `1, 0.4` or `1, 0.15`. Shown: `default`.
 
 ### Outline
 
@@ -210,6 +256,13 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `lineWidth` on `Scatter`: `0`, `XS`, `S`, `M`, `L`, `XL` or `audience`. Shown: `0`.
+-   `lineType` on `Scatter`: `solid`, `dashed`, `dotted` or `audience`. Shown: `solid`.
+-   `stroke` on `Scatter`: `none`, `gray-800` or `audience`. Shown: `none`.
+-   `opacity` on `Scatter`: 0 to 1, in steps of 0.1. Shown: `0.4`.
+
 > **Note:**
 > 
 > `lineWidths` defaults to `['M']`, so a `lineWidth` field gives every point the same 2px outline until you set `lineWidths` on `Chart`.
@@ -230,6 +283,10 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `blend` on `Scatter`: `default`, `normal`, `multiply`, `screen` or `darken`. Shown: `default`.
+
 ### Clip
 
 When an `Axis` `range` is smaller than the data, points outside the range still draw past the plot edge. Set `clip` to hide them.
@@ -249,6 +306,10 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `clip` on `Scatter`: `true` or `false`. Shown: `false`.
 
 ## ScatterPath
 
@@ -295,6 +356,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `color` on `ScatterPath`: `gray-500` or `gray-800`. Shown: `gray-500`.
+-   `pathWidth` on `ScatterPath`: `M`, `S`, `XL` or `share`. Shown: `M`.
+-   `opacity` on `ScatterPath`: 0 to 1, in steps of 0.1. Shown: `0.5`.
+-   `ScatterAnnotation`: included or left out. Shown: included.
+
 ## ScatterAnnotation
 
 `ScatterAnnotation` labels each point. `textKey` names the field to show (default: the scatter's `metric`).
@@ -317,6 +385,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `textKey` on `ScatterAnnotation`: `revenue`, `campaign` or `channel`. Shown: `revenue`.
+-   `anchor` on `ScatterAnnotation`: `right, top, bottom, left`, `right`, `top` or `left, bottom`. Shown: `right, top, bottom, left`.
 
 ## Trendline
 
@@ -347,6 +420,18 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `method` on `Trendline`: `linear`, `average`, `median`, `quadratic`, `exponential`, `logarithmic` or `power`. Shown: `linear`.
+-   `lineType` on `Trendline`: `dashed`, `solid` or `dotted`. Shown: `dashed`.
+-   `lineWidth` on `Trendline`: `M`, `XS`, `S`, `L` or `XL`. Shown: `M`.
+-   `opacity` on `Trendline`: 0 to 1, in steps of 0.1. Shown: `1`.
+-   `color` on `Trendline`: `series` or `gray-700`. Shown: `series`.
+-   `orientation` on `Trendline`: `horizontal` or `vertical`. Shown: `horizontal`.
+-   `dimensionRange` on `Trendline`: `none` or `10, 30`. Shown: `none`.
+-   `dimensionExtent` on `Trendline`: `dimensionRange`, `domain, domain` or `0, 50`. Shown: `dimensionRange`.
+-   `color` on `Scatter`: `channel` or `static`. Shown: `channel`.
+
 ### Moving averages
 
 Moving averages work best on evenly spaced data like a time series. Set `hidePartialWindows` to hide the first points, which average fewer than N values.
@@ -372,6 +457,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `method` on `Trendline`: `movingAverage-3`, `movingAverage-5` or `linear`. Shown: `movingAverage-3`.
+-   `hidePartialWindows` on `Trendline`: `true` or `false`. Shown: `false`.
 
 ### Excluding points
 
@@ -409,6 +499,10 @@ import {
   </Scatter>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `excludeDataKeys` on `Trendline`: `true` or `false`. Shown: `true`.
 
 ### Trendline interaction
 
@@ -449,6 +543,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect` (Trendline): included or left out. Shown: included.
+-   `highlightRawPoint` on `Trendline`: `true` or `false`. Shown: `false`.
+-   `displayOnHover` on `Trendline`: `true` or `false`. Shown: `false`.
+
 ## TrendlineAnnotation
 
 `TrendlineAnnotation` labels a trendline with its value. `dimensionValue` sets where along the line: `end` (default), `start`, or a dimension value. `numberFormat` takes a [d3-format](https://d3js.org/d3-format) specifier and follows the chart's `locale`; `prefix` adds text before the value. `badge` draws the label in a filled badge in the trendline's color.
@@ -471,6 +571,15 @@ import {
   </Scatter>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `method` on `Trendline`: `average` or `median`. Shown: `average`.
+-   `badge` on `TrendlineAnnotation`: `true` or `false`. Shown: `false`.
+-   `dimensionValue` on `TrendlineAnnotation`: `end`, `start` or `20`. Shown: `end`.
+-   `numberFormat` on `TrendlineAnnotation`: `,.1f`, `$,.0f` or `none`. Shown: `,.1f`.
+-   `prefix` on `TrendlineAnnotation`: any text. Shown: empty.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
 
 > **Note:**
 > 
@@ -503,6 +612,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `title` on `Legend`: any text. Shown: `Channel`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `false`.
+-   `legendLabels` on `Legend`: `none` or `Paid search, Paid social, Email`. Shown: `none`.
+
 ### Size, gradient, and opacity legends
 
 A numeric `size` field gets a size legend, listed after any category entries, and a linear `color` field gets a gradient legend. When points share one color and `opacity` is a field, set `opacity` on `Legend` to that field so the legend symbols match.
@@ -516,6 +633,49 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Axis position="bottom" grid title="Spend ($K)" />
   <Scatter dimension="spend" metric="revenue" size="reach" />
   <Legend position="right" title="Reach (K)" />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Scatter facet**: `size`, `color` or `opacity`. Shown: `size`.
+
+With **Scatter facet** set to `color`:
+
+```jsx
+import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData} colors="sequentialViridis5">
+  <Axis position="left" grid title="Revenue ($K)" />
+  <Axis position="bottom" grid title="Spend ($K)" />
+  <Scatter
+    dimension="spend"
+    metric="revenue"
+    size={{ value: 'L' }}
+    color="roi"
+    colorScaleType="linear"
+  />
+  <Legend position="right" title="ROI" />
+</Chart>
+```
+
+With **Scatter facet** set to `opacity`:
+
+```jsx
+import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData}>
+  <Axis position="left" grid title="Revenue ($K)" />
+  <Axis position="bottom" grid title="Spend ($K)" />
+  <Scatter
+    dimension="spend"
+    metric="revenue"
+    size={{ value: 'L' }}
+    opacity="audience"
+  />
+  <Legend position="right" title="Audience" opacity="audience" />
 </Chart>
 ```
 
@@ -539,6 +699,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Social` or `Social, Email`. Shown: `Social`.
 
 ## Interaction
 
@@ -589,6 +753,14 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series`, `dimension` or `audience`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+-   `tooltipAnchor` on `Chart`: `cursor` or `mark`. Shown: `cursor`.
+
 > **Note:**
 > 
 > `Scatter` doesn't support `onClick`, `onContextMenu`, `onMouseOver`, or `onMouseOut` yet.
@@ -621,6 +793,11 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend highlight />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Search`, `Social` or `Email`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none`, `3` or `3, 12`. Shown: `none`.
 
 ## Animation
 

@@ -50,6 +50,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 ## Data
 
 Most examples on this page use a line chart of `interactionVisitorsData` or a stacked bar chart of `interactionDownloadsData`. Each row has an `id` field, used in [Highlighting](#highlighting).
@@ -138,6 +146,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `children` on `ChartInspect`: `formatted`, `raw datum` or `none`. Shown: `raw datum`.
+
 ### Default content
 
 Only [Donut](/react-spectrum-charts/s2/docs/docs/donut#chartinspect-and-chartpopover) has default content: without children, its inspect and popover show the segment's color, name, share of the total, and value. On other marks, an inspect or popover without children shows nothing, although the mark still responds to the pointer.
@@ -175,6 +188,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `tooltipAnchor` on `Chart`: `cursor` or `mark`. Shown: `mark`.
+-   `tooltipPlacement` on `Chart`: `top`, `bottom`, `left` or `right`. Shown: `top`.
+
 ### highlightBy
 
 While the inspect is visible, the hovered point stays at full opacity and other points fade. `highlightBy` sets what stays highlighted:
@@ -211,6 +230,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `series`.
+
 ### targets
 
 On stacked or dodged bars, `targets` sets what shows the inspect. `'item'` (default) is a single bar. `'dimensionArea'` is the whole column for a dimension value, including the padding around its bars; hovering the empty space in a column shows the inspect for that column, with its bars in `datum.rscGroupData`. Pass both to inspect bars and columns.
@@ -239,6 +263,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `targets` on `ChartInspect`: `item`, `dimensionArea` or `dimensionArea, item`. Shown: `dimensionArea, item`.
 
 `targets` only applies to `Bar`. Hovering a bar shows its own inspect even when `targets` leaves out `'item'`.
 
@@ -288,6 +316,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `excludeDataKeys` on `ChartInspect`: `none` or `isEstimate`. Shown: `isEstimate`.
+
 ## ChartPopover
 
 ### Opening and closing
@@ -332,6 +364,17 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `width` on `ChartPopover` (Width): `none`, `auto`, `200` or `320`. Shown: `320`.
+-   `minWidth` on `ChartPopover` (Width): 0 to 400, in steps of 20. Shown: `0`.
+-   `maxWidth` on `ChartPopover` (Width): `none`, `240` or `400`. Shown: `none`.
+-   `height` on `ChartPopover` (Height): `none`, `auto`, `120` or `200`. Shown: `none`.
+-   `minHeight` on `ChartPopover` (Height): `none`, `160` or `240`. Shown: `none`.
+-   `maxHeight` on `ChartPopover` (Height): `none`, `100` or `160`. Shown: `none`.
+-   `contentMargin` on `ChartPopover` (Spacing): 0 to 32, in steps of 4. Shown: `12`.
+-   `containerPadding` on `ChartPopover` (Spacing): 0 to 48, in steps of 4. Shown: `12`.
 
 ### Callbacks
 
@@ -393,6 +436,10 @@ import {
   </Legend>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
 
 ## Using both together
 

@@ -87,6 +87,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `Chart`: any text. Shown: `Visits by channel`.
+-   `colors` on `Chart`: `s2Categorical20` or `blue-1000, blue-700, blue-400`. Shown: `s2Categorical20`.
+-   `renderer` on `Chart`: `svg` or `canvas`. Shown: `svg`.
+-   `loading` on `Chart`: `true` or `false`. Shown: `false`.
+
 `Chart` needs at least one child, or a Vega spec in `UNSAFE_vegaSpec` (see [Advanced](#advanced)). It throws if it has neither, or both.
 
 ## Data
@@ -158,6 +165,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedItem` on `Chart`: `none`, `4` or `4, 14, 24`. Shown: `4`.
+
 ### Empty and loading
 
 When `data` is empty, the chart shows an icon and `emptyStateText` (default `No data found`) in place of the chart. `loading` shows a progress circle instead. Both fill the chart's height.
@@ -171,6 +182,29 @@ import {
 } from '@spectrum-charts/react-spectrum-charts-s2';
 
 <Chart data={emptyData} emptyStateText="No visits yet">
+  <Axis position="left" grid />
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Line color="series" />
+  <Legend />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No visits yet`.
+
+With **state** set to `loading`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  Legend,
+  Line,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={chartTrafficData} loading>
   <Axis position="left" grid />
   <Axis position="bottom" labelFormat="time" baseline ticks />
   <Line color="series" />
@@ -203,6 +237,15 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </div>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `width` on `Chart`: `auto`, `75%` or `320`. Shown: `auto`.
+-   `height` on `Chart`: `300`, `100%` or `50%`. Shown: `300`.
+-   `minWidth` on `Chart`: 100 to 512, in steps of 20. Shown: `100`.
+-   `maxWidth` on `Chart`: 100 to 512, in steps of 20. Shown: `512`.
+-   `minHeight` on `Chart`: 100 to 360, in steps of 20. Shown: `100`.
+-   `maxHeight` on `Chart`: 100 to 360, in steps of 20. Shown: `360`.
+
 > **Note:**
 > 
 > A percentage `height` only works if the parent has an explicit height. Otherwise the chart has no height to measure against.
@@ -229,11 +272,17 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `padding` on `Chart`: 0 to 48, in steps of 4. Shown: `24`.
+
 ## Color and theme
 
 ### colorScheme and backgroundColor
 
-`colorScheme` (`light` or `dark`, default `light`) picks the light or dark value of every Spectrum color token in the chart, including the mark colors, axes, and text. Set it to match your app's theme. `backgroundColor` fills the chart and is a Spectrum color token, like `gray-25`, or a CSS color. The default is `transparent`.
+`colorScheme` (`light` or `dark`, default `light`) picks the light or dark value of every Spectrum color token in the chart, including the mark colors, axes, and text. Set it to match your app's theme. The examples on this site follow the site's theme; see [Colors and theming](/react-spectrum-charts/s2/docs/docs/guides/colors-and-theming#light-and-dark) for each color's light and dark values.
+
+`backgroundColor` fills the chart and is a Spectrum color token, like `gray-25`, or a CSS color. The default is `transparent`.
 
 ```jsx
 import {
@@ -243,13 +292,17 @@ import {
   Line,
 } from '@spectrum-charts/react-spectrum-charts-s2';
 
-<Chart data={chartTrafficData} colorScheme="dark" backgroundColor="gray-25">
+<Chart data={chartTrafficData} backgroundColor="gray-25">
   <Axis position="left" grid />
   <Axis position="bottom" labelFormat="time" baseline ticks />
   <Line color="series" />
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `backgroundColor` on `Chart`: `gray-25`, `gray-50`, `gray-100` or `transparent`. Shown: `gray-25`.
 
 ### colors
 
@@ -271,6 +324,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `colors` on `Chart`: `s2Categorical20`, `blue-1000, blue-700, blue-400` or `rgb(15, 181, 174), rgb(64, 70, 202), rgb(246, 133, 17)`. Shown: `blue-1000, blue-700, blue-400`.
+
 `colors` also takes a 2D list, like `[['blue-1000', 'blue-700'], ['red-1000', 'red-700']]`: a group of colors per series, for marks that encode color with two fields.
 
 ### Other scales
@@ -290,6 +347,11 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line lineType="series" opacity="series" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `lineTypes` on `Chart`: `solid, dashed, dotted` or `solid, longDash, dotDash`. Shown: `solid, dashed, dotted`.
+-   `opacities` on `Chart`: `1` or `1, 0.6, 0.3`. Shown: `1, 0.6, 0.3`.
 
 `lineTypes` defaults to `['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash']` and `opacities` to `[1]`. `lineWidths`, `symbolShapes`, and `symbolSizes` work the same way for marks that encode those, like `Scatter`'s `lineWidth` and `size`, and for legend symbols.
 
@@ -316,6 +378,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `de-DE`.
 
 The axis above uses `numberFormat="standardNumber"` so every tick shows the locale's grouping separator.
 
@@ -345,6 +411,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `Chart`: any text. Shown: `Visits by channel`.
+-   `description` on `Chart`: any text. Shown: `Daily visits from March 2 to 11 by channel. Organic search leads and grows; email stays lowest.`.
+
 ## Hiding and highlighting
 
 `hiddenSeries` and `highlightedSeries` hide or highlight series from outside the chart, for example to sync the chart with a table. They're controlled: the chart shows what you pass and doesn't change them itself. `highlightedItem` highlights rows by ID (see [idKey](#idkey)).
@@ -364,6 +435,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Email` or `Paid search, Email`. Shown: `none`.
+-   `highlightedSeries` on `Chart`: `none`, `Organic search`, `Paid search` or `Email`. Shown: `Paid search`.
 
 See [Highlighting](/react-spectrum-charts/s2/docs/docs/interaction#highlighting) for how each mark shows highlighting.
 
@@ -396,6 +472,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `tooltipAnchor` on `Chart`: `cursor` or `mark`. Shown: `mark`.
+-   `tooltipPlacement` on `Chart`: `top`, `bottom`, `left` or `right`. Shown: `top`.
+
 See [ChartInspect and ChartPopover](/react-spectrum-charts/s2/docs/docs/interaction) for the content and behavior of tooltips and popovers.
 
 ## Animation
@@ -426,6 +507,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animations` on `Chart`: `true` or `false`. Shown: `true`.
+-   `animationTypes` on `Chart`: `hover`, `hover, drawIn` or `drawIn`. Shown: `hover, drawIn`.
 
 If the user prefers reduced motion, draw-in is skipped; hover animation still plays.
 
@@ -555,6 +641,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `interpolate` on `Line`: `linear`, `monotone` or `step`. Shown: `linear`.
+-   `LineDirectLabel`: included or left out. Shown: left out.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Visits by channel`.
+
 ## Data
 
 `data` goes on `Chart` as an array of objects, one per point. On `Line`, `dimension` names the x-axis field (default `datetime`), `metric` names the y-axis field (default `value`), and `color` names the field that splits the rows into series. Without `color`, every row belongs to one line. Time values are milliseconds since the epoch. Most examples on this page use `lineTrafficData`:
@@ -616,6 +709,23 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No visits yet`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineTrafficData} loading>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line color="series" />
+</Chart>
+```
+
 ## Lines
 
 ### Series
@@ -638,6 +748,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `lineType` on `Line`: `none` or `series`. Shown: `none`.
+-   `opacity` on `Line`: `none` or `series`. Shown: `none`.
+
 ### interpolate
 
 `interpolate` sets the curve between points. The default, `linear`, draws straight segments.
@@ -656,6 +771,10 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `interpolate` on `Line`: `linear`, `monotone`, `basis`, `cardinal`, `catmull-rom`, `natural`, `step`, `step-before` or `step-after`. Shown: `monotone`.
+
 ### gradient
 
 `gradient` fills the area under the line with its color, fading to transparent at the bottom. The gradient only draws when the chart has a single line. `opacity` fades the line and its gradient together.
@@ -670,6 +789,11 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `gradient` on `Line`: `true` or `false`. Shown: `true`.
+-   `opacity` on `Line`: 0.2 to 1, in steps of 0.1. Shown: `1`.
+
 ### Size
 
 Stroke width, point size, and hover rings scale with the chart's width: a chart under 400px wide uses the small size, one under 800px the medium size, and anything wider the large size. Use `width`, `height`, `minWidth`, and `maxWidth` on `Chart` to constrain it. Drag the width below 400 to see the small size.
@@ -683,6 +807,10 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line staticPoint="isMilestone" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `width` on `Chart`: 240 to 500, in steps of 20. Shown: `480`.
 
 ## Points
 
@@ -715,6 +843,11 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `staticPoint` on `Line`: `none` or `isMilestone`. Shown: `isMilestone`.
+-   `pointSize` on `Line`: `auto`, `36`, `100` or `196`. Shown: `auto`.
+
 ### Sparklines
 
 `isSparkline` with `isMethodLast` draws a point on the last row of the data. The sparkline shown has no axes and is 200 × 60px.
@@ -726,6 +859,11 @@ import { Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line isSparkline isMethodLast gradient />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `isMethodLast` on `Line`: `true` or `false`. Shown: `true`.
+-   `gradient` on `Line`: `true` or `false`. Shown: `true`.
 
 ## Segments
 
@@ -785,6 +923,11 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `alternateSegmentKey` on `Line`: `none` or `isEstimated`. Shown: `isEstimated`.
+-   `alternateSegmentLineType` on `Line`: `dotted`, `dashed` or `shortDash`. Shown: `dotted`.
+
 ### primarySeries
 
 `primarySeries` keeps some series in color and draws the rest in gray. Pass a number N to keep the first N series in color order (`2` keeps the first two), or a list of series names. `otherSeriesColor` changes the gray (default `gray-400`) to another Spectrum 2 color token. Gray series don't get `LineDirectLabel` labels.
@@ -805,6 +948,11 @@ import {
   </Line>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `primarySeries` on `Line`: `none`, `1`, `2` or `Email`. Shown: `1`.
+-   `otherSeriesColor` on `Line`: `gray-400`, `gray-300` or `gray-600`. Shown: `gray-400`.
 
 > **Note:**
 > 
@@ -832,6 +980,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Line`: `time`, `linear` or `point`. Shown: `time`.
+
 ### padding
 
 `padding` adds space between the plot edges and the first and last points. Its unit depends on `scaleType`:
@@ -856,6 +1008,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `padding` on `Line`: 0 to 48, in steps of 4. Shown: `24`.
 
 ### dualMetricAxis
 
@@ -908,6 +1064,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `dualMetricAxis` on `Line`: `true` or `false`. Shown: `true`.
+
 ## Hover
 
 Lines respond to the pointer when they have `ChartInspect`, `ChartPopover`, `ChartActionBar`, `onClick`, or `onContextMenu`. Hovering fades the other series, rings the hovered point, and shows its value next to it.
@@ -942,6 +1102,12 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
   </Line>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `interactionMode` on `Line`: `nearest` or `item`. Shown: `nearest`.
+-   `dimensionHover` on `Line`: `true` or `false`. Shown: `false`.
+-   `showHoverLabel` on `Line`: `true` or `false`. Shown: `true`.
 
 ## Metric ranges
 
@@ -984,7 +1150,106 @@ import {
   <Axis position="bottom" labelFormat="time" baseline ticks />
   <Axis position="left" grid />
   <Line
-    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', rangeOpacity: undefined, lineType: undefined, displayOnHover: undefined, scaleAxisToFit: true }]}
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **rangeOpacity** (metricRanges): 0 to 1, in steps of 0.1. Shown: `0.2`.
+-   **lineType** (metricRanges): `dashed`, `solid` or `dotted`. Shown: `dashed`.
+-   **displayOnHover** (metricRanges): `true` or `false`. Shown: `false`.
+-   **scaleAxisToFit** (metricRanges): `true` or `false`. Shown: `true`.
+
+With **lineType** set to `solid`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', lineType: 'solid', scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+With **lineType** set to `dotted`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', lineType: 'dotted', scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+With **displayOnHover** set to `true`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', displayOnHover: true, scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+With **scaleAxisToFit** set to `false`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', scaleAxisToFit: false }]}
   >
     <LineForecast metric="forecast" start={1773187200000} />
     <ChartInspect />
@@ -1021,6 +1286,14 @@ import {
   </Line>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `LineDirectLabel`: `last`, `average` or `series`. Shown: `last`.
+-   `position` on `LineDirectLabel`: `end` or `start`. Shown: `end`.
+-   `format` on `LineDirectLabel`: `,.2~f`, `,.1f` or `.2s`. Shown: `,.2~f`.
+-   `prefix` on `LineDirectLabel`: any text. Shown: empty.
+-   `excludeSeries` on `LineDirectLabel`: `none` or `Email`. Shown: `none`.
 
 ## LineForecast
 
@@ -1063,6 +1336,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `start` on `LineForecast`: `Mar 9`, `Mar 10`, `Mar 11` or `Mar 12`. Shown: `Mar 11`.
+-   `label` on `LineForecast`: any text. Shown: `Forecast`.
+
 ## Axes
 
 Line charts usually have a bottom `Axis` with `labelFormat="time"` and a left `Axis` with `grid`. Time labels follow the axis `granularity`, and number labels follow `numberFormat` (default `shortNumber`). Both use the chart's `locale`, which also applies to `ChartInspect`.
@@ -1089,6 +1367,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `Axis`: `true` or `false`. Shown: `false`.
+-   `granularity` on `Axis`: `day` or `week`. Shown: `day`.
+-   `numberFormat` on `Axis`: `shortNumber` or `standardNumber`. Shown: `shortNumber`.
+-   `ReferenceLine`: included or left out. Shown: included.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ## Legend
 
 Add `Legend` as a sibling of `Line` to list the series.
@@ -1112,6 +1398,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ### Hiding series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. To start with series hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
@@ -1131,6 +1423,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Email` or `Paid search, Email`. Shown: `Email`.
 
 ## Interaction
 
@@ -1170,6 +1466,14 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `children` on `ChartInspect`: `default` or `custom`. Shown: `default`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 `onClick` and `onContextMenu` on `Line` run a callback with the clicked point's data. `ChartActionBar` shows actions for a selected point; see [ChartActionBar](/react-spectrum-charts/s2/docs/docs/chart-action-bar). See [Interaction](/react-spectrum-charts/s2/docs/docs/interaction) for every `ChartInspect` and `ChartPopover` option.
 
 ### Highlighting
@@ -1195,6 +1499,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Organic search`, `Paid search` or `Email`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none` or `Mar 8`. Shown: `none`.
+
 ## Animation
 
 The chart's `animationTypes` lists which animations play. By default, `hover` eases the other lines in and out of their faded state when you hover a line, and `drawIn` sweeps the lines in from left to right over 850ms when the chart mounts; static points appear as the sweep passes them. Draw-in works on time, linear, and point scales.
@@ -1217,6 +1526,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
 
 Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all animation. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation) for when draw-in replays.
 
@@ -1306,6 +1620,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+-   `color` on `Bar`: `by device` or `single`. Shown: `by device`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `left` or `top`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Visits by channel`.
+
 ## Data
 
 `data` goes on `Chart` as an array of objects, one per bar or bar segment. On `Bar`, `dimension` names the field for the categories (default `category`) and `metric` names the numeric field that sizes each bar (default `value`). Set `color` to a field to split each category into series; each row is one segment. Without a `color` field, every bar uses the first categorical color. Most examples on this page use `barChannelData` or `barChannelDeviceData`:
@@ -1382,6 +1704,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+
 > **Tip:**
 > 
 > Write dates without a time zone, like `'2025-01-01 00:00:00'`, so they're read in the viewer's local time. A date-only string like `'2025-01-01'` is read as UTC and can show as the previous day or month west of UTC.
@@ -1409,6 +1735,35 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `all zeros`, `empty` or `loading`. Shown: `all zeros`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No visits yet`.
+
+With **state** set to `empty`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={emptyData} emptyStateText="No visits yet">
+  <Axis position="bottom" baseline title="Channel" />
+  <Axis position="left" grid title="Visits" />
+  <Bar dimension="channel" metric="visits" />
+</Chart>
+```
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={barChannelData} loading>
+  <Axis position="bottom" baseline title="Channel" />
+  <Axis position="left" grid title="Visits" />
+  <Bar dimension="channel" metric="visits" />
+</Chart>
+```
+
 ## Orientation
 
 Bars are vertical by default. Set `orientation="horizontal"` to draw them left to right, which leaves more room for long category names. Swap the `Axis` positions to match: the category axis goes on the left and the value axis on the bottom.
@@ -1422,6 +1777,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" orientation="horizontal" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `horizontal`.
 
 ## Stacked and dodged
 
@@ -1447,6 +1806,12 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `order` on `Bar`: `none` or `stackOrder`. Shown: `none`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
 
 ### Dodged and stacked
 
@@ -1497,6 +1862,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `groupedPadding` on `Bar`: 0 to 0.9, in steps of 0.05. Shown: `0.4`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+
 `lineType` and `opacity` also accept two fields, and the same rule applies to them.
 
 ## Spacing
@@ -1512,6 +1882,11 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `paddingRatio` on `Bar`: 0 to 0.9, in steps of 0.05. Shown: `0.4`.
+-   `paddingOuter` on `Bar`: `auto`, `0`, `0.2`, `0.5` or `1`. Shown: `auto`.
 
 Bar width comes from the chart width, the number of categories, and the padding. There's no prop to set a fixed bar width.
 
@@ -1530,6 +1905,13 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hasSquareCorners` on `Bar`: `true` or `false`. Shown: `false`.
+-   `opacity` on `Bar`: 0.1 to 1, in steps of 0.1. Shown: `1`.
+-   `lineWidth` on `Bar`: 0 to 6, in steps of 1. Shown: `0`.
+-   `lineType` on `Bar`: `solid`, `dashed` or `dotted`. Shown: `solid`.
 
 ### colorOverride
 
@@ -1555,6 +1937,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="channel" metric="visits" colorOverride="statusColor" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `colorOverride` on `Bar`: `true` or `false`. Shown: `true`.
 
 ## Diverging
 
@@ -1586,6 +1972,11 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `diverging` on `Bar`: `true` or `false`. Shown: `true`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `horizontal`.
 
 > **Note:**
 > 
@@ -1636,6 +2027,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `dualMetricAxis` on `Bar`: `true` or `false`. Shown: `true`.
+
 `dualMetricAxis` only applies when `type="dodged"`, `color` is a single field, and there's no `trellis`.
 
 ## Trellis
@@ -1678,6 +2073,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `trellisOrientation` on `Bar`: `horizontal` or `vertical`. Shown: `horizontal`.
+-   `trellisPadding` on `Bar`: 0 to 0.6, in steps of 0.05. Shown: `0.2`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+
 Trellised charts don't draw grid lines on the shared value axis.
 
 ## BarDirectLabel
@@ -1708,6 +2110,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `BarDirectLabel`: `end-outside`, `end`, `middle` or `start`. Shown: `end-outside`.
+-   `format` on `BarDirectLabel`: `,.2~f`, `.3~s` or `,.1f`. Shown: `,.2~f`.
+-   `overflow` on `BarDirectLabel`: `default`, `hide` or `spill`. Shown: `default`.
+-   `dataKey` on `BarDirectLabel`: `none` or `callout`. Shown: `none`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+
 ## Axis and ReferenceLine
 
 Bars need two `Axis` children on `Chart`: one for the categories and one for the values. Typical settings are `baseline` on the category axis and `grid` on the value axis. Hovering a category label on an interactive bar highlights that category.
@@ -1730,6 +2140,12 @@ import {
   <Bar dimension="channel" metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `ReferenceLine`: `5000`, `8000` or `10000`. Shown: `8000`.
+-   `label` on `ReferenceLine`: any text. Shown: `Goal`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
 
 ## Legend
 
@@ -1754,6 +2170,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `left` or `top`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `false`.
+
 See [Legend](/react-spectrum-charts/s2/docs/docs/legend) for more options.
 
 ### Hiding series
@@ -1775,6 +2197,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Mobile` or `Mobile, Tablet`. Shown: `Mobile`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
 
 ## Interaction
 
@@ -1831,6 +2258,15 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `targets` on `ChartInspect`: `item` or `dimensionArea, item`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+
 Hovering an interactive bar fades the other bars. A bar without `ChartInspect`, `ChartPopover`, `onClick`, `onContextMenu`, or highlighting doesn't respond to the pointer. See [Interaction](/react-spectrum-charts/s2/docs/docs/interaction) for more about inspects and popovers.
 
 ### Callbacks
@@ -1869,6 +2305,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Desktop`, `Mobile` or `Tablet`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none`, `social-mobile` or `search-desktop, email-desktop`. Shown: `none`.
+
 ## Animation
 
 The chart's `animationTypes` lists which animations play. By default, `hover` eases bars in and out of their faded state, and `drawIn` grows bars from the baseline over 700ms. Stacked segments fill in order from the baseline outward, and direct labels fade in as their own segment finishes.
@@ -1888,6 +2329,12 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
 
 Draw-in plays once when the chart mounts. Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all animation. When the user prefers reduced motion, draw-in is skipped. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
 
@@ -1969,6 +2416,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `variant` on `Donut`: `circle` or `semicircle`. Shown: `circle`.
+-   `holeRatio` on `Donut`: 0 to 0.95, in steps of 0.05. Shown: `0.85`.
+-   `DonutSummary`: included or left out. Shown: included.
+-   `position` on `Legend`: `none`, `right`, `bottom`, `left` or `top`. Shown: `right`.
+-   `text` on `Title`: any text. Shown: `Visitors by browser`.
+
 ## Data
 
 `data` goes on `Chart` as an array of objects, one per segment. On `Donut`, `metric` names the numeric field that sizes each segment (default `value`) and `color` names the field that identifies it in the legend, labels, and tooltips (default `series`). Most examples on this page use `browserData`:
@@ -2014,6 +2469,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `label` on `DonutSummary`: any text. Shown: `Success rate`.
+-   `hideValue` on `DonutSummary`: `true` or `false`. Shown: `false`.
+
 ### Zero, empty, and loading
 
 When every value is 0, the donut draws an empty gray ring and `DonutSummary` shows 0. When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a spinner while data loads.
@@ -2040,6 +2500,43 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `all zeros`, `empty` or `loading`. Shown: `all zeros`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No browser data`.
+
+With **state** set to `empty`:
+
+```jsx
+import {
+  Chart,
+  Donut,
+  DonutSummary,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={emptyData} emptyStateText="No browser data">
+  <Donut metric="count" color="browser">
+    <DonutSummary label="Visitors" />
+  </Donut>
+</Chart>
+```
+
+With **state** set to `loading`:
+
+```jsx
+import {
+  Chart,
+  Donut,
+  DonutSummary,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={browserData} loading>
+  <Donut metric="count" color="browser">
+    <DonutSummary label="Visitors" />
+  </Donut>
+</Chart>
+```
+
 ## Shape
 
 ### holeRatio
@@ -2058,6 +2555,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `holeRatio` on `Donut`: 0 to 0.95, in steps of 0.05. Shown: `0`.
 
 ### Semicircle
 
@@ -2089,6 +2590,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `sortOrder` on `Donut`: `data` or `valueDescending`. Shown: `data`.
+
 > **Note:**
 > 
 > Semicircles don't support `SegmentLabel`.
@@ -2110,6 +2615,12 @@ import {
   </Donut>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `width` on `Chart`: 120 to 520, in steps of 10. Shown: `400`.
+-   `height` on `Chart`: 80 to 400, in steps of 10. Shown: `300`.
+-   `variant` on `Donut`: `circle` or `semicircle`. Shown: `circle`.
 
 ## DonutSummary
 
@@ -2135,6 +2646,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `label` on `DonutSummary`: any text. Shown: `Visitors`.
+-   `numberFormat` on `DonutSummary`: `shortNumber`, `standardNumber` or `,.2f`. Shown: `shortNumber`.
+-   `delta` on `DonutSummary`: `none`, `0.025` or `-0.04`. Shown: `none`.
+-   `hideValue` on `DonutSummary`: `true` or `false`. Shown: `false`.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ## SegmentLabel
 
 `SegmentLabel` labels each segment with its name and value.
@@ -2156,6 +2675,16 @@ import {
   </Donut>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `SegmentLabel`: `true` or `false`. Shown: `true`.
+-   `percent` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `swatch` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `showValueRow` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `showTotal` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `valueFormat` on `SegmentLabel`: `standardNumber`, `shortNumber` or `,.0f`. Shown: `standardNumber`.
+-   `percentFormat` on `SegmentLabel`: `.0%` or `.1%`. Shown: `.0%`.
 
 Labels sit at the middle of each segment. A label is hidden when it would overlap a label for a larger segment or when its segment is narrower than about 17°. Hovering a segment always shows its label and hides any labels that overlap it.
 
@@ -2187,6 +2716,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labelKey` on `SegmentLabel`: `none` or `label`. Shown: `label`.
+
 ### Emphasized segments
 
 `emphasizedItems` on `Donut` keeps the listed segments in color and grays out the rest. Add two `SegmentLabel` children with `labelMode="emphasized"` and `labelMode="deemphasized"` to label each group differently, or set `hideDeemphasizedLabels` to label only the emphasized segments.
@@ -2206,11 +2739,39 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `emphasizedItems` on `Donut`: `Chrome`, `Chrome, Firefox` or `Safari, Opera`. Shown: `Chrome`.
+-   `hideDeemphasizedLabels` on `Donut`: `true` or `false`. Shown: `false`.
+
 ## Responsive
 
 The Spectrum 2 donut comes in five sizes: XS, S, M, L, and XL. You don't pick a size directly. The chart picks it from the space you give it, and updates it as the chart resizes. Each size changes the ring thickness, the gap between segments, the text sizes, and how much label detail is shown.
 
-Drag the bottom-right corner to resize the chart, or focus it and use the arrow keys. The dashed squares show where each size starts. Turn off segment labels to see the sizes for a donut without labels.
+The example is this chart in a resizable container. Change `width` and `height` to see each size, and remove `SegmentLabel` to see the sizes without segment labels.
+
+```ts
+const browserLongTailData = [
+  { count: 10390, browser: 'Chrome' },
+  { count: 8281, browser: 'Firefox' },
+  { count: 7045, browser: 'Safari' },
+  { count: 6166, browser: 'Opera' },
+  { count: 4201, browser: 'Other' },
+  { count: 3261, browser: 'Brave' },
+  { count: 1021, browser: 'Unknown' },
+];
+```
+
+```jsx
+import { Chart, Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={browserLongTailData} width={472} height={472}>
+  <Donut metric="count" color="browser">
+    <DonutSummary label="Visitors" />
+    <SegmentLabel percent value={false} swatch showValueRow />
+  </Donut>
+</Chart>
+```
 
 ### How size affects the donut
 
@@ -2297,6 +2858,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `right`, `bottom`, `left` or `top`. Shown: `right`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `false`.
+
 ### Hiding segments
 
 `hiddenSeries` on `Chart` hides segments from outside the chart, for example from a filter control. The remaining segments fill the circle and `DonutSummary` totals only what's visible. To start with segments hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
@@ -2316,6 +2883,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Chrome` or `Chrome, Firefox`. Shown: `Chrome`.
 
 ## Interaction
 
@@ -2351,6 +2922,13 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `children` on `ChartPopover`: `default` or `custom`. Shown: `custom`.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 Hovering an interactive segment fades the other segments and their labels. A donut without `ChartInspect`, `ChartPopover`, `SegmentLabel`, or a `Legend` with `highlight` doesn't respond to the pointer.
 
 ### Highlighting
@@ -2373,6 +2951,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Chrome`, `Firefox`, `Safari`, `Opera` or `Other`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none`, `Safari` or `Chrome, Safari`. Shown: `none`.
+
 ## Animation
 
 The chart's `animationTypes` lists which animations play. By default, `hover` eases segments in and out of their faded state on hover, and `drawIn` sweeps the segments in over 750ms when the chart mounts. Labels fade in as their segment finishes; `DonutSummary` stays visible throughout.
@@ -2392,6 +2975,13 @@ import {
   </Donut>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `variant` on `Donut`: `circle` or `semicircle`. Shown: `circle`.
+-   `SegmentLabel`: included or left out. Shown: included.
 
 Draw-in plays once when the chart mounts; re-renders, data updates, and resizing don't replay it. Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all animation. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
 
@@ -2469,6 +3059,13 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend title="Channel" position="bottom" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.8`.
+-   `ChartInspect`: included or left out. Shown: included.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Sessions by channel`.
 
 `Area` is a lab component. Import it from the `lab` subpath:
 
@@ -2555,6 +3152,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metricStart` on `Area`: `metric` or `metricStart, metricEnd`. Shown: `metric`.
+
 ### Empty and loading
 
 When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a spinner while data loads.
@@ -2564,6 +3165,24 @@ import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 <Chart data={emptyData} emptyStateText="No sessions in this range">
+  <Axis position="left" grid />
+  <Axis position="bottom" labelFormat="time" baseline />
+  <Area metric="sessions" color="channel" />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No sessions in this range`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={channelSessionsData} loading>
   <Axis position="left" grid />
   <Axis position="bottom" labelFormat="time" baseline />
   <Area metric="sessions" color="channel" />
@@ -2589,6 +3208,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `order` on `Area`: `none` or `stackOrder`. Shown: `stackOrder`.
 
 ### opacity
 
@@ -2642,6 +3265,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.5`.
+
 `metricStart` and `metricEnd` must be set together. If only one is set, `Area` logs an error and falls back to `metric`.
 
 ### With a line
@@ -2674,6 +3301,11 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Line metric="visits" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.3`.
+-   `Line`: included or left out. Shown: included.
 
 ## Scale types
 
@@ -2731,6 +3363,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Area`: `time`, `linear` or `point`. Shown: `time`.
+
 > **Note:**
 > 
 > `scaleType="band"` isn't supported for areas yet and draws a broken chart. Use `point` for categories.
@@ -2753,6 +3389,12 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Area`: `time` or `point`. Shown: `point`.
+-   `padding` on `Area`: 0 to 1, in steps of 0.1. Shown: `0.5`.
+-   `padding` on `Area`: 0 to 48, in steps of 4. Shown: `0`.
 
 ## Axis
 
@@ -2777,6 +3419,15 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `granularity` on `Axis` (Bottom axis): `day`, `week` or `month`. Shown: `week`.
+-   `numberFormat` on `Axis` (Left axis): `shortNumber` or `standardNumber`. Shown: `shortNumber`.
+-   `grid` on `Axis` (Left axis): `true` or `false`. Shown: `true`.
+-   `title` on `Axis` (Left axis): any text. Shown: `Sessions`.
+-   `ReferenceLine`: included or left out. Shown: included.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ## Legend
 
 Add `Legend` as a sibling of `Area` to list the series.
@@ -2796,6 +3447,12 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ### Hiding series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. The remaining series restack from the baseline. To start with series hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
@@ -2811,6 +3468,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Organic search` or `Paid search, Email`. Shown: `Organic search`.
 
 ## Interaction
 
@@ -2864,6 +3525,13 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 `excludeDataKeys` on `ChartInspect` turns off hover details for rows with a truthy value in any of the listed fields. See [Interaction](/react-spectrum-charts/s2/docs/docs/interaction) for more about `ChartInspect` and `ChartPopover`.
 
 ### Highlighting
@@ -2895,6 +3563,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Organic search`, `Paid search` or `Email`. Shown: `Paid search`.
+
 `highlightedItem` highlights a single point by row ID. Set `idKey` on `Chart` to the field that uniquely identifies each row. Hovering the chart replaces the controlled highlight.
 
 ```jsx
@@ -2913,6 +3585,10 @@ import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Area>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedItem` on `Chart`: `none`, `Jan 13`, `Feb 10` or `Mar 10`. Shown: `Feb 10`.
 
 ## Animation
 
@@ -2956,6 +3632,15 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `direction` on `Bullet`: `column` or `row`. Shown: `column`.
+-   `labelPosition` on `Bullet`: `top` or `side`. Shown: `top`.
+-   `color` on `Bullet`: `blue-900`, `purple-900` or `green-900`. Shown: `blue-900`.
+-   `showTargetValue` on `Bullet`: `true` or `false`. Shown: `false`.
+-   `track` on `Bullet`: `true` or `false`. Shown: `true`.
+-   `text` on `Title`: any text. Shown: `Customer health`.
+
 `Bullet` is a lab component. Import it from the `lab` subpath:
 
 ```tsx
@@ -2996,6 +3681,22 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No KPI data`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={bulletScoreData} loading>
+  <Bullet track metric="score" dimension="kpi" target="goal" />
+</Chart>
+```
+
 ## Layout
 
 `direction` stacks bullets in a `column` (the default) or places them side by side in a `row`.
@@ -3017,6 +3718,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `direction` on `Bullet`: `column` or `row`. Shown: `column`.
+-   `labelPosition` on `Bullet`: `top` or `side`. Shown: `side`.
+
 The examples on this page are 480px wide and exactly as tall as their bullets. Bullets keep a fixed height and spacing, so a taller `Chart` leaves empty space below them rather than stretching them.
 
 ## Target
@@ -3031,6 +3737,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Bullet track metric="score" dimension="kpi" target="goal" showTargetValue />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `showTarget` on `Bullet`: `true` or `false`. Shown: `true`.
+-   `showTargetValue` on `Bullet`: `true` or `false`. Shown: `true`.
 
 ## Scale
 
@@ -3057,6 +3768,12 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Bullet`: `normal`, `fixed` or `flexible`. Shown: `fixed`.
+-   `maxScaleValue` on `Bullet`: 50 to 150, in steps of 10. Shown: `100`.
+-   `metricAxis` on `Bullet`: `true` or `false`. Shown: `true`.
 
 > **Note:**
 > 
@@ -3090,6 +3807,12 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `thresholds` on `Bullet`: `true` or `false`. Shown: `true`.
+-   `thresholdBarColor` on `Bullet`: `true` or `false`. Shown: `false`.
+-   `track` on `Bullet`: `true` or `false`. Shown: `true`.
 
 ## Color
 
@@ -3125,6 +3848,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `numberFormat` on `Bullet`: `standardNumber`, `shortNumber`, `shortCurrency`, `currency` or `$,.0f`. Shown: `shortCurrency`.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ### metricLabel and targetLabel
 
 To show text you've already formatted, such as values with units, set `metricLabel` to a field holding the metric text and `targetLabel` to a field holding the target text. `targetLabel` only shows with `showTargetValue`.
@@ -3154,6 +3882,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metricLabel` on `Bullet`: `none` or `usedLabel`. Shown: `usedLabel`.
+-   `targetLabel` on `Bullet`: `none` or `quotaLabel`. Shown: `quotaLabel`.
+
 ## Title
 
 Add [`Title`](/react-spectrum-charts/s2/docs/docs/title) as a sibling of `Bullet` to label the chart. The main example at the top of this page has one.
@@ -3180,6 +3913,11 @@ import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Bullet>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `track` on `Bullet`: `true` or `false`. Shown: `true`.
 
 > **Note:**
 > 
@@ -3257,6 +3995,12 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metricAxis` on `Line`: `true` or `false`. Shown: `true`.
+-   `scaleType` on `Line`: `point` or `time`. Shown: `point`.
+-   `text` on `Title`: any text. Shown: `Sessions and conversion`.
+
 `Combo` is a lab component. Import it from the `lab` subpath. `Bar` and `Line` come from the main package:
 
 ```tsx
@@ -3325,6 +4069,38 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No traffic data`.
+
+With **state** set to `loading`:
+
+```jsx
+import {
+  Axis,
+  Bar,
+  Chart,
+  Line,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={comboTrafficData} loading>
+  <Axis position="left" grid />
+  <Axis position="right" name="rate" numberFormat=".1%" />
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Combo>
+    <Bar metric="sessions" />
+    <Line
+      metric="conversionRate"
+      metricAxis="rate"
+      color={{ value: 'categorical-200' }}
+      scaleType="point"
+    />
+  </Combo>
+</Chart>
+```
+
 ## Axes
 
 Bars always place each x value in a band, so the bottom axis shows one label per row. `labelFormat="time"` on that axis formats the timestamps as days, with the month as a sub-label.
@@ -3355,6 +4131,11 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Combo>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metric` on `Line`: `orders` or `conversionRate`. Shown: `orders`.
+-   `metricAxis` on `Line`: `none` or `secondary`. Shown: `secondary`.
 
 > **Note:**
 > 
@@ -3417,6 +4198,11 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `scaleType` on `Line`: `point` or `time`. Shown: `point`.
+
 Both children use the `categorical-100` color by default. When neither uses a `color` field, give the line a different static color, like `color={{ value: 'categorical-200' }}`, so it stands out from the bars.
 
 ## Legend
@@ -3453,6 +4239,12 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `left` or `top`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ### Hiding series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. It hides the matching bars and lines.
@@ -3484,6 +4276,10 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Desktop` or `Desktop, Tablet`. Shown: `Desktop`.
+
 ### Highlighting
 
 `highlightedSeries` on `Chart` highlights a series from outside the chart, for example from a table row. The bars and line for other series fade.
@@ -3514,6 +4310,10 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Desktop`, `Mobile` or `Tablet`. Shown: `Mobile`.
 
 > **Note:**
 > 
@@ -3582,6 +4382,13 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `children` on `ChartPopover`: `default` or `custom`. Shown: `custom`.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 Hovering a bar fades the other bars.
 
 > **Warning:**
@@ -3616,6 +4423,11 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Combo>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `de-DE`.
+-   `numberFormat` on `Axis`: `shortNumber` or `standardNumber`. Shown: `standardNumber`.
 
 ## Animation
 
@@ -3660,6 +4472,14 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `color` on `Scatter`: `channel` or `static`. Shown: `channel`.
+-   `size` on `Scatter`: `M` or `reach`. Shown: `M`.
+-   `method` on `Trendline`: `none`, `linear` or `average`. Shown: `none`.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Campaign revenue by spend`.
 
 `Scatter`, `ScatterAnnotation`, `ScatterPath`, `Trendline`, and `TrendlineAnnotation` are lab components. Import them from the `lab` subpath:
 
@@ -3749,6 +4569,10 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `dimensionScaleType` on `Scatter`: `time` or `linear`. Shown: `time`.
+
 ### Empty and loading
 
 When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a spinner while data loads.
@@ -3758,6 +4582,23 @@ import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 <Chart data={emptyData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" grid />
+  <Scatter dimension="spend" metric="revenue" color="channel" />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData} loading>
   <Axis position="left" grid />
   <Axis position="bottom" grid />
   <Scatter dimension="spend" metric="revenue" color="channel" />
@@ -3786,6 +4627,12 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `color` on `Scatter`: `channel`, `roi` or `static`. Shown: `channel`.
+-   `color` on `Scatter`: `categorical-100`, `categorical-200` or `gray-700`. Shown: `categorical-100`.
+-   `colors` on `Chart`: `sequentialViridis5`, `sequentialMagma5` or `sequentialRose5`. Shown: `sequentialViridis5`.
+
 ### Size
 
 `size` sets the width of each point. It accepts `XS` (6px), `S` (8px), `M` (10px, default), `L` (12px), `XL` (16px), or a number of pixels.
@@ -3803,6 +4650,12 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend position="right" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `size` on `Scatter`: `M`, `XS`, `S`, `L`, `XL`, `24` or `reach`. Shown: `M`.
+-   `symbolSizes` on `Chart`: `XS`, `S` or `M`. Shown: `XS`.
+-   `symbolSizes` on `Chart`: `L`, `XL` or `32`. Shown: `XL`.
 
 ### Opacity
 
@@ -3824,6 +4677,11 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `opacity` on `Scatter`: `1`, `0.5` or `audience`. Shown: `1`.
+-   `opacities` on `Chart`: `default`, `1, 0.4` or `1, 0.15`. Shown: `default`.
 
 ### Outline
 
@@ -3849,6 +4707,13 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `lineWidth` on `Scatter`: `0`, `XS`, `S`, `M`, `L`, `XL` or `audience`. Shown: `0`.
+-   `lineType` on `Scatter`: `solid`, `dashed`, `dotted` or `audience`. Shown: `solid`.
+-   `stroke` on `Scatter`: `none`, `gray-800` or `audience`. Shown: `none`.
+-   `opacity` on `Scatter`: 0 to 1, in steps of 0.1. Shown: `0.4`.
+
 > **Note:**
 > 
 > `lineWidths` defaults to `['M']`, so a `lineWidth` field gives every point the same 2px outline until you set `lineWidths` on `Chart`.
@@ -3869,6 +4734,10 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `blend` on `Scatter`: `default`, `normal`, `multiply`, `screen` or `darken`. Shown: `default`.
+
 ### Clip
 
 When an `Axis` `range` is smaller than the data, points outside the range still draw past the plot edge. Set `clip` to hide them.
@@ -3888,6 +4757,10 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `clip` on `Scatter`: `true` or `false`. Shown: `false`.
 
 ## ScatterPath
 
@@ -3934,6 +4807,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `color` on `ScatterPath`: `gray-500` or `gray-800`. Shown: `gray-500`.
+-   `pathWidth` on `ScatterPath`: `M`, `S`, `XL` or `share`. Shown: `M`.
+-   `opacity` on `ScatterPath`: 0 to 1, in steps of 0.1. Shown: `0.5`.
+-   `ScatterAnnotation`: included or left out. Shown: included.
+
 ## ScatterAnnotation
 
 `ScatterAnnotation` labels each point. `textKey` names the field to show (default: the scatter's `metric`).
@@ -3956,6 +4836,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `textKey` on `ScatterAnnotation`: `revenue`, `campaign` or `channel`. Shown: `revenue`.
+-   `anchor` on `ScatterAnnotation`: `right, top, bottom, left`, `right`, `top` or `left, bottom`. Shown: `right, top, bottom, left`.
 
 ## Trendline
 
@@ -3986,6 +4871,18 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `method` on `Trendline`: `linear`, `average`, `median`, `quadratic`, `exponential`, `logarithmic` or `power`. Shown: `linear`.
+-   `lineType` on `Trendline`: `dashed`, `solid` or `dotted`. Shown: `dashed`.
+-   `lineWidth` on `Trendline`: `M`, `XS`, `S`, `L` or `XL`. Shown: `M`.
+-   `opacity` on `Trendline`: 0 to 1, in steps of 0.1. Shown: `1`.
+-   `color` on `Trendline`: `series` or `gray-700`. Shown: `series`.
+-   `orientation` on `Trendline`: `horizontal` or `vertical`. Shown: `horizontal`.
+-   `dimensionRange` on `Trendline`: `none` or `10, 30`. Shown: `none`.
+-   `dimensionExtent` on `Trendline`: `dimensionRange`, `domain, domain` or `0, 50`. Shown: `dimensionRange`.
+-   `color` on `Scatter`: `channel` or `static`. Shown: `channel`.
+
 ### Moving averages
 
 Moving averages work best on evenly spaced data like a time series. Set `hidePartialWindows` to hide the first points, which average fewer than N values.
@@ -4011,6 +4908,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `method` on `Trendline`: `movingAverage-3`, `movingAverage-5` or `linear`. Shown: `movingAverage-3`.
+-   `hidePartialWindows` on `Trendline`: `true` or `false`. Shown: `false`.
 
 ### Excluding points
 
@@ -4048,6 +4950,10 @@ import {
   </Scatter>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `excludeDataKeys` on `Trendline`: `true` or `false`. Shown: `true`.
 
 ### Trendline interaction
 
@@ -4088,6 +4994,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect` (Trendline): included or left out. Shown: included.
+-   `highlightRawPoint` on `Trendline`: `true` or `false`. Shown: `false`.
+-   `displayOnHover` on `Trendline`: `true` or `false`. Shown: `false`.
+
 ## TrendlineAnnotation
 
 `TrendlineAnnotation` labels a trendline with its value. `dimensionValue` sets where along the line: `end` (default), `start`, or a dimension value. `numberFormat` takes a [d3-format](https://d3js.org/d3-format) specifier and follows the chart's `locale`; `prefix` adds text before the value. `badge` draws the label in a filled badge in the trendline's color.
@@ -4110,6 +5022,15 @@ import {
   </Scatter>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `method` on `Trendline`: `average` or `median`. Shown: `average`.
+-   `badge` on `TrendlineAnnotation`: `true` or `false`. Shown: `false`.
+-   `dimensionValue` on `TrendlineAnnotation`: `end`, `start` or `20`. Shown: `end`.
+-   `numberFormat` on `TrendlineAnnotation`: `,.1f`, `$,.0f` or `none`. Shown: `,.1f`.
+-   `prefix` on `TrendlineAnnotation`: any text. Shown: empty.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
 
 > **Note:**
 > 
@@ -4142,6 +5063,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `title` on `Legend`: any text. Shown: `Channel`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `false`.
+-   `legendLabels` on `Legend`: `none` or `Paid search, Paid social, Email`. Shown: `none`.
+
 ### Size, gradient, and opacity legends
 
 A numeric `size` field gets a size legend, listed after any category entries, and a linear `color` field gets a gradient legend. When points share one color and `opacity` is a field, set `opacity` on `Legend` to that field so the legend symbols match.
@@ -4155,6 +5084,49 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Axis position="bottom" grid title="Spend ($K)" />
   <Scatter dimension="spend" metric="revenue" size="reach" />
   <Legend position="right" title="Reach (K)" />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Scatter facet**: `size`, `color` or `opacity`. Shown: `size`.
+
+With **Scatter facet** set to `color`:
+
+```jsx
+import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData} colors="sequentialViridis5">
+  <Axis position="left" grid title="Revenue ($K)" />
+  <Axis position="bottom" grid title="Spend ($K)" />
+  <Scatter
+    dimension="spend"
+    metric="revenue"
+    size={{ value: 'L' }}
+    color="roi"
+    colorScaleType="linear"
+  />
+  <Legend position="right" title="ROI" />
+</Chart>
+```
+
+With **Scatter facet** set to `opacity`:
+
+```jsx
+import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData}>
+  <Axis position="left" grid title="Revenue ($K)" />
+  <Axis position="bottom" grid title="Spend ($K)" />
+  <Scatter
+    dimension="spend"
+    metric="revenue"
+    size={{ value: 'L' }}
+    opacity="audience"
+  />
+  <Legend position="right" title="Audience" opacity="audience" />
 </Chart>
 ```
 
@@ -4178,6 +5150,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Social` or `Social, Email`. Shown: `Social`.
 
 ## Interaction
 
@@ -4228,6 +5204,14 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series`, `dimension` or `audience`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+-   `tooltipAnchor` on `Chart`: `cursor` or `mark`. Shown: `cursor`.
+
 > **Note:**
 > 
 > `Scatter` doesn't support `onClick`, `onContextMenu`, `onMouseOver`, or `onMouseOut` yet.
@@ -4260,6 +5244,11 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend highlight />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Search`, `Social` or `Email`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none`, `3` or `3, 12`. Shown: `none`.
 
 ## Animation
 
@@ -4349,6 +5338,16 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `Axis` (Left axis): any text. Shown: `Visits`.
+-   `grid` on `Axis` (Left axis): `true` or `false`. Shown: `true`.
+-   `numberFormat` on `Axis` (Left axis): `shortNumber`, `standardNumber` or `shortCurrency`. Shown: `shortNumber`.
+-   `title` on `Axis` (Bottom axis): any text. Shown: empty.
+-   `baseline` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
+-   `ticks` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
+-   `labelFormat` on `Axis` (Bottom axis): `time` or `linear`. Shown: `time`.
+
 ## Data
 
 Axes don't take data. Each axis reads the scale of the mark it sits beside, so its labels come from the mark's `dimension` and `metric` fields. Line charts on this page use `axisVisitsData`, one row per day with `datetime` in epoch milliseconds:
@@ -4418,6 +5417,58 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Chart**: `Line, time`, `Line, linear`, `Line, point`, `Bar, vertical` or `Bar, horizontal`. Shown: `Line, time`.
+
+With **Chart** set to `Line, linear`:
+
+```jsx
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisConversionData}>
+  <Axis position="left" grid labelFormat="percentage" />
+  <Axis position="bottom" baseline title="Week" />
+  <Line dimension="week" metric="rate" scaleType="linear" />
+</Chart>
+```
+
+With **Chart** set to `Line, point`:
+
+```jsx
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisBrowserData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline />
+  <Line dimension="browser" metric="downloads" scaleType="point" />
+</Chart>
+```
+
+With **Chart** set to `Bar, vertical`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisBrowserData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline />
+  <Bar dimension="browser" metric="downloads" />
+</Chart>
+```
+
+With **Chart** set to `Bar, horizontal`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisBrowserData}>
+  <Axis position="left" baseline />
+  <Axis position="bottom" grid />
+  <Bar dimension="browser" metric="downloads" orientation="horizontal" />
+</Chart>
+```
+
 Some props only apply to some scales. `range` works on linear and time scales, `tickMinStep` on linear scales, `granularity` on time scales, and `truncateLabels` and `AxisThumbnail` on band scales.
 
 ## Position and titles
@@ -4434,6 +5485,12 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Axis` (Value axis): `left`, `right` or `both`. Shown: `left`.
+-   `title` on `Axis` (Value axis): `none`, `Downloads` or `Downloads, Last 30 days`. Shown: `Downloads`.
+-   `position` on `Axis` (Category axis): `bottom` or `top`. Shown: `bottom`.
+
 ## Gridlines, ticks, and baseline
 
 -   `grid` draws a gridline at each tick across the plot. It also spaces ticks about 100px apart; without it, a value axis falls back to Vega's default tick count, which can crowd the labels.
@@ -4449,6 +5506,14 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `grid` on `Axis` (Left axis): `true` or `false`. Shown: `true`.
+-   `ticks` on `Axis` (Left axis): `true` or `false`. Shown: `false`.
+-   `baseline` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
+-   `baselineOffset` on `Axis` (Bottom axis): 0 to 20000, in steps of 2500. Shown: `0`.
+-   `ticks` on `Axis` (Bottom axis): `true` or `false`. Shown: `false`.
 
 ## Label formats
 
@@ -4470,6 +5535,10 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labelFormat` on `Axis`: `linear`, `percentage` or `duration`. Shown: `linear`.
 
 The data and charts used here are `axisConversionData` and `axisDurationData`:
 
@@ -4522,6 +5591,13 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `numberFormat` on `Axis`: `shortNumber`, `standardNumber`, `shortCurrency`, `currency`, `,.0f`, `.2s` or `$,.0f`. Shown: `shortNumber`.
+-   `currencyCode` on `Axis`: `none`, `USD`, `EUR`, `GBP` or `JPY`. Shown: `none`.
+-   `currencyLocale` on `Axis`: `none`, `en-US`, `de-DE`, `fr-FR` or `ja-JP`. Shown: `none`.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ```ts
 const axisRevenueData = [
   { region: 'North America', revenue: 1284500 },
@@ -4565,6 +5641,23 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `granularity` on `Axis`: `minute`, `hour`, `day`, `week`, `month`, `quarter` or `year`. Shown: `day`.
+-   **mark** (Chart): `Line` or `Bar`. Shown: `Line`.
+
+With **mark** set to `Bar`:
+
+```jsx
+import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={axisVisitsData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline labelFormat="time" />
+  <Bar dimension="datetime" metric="visits" />
+</Chart>
+```
+
 > **Caution:**
 > 
 > `tickCountLimit` and `tickCountMinimum` on a time axis replace the granularity's tick interval and can repeat labels, such as `Q1 Q1 Q2`. Match the tick count to the data if you set them.
@@ -4582,6 +5675,10 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line dimension="week" metric="rate" scaleType="linear" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `range` on `Axis`: `none`, `0, 0.05`, `0, 0.1` or `0.02, 0.04`. Shown: `none`.
 
 ## Tick count
 
@@ -4603,6 +5700,12 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `tickCountMinimum` on `Axis` (Left axis): 0 to 12, in steps of 1. Shown: `0`.
+-   `tickCountLimit` on `Axis` (Left axis): 0 to 12, in steps of 1. Shown: `0`.
+-   `tickMinStep` on `Axis` (Bottom axis): 0 to 5, in steps of 1. Shown: `0`.
+
 ## Label layout
 
 -   `labelOrientation="vertical"` rotates labels 90° to fit long category names.
@@ -4622,6 +5725,14 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="region" metric="revenue" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labelOrientation` on `Axis`: `horizontal` or `vertical`. Shown: `horizontal`.
+-   `labelAlign` on `Axis`: `start`, `center` or `end`. Shown: `center`.
+-   `labelFontWeight` on `Axis`: `normal` or `bold`. Shown: `normal`.
+-   `truncateLabels` on `Axis`: `true` or `false`. Shown: `false`.
+-   `labelLimit` on `Axis`: 40 to 180, in steps of 20. Shown: `180`.
 
 ## Custom labels
 
@@ -4644,6 +5755,12 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labels` on `Axis` (Left axis): `none`, `values` or `label objects`. Shown: `none`.
+-   `hideDefaultLabels` on `Axis` (Left axis): `true` or `false`. Shown: `false`.
+-   `subLabels` on `Axis` (Bottom axis): `true` or `false`. Shown: `true`.
 
 > **Note:**
 > 
@@ -4673,6 +5790,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `ReferenceLine`: 0 to 3000, in steps of 100. Shown: `2500`.
+-   `label` on `ReferenceLine`: any text. Shown: `Target`.
+-   `size` on `ReferenceLine`: `auto`, `XS`, `S`, `M` or `L`. Shown: `auto`.
+-   `secondary` on `ReferenceLine`: `true` or `false`. Shown: `false`.
+
 ## AxisThumbnail
 
 `AxisThumbnail` is a child of `Axis` that shows an image next to each label on a band axis. The image URL comes from the data field named by `urlKey` (default `thumbnail`). Images are up to 42px square, shrink with the band, and are hidden when the band is narrower than 16px. Combine with `hideDefaultLabels` to show images only.
@@ -4693,6 +5817,11 @@ import {
   <Bar dimension="browser" metric="downloads" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orientation` on `Bar`: `vertical` or `horizontal`. Shown: `vertical`.
+-   `hideDefaultLabels` on `Axis`: `true` or `false`. Shown: `false`.
 
 ## Interaction
 
@@ -4715,6 +5844,11 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Bar dimension="region" metric="revenue" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hasTooltip` on `Axis`: `true` or `false`. Shown: `true`.
+-   `tooltipText` on `Axis`: `none` or `custom`. Shown: `custom`.
 
 ### Label clicks and hover
 
@@ -4750,6 +5884,11 @@ import {
   </Bar>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `onClick` on `Axis`: `true` or `false`. Shown: `true`.
+-   `ChartInspect`: included or left out. Shown: included.
 
 > **Note:**
 > 
@@ -4839,6 +5978,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `top`, `left` or `right`. Shown: `bottom`.
+-   `title` on `Legend`: any text. Shown: `Channel`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ## Data
 
 The legend reads its entries from the chart's data and marks, so it has no data of its own. Most examples on this page draw one line per marketing channel from `legendVisitsData`:
@@ -4906,6 +6052,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `top`, `left` or `right`. Shown: `bottom`.
+-   `align` on `Legend`: `default`, `start`, `middle` or `end`. Shown: `default`.
+
 ## Title
 
 `title` adds a heading above the entries. Long titles widen a side legend, which narrows the plot; `titleLimit` caps the title's width in pixels and truncates it with an ellipsis.
@@ -4930,6 +6081,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom` or `right`. Shown: `right`.
+-   `title` on `Legend`: any text. Shown: `Marketing channel (last 7 days)`.
+-   `titleLimit` on `Legend`: `none`, `80`, `120` or `160`. Shown: `120`.
+
 ## Entries
 
 The legend has one entry for each unique value of the fields the marks use for color, line type, opacity, or symbol shape. When a mark uses more than one of these fields, each combination gets an entry, named with the values joined by `|`, for example `Search | This week`.
@@ -4953,6 +6110,10 @@ import {
   <Legend hiddenEntries={['Direct']} />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenEntries` on `Legend`: `none`, `Direct` or `Email, Direct`. Shown: `Direct`.
 
 ### Labels
 
@@ -4984,6 +6145,12 @@ import {
   <Legend legendLabels={legendChannelLabels} />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `legendLabels` on `Legend`: `true` or `false`. Shown: `true`.
+-   `position` on `Legend`: `bottom` or `right`. Shown: `bottom`.
+-   `labelLimit` on `Legend`: `default`, `80`, `100` or `140`. Shown: `default`.
 
 ### keys
 
@@ -5036,6 +6203,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `keys` on `Legend`: `none`, `channel` or `period`. Shown: `channel`.
+
 ## Symbols
 
 Each entry's symbol matches its series: the color, line type, and opacity of the mark it represents. Symbol props on `Legend` override that for the legend only. Each takes a field name from the data or a static value such as `{ value: 'circle' }`:
@@ -5063,6 +6234,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `symbolShape` on `Legend`: `default`, `circle`, `diamond` or `channel`. Shown: `circle`.
+-   `color` on `Legend`: `default` or `gray-700`. Shown: `default`.
+-   `opacity` on `Legend`: `default`, `0.25` or `0.5`. Shown: `default`.
+-   `lineType` on `Legend`: `default`, `dashed` or `dotted`. Shown: `default`.
+-   `lineWidth` on `Legend`: `default`, `S`, `M`, `L` or `XL`. Shown: `default`.
+
 ## Hiding series
 
 ### Toggleable legends
@@ -5085,6 +6264,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `defaultHiddenSeries` on `Legend`: `none`, `Email` or `Email, Direct`. Shown: `Email`.
+
 ### Controlled hidden series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. The legend shows the eye icon and grays the label for each hidden series. Don't combine it with `isToggleable`: a toggleable legend tracks its own hidden series and ignores `hiddenSeries`.
@@ -5104,6 +6287,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Email` or `Email, Direct`. Shown: `Email`.
 
 To let users toggle series from the legend while your app owns the state, handle `onClick` and pass the result to `hiddenSeries`:
 
@@ -5150,6 +6337,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+-   `ChartInspect`: included or left out. Shown: left out.
+
 ## Descriptions
 
 `descriptions` shows a tooltip when an entry is hovered. Each description is matched by `seriesName` and can have an optional `title`, which replaces the series name as the tooltip heading.
@@ -5178,6 +6370,11 @@ import {
   <Legend descriptions={legendChannelDescriptions} />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `descriptions` on `Legend`: `true` or `false`. Shown: `true`.
+-   `position` on `Legend`: `bottom` or `right`. Shown: `bottom`.
 
 > **Note:**
 > 
@@ -5208,6 +6405,13 @@ import {
   />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `onClick` on `Legend`: `true` or `false`. Shown: `true`.
+-   `onMouseOver` on `Legend`: `true` or `false`. Shown: `true`.
+-   `onMouseOut` on `Legend`: `true` or `false`. Shown: `true`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `false`.
 
 ## ChartPopover
 
@@ -5250,6 +6454,11 @@ import {
   </Legend>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `false`.
 
 ## Sizing
 
@@ -5311,6 +6520,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `text` on `Title`: any text. Shown: `Visitors by browser`.
+-   `position` on `Title`: `start`, `middle` or `end`. Shown: `start`.
+-   `orient` on `Title`: `top`, `bottom`, `left` or `right`. Shown: `top`.
+-   `fontWeight` on `Title`: `300`, `400`, `700` or `900`. Shown: `700`.
+-   `fontSize` on `Title`: 12 to 32, in steps of 1. Shown: `24`.
+
 ## Data
 
 `Title` doesn't read the chart's data. The examples on this page use a `Bar` chart of `browserData`:
@@ -5355,6 +6572,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `orient` on `Title`: `top`, `bottom`, `left` or `right`. Shown: `top`.
+-   `position` on `Title`: `start`, `middle` or `end`. Shown: `middle`.
+
 ## Font
 
 `fontWeight` and `fontSize` set the title's text style. The defaults are `700` and `24`. Any CSS font weight works, such as `400`, `'normal'`, or `'bold'`.
@@ -5375,6 +6597,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `fontWeight` on `Title`: `300`, `400`, `700` or `900`. Shown: `400`.
+-   `fontSize` on `Title`: 12 to 32, in steps of 1. Shown: `18`.
+
 ## Size
 
 The title takes space from the chart, so the plot shrinks to fit it. A larger `fontSize`, or a title on the left or right, leaves less room for the plot.
@@ -5392,6 +6619,11 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
   <Axis position="bottom" baseline />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `Chart`: any text. Shown: `Visitors`.
+-   `Title`: included or left out. Shown: left out.
 
 > **Note:**
 > 
@@ -5462,6 +6694,14 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
 
 ## Data
 
@@ -5551,6 +6791,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `children` on `ChartInspect`: `formatted`, `raw datum` or `none`. Shown: `raw datum`.
+
 ### Default content
 
 Only [Donut](/react-spectrum-charts/s2/docs/docs/donut#chartinspect-and-chartpopover) has default content: without children, its inspect and popover show the segment's color, name, share of the total, and value. On other marks, an inspect or popover without children shows nothing, although the mark still responds to the pointer.
@@ -5588,6 +6833,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `tooltipAnchor` on `Chart`: `cursor` or `mark`. Shown: `mark`.
+-   `tooltipPlacement` on `Chart`: `top`, `bottom`, `left` or `right`. Shown: `top`.
+
 ### highlightBy
 
 While the inspect is visible, the hovered point stays at full opacity and other points fade. `highlightBy` sets what stays highlighted:
@@ -5624,6 +6875,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **Mark** (Example): `Line` or `Bar`. Shown: `Line`.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `series`.
+
 ### targets
 
 On stacked or dodged bars, `targets` sets what shows the inspect. `'item'` (default) is a single bar. `'dimensionArea'` is the whole column for a dimension value, including the padding around its bars; hovering the empty space in a column shows the inspect for that column, with its bars in `datum.rscGroupData`. Pass both to inspect bars and columns.
@@ -5652,6 +6908,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `targets` on `ChartInspect`: `item`, `dimensionArea` or `dimensionArea, item`. Shown: `dimensionArea, item`.
 
 `targets` only applies to `Bar`. Hovering a bar shows its own inspect even when `targets` leaves out `'item'`.
 
@@ -5701,6 +6961,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `excludeDataKeys` on `ChartInspect`: `none` or `isEstimate`. Shown: `isEstimate`.
+
 ## ChartPopover
 
 ### Opening and closing
@@ -5745,6 +7009,17 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `width` on `ChartPopover` (Width): `none`, `auto`, `200` or `320`. Shown: `320`.
+-   `minWidth` on `ChartPopover` (Width): 0 to 400, in steps of 20. Shown: `0`.
+-   `maxWidth` on `ChartPopover` (Width): `none`, `240` or `400`. Shown: `none`.
+-   `height` on `ChartPopover` (Height): `none`, `auto`, `120` or `200`. Shown: `none`.
+-   `minHeight` on `ChartPopover` (Height): `none`, `160` or `240`. Shown: `none`.
+-   `maxHeight` on `ChartPopover` (Height): `none`, `100` or `160`. Shown: `none`.
+-   `contentMargin` on `ChartPopover` (Spacing): 0 to 32, in steps of 4. Shown: `12`.
+-   `containerPadding` on `ChartPopover` (Spacing): 0 to 48, in steps of 4. Shown: `12`.
 
 ### Callbacks
 
@@ -5806,6 +7081,10 @@ import {
   </Legend>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
 
 ## Using both together
 
@@ -5990,6 +7269,12 @@ import Bookmark from '@react-spectrum/s2/icons/Bookmark';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `children` on `ChartActionBar`: 1 to 5, in steps of 1. Shown: `3`.
+-   `maxActions` on `ChartActionBar`: 1 to 5, in steps of 1. Shown: `4`.
+-   `isEmphasized` on `ChartActionBar`: `true` or `false`. Shown: `false`.
+
 `ChartActionBar` is a lab component. Import it from the `lab` subpath:
 
 ```tsx
@@ -6103,6 +7388,10 @@ import Flag from '@react-spectrum/s2/icons/Flag';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `maxActions` on `ChartActionBar`: 1 to 5, in steps of 1. Shown: `2`.
+
 ### isEmphasized
 
 `isEmphasized` gives the bar an accent background. Set `staticColor="white"` on the actions so they stay readable on it.
@@ -6144,6 +7433,10 @@ import Bookmark from '@react-spectrum/s2/icons/Bookmark';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `isEmphasized` on `ChartActionBar`: `true` or `false`. Shown: `true`.
 
 ## Placement and dismissing
 
@@ -6222,6 +7515,11 @@ import Bookmark from '@react-spectrum/s2/icons/Bookmark';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `ChartPopover`: included or left out. Shown: included.
+
 > **Note:**
 > 
 > `ChartActionBar` is only supported on `Line`.
@@ -6245,17 +7543,19 @@ import Bookmark from '@react-spectrum/s2/icons/Bookmark';
 
 Install the package and its peer dependencies:
 
--   npm
--   yarn
--   pnpm
+**npm:**
 
 ```bash
 npm install @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
 ```
 
+**yarn:**
+
 ```bash
 yarn add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
 ```
+
+**pnpm:**
 
 ```bash
 pnpm add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
@@ -6273,19 +7573,21 @@ pnpm add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria
 
 Since version 1.3.0, `@react-spectrum/s2` depends on an exact `react-aria-components` version. Install that same version so your app has a single copy, which charts need to share React Aria context with Spectrum 2 components. To find the version `@react-spectrum/s2` uses:
 
--   npm
--   yarn
--   pnpm
+**npm:**
 
 ```bash
 npm ls react-aria-components
 npm install react-aria-components@<that version>
 ```
 
+**yarn:**
+
 ```bash
 yarn why react-aria-components
 yarn add react-aria-components@<that version>
 ```
+
+**pnpm:**
 
 ```bash
 pnpm why react-aria-components
@@ -6533,13 +7835,18 @@ import {
   Legend,
 } from '@spectrum-charts/react-spectrum-charts-s2';
 
-<Chart data={guideSourceSessionsData} colorScheme="light">
+<Chart data={guideSourceSessionsData}>
   <Axis position="left" grid />
   <Axis position="bottom" baseline />
   <Bar dimension="quarter" metric="sessions" color="source" />
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `colors` on `Chart`: `s2Categorical6`, `s2Categorical12`, `s2Categorical16`, `s2Categorical20`, `divergentOrangeYellowSeafoam5`, `divergentOrangeYellowSeafoam9`, `divergentOrangeYellowSeafoam15`, `divergentRedBlue5`, `divergentRedBlue9`, `divergentRedBlue15`, `divergentRedYellowBlue5`, `divergentRedYellowBlue9`, `divergentRedYellowBlue15`, `sequentialViridis5`, `sequentialViridis9`, `sequentialViridis16`, `sequentialMagma5`, `sequentialMagma9`, `sequentialMagma16`, `sequentialRose5`, `sequentialRose9`, `sequentialRose16`, `sequentialCerulean5`, `sequentialCerulean9`, `sequentialCerulean16`, `sequentialForest5`, `sequentialForest9` or `sequentialForest16`. Shown: `s2Categorical20`.
+-   `backgroundColor` on `Chart`: `transparent`, `gray-25`, `gray-100` or `blue-100`. Shown: `transparent`.
 
 The example uses `guideSourceSessionsData`:
 
@@ -6594,6 +7901,10 @@ function Dashboard({ colorScheme }: { colorScheme: 'light' | 'dark' }) {
 }
 ```
 
+The examples on this site follow the site's light and dark theme.
+
+Spectrum color tokens, including the categorical colors in the default palette, have different values in light and dark. See [Color palettes](/react-spectrum-charts/s2/docs/docs/guides/color-palettes#categorical) for both sets of values.
+
 ### backgroundColor
 
 `backgroundColor` fills the chart. It takes a Spectrum color token, like `gray-25`, or any CSS color, and defaults to `transparent`.
@@ -6604,13 +7915,13 @@ Some marks draw in the background color, like the outlines between donut segment
 
 `colors` sets the palette that a mark's `color` field draws from. Each series gets the next color in the order it first appears in `data`, and colors repeat when there are more series than colors. The default is `s2Categorical20`.
 
-`colors` takes one of these named palettes:
+`colors` takes a named palette:
 
--   **Categorical** palettes are for unordered series.
--   **Sequential** palettes are for ordered values, like low to high.
--   **Diverging** palettes are for values above and below a midpoint.
+-   **Categorical** palettes, like `s2Categorical20`, are for unordered series.
+-   **Sequential** palettes, like `sequentialViridis9`, are for ordered values, like low to high.
+-   **Diverging** palettes, like `divergentRedBlue9`, are for values above and below a midpoint.
 
-The number at the end of each name is how many colors it has. Named palettes use the same colors in light and dark.
+See [Color palettes](/react-spectrum-charts/s2/docs/docs/guides/color-palettes) for every palette and its colors.
 
 ### Custom colors
 
@@ -6684,6 +7995,98 @@ For styles the props don't cover, `config` merges into the chart's Vega config. 
 
 ---
 
+# Color palettes
+
+This page lists the palettes you can pass to `colors` on `Chart`. To set the palette, the color scheme, or your own colors, see [Colors and theming](/react-spectrum-charts/s2/docs/docs/guides/colors-and-theming).
+
+## Categorical
+
+Use categorical colors for series that have no order, like products or regions. Series get the colors in order, starting at A.
+
+Each categorical color is a color from the [Spectrum 2 color palette](https://spectrum.adobe.com/page/color-palette/), like `indigo-1100`, and uses that color's light or dark value to match the chart's `colorScheme`.
+
+| Category | Token | Spectrum color | Light | Dark |
+| --- | --- | --- | --- | --- |
+| A | `categorical-100` | `indigo-1100` | `#5424DB` | `#99A1FF` |
+| B | `categorical-200` | `magenta-900` | `#D92361` | `#FF3377` |
+| C | `categorical-300` | `orange-700` | `#E86A00` | `#B94900` |
+| D | `categorical-400` | `blue-700` | `#5D89FF` | `#345BF8` |
+| E | `categorical-500` | `purple-900` | `#9A47E2` | `#AD69E9` |
+| F | `categorical-600` | `pink-700` | `#F24CB8` | `#C4278A` |
+| G | `categorical-700` | `seafoam-700` | `#0BA286` | `#067A67` |
+| H | `categorical-800` | `fuchsia-1000` | `#9C28AF` | `#E85BFD` |
+| I | `categorical-900` | `green-1000` | `#036E45` | `#0EAF62` |
+| J | `categorical-1000` | `celery-700` | `#52A119` | `#3C7A0F` |
+| K | `categorical-1100` | `red-700` | `#FF513D` | `#CD2E1D` |
+| L | `categorical-1200` | `cyan-1000` | `#046691` | `#269FF4` |
+| M | `categorical-1300` | `silver-1200` | `#424242` | `#BEBEBE` |
+| N | `categorical-1400` | `turquoise-1000` | `#056B74` | `#0DA8B6` |
+| O | `categorical-1500` | `cinnamon-700` | `#C67E58` | `#A35834` |
+| P | `categorical-1600` | `yellow-1000` | `#865500` | `#CB8D00` |
+| Q | `categorical-1700` | `blue-1000` | `#274DEA` | `#6995FE` |
+| R | `categorical-1800` | `seafoam-1000` | `#056C5C` | `#0CAD8E` |
+| S | `categorical-1900` | `pink-500` | `#FF94DB` | `#8F1261` |
+| T | `categorical-2000` | `red-1200` | `#811B0E` | `#FFA79D` |
+
+There are four categorical palettes. Each one uses the first colors above, in order:
+
+| Palette | Colors |
+| --- | --- |
+| `s2Categorical6` | A to F |
+| `s2Categorical12` | A to L |
+| `s2Categorical16` | A to P |
+| `s2Categorical20` (default) | A to T |
+
+Pick the smallest palette that covers your series. Colors repeat when there are more series than colors. To use one color on its own, pass its token: A is `categorical-100`, B is `categorical-200`, and so on, so `colors={['categorical-400']}` uses D.
+
+## Sequential
+
+> **Warning:**
+> 
+> Sequential and diverging palettes use the same colors in light and dark. Their colors in each theme are under review and expected to change.
+
+Use sequential palettes for ordered values, like low to high. Each palette runs from light to dark, and the number at the end of the name is how many steps it has.
+
+| Palette | Colors, in order |
+| --- | --- |
+| `sequentialViridis5` | rgb(253, 231, 37), rgb(122, 209, 81), rgb(31, 152, 139), rgb(57, 86, 140), rgb(68, 1, 84) |
+| `sequentialViridis9` | rgb(253, 231, 37), rgb(210, 226, 27), rgb(122, 209, 81), rgb(53, 183, 121), rgb(31, 152, 139), rgb(42, 120, 142), rgb(57, 86, 140), rgb(71, 47, 125), rgb(68, 1, 84) |
+| `sequentialViridis16` | rgb(253, 231, 37), rgb(210, 226, 27), rgb(165, 219, 54), rgb(122, 209, 81), rgb(84, 197, 104), rgb(53, 183, 121), rgb(34, 168, 132), rgb(31, 152, 139), rgb(35, 136, 142), rgb(42, 120, 142), rgb(49, 104, 142), rgb(57, 86, 140), rgb(65, 68, 135), rgb(71, 47, 125), rgb(72, 26, 108), rgb(68, 1, 84) |
+| `sequentialMagma5` | rgb(254, 159, 109), rgb(252, 253, 191), rgb(196, 60, 117), rgb(87, 21, 126), rgb(0, 0, 4) |
+| `sequentialMagma9` | rgb(252, 253, 191), rgb(253, 222, 160), rgb(254, 159, 109), rgb(241, 96, 93), rgb(196, 60, 117), rgb(140, 41, 129), rgb(87, 21, 126), rgb(32, 17, 75), rgb(0, 0, 4) |
+| `sequentialMagma16` | rgb(252, 253, 191), rgb(253, 222, 160), rgb(254, 191, 132), rgb(254, 159, 109), rgb(250, 127, 94), rgb(241, 96, 93), rgb(222, 73, 104), rgb(196, 60, 117), rgb(168, 50, 125), rgb(140, 41, 129), rgb(114, 31, 129), rgb(87, 21, 126), rgb(59, 15, 112), rgb(32, 17, 75), rgb(11, 9, 36), rgb(0, 0, 4) |
+| `sequentialRose5` | rgb(252, 175, 203), rgb(255, 244, 222), rgb(230, 75, 172), rgb(137, 34, 130), rgb(0, 16, 102) |
+| `sequentialRose9` | rgb(255, 244, 222), rgb(255, 221, 216), rgb(252, 175, 203), rgb(243, 128, 188), rgb(230, 75, 172), rgb(185, 52, 149), rgb(137, 34, 130), rgb(85, 22, 114), rgb(0, 16, 102) |
+| `sequentialRose16` | rgb(255, 244, 222), rgb(255, 221, 216), rgb(255, 198, 210), rgb(252, 175, 203), rgb(248, 152, 196), rgb(243, 128, 188), rgb(137, 103, 180), rgb(230, 75, 172), rgb(208, 62, 160), rgb(185, 52, 149), rgb(161, 42, 139), rgb(137, 34, 130), rgb(112, 28, 122), rgb(85, 22, 114), rgb(55, 18, 108), rgb(0, 16, 102) |
+| `sequentialCerulean5` | rgb(113, 213, 202), rgb(234, 255, 241), rgb(48, 145, 170), rgb(29, 76, 129), rgb(24, 0, 85) |
+| `sequentialCerulean9` | rgb(234, 255, 241), rgb(201, 241, 228), rgb(113, 213, 202), rgb(88, 180, 185), rgb(48, 145, 170), rgb(36, 110, 150), rgb(29, 76, 129), rgb(27, 41, 109), rgb(24, 0, 85) |
+| `sequentialCerulean16` | rgb(234, 255, 241), rgb(201, 241, 228), rgb(167, 227, 215), rgb(113, 213, 202), rgb(108, 197, 192), rgb(88, 180, 185), rgb(68, 162, 177), rgb(48, 145, 170), rgb(40, 128, 160), rgb(36, 110, 150), rgb(33, 93, 139), rgb(29, 76, 129), rgb(28, 59, 119), rgb(27, 41, 109), rgb(26, 22, 98), rgb(24, 0, 85) |
+| `sequentialForest5` | rgb(166, 223, 115), rgb(255, 255, 224), rgb(76, 166, 88), rgb(30, 106, 72), rgb(0, 49, 58) |
+| `sequentialForest9` | rgb(255, 255, 224), rgb(226, 245, 189), rgb(166, 223, 115), rgb(121, 195, 101), rgb(76, 166, 88), rgb(49, 136, 79), rgb(30, 106, 72), rgb(14, 77, 65), rgb(0, 49, 58) |
+| `sequentialForest16` | rgb(255, 255, 224), rgb(226, 245, 189), rgb(197, 234, 153), rgb(166, 223, 115), rgb(143, 209, 108), rgb(121, 195, 101), rgb(98, 181, 94), rgb(76, 166, 88), rgb(59, 151, 82), rgb(49, 136, 79), rgb(40, 121, 76), rgb(30, 106, 72), rgb(21, 91, 69), rgb(14, 77, 65), rgb(7, 63, 62), rgb(0, 49, 58) |
+
+## Diverging
+
+> **Warning:**
+> 
+> Sequential and diverging palettes use the same colors in light and dark. Their colors in each theme are under review and expected to change.
+
+Use diverging palettes for values above and below a midpoint, like change from a target. The middle step marks the midpoint.
+
+| Palette | Colors, in order |
+| --- | --- |
+| `divergentOrangeYellowSeafoam5` | rgb(88, 0, 0), rgb(221, 134, 41), rgb(255, 255, 224), rgb(62, 168, 166), rgb(0, 44, 45) |
+| `divergentOrangeYellowSeafoam9` | rgb(88, 0, 0), rgb(156, 69, 17), rgb(221, 134, 41), rgb(254, 214, 147), rgb(255, 255, 224), rgb(187, 228, 209), rgb(62, 168, 166), rgb(7, 103, 105), rgb(0, 44, 45) |
+| `divergentOrangeYellowSeafoam15` | rgb(88, 0, 0), rgb(121, 38, 11), rgb(156, 69, 17), rgb(189, 101, 26), rgb(221, 134, 41), rgb(245, 173, 82), rgb(254, 214, 147), rgb(255, 255, 224), rgb(187, 228, 209), rgb(118, 199, 190), rgb(62, 168, 166), rgb(32, 130, 136), rgb(7, 103, 105), rgb(0, 73, 75), rgb(0, 44, 45) |
+| `divergentRedBlue5` | rgb(73, 2, 30), rgb(222, 111, 134), rgb(250, 240, 255), rgb(96, 149, 201), rgb(12, 27, 75) |
+| `divergentRedBlue9` | rgb(73, 2, 30), rgb(158, 43, 70), rgb(222, 111, 134), rgb(247, 196, 217), rgb(250, 240, 255), rgb(199, 209, 241), rgb(96, 149, 201), rgb(41, 83, 143), rgb(12, 27, 75) |
+| `divergentRedBlue15` | rgb(73, 2, 30), rgb(114, 21, 50), rgb(158, 43, 70), rgb(202, 67, 92), rgb(222, 111, 134), rgb(236, 155, 176), rgb(247, 196, 217), rgb(250, 240, 255), rgb(199, 209, 241), rgb(147, 179, 221), rgb(96, 149, 201), rgb(51, 118, 177), rgb(41, 83, 143), rgb(24, 56, 111), rgb(12, 27, 75) |
+| `divergentRedYellowBlue5` | rgb(73, 2, 30), rgb(226, 122, 101), rgb(255, 255, 225), rgb(90, 159, 184), rgb(17, 27, 76) |
+| `divergentRedYellowBlue9` | rgb(73, 2, 30), rgb(163, 41, 72), rgb(226, 122, 101), rgb(249, 212, 175), rgb(255, 255, 225), rgb(189, 226, 208), rgb(90, 159, 184), rgb(32, 89, 148), rgb(17, 27, 76) |
+| `divergentRedYellowBlue15` | rgb(73, 2, 30), rgb(116, 20, 51), rgb(163, 41, 72), rgb(196, 82, 87), rgb(226, 122, 101), rgb(239, 168, 133), rgb(249, 212, 175), rgb(255, 255, 225), rgb(189, 226, 208), rgb(139, 192, 196), rgb(90, 159, 184), rgb(60, 123, 166), rgb(32, 89, 148), rgb(24, 57, 112), rgb(17, 27, 76) |
+
+---
+
 # Localization
 
 `locale` on `Chart` sets how the chart formats numbers and dates. It doesn't translate text: the strings you pass, like titles and labels, are shown as-is, and the chart's own strings are in English.
@@ -6697,6 +8100,11 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line metric="revenue" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `locale` on `Chart`: `en-US`, `de-DE`, `fr-FR`, `ja-JP`, `pt-BR` or `zh-CN`. Shown: `de-DE`.
+-   `numberFormat` on `Axis`: `shortNumber`, `standardNumber`, `currency` or `shortCurrency`. Shown: `currency`.
 
 The example uses `guideMonthlyRevenueData`:
 
@@ -6986,6 +8394,44 @@ import {
   <Axis position="left" grid />
   <Axis position="bottom" labelFormat="time" baseline ticks />
   <Line color="series" />
+  <Legend />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **mark**: `Line`, `Bar` or `Donut`. Shown: `Line`.
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+
+With **mark** set to `Bar`:
+
+```jsx
+import {
+  Axis,
+  Bar,
+  Chart,
+  Legend,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={barChannelDeviceData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline />
+  <Bar dimension="channel" metric="visits" color="device" />
+  <Legend />
+</Chart>
+```
+
+With **mark** set to `Donut`:
+
+```jsx
+import {
+  Chart,
+  Donut,
+  Legend,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={browserData}>
+  <Donut metric="count" color="browser" />
   <Legend />
 </Chart>
 ```

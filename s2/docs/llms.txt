@@ -22,6 +22,7 @@
 - [Data](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/data.md): The shape of chart data, how marks find their fields, and how to handle dates, missing values, and updates.
 - [Sizing](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/sizing.md): How charts fill their container, set width and height, and adapt line and label sizes to the chart's width.
 - [Colors and theming](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/colors-and-theming.md): Match a chart to light or dark themes, pick palettes, and control colors, line types, and other style scales.
+- [Color palettes](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/color-palettes.md): The named palettes that colors accepts, with each categorical color's light and dark values.
 - [Localization](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/localization.md): Format numbers, currency, and dates for a locale, and translate the text a chart shows.
 - [Interactivity](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/interactivity.md): Choose between tooltips, popovers, and action bars, and control highlighting and hidden series from your app.
 - [Animation](https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/guides/animation.md): Which animations charts play, how to turn them on and off, and how they respect reduced motion.

@@ -22,6 +22,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `variant` on `Donut`: `circle` or `semicircle`. Shown: `circle`.
+-   `holeRatio` on `Donut`: 0 to 0.95, in steps of 0.05. Shown: `0.85`.
+-   `DonutSummary`: included or left out. Shown: included.
+-   `position` on `Legend`: `none`, `right`, `bottom`, `left` or `top`. Shown: `right`.
+-   `text` on `Title`: any text. Shown: `Visitors by browser`.
+
 ## Data
 
 `data` goes on `Chart` as an array of objects, one per segment. On `Donut`, `metric` names the numeric field that sizes each segment (default `value`) and `color` names the field that identifies it in the legend, labels, and tooltips (default `series`). Most examples on this page use `browserData`:
@@ -67,6 +75,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `label` on `DonutSummary`: any text. Shown: `Success rate`.
+-   `hideValue` on `DonutSummary`: `true` or `false`. Shown: `false`.
+
 ### Zero, empty, and loading
 
 When every value is 0, the donut draws an empty gray ring and `DonutSummary` shows 0. When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to show a spinner while data loads.
@@ -93,6 +106,43 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `all zeros`, `empty` or `loading`. Shown: `all zeros`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No browser data`.
+
+With **state** set to `empty`:
+
+```jsx
+import {
+  Chart,
+  Donut,
+  DonutSummary,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={emptyData} emptyStateText="No browser data">
+  <Donut metric="count" color="browser">
+    <DonutSummary label="Visitors" />
+  </Donut>
+</Chart>
+```
+
+With **state** set to `loading`:
+
+```jsx
+import {
+  Chart,
+  Donut,
+  DonutSummary,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={browserData} loading>
+  <Donut metric="count" color="browser">
+    <DonutSummary label="Visitors" />
+  </Donut>
+</Chart>
+```
+
 ## Shape
 
 ### holeRatio
@@ -111,6 +161,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `holeRatio` on `Donut`: 0 to 0.95, in steps of 0.05. Shown: `0`.
 
 ### Semicircle
 
@@ -142,6 +196,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `sortOrder` on `Donut`: `data` or `valueDescending`. Shown: `data`.
+
 > **Note:**
 > 
 > Semicircles don't support `SegmentLabel`.
@@ -163,6 +221,12 @@ import {
   </Donut>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `width` on `Chart`: 120 to 520, in steps of 10. Shown: `400`.
+-   `height` on `Chart`: 80 to 400, in steps of 10. Shown: `300`.
+-   `variant` on `Donut`: `circle` or `semicircle`. Shown: `circle`.
 
 ## DonutSummary
 
@@ -188,6 +252,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `label` on `DonutSummary`: any text. Shown: `Visitors`.
+-   `numberFormat` on `DonutSummary`: `shortNumber`, `standardNumber` or `,.2f`. Shown: `shortNumber`.
+-   `delta` on `DonutSummary`: `none`, `0.025` or `-0.04`. Shown: `none`.
+-   `hideValue` on `DonutSummary`: `true` or `false`. Shown: `false`.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ## SegmentLabel
 
 `SegmentLabel` labels each segment with its name and value.
@@ -209,6 +281,16 @@ import {
   </Donut>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `SegmentLabel`: `true` or `false`. Shown: `true`.
+-   `percent` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `swatch` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `showValueRow` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `showTotal` on `SegmentLabel`: `true` or `false`. Shown: `false`.
+-   `valueFormat` on `SegmentLabel`: `standardNumber`, `shortNumber` or `,.0f`. Shown: `standardNumber`.
+-   `percentFormat` on `SegmentLabel`: `.0%` or `.1%`. Shown: `.0%`.
 
 Labels sit at the middle of each segment. A label is hidden when it would overlap a label for a larger segment or when its segment is narrower than about 17°. Hovering a segment always shows its label and hides any labels that overlap it.
 
@@ -240,6 +322,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `labelKey` on `SegmentLabel`: `none` or `label`. Shown: `label`.
+
 ### Emphasized segments
 
 `emphasizedItems` on `Donut` keeps the listed segments in color and grays out the rest. Add two `SegmentLabel` children with `labelMode="emphasized"` and `labelMode="deemphasized"` to label each group differently, or set `hideDeemphasizedLabels` to label only the emphasized segments.
@@ -259,11 +345,39 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `emphasizedItems` on `Donut`: `Chrome`, `Chrome, Firefox` or `Safari, Opera`. Shown: `Chrome`.
+-   `hideDeemphasizedLabels` on `Donut`: `true` or `false`. Shown: `false`.
+
 ## Responsive
 
 The Spectrum 2 donut comes in five sizes: XS, S, M, L, and XL. You don't pick a size directly. The chart picks it from the space you give it, and updates it as the chart resizes. Each size changes the ring thickness, the gap between segments, the text sizes, and how much label detail is shown.
 
-Drag the bottom-right corner to resize the chart, or focus it and use the arrow keys. The dashed squares show where each size starts. Turn off segment labels to see the sizes for a donut without labels.
+The example is this chart in a resizable container. Change `width` and `height` to see each size, and remove `SegmentLabel` to see the sizes without segment labels.
+
+```ts
+const browserLongTailData = [
+  { count: 10390, browser: 'Chrome' },
+  { count: 8281, browser: 'Firefox' },
+  { count: 7045, browser: 'Safari' },
+  { count: 6166, browser: 'Opera' },
+  { count: 4201, browser: 'Other' },
+  { count: 3261, browser: 'Brave' },
+  { count: 1021, browser: 'Unknown' },
+];
+```
+
+```jsx
+import { Chart, Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={browserLongTailData} width={472} height={472}>
+  <Donut metric="count" color="browser">
+    <DonutSummary label="Visitors" />
+    <SegmentLabel percent value={false} swatch showValueRow />
+  </Donut>
+</Chart>
+```
 
 ### How size affects the donut
 
@@ -350,6 +464,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `right`, `bottom`, `left` or `top`. Shown: `right`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `false`.
+
 ### Hiding segments
 
 `hiddenSeries` on `Chart` hides segments from outside the chart, for example from a filter control. The remaining segments fill the circle and `DonutSummary` totals only what's visible. To start with segments hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
@@ -369,6 +489,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Chrome` or `Chrome, Firefox`. Shown: `Chrome`.
 
 ## Interaction
 
@@ -404,6 +528,13 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `children` on `ChartPopover`: `default` or `custom`. Shown: `custom`.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 Hovering an interactive segment fades the other segments and their labels. A donut without `ChartInspect`, `ChartPopover`, `SegmentLabel`, or a `Legend` with `highlight` doesn't respond to the pointer.
 
 ### Highlighting
@@ -426,6 +557,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Chrome`, `Firefox`, `Safari`, `Opera` or `Other`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none`, `Safari` or `Chrome, Safari`. Shown: `none`.
+
 ## Animation
 
 The chart's `animationTypes` lists which animations play. By default, `hover` eases segments in and out of their faded state on hover, and `drawIn` sweeps the segments in over 750ms when the chart mounts. Labels fade in as their segment finishes; `DonutSummary` stays visible throughout.
@@ -445,6 +581,13 @@ import {
   </Donut>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `variant` on `Donut`: `circle` or `semicircle`. Shown: `circle`.
+-   `SegmentLabel`: included or left out. Shown: included.
 
 Draw-in plays once when the chart mounts; re-renders, data updates, and resizing don't replay it. Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all animation. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
 

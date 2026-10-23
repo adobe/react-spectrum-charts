@@ -36,6 +36,12 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metricAxis` on `Line`: `true` or `false`. Shown: `true`.
+-   `scaleType` on `Line`: `point` or `time`. Shown: `point`.
+-   `text` on `Title`: any text. Shown: `Sessions and conversion`.
+
 `Combo` is a lab component. Import it from the `lab` subpath. `Bar` and `Line` come from the main package:
 
 ```tsx
@@ -104,6 +110,38 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No traffic data`.
+
+With **state** set to `loading`:
+
+```jsx
+import {
+  Axis,
+  Bar,
+  Chart,
+  Line,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={comboTrafficData} loading>
+  <Axis position="left" grid />
+  <Axis position="right" name="rate" numberFormat=".1%" />
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Combo>
+    <Bar metric="sessions" />
+    <Line
+      metric="conversionRate"
+      metricAxis="rate"
+      color={{ value: 'categorical-200' }}
+      scaleType="point"
+    />
+  </Combo>
+</Chart>
+```
+
 ## Axes
 
 Bars always place each x value in a band, so the bottom axis shows one label per row. `labelFormat="time"` on that axis formats the timestamps as days, with the month as a sub-label.
@@ -134,6 +172,11 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Combo>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `metric` on `Line`: `orders` or `conversionRate`. Shown: `orders`.
+-   `metricAxis` on `Line`: `none` or `secondary`. Shown: `secondary`.
 
 > **Note:**
 > 
@@ -196,6 +239,11 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `type` on `Bar`: `stacked` or `dodged`. Shown: `stacked`.
+-   `scaleType` on `Line`: `point` or `time`. Shown: `point`.
+
 Both children use the `categorical-100` color by default. When neither uses a `color` field, give the line a different static color, like `color={{ value: 'categorical-200' }}`, so it stands out from the bars.
 
 ## Legend
@@ -232,6 +280,12 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `left` or `top`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ### Hiding series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. It hides the matching bars and lines.
@@ -263,6 +317,10 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Desktop` or `Desktop, Tablet`. Shown: `Desktop`.
+
 ### Highlighting
 
 `highlightedSeries` on `Chart` highlights a series from outside the chart, for example from a table row. The bars and line for other series fade.
@@ -293,6 +351,10 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Desktop`, `Mobile` or `Tablet`. Shown: `Mobile`.
 
 > **Note:**
 > 
@@ -361,6 +423,13 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `children` on `ChartPopover`: `default` or `custom`. Shown: `custom`.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 Hovering a bar fades the other bars.
 
 > **Warning:**
@@ -395,6 +464,11 @@ import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
   </Combo>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `de-DE`.
+-   `numberFormat` on `Axis`: `shortNumber` or `standardNumber`. Shown: `standardNumber`.
 
 ## Animation
 

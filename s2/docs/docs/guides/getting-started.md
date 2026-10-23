@@ -4,17 +4,19 @@
 
 Install the package and its peer dependencies:
 
--   npm
--   yarn
--   pnpm
+**npm:**
 
 ```bash
 npm install @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
 ```
 
+**yarn:**
+
 ```bash
 yarn add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
 ```
+
+**pnpm:**
 
 ```bash
 pnpm add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria-components vega vega-lite
@@ -32,19 +34,21 @@ pnpm add @spectrum-charts/react-spectrum-charts-s2 @react-spectrum/s2 react-aria
 
 Since version 1.3.0, `@react-spectrum/s2` depends on an exact `react-aria-components` version. Install that same version so your app has a single copy, which charts need to share React Aria context with Spectrum 2 components. To find the version `@react-spectrum/s2` uses:
 
--   npm
--   yarn
--   pnpm
+**npm:**
 
 ```bash
 npm ls react-aria-components
 npm install react-aria-components@<that version>
 ```
 
+**yarn:**
+
 ```bash
 yarn why react-aria-components
 yarn add react-aria-components@<that version>
 ```
+
+**pnpm:**
 
 ```bash
 pnpm why react-aria-components

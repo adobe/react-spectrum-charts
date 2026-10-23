@@ -38,6 +38,44 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **mark**: `Line`, `Bar` or `Donut`. Shown: `Line`.
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+
+With **mark** set to `Bar`:
+
+```jsx
+import {
+  Axis,
+  Bar,
+  Chart,
+  Legend,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={barChannelDeviceData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline />
+  <Bar dimension="channel" metric="visits" color="device" />
+  <Legend />
+</Chart>
+```
+
+With **mark** set to `Donut`:
+
+```jsx
+import {
+  Chart,
+  Donut,
+  Legend,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={browserData}>
+  <Donut metric="count" color="browser" />
+  <Legend />
+</Chart>
+```
+
 The chart fades in over 150ms on first paint. Draw-in then waits until the page is rendering frames on time, for at most 300ms, so it doesn't start while other content is still loading. When a chart draws in more than one mark type, every mark uses the longest duration so they finish together.
 
 ## Which marks animate

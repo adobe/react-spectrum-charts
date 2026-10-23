@@ -42,6 +42,12 @@ import Bookmark from '@react-spectrum/s2/icons/Bookmark';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `children` on `ChartActionBar`: 1 to 5, in steps of 1. Shown: `3`.
+-   `maxActions` on `ChartActionBar`: 1 to 5, in steps of 1. Shown: `4`.
+-   `isEmphasized` on `ChartActionBar`: `true` or `false`. Shown: `false`.
+
 `ChartActionBar` is a lab component. Import it from the `lab` subpath:
 
 ```tsx
@@ -155,6 +161,10 @@ import Flag from '@react-spectrum/s2/icons/Flag';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `maxActions` on `ChartActionBar`: 1 to 5, in steps of 1. Shown: `2`.
+
 ### isEmphasized
 
 `isEmphasized` gives the bar an accent background. Set `staticColor="white"` on the actions so they stay readable on it.
@@ -196,6 +206,10 @@ import Bookmark from '@react-spectrum/s2/icons/Bookmark';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `isEmphasized` on `ChartActionBar`: `true` or `false`. Shown: `true`.
 
 ## Placement and dismissing
 
@@ -273,6 +287,11 @@ import Bookmark from '@react-spectrum/s2/icons/Bookmark';
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `ChartPopover`: included or left out. Shown: included.
 
 > **Note:**
 > 

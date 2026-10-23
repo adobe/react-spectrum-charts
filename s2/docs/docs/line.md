@@ -25,6 +25,13 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `interpolate` on `Line`: `linear`, `monotone` or `step`. Shown: `linear`.
+-   `LineDirectLabel`: included or left out. Shown: left out.
+-   `position` on `Legend`: `none`, `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `text` on `Title`: any text. Shown: `Visits by channel`.
+
 ## Data
 
 `data` goes on `Chart` as an array of objects, one per point. On `Line`, `dimension` names the x-axis field (default `datetime`), `metric` names the y-axis field (default `value`), and `color` names the field that splits the rows into series. Without `color`, every row belongs to one line. Time values are milliseconds since the epoch. Most examples on this page use `lineTrafficData`:
@@ -86,6 +93,23 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   **state**: `empty` or `loading`. Shown: `empty`.
+-   `emptyStateText` on `Chart`: any text. Shown: `No visits yet`.
+
+With **state** set to `loading`:
+
+```jsx
+import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineTrafficData} loading>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line color="series" />
+</Chart>
+```
+
 ## Lines
 
 ### Series
@@ -108,6 +132,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `lineType` on `Line`: `none` or `series`. Shown: `none`.
+-   `opacity` on `Line`: `none` or `series`. Shown: `none`.
+
 ### interpolate
 
 `interpolate` sets the curve between points. The default, `linear`, draws straight segments.
@@ -126,6 +155,10 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `interpolate` on `Line`: `linear`, `monotone`, `basis`, `cardinal`, `catmull-rom`, `natural`, `step`, `step-before` or `step-after`. Shown: `monotone`.
+
 ### gradient
 
 `gradient` fills the area under the line with its color, fading to transparent at the bottom. The gradient only draws when the chart has a single line. `opacity` fades the line and its gradient together.
@@ -140,6 +173,11 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `gradient` on `Line`: `true` or `false`. Shown: `true`.
+-   `opacity` on `Line`: 0.2 to 1, in steps of 0.1. Shown: `1`.
+
 ### Size
 
 Stroke width, point size, and hover rings scale with the chart's width: a chart under 400px wide uses the small size, one under 800px the medium size, and anything wider the large size. Use `width`, `height`, `minWidth`, and `maxWidth` on `Chart` to constrain it. Drag the width below 400 to see the small size.
@@ -153,6 +191,10 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line staticPoint="isMilestone" />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `width` on `Chart`: 240 to 500, in steps of 20. Shown: `480`.
 
 ## Points
 
@@ -185,6 +227,11 @@ import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `staticPoint` on `Line`: `none` or `isMilestone`. Shown: `isMilestone`.
+-   `pointSize` on `Line`: `auto`, `36`, `100` or `196`. Shown: `auto`.
+
 ### Sparklines
 
 `isSparkline` with `isMethodLast` draws a point on the last row of the data. The sparkline shown has no axes and is 200 × 60px.
@@ -196,6 +243,11 @@ import { Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
   <Line isSparkline isMethodLast gradient />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `isMethodLast` on `Line`: `true` or `false`. Shown: `true`.
+-   `gradient` on `Line`: `true` or `false`. Shown: `true`.
 
 ## Segments
 
@@ -255,6 +307,11 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `alternateSegmentKey` on `Line`: `none` or `isEstimated`. Shown: `isEstimated`.
+-   `alternateSegmentLineType` on `Line`: `dotted`, `dashed` or `shortDash`. Shown: `dotted`.
+
 ### primarySeries
 
 `primarySeries` keeps some series in color and draws the rest in gray. Pass a number N to keep the first N series in color order (`2` keeps the first two), or a list of series names. `otherSeriesColor` changes the gray (default `gray-400`) to another Spectrum 2 color token. Gray series don't get `LineDirectLabel` labels.
@@ -275,6 +332,11 @@ import {
   </Line>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `primarySeries` on `Line`: `none`, `1`, `2` or `Email`. Shown: `1`.
+-   `otherSeriesColor` on `Line`: `gray-400`, `gray-300` or `gray-600`. Shown: `gray-400`.
 
 > **Note:**
 > 
@@ -302,6 +364,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `scaleType` on `Line`: `time`, `linear` or `point`. Shown: `time`.
+
 ### padding
 
 `padding` adds space between the plot edges and the first and last points. Its unit depends on `scaleType`:
@@ -326,6 +392,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `padding` on `Line`: 0 to 48, in steps of 4. Shown: `24`.
 
 ### dualMetricAxis
 
@@ -378,6 +448,10 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `dualMetricAxis` on `Line`: `true` or `false`. Shown: `true`.
+
 ## Hover
 
 Lines respond to the pointer when they have `ChartInspect`, `ChartPopover`, `ChartActionBar`, `onClick`, or `onContextMenu`. Hovering fades the other series, rings the hovered point, and shows its value next to it.
@@ -412,6 +486,12 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
   </Line>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `interactionMode` on `Line`: `nearest` or `item`. Shown: `nearest`.
+-   `dimensionHover` on `Line`: `true` or `false`. Shown: `false`.
+-   `showHoverLabel` on `Line`: `true` or `false`. Shown: `true`.
 
 ## Metric ranges
 
@@ -454,7 +534,106 @@ import {
   <Axis position="bottom" labelFormat="time" baseline ticks />
   <Axis position="left" grid />
   <Line
-    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', rangeOpacity: undefined, lineType: undefined, displayOnHover: undefined, scaleAxisToFit: true }]}
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   **rangeOpacity** (metricRanges): 0 to 1, in steps of 0.1. Shown: `0.2`.
+-   **lineType** (metricRanges): `dashed`, `solid` or `dotted`. Shown: `dashed`.
+-   **displayOnHover** (metricRanges): `true` or `false`. Shown: `false`.
+-   **scaleAxisToFit** (metricRanges): `true` or `false`. Shown: `true`.
+
+With **lineType** set to `solid`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', lineType: 'solid', scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+With **lineType** set to `dotted`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', lineType: 'dotted', scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+With **displayOnHover** set to `true`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', displayOnHover: true, scaleAxisToFit: true }]}
+  >
+    <LineForecast metric="forecast" start={1773187200000} />
+    <ChartInspect />
+  </Line>
+</Chart>
+```
+
+With **scaleAxisToFit** set to `false`:
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Line,
+  LineForecast,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={lineRangeData}>
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Axis position="left" grid />
+  <Line
+    metricRanges={[{ metric: 'forecast', metricStart: 'low', metricEnd: 'high', scaleAxisToFit: false }]}
   >
     <LineForecast metric="forecast" start={1773187200000} />
     <ChartInspect />
@@ -491,6 +670,14 @@ import {
   </Line>
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `value` on `LineDirectLabel`: `last`, `average` or `series`. Shown: `last`.
+-   `position` on `LineDirectLabel`: `end` or `start`. Shown: `end`.
+-   `format` on `LineDirectLabel`: `,.2~f`, `,.1f` or `.2s`. Shown: `,.2~f`.
+-   `prefix` on `LineDirectLabel`: any text. Shown: empty.
+-   `excludeSeries` on `LineDirectLabel`: `none` or `Email`. Shown: `none`.
 
 ## LineForecast
 
@@ -533,6 +720,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `start` on `LineForecast`: `Mar 9`, `Mar 10`, `Mar 11` or `Mar 12`. Shown: `Mar 11`.
+-   `label` on `LineForecast`: any text. Shown: `Forecast`.
+
 ## Axes
 
 Line charts usually have a bottom `Axis` with `labelFormat="time"` and a left `Axis` with `grid`. Time labels follow the axis `granularity`, and number labels follow `numberFormat` (default `shortNumber`). Both use the chart's `locale`, which also applies to `ChartInspect`.
@@ -559,6 +751,14 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `Axis`: `true` or `false`. Shown: `false`.
+-   `granularity` on `Axis`: `day` or `week`. Shown: `day`.
+-   `numberFormat` on `Axis`: `shortNumber` or `standardNumber`. Shown: `shortNumber`.
+-   `ReferenceLine`: included or left out. Shown: included.
+-   `locale` on `Chart`: `en-US`, `de-DE` or `fr-FR`. Shown: `en-US`.
+
 ## Legend
 
 Add `Legend` as a sibling of `Line` to list the series.
@@ -582,6 +782,12 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `position` on `Legend`: `bottom`, `right`, `top` or `left`. Shown: `bottom`.
+-   `isToggleable` on `Legend`: `true` or `false`. Shown: `true`.
+-   `highlight` on `Legend`: `true` or `false`. Shown: `true`.
+
 ### Hiding series
 
 `hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control. To start with series hidden but let users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
@@ -601,6 +807,10 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `hiddenSeries` on `Chart`: `none`, `Email` or `Paid search, Email`. Shown: `Email`.
 
 ## Interaction
 
@@ -640,6 +850,14 @@ import { Content, Heading, Text } from '@react-spectrum/s2';
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `ChartInspect`: included or left out. Shown: included.
+-   `highlightBy` on `ChartInspect`: `item`, `series` or `dimension`. Shown: `item`.
+-   `children` on `ChartInspect`: `default` or `custom`. Shown: `default`.
+-   `ChartPopover`: included or left out. Shown: included.
+-   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
+
 `onClick` and `onContextMenu` on `Line` run a callback with the clicked point's data. `ChartActionBar` shows actions for a selected point; see [ChartActionBar](/react-spectrum-charts/s2/docs/docs/chart-action-bar). See [Interaction](/react-spectrum-charts/s2/docs/docs/interaction) for every `ChartInspect` and `ChartPopover` option.
 
 ### Highlighting
@@ -665,6 +883,11 @@ import {
 </Chart>
 ```
 
+The interactive example has these controls. The code above uses the shown values.
+
+-   `highlightedSeries` on `Chart`: `none`, `Organic search`, `Paid search` or `Email`. Shown: `none`.
+-   `highlightedItem` on `Chart`: `none` or `Mar 8`. Shown: `none`.
+
 ## Animation
 
 The chart's `animationTypes` lists which animations play. By default, `hover` eases the other lines in and out of their faded state when you hover a line, and `drawIn` sweeps the lines in from left to right over 850ms when the chart mounts; static points appear as the sweep passes them. Draw-in works on time, linear, and point scales.
@@ -687,6 +910,11 @@ import {
   <Legend />
 </Chart>
 ```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
 
 Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all animation. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation) for when draw-in replays.
 
