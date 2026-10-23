@@ -9,10 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import React from 'react';
 
-import { Axis, Bar, ColorScale, Legend, Line, LocaleCode, colorSchemes } from '@spectrum-charts/react-spectrum-charts-s2';
+import { colorSchemes } from '@spectrum-charts/core-s2/tokens';
+import { Axis, Bar, ColorScale, Legend, Line, LocaleCode } from '@spectrum-charts/react-spectrum-charts-s2';
 
 import { DocsChart as Chart } from '../components/examples/DocsChart';
 import { PlaygroundControl, PreviewSize, PropPlayground } from '../components/examples/PropPlayground';
@@ -22,53 +22,11 @@ import { guideMonthlyRevenueData, guideSourceSessionsData } from '../components/
 const PREVIEW_SIZE: PreviewSize = { width: 560, height: 380 };
 const LOCALE_PREVIEW_SIZE: PreviewSize = { width: 600, height: 330 };
 
-const PALETTE_GROUPS: { title: string; prefix: (name: string) => boolean }[] = [
-  { title: 'Categorical', prefix: (name) => name.toLowerCase().includes('categorical') },
-  { title: 'Sequential', prefix: (name) => name.startsWith('sequential') },
-  { title: 'Diverging', prefix: (name) => name.startsWith('divergent') },
-];
-
 // The categoricalN palettes are Spectrum 1 colors, so the guide leaves them out.
 const paletteNames = (Object.keys(colorSchemes) as ColorScale[]).filter((name) => !name.startsWith('categorical'));
 
-// colorSchemes is stubbed in the SSR bundle, so swatches render client-side only.
-const PaletteSwatches = () => (
-  <div style={{ display: 'grid', gap: 16, marginBottom: 24 }}>
-    {PALETTE_GROUPS.map(({ title, prefix }) => (
-      <div key={title}>
-        <strong>{title}</strong>
-        <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>
-          {paletteNames.filter(prefix).map((name) => (
-            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <code style={{ minWidth: 260 }}>{name}</code>
-              <div style={{ display: 'flex', flexWrap: 'wrap' }} aria-hidden>
-                {colorSchemes[name].map((color, index) => (
-                  <span
-                    key={`${color}-${index}`}
-                    title={color}
-                    style={{ width: 18, height: 18, backgroundColor: color }}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-/**
- * Shows the colors in every named palette that `colors` accepts.
- * @returns swatch list element
- */
-export const GuidePaletteSwatches = () => (
-  <BrowserOnly>{() => <PaletteSwatches />}</BrowserOnly>
-);
-
 const paletteControls: PlaygroundControl[] = [
   { name: 'colors', type: 'select', options: paletteNames, defaultValue: 's2Categorical20' },
-  { name: 'colorScheme', type: 'select', options: ['light', 'dark'], defaultValue: 'light' },
   {
     name: 'backgroundColor',
     type: 'select',
@@ -78,7 +36,7 @@ const paletteControls: PlaygroundControl[] = [
 ];
 
 /**
- * Playground for named palettes, color scheme, and background color on a stacked bar chart.
+ * Playground for named palettes and background color on a stacked bar chart.
  * @returns playground element
  */
 export const GuidePalettePlayground = () => (
@@ -86,11 +44,10 @@ export const GuidePalettePlayground = () => (
     previewSize={() => PREVIEW_SIZE}
     controls={paletteControls}
     component="Chart"
-    render={({ colors = 's2Categorical20', colorScheme = 'light', backgroundColor = 'transparent' }) => (
+    render={({ colors = 's2Categorical20', backgroundColor = 'transparent' }) => (
       <Chart
         data={guideSourceSessionsData}
         colors={colors === 's2Categorical20' ? undefined : (colors as ColorScale)}
-        colorScheme={colorScheme as 'light' | 'dark'}
         backgroundColor={backgroundColor === 'transparent' ? undefined : String(backgroundColor)}
       >
         <Axis position="left" grid />

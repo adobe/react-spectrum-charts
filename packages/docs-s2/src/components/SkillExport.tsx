@@ -11,13 +11,13 @@
  */
 import React, { useState } from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useColorMode } from '@docusaurus/theme-common';
 
 import { ActionButton, Provider, Text } from '@react-spectrum/s2';
 import Copy from '@react-spectrum/s2/icons/Copy';
 import Download from '@react-spectrum/s2/icons/Download';
 
+import { ClientOnly } from './ClientOnly';
 import styles from './SkillExport.module.css';
 
 type Status = 'idle' | 'done' | 'failed';
@@ -82,7 +82,9 @@ const SkillExportButtons = ({ name, description }: SkillExportProps) => {
 
 /** Copy-as-skill and download-skill buttons that export the current page as an agent SKILL.md. */
 export const SkillExport = (props: SkillExportProps) => (
-  <BrowserOnly>{() => <SkillExportButtons {...props} />}</BrowserOnly>
+  <ClientOnly markdown={null} noMarkdownReason="Buttons that export the page's own Markdown.">
+    {() => <SkillExportButtons {...props} />}
+  </ClientOnly>
 );
 
 export default SkillExport;

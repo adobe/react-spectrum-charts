@@ -149,19 +149,30 @@ export const setupChartHarness = () => {
    * @param chart builds the chart for a set of props
    * @param a initial props
    * @param b updated props
-   * @returns the normalized updated and freshly mounted scenes
+   * @param options `interact` runs on the settled mount of `a`; `expected` replaces `b` for the fresh mount
+   * @returns the normalized updated and freshly mounted scenes, and the updated view
    */
-  const compareUpdateToMount = async <P,>(chart: ChartFactory<P>, a: P, b: P) => {
+  const compareUpdateToMount = async <P,>(
+    chart: ChartFactory<P>,
+    a: P,
+    b: P,
+    { interact, expected = b }: { interact?: () => Promise<void>; expected?: P } = {}
+  ) => {
     const mounted = await mount(chart(a));
+    if (interact) {
+      await interact();
+      await settle();
+    }
     await update(mounted, chart(b));
-    const updated = getScene(latestView());
+    const updatedView = latestView();
+    const updated = getScene(updatedView);
     mounted.unmount();
 
-    const fresh = await mount(chart(b));
+    const fresh = await mount(chart(expected));
     const freshScene = getScene(latestView());
     fresh.unmount();
 
-    return { updated, fresh: freshScene };
+    return { updated, fresh: freshScene, updatedView };
   };
 
   return { views, onVegaViewReady, latestView, renderCount, settle, mount, update, countUpdates, compareUpdateToMount };

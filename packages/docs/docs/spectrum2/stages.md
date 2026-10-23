@@ -9,7 +9,7 @@ much a component's API and visuals may still change.
 
 | Stage | What it means |
 |---|---|
-| **Alpha** | The Spectrum 2 design is finalized and the core feature set is implemented. Changes that aren't backwards compatible can still happen. Animation and accessibility support are in progress. |
+| **Alpha** | The Spectrum 2 design is implemented, along with the core feature set. The design and API may still change based on feedback, and changes that aren't backwards compatible can happen. Animation and accessibility support are in progress. |
 | **Beta** | The planned feature set is complete. Breaking API changes are avoided, and any that are needed are called out in the changelog. Animation and accessibility are complete. Work focuses on feedback and fixes. |
 | **RC** (release candidate) | Feature freeze. The component is validated in consumer environments before stable. Only blocking issues are fixed. |
 | **Stable** | Production ready. Follows semver. |

@@ -11,8 +11,7 @@
  */
 import React from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
-
+import { ClientOnly } from '../../components/ClientOnly';
 import { SearchDialog } from '../../search/SearchDialog';
 
 /**
@@ -20,5 +19,13 @@ import { SearchDialog } from '../../search/SearchDialog';
  * @returns search bar element
  */
 export default function SearchBar() {
-  return <BrowserOnly fallback={<div style={{ width: 160 }} />}>{() => <SearchDialog />}</BrowserOnly>;
+  return (
+    <ClientOnly
+      fallback={<div style={{ width: 160 }} />}
+      markdown={null}
+      noMarkdownReason="Page chrome outside the doc content."
+    >
+      {() => <SearchDialog />}
+    </ClientOnly>
+  );
 }

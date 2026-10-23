@@ -105,6 +105,25 @@ module.exports = {
       rules: { '@typescript-eslint/no-var-requires': 'off', '@typescript-eslint/no-require-imports': 'off' },
     },
     {
+      // Client-only docs content must say what the page's Markdown export shows instead.
+      files: ['packages/docs-s2/src/**/*.{ts,tsx}'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          { name: 'types', message: 'Please use relative path import for types instead (ex. ../types).' },
+          {
+            name: 'types/locales',
+            message: 'Please use relative path import for types instead (ex. ../types/locales).',
+          },
+          {
+            name: '@docusaurus/BrowserOnly',
+            message:
+              'Use ClientOnly from src/components/ClientOnly so the Markdown export for agents gets this content too.',
+          },
+        ],
+      },
+    },
+    {
       // ESM packages: Node requires fully specified relative imports. Fix with scripts/addRelativeImportExtensions.mjs.
       files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}'],
       rules: {

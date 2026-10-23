@@ -11,7 +11,6 @@
  */
 import React, { Children, ReactElement, ReactNode, isValidElement, useRef, useState } from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useColorMode } from '@docusaurus/theme-common';
 import CodeBlock from '@theme/CodeBlock';
 
@@ -27,6 +26,7 @@ import {
   Width,
 } from '@spectrum-charts/react-spectrum-charts-s2';
 
+import { ClientOnly } from '../components/ClientOnly';
 import { DocsChart as Chart } from '../components/examples/DocsChart';
 import { PlaygroundControl, PreviewSize, PropPlayground } from '../components/examples/PropPlayground';
 import styles from '../components/examples/PropPlayground.module.css';
@@ -80,7 +80,6 @@ const getChartPreviewSize = (element: ReactElement): PreviewSize => {
   };
 };
 
-type ColorScheme = 'light' | 'dark';
 type Locale = 'en-US' | 'de-DE' | 'fr-FR';
 type AnimationType = 'hover' | 'drawIn';
 type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'longDash' | 'twoDash';
@@ -308,8 +307,7 @@ export const ChartPaddingPlayground = () => (
   />
 );
 
-const themeControls: PlaygroundControl[] = [
-  { name: 'colorScheme', type: 'select', options: ['light', 'dark'], defaultValue: 'dark' },
+const backgroundControls: PlaygroundControl[] = [
   {
     name: 'backgroundColor',
     type: 'select',
@@ -319,20 +317,16 @@ const themeControls: PlaygroundControl[] = [
 ];
 
 /**
- * Playground for the chart color scheme and background color.
+ * Playground for the chart background color.
  * @returns playground element
  */
-export const ChartThemePlayground = () => (
+export const ChartBackgroundPlayground = () => (
   <PropPlayground
     previewSize={getChartPreviewSize}
-    controls={themeControls}
+    controls={backgroundControls}
     component="Chart"
-    render={({ colorScheme = 'dark', backgroundColor = 'gray-25' }) => (
-      <Chart
-        data={chartTrafficData}
-        colorScheme={colorScheme as ColorScheme}
-        backgroundColor={String(backgroundColor)}
-      >
+    render={({ backgroundColor = 'gray-25' }) => (
+      <Chart data={chartTrafficData} backgroundColor={String(backgroundColor)}>
         <Axis position="left" grid />
         <Axis position="bottom" labelFormat="time" baseline ticks />
         <Line color="series" />
@@ -646,7 +640,13 @@ const HandleExample = () => {
  */
 export const ChartHandleExample = () => (
   <div className={styles.playground}>
-    <BrowserOnly fallback={<div className={styles.fallback} />}>{() => <HandleExample />}</BrowserOnly>
+    <ClientOnly
+      fallback={<div className={styles.fallback} />}
+      markdown={null}
+      noMarkdownReason="The example's code block is its Markdown export."
+    >
+      {() => <HandleExample />}
+    </ClientOnly>
     <div className={styles.code}>
       <CodeBlock language="tsx">{HANDLE_CODE}</CodeBlock>
     </div>

@@ -11,7 +11,6 @@
  */
 import React, { ReactElement, ReactNode, RefObject, cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useColorMode } from '@docusaurus/theme-common';
 import CodeBlock from '@theme/CodeBlock';
 
@@ -29,9 +28,9 @@ import {
   Switch,
   TextField,
 } from '@react-spectrum/s2';
-
 import * as labComponents from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
+import { ClientOnly } from '../ClientOnly';
 import { docs, renderInlineCode } from '../PropsTable';
 import styles from './PropPlayground.module.css';
 import * as datasets from './data';
@@ -203,6 +202,123 @@ const ControlInput = ({
   }
 };
 
+const Code = ({ children }: { children: ReactNode }) => <code>{children}</code>;
+
+/**
+ * Gets the component and prop a control documents, when the generated docs have them.
+ * @param control playground control
+ * @param component playground component for ungrouped controls
+ * @returns component and optional prop, or undefined when the control isn't a documented prop or component
+ */
+const getControlTarget = (
+  control: PlaygroundControl,
+  component?: string
+): { component: string; prop?: string } | undefined => {
+  const [componentName, propName] = (control.doc ?? `${control.group ?? component}.${control.name}`).split('.');
+  const componentDoc = docs[componentName];
+  if (!componentDoc) return undefined;
+  if (!propName) return { component: componentName };
+  return componentDoc.props.some((prop) => prop.name === propName)
+    ? { component: componentName, prop: propName }
+    : undefined;
+};
+
+const joinOptions = (options: string[]): ReactNode =>
+  options.map((option, index) => (
+    <React.Fragment key={option}>
+      {index > 0 && (index === options.length - 1 ? ' or ' : ', ')}
+      <Code>{option}</Code>
+    </React.Fragment>
+  ));
+
+const getControlValues = (control: PlaygroundControl): ReactNode => {
+  switch (control.type) {
+    case 'boolean':
+      return joinOptions(['true', 'false']);
+    case 'select':
+      return joinOptions(control.options);
+    case 'number':
+      return `${control.min} to ${control.max}, in steps of ${control.step}`;
+    case 'text':
+      return 'any text';
+  }
+};
+
+/**
+ * Describes a playground control for the page's Markdown export.
+ * @param control playground control
+ * @param component playground component for ungrouped controls
+ * @returns list item content
+ */
+const describeControl = (control: PlaygroundControl, component?: string): ReactNode => {
+  const target = getControlTarget(control, component);
+  const group = control.group && control.group !== target?.component ? ` (${control.group})` : '';
+  const shown = control.defaultValue === '' ? 'empty' : <Code>{String(control.defaultValue)}</Code>;
+  if (target && !target.prop && control.type === 'boolean') {
+    return (
+      <>
+        <Code>{target.component}</Code>
+        {group}: included or left out. Shown: {control.defaultValue ? 'included' : 'left out'}.
+      </>
+    );
+  }
+  const name = target?.prop ? (
+    <>
+      <Code>{target.prop}</Code> on <Code>{target.component}</Code>
+    </>
+  ) : (
+    <strong>{control.label ?? control.name}</strong>
+  );
+  return (
+    <>
+      {name}
+      {group}: {getControlValues(control)}. Shown: {shown}.
+    </>
+  );
+};
+
+/**
+ * Lists a playground's controls, plus the code for each option of controls that aren't a documented prop.
+ * @param controls playground controls
+ * @param component playground component for ungrouped controls
+ * @param getCode gets the example code for a set of control values
+ * @returns Markdown export content for the controls
+ */
+const getControlsMarkdown = (
+  controls: PlaygroundControl[],
+  component: string | undefined,
+  getCode: (values: PlaygroundValues) => string
+): ReactElement => {
+  const variants = controls
+    .filter((control) => !getControlTarget(control, component) && control.type !== 'number' && control.type !== 'text')
+    .flatMap((control) => {
+      const options = control.type === 'select' ? control.options : [true, false];
+      return options
+        .filter((option) => option !== control.defaultValue)
+        .map((option) => ({ control, option, code: getCode({ [control.name]: option }) }));
+    });
+  return (
+    <>
+      <p>The interactive example has these controls. The code above uses the shown values.</p>
+      <ul>
+        {controls.map((control) => (
+          <li key={control.name}>{describeControl(control, component)}</li>
+        ))}
+      </ul>
+      {variants.map(({ control, option, code }) => (
+        <React.Fragment key={`${control.name}-${String(option)}`}>
+          <p>
+            With <strong>{control.label ?? control.name}</strong> set to <Code>{String(option)}</Code>:
+          </p>
+          <pre>
+            <code className="language-jsx">{code}</code>
+          </pre>
+        </React.Fragment>
+      ))}
+    </>
+  );
+};
+
 const DEFAULT_PREVIEW_HEIGHT = 300;
 const PREVIEW_ROOT_MARGIN = '600px 0px';
 
@@ -266,22 +382,29 @@ export const PropPlayground = ({ controls, render, replay, previewSize, componen
   const previewHeight = (previewElement.props as { height?: unknown }).height;
   const placeholderHeight = typeof previewHeight === 'number' ? previewHeight : DEFAULT_PREVIEW_HEIGHT;
   const groups = [...new Set(controls.map((control) => control.group ?? ''))];
-  const code = `${getImportStatement(element, S2_PACKAGE, LAB)}\n\n${elementToJsx(element, datasets)}`;
+  const getCode = (codeElement: ReactElement) =>
+    `${getImportStatement(codeElement, S2_PACKAGE, LAB)}\n\n${elementToJsx(codeElement, datasets)}`;
+  const code = getCode(element);
 
   return (
     <div className={styles.playground}>
       <div ref={previewRef} className={styles.preview}>
-        <BrowserOnly fallback={<div className={styles.fallback} />}>
+        <ClientOnly
+          fallback={<div className={styles.fallback} />}
+          markdown={null}
+          noMarkdownReason="The example's code block is its Markdown export."
+        >
           {() =>
-            isNearViewport ? (
-              <div key={mountKey}>{previewElement}</div>
-            ) : (
-              <div style={{ height: placeholderHeight }} />
-            )
+            isNearViewport ? <div key={mountKey}>{previewElement}</div> : <div style={{ height: placeholderHeight }} />
           }
-        </BrowserOnly>
+        </ClientOnly>
       </div>
-      <BrowserOnly fallback={<div className={styles.controls} />}>
+      <ClientOnly
+        fallback={<div className={styles.controls} />}
+        {...(controls.length > 0
+          ? { markdown: getControlsMarkdown(controls, component, (variantValues) => getCode(render(variantValues))) }
+          : { markdown: null, noMarkdownReason: 'The example has no controls.' })}
+      >
         {() => (
           <Provider colorScheme={colorMode} UNSAFE_className={styles.controls}>
             {groups.map((group) => (
@@ -315,7 +438,7 @@ export const PropPlayground = ({ controls, render, replay, previewSize, componen
             </div>
           </Provider>
         )}
-      </BrowserOnly>
+      </ClientOnly>
       <div className={styles.code}>
         <CodeBlock language="jsx">{code}</CodeBlock>
       </div>

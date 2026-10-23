@@ -85,6 +85,11 @@
     "@react-types/shared" "^3.22.1"
     client-only "^0.0.1"
 
+"@adobe/spectrum-tokens@15.6.0":
+  version "15.6.0"
+  resolved "https://registry.npmjs.org/@adobe/spectrum-tokens/-/spectrum-tokens-15.6.0.tgz#0a78064bd7824a3d2b91926cbb398ce074f32857"
+  integrity sha512-eMciiuA/2yt0dKLko2LI1QLktb9RohlckXR4brCTIxX/l5T2jfxP5DjuFEAqJUTxRnEVVrbkMtVWnyZdl7J5Ow==
+
 "@algolia/autocomplete-core@1.17.9":
   version "1.17.9"
   resolved "https://registry.yarnpkg.com/@algolia/autocomplete-core/-/autocomplete-core-1.17.9.tgz#83374c47dc72482aa45d6b953e89377047f0dcdc"
@@ -4577,6 +4582,13 @@
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.1.1.tgz#1ec17e2edbec25c8306d424ecfbf13c7de1aaa31"
   integrity sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==
+
+"@playwright/test@1.59.1":
+  version "1.59.1"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.59.1.tgz#5c4d38eac84a61527af466602ae20277685a02d6"
+  integrity sha512-PG6q63nQg5c9rIi4/Z5lR5IVF7yU5MqmKaPOe0HSc0O2cX1fPi96sUQu5j7eo4gKCkB2AnNGoWt7y4/Xx3Kcqg==
+  dependencies:
+    playwright "1.59.1"
 
 "@pnpm/config.env-replace@^1.1.0":
   version "1.1.0"
@@ -17210,7 +17222,7 @@ playwright-core@1.59.1:
   resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.59.1.tgz#d8a2b28bcb8f2bd08ef3df93b02ae83c813244b2"
   integrity sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==
 
-playwright@^1.59.1:
+playwright@1.59.1, playwright@^1.59.1:
   version "1.59.1"
   resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.59.1.tgz#f7b0ca61637ae25264cec370df671bbe1f368a4a"
   integrity sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw==

@@ -184,6 +184,11 @@ yarn verify
 # Run tests, targeted (default for agents/dev — no coverage, quiet)
 yarn test:quiet --testPathPattern=line
 
+# S2 browser tests (Playwright, packages/react-spectrum-charts-s2/browser/). Starts the dev Storybook, or reuses one
+# already on STORYBOOK_PORT (default 6011). First run: yarn playwright install chromium, then record the uncommitted
+# screenshot baselines with --update-snapshots
+yarn test:browser
+
 # Full suite with coverage — CI/Sonar only, or when the user explicitly asks (e.g. "run all")
 yarn test
 
@@ -367,6 +372,17 @@ chart types to the search cards (`src/search/chartExamples.tsx`), and set `stage
 
 **Any change to an S2 component's props or behavior** must also update that component's docs page
 and dev dashboard (`src/dev/<Component>/Dashboards/`). See Step 9 of the skill.
+
+**Every page's Markdown export must be enough for an agent to implement what the page shows.**
+"Copy for LLM", "View as Markdown", and the skill export all use the `.md` that
+`plugins/llmsPlugin.js` builds from the rendered HTML, so browser-only content is lost unless
+it has a Markdown equivalent. Wrap browser-only content in `ClientOnly`
+(`src/components/ClientOnly.tsx`) and pass `markdown` (code, tables, or text that conveys the
+same information), or `markdown={null}` with a `noMarkdownReason`. ESLint bans importing
+`@docusaurus/BrowserOnly` directly, and the production build fails on sections that export empty.
+Use `WebOnly` for content that only applies to the interactive page (e.g. "drag the handle").
+Check the export with a production build (`npx docusaurus build --out-dir /tmp/docs-s2-build`
+in `packages/docs-s2`, then read `<route>.md`); the dev server's "View as Markdown" shows raw MDX.
 
 ---
 
