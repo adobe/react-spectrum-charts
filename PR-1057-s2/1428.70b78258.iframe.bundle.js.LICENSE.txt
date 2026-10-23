@@ -1,1 +1,0 @@
-/*! @spectrum-charts/vega-spec-builder-s2@v0.10.0 */
