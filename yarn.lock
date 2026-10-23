@@ -85,6 +85,11 @@
     "@react-types/shared" "^3.22.1"
     client-only "^0.0.1"
 
+"@adobe/spectrum-tokens@15.6.0":
+  version "15.6.0"
+  resolved "https://registry.npmjs.org/@adobe/spectrum-tokens/-/spectrum-tokens-15.6.0.tgz#0a78064bd7824a3d2b91926cbb398ce074f32857"
+  integrity sha512-eMciiuA/2yt0dKLko2LI1QLktb9RohlckXR4brCTIxX/l5T2jfxP5DjuFEAqJUTxRnEVVrbkMtVWnyZdl7J5Ow==
+
 "@algolia/autocomplete-core@1.17.9":
   version "1.17.9"
   resolved "https://registry.yarnpkg.com/@algolia/autocomplete-core/-/autocomplete-core-1.17.9.tgz#83374c47dc72482aa45d6b953e89377047f0dcdc"
