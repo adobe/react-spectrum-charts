@@ -18,6 +18,8 @@ coverage
 # S2 dev Storybook coverage stories (ignorecase would otherwise match them)
 !packages/react-spectrum-charts-s2/src/dev/*/Coverage/
 test-report.xml
+test-results
+playwright-report
 
 # exclude vscode config except for our shared snippets
 .vscode/*
