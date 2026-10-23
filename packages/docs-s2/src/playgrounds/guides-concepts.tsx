@@ -10,9 +10,19 @@
  * governing permissions and limitations under the License.
  */
 import BrowserOnly from '@docusaurus/BrowserOnly';
+import { useColorMode } from '@docusaurus/theme-common';
 import React from 'react';
 
-import { Axis, Bar, ColorScale, Legend, Line, LocaleCode, colorSchemes } from '@spectrum-charts/react-spectrum-charts-s2';
+import {
+  Axis,
+  Bar,
+  ColorScale,
+  Legend,
+  Line,
+  LocaleCode,
+  colorSchemes,
+  getColorSchemeColors,
+} from '@spectrum-charts/react-spectrum-charts-s2';
 
 import { DocsChart as Chart } from '../components/examples/DocsChart';
 import { PlaygroundControl, PreviewSize, PropPlayground } from '../components/examples/PropPlayground';
@@ -32,7 +42,9 @@ const PALETTE_GROUPS: { title: string; prefix: (name: string) => boolean }[] = [
 const paletteNames = (Object.keys(colorSchemes) as ColorScale[]).filter((name) => !name.startsWith('categorical'));
 
 // colorSchemes is stubbed in the SSR bundle, so swatches render client-side only.
-const PaletteSwatches = () => (
+const PaletteSwatches = () => {
+  const { colorMode } = useColorMode();
+  return (
   <div style={{ display: 'grid', gap: 16, marginBottom: 24 }}>
     {PALETTE_GROUPS.map(({ title, prefix }) => (
       <div key={title}>
@@ -42,7 +54,7 @@ const PaletteSwatches = () => (
             <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <code style={{ minWidth: 260 }}>{name}</code>
               <div style={{ display: 'flex', flexWrap: 'wrap' }} aria-hidden>
-                {colorSchemes[name].map((color, index) => (
+                {getColorSchemeColors(name, colorMode).map((color, index) => (
                   <span
                     key={`${color}-${index}`}
                     title={color}
@@ -56,7 +68,8 @@ const PaletteSwatches = () => (
       </div>
     ))}
   </div>
-);
+  );
+};
 
 /**
  * Shows the colors in every named palette that `colors` accepts.

@@ -309,7 +309,7 @@ export const ChartPaddingPlayground = () => (
 );
 
 const themeControls: PlaygroundControl[] = [
-  { name: 'colorScheme', type: 'select', options: ['light', 'dark'], defaultValue: 'dark' },
+  { name: 'colorScheme', type: 'select', options: ['light', 'dark'], defaultValue: 'light' },
   {
     name: 'backgroundColor',
     type: 'select',
@@ -327,7 +327,7 @@ export const ChartThemePlayground = () => (
     previewSize={getChartPreviewSize}
     controls={themeControls}
     component="Chart"
-    render={({ colorScheme = 'dark', backgroundColor = 'gray-25' }) => (
+    render={({ colorScheme = 'light', backgroundColor = 'gray-25' }) => (
       <Chart
         data={chartTrafficData}
         colorScheme={colorScheme as ColorScheme}

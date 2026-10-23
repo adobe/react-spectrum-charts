@@ -537,6 +537,24 @@ describe('Chart spec builder', () => {
         colorSchemes.s2Categorical20
       );
     });
+
+    test('uses dark categorical colors for named palettes in dark mode', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        colors: 's2Categorical6',
+        colorScheme: 'dark',
+        marks: [defaultBarOptions],
+      });
+
+      expect(spec.scales?.find((scale) => scale.name === COLOR_SCALE)).toHaveProperty('range', [
+        spectrum2Colors.dark['indigo-1100'],
+        spectrum2Colors.dark['magenta-900'],
+        spectrum2Colors.dark['orange-700'],
+        spectrum2Colors.dark['blue-700'],
+        spectrum2Colors.dark['purple-900'],
+        spectrum2Colors.dark['pink-700'],
+      ]);
+    });
   });
 
   describe('controlled highlighting', () => {

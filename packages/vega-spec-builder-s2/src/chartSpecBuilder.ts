@@ -50,7 +50,7 @@ import {
   DIRECT_LABEL_FONT_SIZE_M,
   DIRECT_LABEL_FONT_SIZE_L,
 } from '@spectrum-charts/core-s2/constants';
-import { colorSchemes, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
+import { colorSchemes, getColorSchemeColors, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { addArea } from './area/areaSpecBuilder.js';
 import { addAxis } from './axis/axisSpecBuilder.js';
@@ -479,7 +479,7 @@ function getColors(colors: Colors, colorScheme: ColorScheme): string[] {
   if (Array.isArray(colors)) {
     return colors.map((color: string) => getS2ColorValue(color, colorScheme));
   }
-  return colorSchemes[colors];
+  return getColorSchemeColors(colors, colorScheme);
 }
 
 function getStrokeDashesFromLineTypes(lineTypes: LineType[]): number[][] {

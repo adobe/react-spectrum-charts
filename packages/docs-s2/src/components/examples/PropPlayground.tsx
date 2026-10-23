@@ -244,6 +244,14 @@ export const PropPlayground = ({ controls, render, replay, previewSize, componen
   const { colorMode } = useColorMode();
   const defaults = useMemo(() => getDefaults(controls), [controls]);
   const [values, setValues] = useState(defaults);
+  const hasColorScheme = controls.some((control) => control.name === 'colorScheme');
+  const withSiteColorScheme = (current: Record<string, Value>) =>
+    hasColorScheme ? { ...current, colorScheme: colorMode } : current;
+
+  // A colorScheme control follows the site's light/dark toggle.
+  useEffect(() => {
+    if (hasColorScheme) setValues((current) => ({ ...current, colorScheme: colorMode }));
+  }, [colorMode, hasColorScheme]);
   const [mountKey, setMountKey] = useState(0);
   const previewRef = useRef<HTMLDivElement>(null);
   const isNearViewport = useNearViewport(previewRef);
@@ -308,7 +316,7 @@ export const PropPlayground = ({ controls, render, replay, previewSize, componen
                 </ActionButton>
               )}
               {controls.length > 0 && (
-                <ActionButton size="S" onPress={() => setValues(defaults)}>
+                <ActionButton size="S" onPress={() => setValues(withSiteColorScheme(defaults))}>
                   Reset
                 </ActionButton>
               )}
