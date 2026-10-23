@@ -1,5 +1,11 @@
 # @spectrum-charts/core-s2
 
+## 0.11.1
+
+### Patch Changes
+
+- ca1a73a: Spectrum 2 categorical colors now use their dark values when `colorScheme` is `dark`, both as `categorical-*` tokens and in the `s2Categorical` palettes.
+
 ## 0.11.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/themes",
-  "version": "1.53.0",
+  "version": "1.53.1",
   "description": "Spectrum colors and themes used for spectrum charts",
   "browser": "dist/index.js",
   "main": "dist/index.js",
