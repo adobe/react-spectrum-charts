@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, memo, useCallback, useMemo, useState } from 'react';
+import { ReactElement, useCallback, useMemo, useRef } from 'react';
 
 import { StoryFn } from '@storybook/react';
 import { View } from 'vega';
@@ -44,59 +44,51 @@ const data = [
   { datetime: 2, value: 2, series: 'c' },
 ];
 
-type RetentionChartProps = StoryArgs & { onVegaViewReady: (view: View) => void };
-
-// Memoized so status updates don't re-render the chart, which would rebuild its view.
-const RetentionChart = memo(function RetentionChart({
+// Used by browser/interactionRetention.spec.ts, which reads the status line.
+// The status is written to the DOM rather than React state, so the chart only re-renders when args change.
+const InteractionRetentionStory: StoryFn<StoryArgs> = ({
   renderer,
   lineType,
   highlightedSeries,
   valueScale,
-  onVegaViewReady,
-}: RetentionChartProps) {
-  const scaledData = useMemo(() => data.map((row) => ({ ...row, value: row.value * valueScale })), [valueScale]);
-  return (
-    <Chart
-      data={scaledData}
-      width={400}
-      height={300}
-      animations={false}
-      renderer={renderer}
-      highlightedSeries={highlightedSeries}
-      onVegaViewReady={onVegaViewReady}
-    >
-      <Axis position="left" />
-      <Axis position="bottom" />
-      <Line dimension="datetime" metric="value" color="series" lineType={{ value: lineType }} scaleType="linear">
-        <ChartPopover>{(datum) => <div>Popover {String(datum.series)}</div>}</ChartPopover>
-      </Line>
-      <Legend isToggleable />
-    </Chart>
-  );
-});
-
-// Used by browser/interactionRetention.spec.ts, which reads the status line.
-const InteractionRetentionStory: StoryFn<StoryArgs> = (args): ReactElement => {
-  const [views, setViews] = useState(0);
-  const [hiddenSeries, setHiddenSeries] = useState<string[]>([]);
+}): ReactElement => {
+  const status = useRef<HTMLOutputElement>(null);
+  const views = useRef(0);
 
   const onVegaViewReady = useCallback((view: View) => {
-    setViews((count) => count + 1);
-    setHiddenSeries(view.signal('hiddenSeries') ?? []);
-    view.addSignalListener('hiddenSeries', (_, value: string[]) => setHiddenSeries(value));
+    const showHiddenSeries = (hiddenSeries: string[] = []) => {
+      if (!status.current) return;
+      status.current.dataset.hiddenSeries = hiddenSeries.join(',');
+      status.current.textContent = `Views: ${views.current}. Hidden series: ${hiddenSeries.join(', ') || 'none'}.`;
+    };
+    views.current += 1;
+    if (status.current) status.current.dataset.views = String(views.current);
+    showHiddenSeries(view.signal('hiddenSeries'));
+    view.addSignalListener('hiddenSeries', (_, value: string[]) => showHiddenSeries(value));
   }, []);
+
+  const args = { renderer, lineType, highlightedSeries, valueScale };
+  const scaledData = useMemo(() => data.map((row) => ({ ...row, value: row.value * valueScale })), [valueScale]);
 
   return (
     <div>
-      <RetentionChart {...args} onVegaViewReady={onVegaViewReady} />
-      <output
-        data-testid="retention-status"
-        data-args={JSON.stringify(args)}
-        data-views={views}
-        data-hidden-series={hiddenSeries.join(',')}
+      <Chart
+        data={scaledData}
+        width={400}
+        height={300}
+        animations={false}
+        renderer={renderer}
+        highlightedSeries={highlightedSeries}
+        onVegaViewReady={onVegaViewReady}
       >
-        Views: {views}. Hidden series: {hiddenSeries.join(', ') || 'none'}.
-      </output>
+        <Axis position="left" />
+        <Axis position="bottom" />
+        <Line dimension="datetime" metric="value" color="series" lineType={{ value: lineType }} scaleType="linear">
+          <ChartPopover>{(datum) => <div>Popover {String(datum.series)}</div>}</ChartPopover>
+        </Line>
+        <Legend isToggleable />
+      </Chart>
+      <output ref={status} data-testid="retention-status" data-args={JSON.stringify(args)} />
     </div>
   );
 };
