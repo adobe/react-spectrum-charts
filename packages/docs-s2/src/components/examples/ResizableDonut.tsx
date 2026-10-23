@@ -11,8 +11,8 @@
  */
 import React, { useRef, useState } from 'react';
 
-import BrowserOnly from '@docusaurus/BrowserOnly';
 import { useColorMode } from '@docusaurus/theme-common';
+import CodeBlock from '@theme/CodeBlock';
 import { useMove } from 'react-aria';
 
 import { ActionButton, Badge, Card, Provider, Switch, Text } from '@react-spectrum/s2';
@@ -28,6 +28,8 @@ import {
 import { ADOBE_CLEAN_FONT, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
 
+import { ClientOnly } from '../ClientOnly';
+import { DataCode } from './DataCode';
 import { DocsChart as Chart } from './DocsChart';
 import { browserLongTailData } from './data';
 
@@ -180,14 +182,35 @@ const ResizableDonut = () => {
   );
 };
 
+const RESIZABLE_DONUT_CODE = `import { Chart, Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
+
+<Chart data={browserLongTailData} width={472} height={472}>
+  <Donut metric="count" color="browser">
+    <DonutSummary label="Visitors" />
+    <SegmentLabel percent value={false} swatch showValueRow />
+  </Donut>
+</Chart>`;
+
 /**
  * Donut with a corner resize handle that outlines the chart size where each size tier starts.
  * @returns example element
  */
 export const ResizableDonutExample = () => (
   <div style={{ maxWidth: '100%', overflowX: 'auto', marginBottom: 'var(--ifm-leading)' }}>
-    <BrowserOnly fallback={<div style={{ width: MAX_SIZE, height: MAX_SIZE + 100 }} />}>
+    <ClientOnly
+      fallback={<div style={{ width: MAX_SIZE, height: MAX_SIZE + 100 }} />}
+      markdown={
+        <>
+          <p>
+            The example is this chart in a resizable container. Change <code>width</code> and <code>height</code> to see
+            each size, and remove <code>SegmentLabel</code> to see the sizes without segment labels.
+          </p>
+          <DataCode name="browserLongTailData" />
+          <CodeBlock language="jsx">{RESIZABLE_DONUT_CODE}</CodeBlock>
+        </>
+      }
+    >
       {() => <ResizableDonut />}
-    </BrowserOnly>
+    </ClientOnly>
   </div>
 );

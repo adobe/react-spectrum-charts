@@ -42,7 +42,9 @@ const toJs = (value: unknown): string => {
   if (typeof value === 'string') return `'${value.replace(/'/g, "\\'")}'`;
   if (Array.isArray(value)) return `[${value.map(toJs).join(', ')}]`;
   if (value && typeof value === 'object') {
-    const entries = Object.entries(value).map(([k, v]) => `${IDENTIFIER.test(k) ? k : toJs(k)}: ${toJs(v)}`);
+    const entries = Object.entries(value)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => `${IDENTIFIER.test(k) ? k : toJs(k)}: ${toJs(v)}`);
     return entries.length ? `{ ${entries.join(', ')} }` : '{}';
   }
   return String(value);
@@ -108,7 +110,8 @@ const collectImports = (node: ReactNode, names: Set<string>, extra: SourceImport
   for (const value of Object.values(element.props)) {
     for (const [from, imported] of Object.entries(getSourceImports(value))) {
       const existing = extra[from];
-      extra[from] = typeof imported === 'string' ? imported : [...(Array.isArray(existing) ? existing : []), ...imported];
+      extra[from] =
+        typeof imported === 'string' ? imported : [...(Array.isArray(existing) ? existing : []), ...imported];
     }
   }
   Children.forEach(element.props.children as ReactNode, (child) => collectImports(child, names, extra));

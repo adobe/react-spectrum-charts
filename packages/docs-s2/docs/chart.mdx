@@ -9,6 +9,7 @@ import { PropsTable } from '@site/src/components/PropsTable';
 import { DataCode } from '@site/src/components/examples/DataCode';
 import {
   ChartAnimationPlayground,
+  ChartBackgroundPlayground,
   ChartColorsPlayground,
   ChartHandleExample,
   ChartHighlightPlayground,
@@ -19,7 +20,6 @@ import {
   ChartScalesPlayground,
   ChartSizePlayground,
   ChartStatesPlayground,
-  ChartThemePlayground,
   ChartTitlePlayground,
   ChartTooltipPlayground,
 } from '@site/src/playgrounds/chart';
@@ -113,10 +113,14 @@ example, line strokes are 1.5, 2, and 2.5 px wide at S, M, and L.
 
 `colorScheme` (`light` or `dark`, default `light`) picks the light or dark value of every
 Spectrum color token in the chart, including the mark colors, axes, and text. Set it to match your
-app's theme. `backgroundColor` fills the chart and is a Spectrum color token, like `gray-25`, or a
-CSS color. The default is `transparent`.
+app's theme. The examples on this site follow the site's theme; see
+[Colors and theming](./guides/colors-and-theming.mdx#light-and-dark) for each color's light and dark
+values.
 
-<ChartThemePlayground />
+`backgroundColor` fills the chart and is a Spectrum color token, like `gray-25`, or a CSS color.
+The default is `transparent`.
+
+<ChartBackgroundPlayground />
 
 ### colors
 

@@ -42,6 +42,7 @@ const sidebars: SidebarsConfig = {
         'guides/data',
         'guides/sizing',
         'guides/colors-and-theming',
+        'guides/color-palettes',
         'guides/localization',
         'guides/interactivity',
         'guides/animation',

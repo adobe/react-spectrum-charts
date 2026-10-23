@@ -4,7 +4,7 @@ description: Match a chart to light or dark themes, pick palettes, and control c
 ---
 
 import { DataCode } from '@site/src/components/examples/DataCode';
-import { GuidePalettePlayground, GuidePaletteSwatches } from '@site/src/playgrounds/guides-concepts';
+import { GuidePalettePlayground } from '@site/src/playgrounds/guides-concepts';
 
 # Colors and theming
 
@@ -43,6 +43,12 @@ function Dashboard({ colorScheme }: { colorScheme: 'light' | 'dark' }) {
 }
 ```
 
+The examples on this site follow the site's light and dark theme.
+
+Spectrum color tokens, including the categorical colors in the default palette, have different
+values in light and dark. See [Color palettes](./color-palettes.mdx#categorical) for both sets of
+values.
+
 ### backgroundColor
 
 `backgroundColor` fills the chart. It takes a Spectrum color token, like `gray-25`, or any CSS
@@ -59,16 +65,13 @@ so these details blend in.
 in the order it first appears in `data`, and colors repeat when there are more series than
 colors. The default is `s2Categorical20`.
 
-`colors` takes one of these named palettes:
+`colors` takes a named palette:
 
-<GuidePaletteSwatches />
+- **Categorical** palettes, like `s2Categorical20`, are for unordered series.
+- **Sequential** palettes, like `sequentialViridis9`, are for ordered values, like low to high.
+- **Diverging** palettes, like `divergentRedBlue9`, are for values above and below a midpoint.
 
-- **Categorical** palettes are for unordered series.
-- **Sequential** palettes are for ordered values, like low to high.
-- **Diverging** palettes are for values above and below a midpoint.
-
-The number at the end of each name is how many colors it has. Named palettes use the same colors
-in light and dark.
+See [Color palettes](./color-palettes.mdx) for every palette and its colors.
 
 ### Custom colors
 
@@ -114,13 +117,13 @@ See [Dodged and stacked](../bar.mdx#dodged-and-stacked) for the full example.
 Color isn't the only thing a field can set. These `Chart` props are palettes for the other
 encodings, and work the same way as `colors`:
 
-| Chart prop     | Values                                                                                            | Default                                                          | Used by                                                                 |
-| -------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `lineTypes`    | `solid`, `dashed`, `dotted`, `dotDash`, `shortDash`, `longDash`, `twoDash`, or a dash array       | `['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash']` | `lineType` on `Line`, `Bar`, `Scatter`, and `Legend`                    |
-| `lineWidths`   | `XS` to `XL`, or pixels                                                                           | `['M']`                                                          | `lineWidth` on `Scatter` and `Legend`                                   |
-| `opacities`    | Numbers from 0 to 1                                                                               | `[1]`                                                            | `opacity` on `Line`, `Bar`, `Scatter`, and `Legend`                     |
-| `symbolShapes` | `rounded-square`, Vega symbol shapes like `circle`, or SVG paths                                  | `['rounded-square']`                                             | `symbolShape` on `Legend`                                               |
-| `symbolSizes`  | A `[min, max]` pair of `XS` to `XL` or pixels                                                     | `['XS', 'XL']`                                                   | `size` on `Scatter`, which scales between the two                       |
+| Chart prop     | Values                                                                                      | Default                                                           | Used by                                              |
+| -------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------- |
+| `lineTypes`    | `solid`, `dashed`, `dotted`, `dotDash`, `shortDash`, `longDash`, `twoDash`, or a dash array | `['solid', 'dashed', 'dotted', 'dotDash', 'longDash', 'twoDash']` | `lineType` on `Line`, `Bar`, `Scatter`, and `Legend` |
+| `lineWidths`   | `XS` to `XL`, or pixels                                                                     | `['M']`                                                           | `lineWidth` on `Scatter` and `Legend`                |
+| `opacities`    | Numbers from 0 to 1                                                                         | `[1]`                                                             | `opacity` on `Line`, `Bar`, `Scatter`, and `Legend`  |
+| `symbolShapes` | `rounded-square`, Vega symbol shapes like `circle`, or SVG paths                            | `['rounded-square']`                                              | `symbolShape` on `Legend`                            |
+| `symbolSizes`  | A `[min, max]` pair of `XS` to `XL` or pixels                                               | `['XS', 'XL']`                                                    | `size` on `Scatter`, which scales between the two    |
 
 `lineTypes` and `opacities` also take a list of lists for two-field encodings, like `colors`.
 See [Other scales](../chart.mdx#other-scales) for an example.

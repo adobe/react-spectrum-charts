@@ -368,6 +368,17 @@ chart types to the search cards (`src/search/chartExamples.tsx`), and set `stage
 **Any change to an S2 component's props or behavior** must also update that component's docs page
 and dev dashboard (`src/dev/<Component>/Dashboards/`). See Step 9 of the skill.
 
+**Every page's Markdown export must be enough for an agent to implement what the page shows.**
+"Copy for LLM", "View as Markdown", and the skill export all use the `.md` that
+`plugins/llmsPlugin.js` builds from the rendered HTML, so browser-only content is lost unless
+it has a Markdown equivalent. Wrap browser-only content in `ClientOnly`
+(`src/components/ClientOnly.tsx`) and pass `markdown` (code, tables, or text that conveys the
+same information), or `markdown={null}` with a `noMarkdownReason`. ESLint bans importing
+`@docusaurus/BrowserOnly` directly, and the production build fails on sections that export empty.
+Use `WebOnly` for content that only applies to the interactive page (e.g. "drag the handle").
+Check the export with a production build (`npx docusaurus build --out-dir /tmp/docs-s2-build`
+in `packages/docs-s2`, then read `<route>.md`); the dev server's "View as Markdown" shows raw MDX.
+
 ---
 
 ## S2 Component Stage Markers

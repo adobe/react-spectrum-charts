@@ -1,0 +1,58 @@
+---
+title: Color palettes
+description: The named palettes that colors accepts, with each categorical color's light and dark values.
+---
+
+import { CategoricalColors, DivergingPalettes, SequentialPalettes } from '@site/src/playgrounds/colors';
+
+# Color palettes
+
+This page lists the palettes you can pass to `colors` on `Chart`. To set the palette, the color
+scheme, or your own colors, see [Colors and theming](./colors-and-theming.mdx).
+
+## Categorical
+
+Use categorical colors for series that have no order, like products or regions. Series get the
+colors in order, starting at A.
+
+Each categorical color is a color from the [Spectrum 2 color palette](https://spectrum.adobe.com/page/color-palette/), like `indigo-1100`, and uses that
+color's light or dark value to match the chart's `colorScheme`.
+
+<CategoricalColors />
+
+There are four categorical palettes. Each one uses the first colors above, in order:
+
+| Palette                     | Colors |
+| --------------------------- | ------ |
+| `s2Categorical6`            | A to F |
+| `s2Categorical12`           | A to L |
+| `s2Categorical16`           | A to P |
+| `s2Categorical20` (default) | A to T |
+
+Pick the smallest palette that covers your series. Colors repeat when there are more series than
+colors. To use one color on its own, pass its token: A is `categorical-100`, B is `categorical-200`, and so
+on, so `colors={['categorical-400']}` uses D.
+
+## Sequential
+
+:::warning
+Sequential and diverging palettes use the same colors in light and dark. Their colors in each
+theme are under review and expected to change.
+:::
+
+Use sequential palettes for ordered values, like low to high. Each palette runs from light to
+dark, and the number at the end of the name is how many steps it has.
+
+<SequentialPalettes />
+
+## Diverging
+
+:::warning
+Sequential and diverging palettes use the same colors in light and dark. Their colors in each
+theme are under review and expected to change.
+:::
+
+Use diverging palettes for values above and below a midpoint, like change from a target. The
+middle step marks the midpoint.
+
+<DivergingPalettes />

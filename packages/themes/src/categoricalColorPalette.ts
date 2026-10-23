@@ -42,37 +42,34 @@ export const categorical16 = [
   colors['categorical-1600'],
 ];
 
-export const s2Categorical6 = [
-  s2Colors['categorical-100'],
-  s2Colors['categorical-200'],
-  s2Colors['categorical-300'],
-  s2Colors['categorical-400'],
-  s2Colors['categorical-500'],
-  s2Colors['categorical-600'],
-];
+/** Spectrum 2 categorical color tokens, in palette order. */
+export const s2CategoricalTokens = [
+  'categorical-100',
+  'categorical-200',
+  'categorical-300',
+  'categorical-400',
+  'categorical-500',
+  'categorical-600',
+  'categorical-700',
+  'categorical-800',
+  'categorical-900',
+  'categorical-1000',
+  'categorical-1100',
+  'categorical-1200',
+  'categorical-1300',
+  'categorical-1400',
+  'categorical-1500',
+  'categorical-1600',
+  'categorical-1700',
+  'categorical-1800',
+  'categorical-1900',
+  'categorical-2000',
+] as const;
 
-export const s2Categorical12 = [
-  ...s2Categorical6,
-  s2Colors['categorical-700'],
-  s2Colors['categorical-800'],
-  s2Colors['categorical-900'],
-  s2Colors['categorical-1000'],
-  s2Colors['categorical-1100'],
-  s2Colors['categorical-1200'],
-];
+const getS2Categorical = (count: number): string[] =>
+  s2CategoricalTokens.slice(0, count).map((token) => s2Colors[token]);
 
-export const s2Categorical16 = [
-  ...s2Categorical12,
-  s2Colors['categorical-1300'],
-  s2Colors['categorical-1400'],
-  s2Colors['categorical-1500'],
-  s2Colors['categorical-1600'],
-];
-
-export const s2Categorical20 = [
-  ...s2Categorical16,
-  s2Colors['categorical-1700'],
-  s2Colors['categorical-1800'],
-  s2Colors['categorical-1900'],
-  s2Colors['categorical-2000'],
-];
+export const s2Categorical6 = getS2Categorical(6);
+export const s2Categorical12 = getS2Categorical(12);
+export const s2Categorical16 = getS2Categorical(16);
+export const s2Categorical20 = getS2Categorical(20);

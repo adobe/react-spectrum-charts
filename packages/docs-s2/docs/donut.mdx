@@ -5,6 +5,7 @@ title: Donut
 description: Donut, pie, and semicircle charts that show how categories contribute to a whole.
 ---
 
+import { WebOnly } from '@site/src/components/ClientOnly';
 import { PropsTable } from '@site/src/components/PropsTable';
 import { DataCode } from '@site/src/components/examples/DataCode';
 import { ResizableDonutExample } from '@site/src/components/examples/ResizableDonut';
@@ -159,9 +160,13 @@ The chart picks it from the space you give it, and updates it as the chart resiz
 changes the ring thickness, the gap between segments, the text sizes, and how much label detail
 is shown.
 
+<WebOnly>
+
 Drag the bottom-right corner to resize the chart, or focus it and use the arrow keys. The dashed
 squares show where each size starts. Turn off segment labels to see the sizes for a donut without
 labels.
+
+</WebOnly>
 
 <ResizableDonutExample />
 

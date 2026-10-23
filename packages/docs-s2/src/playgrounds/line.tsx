@@ -152,10 +152,7 @@ export const LinePlayground = () => (
       <Chart data={lineTrafficData}>
         {optional(title) && <Title text={String(title)} />}
         {timeAxes}
-        <Line
-          color="series"
-          interpolate={interpolate as LineProps['interpolate']}
-        >
+        <Line color="series" interpolate={interpolate as LineProps['interpolate']}>
           <ChartInspect />
           {directLabel === true && <LineDirectLabel value="series" />}
         </Line>
@@ -225,17 +222,7 @@ const interpolateControls: PlaygroundControl[] = [
   {
     name: 'interpolate',
     type: 'select',
-    options: [
-      'linear',
-      'monotone',
-      'basis',
-      'cardinal',
-      'catmull-rom',
-      'natural',
-      'step',
-      'step-before',
-      'step-after',
-    ],
+    options: ['linear', 'monotone', 'basis', 'cardinal', 'catmull-rom', 'natural', 'step', 'step-before', 'step-after'],
     defaultValue: 'monotone',
   },
 ];
@@ -321,7 +308,10 @@ export const LinePointPlayground = () => (
     render={({ staticPoint = 'isMilestone', pointSize }) => (
       <Chart data={lineMilestoneData}>
         {timeAxes}
-        <Line staticPoint={optional(staticPoint)} pointSize={pointSize && pointSize !== 'auto' ? Number(pointSize) : undefined} />
+        <Line
+          staticPoint={optional(staticPoint)}
+          pointSize={pointSize && pointSize !== 'auto' ? Number(pointSize) : undefined}
+        />
       </Chart>
     )}
   />
@@ -549,10 +539,16 @@ export const LineHoverPlayground = () => (
 );
 
 const metricRangeControls: PlaygroundControl[] = [
-  { name: 'rangeOpacity', type: 'number', min: 0, max: 1, step: 0.1, defaultValue: 0.2 },
-  { name: 'lineType', type: 'select', options: ['dashed', 'solid', 'dotted'], defaultValue: 'dashed' },
-  { name: 'displayOnHover', type: 'boolean', defaultValue: false },
-  { name: 'scaleAxisToFit', type: 'boolean', defaultValue: true },
+  { group: 'metricRanges', name: 'rangeOpacity', type: 'number', min: 0, max: 1, step: 0.1, defaultValue: 0.2 },
+  {
+    group: 'metricRanges',
+    name: 'lineType',
+    type: 'select',
+    options: ['dashed', 'solid', 'dotted'],
+    defaultValue: 'dashed',
+  },
+  { group: 'metricRanges', name: 'displayOnHover', type: 'boolean', defaultValue: false },
+  { group: 'metricRanges', name: 'scaleAxisToFit', type: 'boolean', defaultValue: true },
 ];
 
 /**
@@ -647,11 +643,7 @@ export const LineForecastPlayground = () => (
       <Chart data={lineForecastData}>
         {timeAxes}
         <Line>
-          <LineForecast
-            metric="forecast"
-            start={FORECAST_STARTS[String(start)]}
-            label={label as string | undefined}
-          />
+          <LineForecast metric="forecast" start={FORECAST_STARTS[String(start)]} label={label as string | undefined} />
           <ChartInspect />
         </Line>
       </Chart>
@@ -704,7 +696,12 @@ export const LineAxisPlayground = () => (
           ticks
           title={title ? 'Day' : undefined}
         />
-        <Axis position="left" grid numberFormat={numberFormat as string | undefined} title={title ? 'Visits' : undefined}>
+        <Axis
+          position="left"
+          grid
+          numberFormat={numberFormat as string | undefined}
+          title={title ? 'Visits' : undefined}
+        >
           {referenceLine !== false && <ReferenceLine value={5000} label="Target" />}
         </Axis>
         <Line color="series">
