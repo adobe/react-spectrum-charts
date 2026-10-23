@@ -11,7 +11,7 @@
  */
 import { defineConfig, devices } from '@playwright/test';
 
-const port = process.env.STORYBOOK_PORT ?? '6011';
+const { STORYBOOK_PORT: port = '6011' } = process.env;
 
 export default defineConfig({
   testDir: './browser',
