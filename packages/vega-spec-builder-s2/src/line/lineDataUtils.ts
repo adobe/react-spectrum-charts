@@ -51,9 +51,14 @@ export const getInPlotMetricFilter = (
  * @returns
  */
 export const getLineHighlightedData = (options: LineSpecOptions): SourceData => {
-  const { name: lineName, idKey } = options;
+  const { name: lineName, idKey, legendHighlightSignals } = options;
 
-  let expr = `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`;
+  // a controlled item only highlights when its series is also highlighted
+  const seriesSignals = [CONTROLLED_HIGHLIGHTED_SERIES, ...(legendHighlightSignals ?? [])];
+  const inHighlightedSeries = seriesSignals
+    .map((signal) => ` && (!isValid(${signal}) || ${signal} === datum.${SERIES_ID})`)
+    .join('');
+  let expr = `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1${inHighlightedSeries}`;
 
   if (isInteractive(options)) {
     const hoveredItemSignal = `${lineName}_${HOVERED_ITEM}`;

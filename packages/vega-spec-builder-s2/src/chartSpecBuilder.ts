@@ -500,7 +500,7 @@ export const addData = produce<Data[], [{ facets: string[]; idKey?: string }]>((
     transform: [
       {
         type: 'filter',
-        expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`,
+        expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1 && (!isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) || ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID})`,
       },
     ],
   });

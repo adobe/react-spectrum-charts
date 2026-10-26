@@ -25,6 +25,7 @@ import {
   getAllMarksByGroupName,
   getChartContainer,
   hoverNthElement,
+  queryAllMarksByGroupName,
   render,
   screen,
   waitFor,
@@ -33,7 +34,7 @@ import '../test-utils/__mocks__/matchMedia.mock.js';
 import { getElement } from '../utils/index.js';
 import { BackgroundColor, Basic, Config, EmptyStateText, Loading, Locale, TooltipAnchor } from './Chart.story.js';
 import { Colors } from './Chart/Encodings/ChartEncodings.story.js';
-import { HighlightedItem } from './Chart/Highlight/ChartHighlight.story.js';
+import { HighlightedItem, HighlightedSeries } from './Chart/Highlight/ChartHighlight.story.js';
 import { Height, Width } from './Chart/Size/ChartSize.story.js';
 
 const PopoverTest = (
@@ -422,6 +423,21 @@ describe('Chart', () => {
         expect(bars[13]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
         expect(bars[15]).toHaveAttribute('opacity', `${FADE_FACTOR}`);
       });
+    });
+
+    test('line highlightedItem is highlighted when no series is highlighted', async () => {
+      render(<HighlightedSeries {...HighlightedSeries.args} highlightedSeries={undefined} highlightedItem={1} />);
+      const chart = await findChart();
+
+      await waitFor(() => expect(getAllMarksByGroupName(chart, 'line0_point_highlight')).toHaveLength(1));
+    });
+
+    test('line highlightedItem outside the highlighted series is not highlighted', async () => {
+      render(<HighlightedSeries {...HighlightedSeries.args} highlightedItem={1} />);
+      const chart = await findChart();
+
+      await waitFor(() => expect(getAllMarksByGroupName(chart, 'line0')).not.toHaveLength(0));
+      expect(queryAllMarksByGroupName(chart, 'line0_point_highlight')).toHaveLength(0);
     });
   });
 
