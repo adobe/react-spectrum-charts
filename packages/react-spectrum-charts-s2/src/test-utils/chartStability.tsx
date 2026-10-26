@@ -197,6 +197,10 @@ const serialize = (value: unknown, path: Set<object>): unknown => {
   if (typeof value === 'function' || typeof value === 'symbol') {
     return undefined;
   }
+  // in-place updates can differ from a fresh mount by float rounding error
+  if (typeof value === 'number') {
+    return Number(value.toPrecision(12));
+  }
   if (!value || typeof value !== 'object') {
     return value;
   }
