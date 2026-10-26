@@ -28,6 +28,8 @@ const CLEARING_UPDATES: [string, StoryArgs][] = [
 
 const openStory = async (page: Page, renderer: 'svg' | 'canvas') => {
   await page.goto(`/iframe.html?id=${STORY_ID}&viewMode=story&args=renderer:${renderer}`);
+  // canvas text only requests the web font when drawn, so fonts.ready alone can resolve before it loads
+  await page.evaluate(() => document.fonts.load('12px adobe-clean'));
   await page.evaluate(() => document.fonts.ready);
   await expect(page.getByTestId('retention-status')).toHaveAttribute('data-views', '1');
 };
