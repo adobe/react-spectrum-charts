@@ -550,7 +550,7 @@ const ref = useRef<ChartHandle>(null);
 
 -   `renderer`: `svg` (default) or `canvas`. Canvas is faster for large datasets.
 -   `debug`: logs the generated Vega spec and inspect data to the console.
--   `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/) whenever it's created or recreated, for example after data changes.
+-   `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/) once per view. Data and size changes update the current view instead of creating a new one.
 -   `UNSAFE_vegaSpec`: renders a Vega spec you write instead of building one from children. `data` can then also be a list of Vega datasets. You lose the Spectrum defaults the components apply.
 -   `dataTestId`: sets `data-testid` on the chart's container.
 
@@ -7747,15 +7747,15 @@ An empty `data` array shows an empty state with `emptyStateText` instead of the 
 
 ## Updating data
 
-To update the chart, pass a new array. The chart redraws whenever `data` is a different array than on the last render, and doesn't notice changes made to the same array in place.
+To update the chart, pass a new array. The chart compares the new rows with the ones it's showing: equal rows do nothing, and changed rows update the current view in place. It doesn't notice changes made to the same array in place.
 
-Because every new array redraws the chart, keep `data` stable across renders. Build it outside the component, or memoize it:
+Comparing large datasets on every render has a cost, so keep `data` stable across renders. Build it outside the component, or memoize it:
 
 ```tsx
 const data = useMemo(() => rows.map((row) => ({ ...row, date: Date.parse(row.date) })), [rows]);
 ```
 
-Redrawing calls `onVegaViewReady` with a new view. It doesn't replay the draw-in animation; see [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
+Updating data in place doesn't replay the draw-in animation; see [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation). Changes that need a new view, such as different children, call `onVegaViewReady` with the new view.
 
 ---
 
@@ -8672,7 +8672,7 @@ test('renders the visits chart', async () => {
 These `Chart` props help when a chart doesn't look the way you expect:
 
 -   `debug`: logs the generated Vega spec, with your data merged in, to the console whenever it changes, plus each data row a `ChartInspect` shows. Paste the spec into the [Vega editor](https://vega.github.io/editor/) to explore it.
--   `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/) each time it's created, for example after the data changes. Use it to read signals and data, or to know when the chart has rendered.
+-   `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/) each time a new view is created, for example when the children change. Data and size changes update the current view without calling it. Use it to read signals and data, or to know when the chart has first rendered.
 -   `UNSAFE_vegaSpec`: renders a Vega spec you write instead of children. Use it to reproduce a problem with a hand-edited spec. You lose the defaults the components apply.
 
 ## Common problems

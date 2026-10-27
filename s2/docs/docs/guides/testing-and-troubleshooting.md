@@ -89,7 +89,7 @@ test('renders the visits chart', async () => {
 These `Chart` props help when a chart doesn't look the way you expect:
 
 -   `debug`: logs the generated Vega spec, with your data merged in, to the console whenever it changes, plus each data row a `ChartInspect` shows. Paste the spec into the [Vega editor](https://vega.github.io/editor/) to explore it.
--   `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/) each time it's created, for example after the data changes. Use it to read signals and data, or to know when the chart has rendered.
+-   `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/) each time a new view is created, for example when the children change. Data and size changes update the current view without calling it. Use it to read signals and data, or to know when the chart has first rendered.
 -   `UNSAFE_vegaSpec`: renders a Vega spec you write instead of children. Use it to reproduce a problem with a hand-edited spec. You lose the defaults the components apply.
 
 ## Common problems

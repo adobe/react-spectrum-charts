@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.8.0">
 <title data-rh="true">Chart | React Spectrum Charts S2</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/chart"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Chart | React Spectrum Charts S2"><meta data-rh="true" name="description" content="The Chart container that holds data, sizing, theming, and shared state for every chart."><meta data-rh="true" property="og:description" content="The Chart container that holds data, sizing, theming, and shared state for every chart."><link data-rh="true" rel="icon" href="https://www.adobe.com/favicon.ico"><link data-rh="true" rel="canonical" href="https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/chart"><link data-rh="true" rel="alternate" href="https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/chart" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/chart" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Chart","item":"https://opensource.adobe.com/react-spectrum-charts/s2/docs/docs/chart"}]}</script><link rel="stylesheet" href="/react-spectrum-charts/s2/docs/assets/css/styles.e2d8bb80.css">
-<script src="/react-spectrum-charts/s2/docs/assets/js/runtime~main.efdabeb0.js" defer="defer"></script>
-<script src="/react-spectrum-charts/s2/docs/assets/js/main.423a67f7.js" defer="defer"></script>
+<script src="/react-spectrum-charts/s2/docs/assets/js/runtime~main.7565a51c.js" defer="defer"></script>
+<script src="/react-spectrum-charts/s2/docs/assets/js/main.e41108ca.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;"><defs>
@@ -149,7 +149,7 @@ don&#x27;t pass one, or <code>chart_export</code>, followed by <code>.png</code>
 <li><code>renderer</code>: <code>svg</code> (default) or <code>canvas</code>. Canvas is faster for large datasets.</li>
 <li><code>debug</code>: logs the generated Vega spec and inspect data to the console.</li>
 <li><code>onVegaViewReady(view)</code>: called with the <a href="https://vega.github.io/vega/docs/api/view/" target="_blank" rel="noopener noreferrer">Vega view</a>
-whenever it&#x27;s created or recreated, for example after data changes.</li>
+once per view. Data and size changes update the current view instead of creating a new one.</li>
 <li><code>UNSAFE_vegaSpec</code>: renders a Vega spec you write instead of building one from children. <code>data</code>
 can then also be a list of Vega datasets. You lose the Spectrum defaults the components apply.</li>
 <li><code>dataTestId</code>: sets <code>data-testid</code> on the chart&#x27;s container.</li>
