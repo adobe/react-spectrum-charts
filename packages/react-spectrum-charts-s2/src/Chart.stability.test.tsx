@@ -85,19 +85,19 @@ describe('view counts', () => {
     expect({ mountViews, mountRenders }).toEqual({ mountViews: 1, mountRenders: 1 });
   });
 
-  // Inline children rebuild until listeners are stable (separate issue); the RFC targets 0 new views for each.
   test.each<[string, ReturnType<typeof chart>[], { views: number; renders: number }]>([
-    ['a parent re-render with identical inline JSX', [chart(), chart()], { views: 1, renders: 1 }],
-    ['a new data array with identical contents', [chart(), chart({ data: [...data] })], { views: 1, renders: 1 }],
+    ['a parent re-render with identical inline JSX', [chart(), chart()], { views: 0, renders: 0 }],
+    ['a new data array with identical contents', [chart(), chart({ data: [...data] })], { views: 0, renders: 0 }],
     [
       'an inline onVegaViewReady arrow on a parent re-render',
       [chart({}, (view) => harness.onVegaViewReady(view)), chart({}, (view) => harness.onVegaViewReady(view))],
-      { views: 1, renders: 1 },
+      { views: 0, renders: 0 },
     ],
+    // the first highlight changes the program (#1065); a → b updates the live view
     [
       'controlled highlightedSeries undefined → a → b',
       [chart(), chart({ highlightedSeries: 'a' }), chart({ highlightedSeries: 'b' })],
-      { views: 2, renders: 2 },
+      { views: 1, renders: 2 },
     ],
   ])('%s', async (_, elements, expected) => {
     const { views, renders } = await harness.countUpdates(elements);
@@ -105,7 +105,7 @@ describe('view counts', () => {
     expect({ views, renders }).toEqual(expected);
   });
 
-  // Baseline on main; the RFC targets 0 new views.
+  // Rebuilds while hiddenSeries is a program signal (#1065); the RFC targets 0 new views.
   test('a legend toggle', async () => {
     const mounted = await harness.mount(chart());
     const views = harness.views.length;
@@ -121,13 +121,12 @@ describe('view counts', () => {
     mounted.unmount();
   });
 
-  // Inline children rebuild until listeners are stable (separate issue); the RFC targets 1 view in total.
   test('streaming 8 appends', async () => {
     const elements = [chart(), ...Array.from({ length: 8 }, (_, i) => chart({ data: streamed(i + 1) }))];
 
     const { mountViews, mountRenders, views, renders } = await harness.countUpdates(elements);
 
-    expect({ views: mountViews + views, renders: mountRenders + renders }).toEqual({ views: 9, renders: 9 });
+    expect({ views: mountViews + views, renders: mountRenders + renders }).toEqual({ views: 1, renders: 9 });
   });
 });
 

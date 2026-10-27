@@ -167,12 +167,18 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const actionBars = useActionBars(sanitizedChildren);
   const popovers = usePopovers(sanitizedChildren);
 
+  // read from a ref so an inline onVegaViewReady doesn't rebuild the view
+  const latestOnVegaViewReady = useRef(onVegaViewReady);
+  useEffect(() => {
+    latestOnVegaViewReady.current = onVegaViewReady;
+  }, [onVegaViewReady]);
+
   const handleNewView = useCallback(
     (view: VegaView) => {
       onNewView(view);
-      onVegaViewReady?.(view);
+      latestOnVegaViewReady.current?.(view);
     },
-    [onNewView, onVegaViewReady]
+    [onNewView]
   );
 
   const navContainerRef = useRef<HTMLDivElement>(null);
