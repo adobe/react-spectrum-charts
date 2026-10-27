@@ -1,5 +1,15 @@
 # @spectrum-charts/vega-spec-builder-s2
 
+## 0.12.0
+
+### Minor Changes
+
+- 7bac1c1: Charts now apply data, size and highlight changes to the current view instead of recreating it, so `onVegaViewReady` fires less often.
+
+### Patch Changes
+
+- @spectrum-charts/core-s2@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes
