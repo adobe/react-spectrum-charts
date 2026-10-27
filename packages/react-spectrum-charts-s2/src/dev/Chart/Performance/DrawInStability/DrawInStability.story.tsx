@@ -11,16 +11,7 @@
  */
 
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
-import {
-  ReactElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { ReactElement, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
 
 import { StoryFn } from '@storybook/react';
 import { View } from 'vega';
@@ -235,11 +226,6 @@ export default {
       options: [1, 2, 4, 10],
       description: 'Stretches the draw-in and the scripted scenario timings; label fades keep their real speed.',
     },
-    stableProps: {
-      control: 'boolean',
-      description:
-        'Memoizes children and onVegaViewReady. Inline props should behave the same; this only skips rebuilding the spec.',
-    },
     inspect: { control: 'boolean', description: 'Adds a ChartInspect to each mark.' },
     highlightBy: {
       control: 'inline-radio',
@@ -390,7 +376,6 @@ interface StabilityArgs {
   variant: Variant;
   scenario: Scenario;
   slowdown: number;
-  stableProps: boolean;
   inspect: boolean;
   highlightBy: HighlightBy;
   popover: boolean;
@@ -483,7 +468,6 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
   variant,
   scenario,
   slowdown,
-  stableProps,
   inspect,
   highlightBy,
   popover,
@@ -620,14 +604,7 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
     });
   };
 
-  const onViewRef = useRef(onView);
-  onViewRef.current = onView;
-  const stableOnView = useCallback((view: View) => onViewRef.current(view), []);
   const dialogOptions: DialogOptions = { inspect, highlightBy, popover, legendHighlight };
-  const stableChildren = useMemo(
-    () => renderVariant(config, { inspect, highlightBy, popover, legendHighlight }),
-    [config, inspect, highlightBy, popover, legendHighlight]
-  );
 
   const highlightedSeries = highlightIndex >= 0 ? seriesValues[highlightIndex] : undefined;
   const hiddenSeries = hideFirst && seriesValues.length ? [seriesValues[0]] : undefined;
@@ -705,9 +682,9 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
         hiddenSeries={hiddenSeries}
         animations={animations}
         animationTypes={drawIn ? WITH_DRAW_IN : HOVER_ONLY}
-        onVegaViewReady={stableProps ? stableOnView : onView}
+        onVegaViewReady={onView}
       >
-        {stableProps ? stableChildren : renderVariant(config, dialogOptions)}
+        {renderVariant(config, dialogOptions)}
       </Chart>
       <LogPanel store={store} state={state.join(', ') || 'default'} />
     </div>
@@ -720,7 +697,6 @@ const story = (variant: Variant) => {
     variant,
     scenario: 'none',
     slowdown: 1,
-    stableProps: false,
     inspect: true,
     highlightBy: 'item',
     popover: true,

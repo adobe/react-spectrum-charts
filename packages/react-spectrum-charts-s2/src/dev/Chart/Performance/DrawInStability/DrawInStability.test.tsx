@@ -39,32 +39,29 @@ const markNames: Record<string, string> = {
 const { default: _meta, ...exported } = stories;
 
 describe.each(Object.entries(exported))('%s', (name, Story) => {
-  test.each([false, true])(
-    'stableProps=%s: inspect and popover work before and after a parent re-render',
-    async (stableProps) => {
-      const args = { ...Story.args, stableProps, animations: false };
-      const { rerender } = render(<Story {...args} />);
-      let chart = await findChart();
+  test('inspect and popover work before and after a parent re-render', async () => {
+    const args = { ...Story.args, animations: false };
+    const { rerender } = render(<Story {...args} />);
+    let chart = await findChart();
 
-      for (const pass of ['mount', 'rerender']) {
-        if (pass === 'rerender') {
-          rerender(<Story {...args} />);
-          chart = await findChart();
-        }
-        const marks = await findAllMarksByGroupName(chart, markNames[name]);
-        expect(marks.length).toBeGreaterThan(0);
-
-        await hoverNthElement(marks, 0);
-        expect(await screen.findByTestId('rsc-tooltip')).toBeInTheDocument();
-        await unhoverNthElement(marks, 0);
-
-        await clickNthElement(marks, 0);
-        const dialog = await screen.findByRole('dialog');
-        expect(dialog).toBeInTheDocument();
-        act(() => {
-          dialog.ownerDocument.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-        });
+    for (const pass of ['mount', 'rerender']) {
+      if (pass === 'rerender') {
+        rerender(<Story {...args} />);
+        chart = await findChart();
       }
+      const marks = await findAllMarksByGroupName(chart, markNames[name]);
+      expect(marks.length).toBeGreaterThan(0);
+
+      await hoverNthElement(marks, 0);
+      expect(await screen.findByTestId('rsc-tooltip')).toBeInTheDocument();
+      await unhoverNthElement(marks, 0);
+
+      await clickNthElement(marks, 0);
+      const dialog = await screen.findByRole('dialog');
+      expect(dialog).toBeInTheDocument();
+      act(() => {
+        dialog.ownerDocument.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      });
     }
-  );
+  });
 });
