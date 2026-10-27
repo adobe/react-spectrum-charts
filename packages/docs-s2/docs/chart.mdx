@@ -228,7 +228,7 @@ chart to export, for example while loading or when there's no data.
 - `renderer`: `svg` (default) or `canvas`. Canvas is faster for large datasets.
 - `debug`: logs the generated Vega spec and inspect data to the console.
 - `onVegaViewReady(view)`: called with the [Vega view](https://vega.github.io/vega/docs/api/view/)
-  whenever it's created or recreated, for example after data changes.
+  once per view. Data and size changes update the current view instead of creating a new one.
 - `UNSAFE_vegaSpec`: renders a Vega spec you write instead of building one from children. `data`
   can then also be a list of Vega datasets. You lose the Spectrum defaults the components apply.
 - `dataTestId`: sets `data-testid` on the chart's container.

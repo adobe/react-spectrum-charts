@@ -88,15 +88,17 @@ An empty `data` array shows an empty state with `emptyStateText` instead of the 
 
 ## Updating data
 
-To update the chart, pass a new array. The chart redraws whenever `data` is a different array
-than on the last render, and doesn't notice changes made to the same array in place.
+To update the chart, pass a new array. The chart compares the new rows with the ones it's
+showing: equal rows do nothing, and changed rows update the current view in place. It doesn't
+notice changes made to the same array in place.
 
-Because every new array redraws the chart, keep `data` stable across renders. Build it outside
-the component, or memoize it:
+Comparing large datasets on every render has a cost, so keep `data` stable across renders. Build
+it outside the component, or memoize it:
 
 ```tsx
 const data = useMemo(() => rows.map((row) => ({ ...row, date: Date.parse(row.date) })), [rows]);
 ```
 
-Redrawing calls `onVegaViewReady` with a new view. It doesn't replay the draw-in animation; see
-[Animation](./animation.mdx).
+Updating data in place doesn't replay the draw-in animation; see [Animation](./animation.mdx).
+Changes that need a new view, such as different children, call `onVegaViewReady` with the new
+view.

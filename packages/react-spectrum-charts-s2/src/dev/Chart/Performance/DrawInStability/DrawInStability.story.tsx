@@ -11,7 +11,16 @@
  */
 
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
-import { ReactElement, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
+import {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { StoryFn } from '@storybook/react';
 import { View } from 'vega';
@@ -38,11 +47,11 @@ import {
   SegmentLabel,
 } from '../../../../components/index.js';
 import { Combo } from '../../../../lab/index.js';
+import { visitsByChannelData } from '../../../../stories/Line/lineData.js';
 import { basicDonutData } from '../../../../storyShared/Donut/data.js';
 import { barData, channelDeviceData, newSubscribersData } from '../../../../storyShared/components/Bar/data.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { ChartChildElement } from '../../../../types/index.js';
-import { visitsByChannelData } from '../../../../stories/Line/lineData.js';
 
 type Variant =
   | 'barSimple'
@@ -206,6 +215,11 @@ export default {
       options: [1, 2, 4, 10],
       description: 'Stretches the draw-in and the scripted scenario timings; label fades keep their real speed.',
     },
+    stableProps: {
+      control: 'boolean',
+      description:
+        'Memoizes children and onVegaViewReady, so data, size and highlight changes update the view in place.',
+    },
     scenario: {
       control: 'select',
       options: [
@@ -253,18 +267,24 @@ const readSignal = (view: View, name: string): number | undefined => {
 const getVerdicts = (log: LogEntry[]): (Verdict | undefined)[] => {
   let baseline: number | undefined;
   return log.map(({ view }) => {
-    if (!view) return undefined;
+    if (!view) {
+      return undefined;
+    }
     // an empty chart resets the draw-in, so the next data starts fresh
     if (view.empty) {
       baseline = undefined;
       return 'empty';
     }
-    if (view.start === undefined) return 'no draw-in';
+    if (view.start === undefined) {
+      return 'no draw-in';
+    }
     if (baseline === undefined) {
       baseline = view.start;
       return 'fresh';
     }
-    if (Math.abs(view.start - baseline) > 2) return 'REPLAYED';
+    if (Math.abs(view.start - baseline) > 2) {
+      return 'REPLAYED';
+    }
     return (view.firstPaintT ?? 0) >= 1 ? 'finished' : 'continued';
   });
 };
@@ -341,6 +361,7 @@ interface StabilityArgs {
   variant: Variant;
   scenario: Scenario;
   slowdown: number;
+  stableProps: boolean;
 }
 
 /**
@@ -356,7 +377,9 @@ const slowDrawIn = (view: View, slowdown: number): number => {
     view.signal(DRAW_IN_DURATION, duration * slowdown);
     void view.runAsync();
   }
-  if (!duration || !restored) return 0;
+  if (!duration || !restored) {
+    return 0;
+  }
   const timer = readSignal(view, ANIMATION_TIMER) ?? 0;
   return Math.min(1, Math.max(0, (timer - restored) / (duration * slowdown)));
 };
@@ -372,7 +395,7 @@ const describeState = (flags: Record<string, boolean>): string[] =>
     .map(([label]) => label);
 
 // Every view of one mount must share a draw-in start; only Remount, Loading → data, and Empty → data restart it.
-const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowdown }): ReactElement => {
+const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowdown, stableProps }): ReactElement => {
   const config = variants[variant];
   const [rows, setRows] = useState(config.data);
   const [, rerender] = useReducer((count: number) => count + 1, 0);
@@ -397,9 +420,12 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
   const later = (ms: number, callback: () => void) => timers.current.push(setTimeout(callback, ms));
   const slowLater = (ms: number, callback: () => void) => later(ms * slowdown, callback);
   const repeat = (count: number, everyMs: number, callback: () => void) => {
-    for (let i = 1; i <= count; i++) slowLater(everyMs * i, callback);
+    for (let i = 1; i <= count; i++) {
+      slowLater(everyMs * i, callback);
+    }
   };
-  const record = (label: string) => store.set([...store.get(), logEntry({ at: Date.now() - mountedAt.current, label })]);
+  const record = (label: string) =>
+    store.set([...store.get(), logEntry({ at: Date.now() - mountedAt.current, label })]);
   const act = (label: string, change: () => void) => {
     record(label);
     change();
@@ -501,6 +527,12 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
     });
   };
 
+  const onViewRef = useRef(onView);
+  onViewRef.current = onView;
+  const stableOnView = useCallback((view: View) => onViewRef.current(view), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stableChildren = useMemo(() => config.render(), [variant]);
+
   const highlightedSeries = highlightIndex >= 0 ? seriesValues[highlightIndex] : undefined;
   const hiddenSeries = hideFirst && seriesValues.length ? [seriesValues[0]] : undefined;
   const state = describeState({
@@ -574,9 +606,9 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
         hiddenSeries={hiddenSeries}
         animations={animations}
         animationTypes={drawIn ? WITH_DRAW_IN : HOVER_ONLY}
-        onVegaViewReady={onView}
+        onVegaViewReady={stableProps ? stableOnView : onView}
       >
-        {config.render()}
+        {stableProps ? stableChildren : config.render()}
       </Chart>
       <LogPanel store={store} state={state.join(', ') || 'default'} />
     </div>
@@ -585,7 +617,7 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
 
 const story = (variant: Variant) => {
   const bound = bindWithProps(DrawInStabilityStory);
-  bound.args = { variant, scenario: 'none', slowdown: 1 };
+  bound.args = { variant, scenario: 'none', slowdown: 1, stableProps: false };
   return bound;
 };
 
