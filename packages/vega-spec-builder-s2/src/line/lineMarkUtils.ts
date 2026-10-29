@@ -47,6 +47,7 @@ import {
   getColorProductionRuleSignalString,
   getItemHoverArea,
   getOpacityProductionRule,
+  getSeriesFacet,
   getStrokeDashProductionRule,
   getVoronoiPath,
   getXProductionRule,
@@ -262,9 +263,7 @@ export const getLineOpacityRules = ({
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
-  highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  if (!interactiveMarkName && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
@@ -338,17 +337,14 @@ export const getLineStrokeWidth = ({
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
-  highlightedItem,
   seriesIds,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  // No interactivity -> use default (no hover)
-  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
   // Thickening emphasizes one series over others, so a single series never thickens
   if (seriesIds && seriesIds.length <= 1) return [DEFAULT_STROKE_WIDTH_RULE];
   const highlightsByDimension = isLineHighlightedByDimension({ chartInspects, chartPopovers, dimensionHover });
   const strokeWidthRules: ProductionRule<NumericValueRef> = [];
 
-  if (interactiveMarkName && !highlightsByDimension) {
+  if (interactiveMarkName && !displayOnHover && !highlightsByDimension) {
     if (isHighlightedByGroup) {
       strokeWidthRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
@@ -403,7 +399,8 @@ export const getLineStrokeWidth = ({
 export const getLineHoverMarks = (
   lineOptions: LineMarkOptions,
   dataSource: string,
-  secondaryHighlightedMetric?: string
+  secondaryHighlightedMetric?: string,
+  includeInteractiveMarks = true
 ): Mark[] => {
   const { dimension, interpolate, isHighlightedByGroup, name, scaleType, showHoverLabel = true } = lineOptions;
   // highlighting by series (or other keys) emphasizes whole lines, not a single point
@@ -424,7 +421,7 @@ export const getLineHoverMarks = (
     // hover value label: background halo + foreground text — omitted when showHoverLabel is false
     ...(showsPoints && showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
-    ...getInteractiveMarks(dataSource, lineOptions),
+    ...(includeInteractiveMarks ? getInteractiveMarks(dataSource, lineOptions) : []),
   ];
 };
 
@@ -635,13 +632,7 @@ export const getLineHighlightOverlayGroup = (
     type: 'group',
     interactive: false,
     ...getLineGeometryClip(markOptions),
-    from: {
-      facet: {
-        name: `${name}_highlightOverlay_facet`,
-        data: facetData,
-        groupby: facetGroupby,
-      },
-    },
+    ...getSeriesFacet(`${name}_highlightOverlay_facet`, facetData, facetGroupby),
     marks: [overlayLineMark],
   };
 };

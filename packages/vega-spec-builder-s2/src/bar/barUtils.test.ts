@@ -19,6 +19,7 @@ import {
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
+  DEFAULT_OPACITY_RULE,
   DIMENSION_HOVER_AREA,
   DRAW_IN_DONE,
   FILTERED_TABLE,
@@ -33,6 +34,7 @@ import {
   STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
 import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
@@ -1018,7 +1020,7 @@ describe('getBarOpacity()', () => {
 
   test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {
     const opacity = getBarOpacity(defaultBarOptions);
-    expect(opacity).toStrictEqual([{ value: 1 }]);
+    expect(opacity).toStrictEqual([getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE]);
   });
 
   test('hides stacked segments the draw-in has not reached', () => {
@@ -1036,7 +1038,11 @@ describe('getBarOpacity()', () => {
 
   test('hides unstacked bars until the draw-in grows them from zero', () => {
     const opacity = getBarOpacity({ ...defaultBarOptions, type: 'dodged', isDrawInAnimate: true });
-    expect(opacity).toStrictEqual([{ test: 'datum.bar0_drawInValue === 0', value: 0 }, { value: 1 }]);
+    expect(opacity).toStrictEqual([
+      { test: 'datum.bar0_drawInValue === 0', value: 0 },
+      getControlledHighlightedItemOpacityRule(MARK_ID),
+      DEFAULT_OPACITY_RULE,
+    ]);
   });
 });
 

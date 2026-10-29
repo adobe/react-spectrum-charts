@@ -299,8 +299,7 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
     !chartInspects.length &&
     !trendlines.length &&
     !hasOnClick &&
-    !options.accessibleNavigation &&
-    options.highlightedItem === undefined
+    !options.accessibleNavigation
   ) {
     return;
   }

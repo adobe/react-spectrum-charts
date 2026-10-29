@@ -15,7 +15,7 @@ import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
 import { spectrumColors } from '@spectrum-charts/core-s2/tokens';
 
-import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
+import { addHoveredItemOpacityRules, getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -130,9 +130,9 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string } & NumericValueRef)[] => {
-  const { highlightedItem, idKey } = scatterOptions;
-  if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
-    return [DEFAULT_OPACITY_RULE];
+  const { idKey } = scatterOptions;
+  if (!isInteractive(scatterOptions)) {
+    return [getControlledHighlightedItemOpacityRule(idKey), DEFAULT_OPACITY_RULE];
   }
   const rules: ({ test?: string } & NumericValueRef)[] = [];
   addHoveredItemOpacityRules(rules, scatterOptions);
@@ -152,8 +152,8 @@ export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string
  * @returns Mark[]
  */
 export const getScatterHoverMarks = (scatterOptions: ScatterSpecOptions): Mark[] => {
-  const { dimension, dimensionScaleType, highlightedItem, metric, name } = scatterOptions;
-  if (!isInteractive(scatterOptions) && highlightedItem === undefined) {
+  const { dimension, dimensionScaleType, metric, name } = scatterOptions;
+  if (!isInteractive(scatterOptions)) {
     return [];
   }
 

@@ -66,6 +66,7 @@ import {
 import { getHoverMarkNames } from '../marks/hoverMarkUtils.js';
 import {
   getInteractiveMarkName,
+  getSeriesFacet,
   isDrawInAnimationEnabled,
   isHoverAnimationEnabled,
   isInteractive,
@@ -378,15 +379,16 @@ const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions)
  * hover-animation engine's data sources when the line is animated.
  */
 const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
-  const { chartInspects, highlightedItem, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
-  if (isInteractive(options) || highlightedItem !== undefined) {
-    data.push(getLineHighlightedData(options), getFilteredInspectData(chartInspects));
+  const { chartInspects, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
+  data.push(getLineHighlightedData(options));
+  if (isInteractive(options)) {
+    data.push(getFilteredInspectData(chartInspects));
     if (options.hasFixedMetricAxis) {
       data.push(getInBoundsHoverData(options, `${FILTERED_TABLE}ForInspect`));
     }
-    if (showHoverLabel) {
-      data.push(getHoverLabelData(options));
-    }
+  }
+  if (showHoverLabel) {
+    data.push(getHoverLabelData(options));
   }
   if (isHoverAnimate) {
     data.push(
@@ -452,7 +454,7 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     addDrawInDoneSignal(signals);
   }
 
-  if (!isInteractive(options) && options.highlightedItem === undefined) return;
+  if (!isInteractive(options)) return;
   const { primarySeries } = options;
   // datum.datum because the voronoi mark uses datumOrder=2
   addHoveredItemSignal(
@@ -497,12 +499,9 @@ export const setScales = produce<Scale[], [LineSpecOptions]>((scales, options) =
 
 // The order that marks are added is important since it determines the draw order.
 export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) => {
-  const { highlightedItem, legendHighlightSignals, name } = options;
+  const { name } = options;
   const forecasts = options.forecasts ?? [];
   const { facetData, facetGroupby, markOptions } = getLineFacetContext(options);
-
-  const hasInteractiveHighlight = isInteractive(options) || highlightedItem !== undefined;
-  const hasHighlightState = hasInteractiveHighlight || (legendHighlightSignals?.length ?? 0) > 0;
 
   // boundary rules are drawn behind everything
   addLineForecastBoundaryMarks(marks, forecasts, options);
@@ -512,13 +511,9 @@ export const addLineMarks = produce<Mark[], [LineSpecOptions]>((marks, options) 
 
   const labelSpecOpts = getLineDirectLabelSpecOptionsList(options);
   addLineDirectLabelMarks(marks, options, labelSpecOpts);
-  if (hasHighlightState) {
-    addLineHighlightOverlayMarks(marks, options, markOptions, facetData, facetGroupby, labelSpecOpts);
-  }
+  addLineHighlightOverlayMarks(marks, options, markOptions, facetData, facetGroupby, labelSpecOpts);
   // hover marks are last so hollow points and interaction marks always render above everything
-  if (hasInteractiveHighlight) {
-    marks.push(...getLineHoverMarks(markOptions, getLineHoverDataSource(options)));
-  }
+  marks.push(...getLineHoverMarks(markOptions, getLineHoverDataSource(options), undefined, isInteractive(options)));
   // forecast labels are drawn last so they appear on top of other marks
   addLineForecastLabelMarks(marks, forecasts, options);
 });
@@ -576,13 +571,7 @@ const addLineGroupMark = (
     name: `${name}_group`,
     type: 'group',
     ...getLineGeometryClip(markOptions),
-    from: {
-      facet: {
-        name: `${name}_facet`,
-        data: facetData,
-        groupby: facetGroupby,
-      },
-    },
+    ...getSeriesFacet(`${name}_facet`, facetData, facetGroupby),
     marks: [
       ...(markOptions.gradient ? [getLineGradientMark(markOptions, `${name}_facet`)] : []),
       getLineMark(markOptions, `${name}_facet`),
