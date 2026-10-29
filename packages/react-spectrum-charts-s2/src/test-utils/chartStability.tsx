@@ -16,7 +16,7 @@ import { RenderModule, View, renderModule } from 'vega';
 import * as vegaEmbed from 'vega-embed';
 
 import { Provider } from '@react-spectrum/s2';
-import { ANIMATION_ACTIVE, DEFAULT_COLOR_SCHEME, MARK_ID } from '@spectrum-charts/core-s2/constants';
+import { ANIMATION_ACTIVE, DEFAULT_COLOR_SCHEME, FIRST_MARK_ID, MARK_ID } from '@spectrum-charts/core-s2/constants';
 
 import { render } from './spectrumRender.js';
 
@@ -191,6 +191,7 @@ const OMITTED_KEYS = new Set([
   '_bounds',
   'clip_id',
   MARK_ID,
+  FIRST_MARK_ID,
 ]);
 
 const serialize = (value: unknown, path: Set<object>): unknown => {
@@ -215,11 +216,24 @@ const serialize = (value: unknown, path: Set<object>): unknown => {
           .filter(([key]) => !OMITTED_KEYS.has(key))
           // gradient ids come from a global counter
           .filter(([key]) => !(key === 'id' && 'gradient' in value))
+          // popover group ids default to MARK_ID
+          .filter(([key]) => !key.endsWith('_selectedGroupId'))
           .map(([key, entry]) => [key, serialize(entry, path)])
       );
   path.delete(value);
+  if ('role' in value && AXIS_ITEM_ROLES.has(value.role as string)) {
+    sortByTickValue((result as { items?: unknown[] }).items);
+  }
   return result;
 };
+
+// vega appends ticks that enter on a domain change, so axis item order isn't meaningful
+const AXIS_ITEM_ROLES = new Set(['axis-tick', 'axis-label', 'axis-grid']);
+
+const sortByTickValue = (items: unknown[] | undefined) =>
+  items?.sort((a, b) => getTickValue(a) - getTickValue(b));
+
+const getTickValue = (item: unknown): number => Number((item as { datum?: { value?: unknown } }).datum?.value);
 
 /**
  * Serializes a view's scene graph with back-references and nondeterministic fields removed.

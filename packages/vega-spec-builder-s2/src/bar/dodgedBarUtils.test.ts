@@ -28,6 +28,7 @@ import {
   MARK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
   defaultBarOptions,
@@ -98,7 +99,7 @@ const defaultMark: Mark = {
       ...defaultDodgedXEncodings,
       ...defaultBarStrokeEncodings,
       cursor: undefined,
-      opacity: [DEFAULT_OPACITY_RULE],
+      opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
     },
   },
 };
@@ -170,7 +171,7 @@ const defaultDodgedStackedMark: Mark = {
     update: {
       ...defaultDodgedXEncodings,
       cursor: undefined,
-      opacity: [DEFAULT_OPACITY_RULE],
+      opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
       stroke: [
         {
           signal: `scale('colors', datum.${DEFAULT_COLOR})[indexof(domain('secondaryColor'), datum.${DEFAULT_SECONDARY_COLOR})% length(scale('colors', datum.${DEFAULT_COLOR}))]`,

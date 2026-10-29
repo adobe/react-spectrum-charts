@@ -9,11 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Spec } from 'vega';
+import { Spec, View } from 'vega';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { prepareSpec, splitSpec } from './vegaViewAdapter.js';
+import { prepareSpec, splitSpec, vegaViewAdapter } from './vegaViewAdapter.js';
 
 const spec: Spec = {
   data: [
@@ -62,12 +62,12 @@ describe('splitSpec()', () => {
     expect(b.signalValues.get('highlightedSeries')).toBe('b');
   });
 
-  test('should keep hiddenSeries in the program', () => {
+  test('should exclude hiddenSeries from the program', () => {
     const a = splitSpec(prepareSpec(spec, [], { hiddenSeries: ['a'] }));
     const b = splitSpec(prepareSpec(spec, [], { hiddenSeries: ['b'] }));
 
-    expect(a.program).not.toBe(b.program);
-    expect(a.signalValues.has('hiddenSeries')).toBe(false);
+    expect(a.program).toBe(b.program);
+    expect(b.signalValues.get('hiddenSeries')).toEqual(['b']);
   });
 
   test('should change the program when a signal value is added or removed', () => {
@@ -85,5 +85,30 @@ describe('splitSpec()', () => {
 
   test('should return an undefined table when the spec has no inline table', () => {
     expect(splitSpec({ data: [{ name: TABLE, url: 'data.json' }] }).table).toBeUndefined();
+  });
+});
+
+describe('updateView()', () => {
+  const getView = () => {
+    const view = { signal: jest.fn(), change: jest.fn(), resize: jest.fn(), runAsync: jest.fn(() => Promise.resolve()) };
+    view.resize.mockReturnValue(view);
+    return view;
+  };
+
+  test('should re-run enter encoders when signals change', () => {
+    const view = getView();
+
+    vegaViewAdapter.updateView(view as unknown as View, { signals: [['hiddenSeries', ['a']]] });
+
+    expect(view.signal).toHaveBeenCalledWith('hiddenSeries', ['a']);
+    expect(view.runAsync).toHaveBeenCalledWith('enter');
+  });
+
+  test('should not re-run enter encoders for a table-only change', () => {
+    const view = getView();
+
+    vegaViewAdapter.updateView(view as unknown as View, { signals: [], table: [{ x: 1 }] });
+
+    expect(view.runAsync).toHaveBeenCalledWith(undefined);
   });
 });

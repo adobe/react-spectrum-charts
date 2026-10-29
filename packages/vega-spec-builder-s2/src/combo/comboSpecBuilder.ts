@@ -16,6 +16,7 @@ import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addBar } from '../bar/barSpecBuilder.js';
 import { addLine } from '../line/lineSpecBuilder.js';
+import { isInteractive } from '../marks/markUtils.js';
 import {
   AxisOptions,
   BarOptions,
@@ -80,8 +81,8 @@ export const addCombo = produce<
     spec = [...marks].reduce((acc: ScSpec, mark, markIndex) => {
       let markName: string;
 
-      // Get sibling names by excluding current mark
-      const comboSiblingNames = allMarkNames.filter((_, index) => index !== markIndex);
+      // only interactive siblings have hover signals to fade against
+      const comboSiblingNames = allMarkNames.filter((_, index) => index !== markIndex && isInteractive(marks[index]));
 
       switch (mark.markType) {
         case 'bar':

@@ -31,9 +31,6 @@ export interface VegaEnvironment {
   tooltip: TooltipHandler;
 }
 
-/** Signals that change legend symbol shapes, which Vega's legend layout does not re-measure after a signal update. */
-export const PROGRAM_SIGNALS: ReadonlySet<string> = new Set(['hiddenSeries']);
-
 /**
  * Copies a spec with the table rows and signal values it should be embedded with.
  * @param spec - built spec, not mutated
@@ -76,7 +73,7 @@ export const splitSpec = (spec: Spec): SplitSpec => {
       return { ...data, values: null };
     }),
     signals: spec.signals?.map((signal) => {
-      if (!('value' in signal) || PROGRAM_SIGNALS.has(signal.name)) {
+      if (!('value' in signal)) {
         return signal;
       }
       signalValues.set(signal.name, signal.value);
@@ -178,9 +175,10 @@ export const vegaViewAdapter: ViewAdapter<Spec, View, VegaEnvironment> = {
       resizeView(view, size.width, size.height);
       return;
     }
-    view
-      .resize()
-      .runAsync()
+    // signals can change scale domains, and many marks encode positions only on enter
+    const resized = view.resize() as View & { runAsync(encode?: string): Promise<View> };
+    resized
+      .runAsync(signals.length ? 'enter' : undefined)
       .catch((error: unknown) => console.error('Failed to update chart:', error));
   },
   destroyView: (view) => view.finalize(),

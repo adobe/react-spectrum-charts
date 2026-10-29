@@ -110,16 +110,11 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     interactiveMarkName,
     isHighlightedByGroup,
     isMetricRange,
-    highlightedItem,
     name,
   } = areaOptions;
   // if metric ranges only display when hovering, we don't need to include other hover rules for this specific area
   if (isMetricRange && displayOnHover) {
     const rules: ProductionRule<NumericValueRef> = [
-      {
-        test: `isValid(${interactiveMarkName}_${HOVERED_ITEM})`,
-        signal: `${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
       {
         test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
         signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
@@ -136,8 +131,19 @@ export function getAreaOpacity(areaOptions: AreaMarkOptions): ProductionRule<Num
     return rules;
   }
 
-  if (!isInteractive(areaOptions) && !highlightedItem) {
-    return [DEFAULT_OPACITY_RULE];
+  if (!isInteractive(areaOptions)) {
+    if (isMetricRange) return [DEFAULT_OPACITY_RULE];
+    return [
+      {
+        test: `length(data('${name}_highlightedData'))`,
+        signal: `indexof(pluck(data('${name}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
+      },
+      {
+        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+      },
+      DEFAULT_OPACITY_RULE,
+    ];
   }
 
   const opacityRules: ProductionRule<NumericValueRef> = [];

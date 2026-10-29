@@ -23,6 +23,7 @@ import {
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/core-s2/tokens';
 
 import { NumberFormat } from '../types/index.js';
+import { legendSymbolShape } from './legendSymbolShape.js';
 
 export interface LabelDatum {
   index: number;
@@ -50,6 +51,7 @@ export const getExpressionFunctions = (
     getLabelWidth,
     hoverFraction,
     isDonutLabelVisible,
+    legendSymbolShape,
     truncateText,
   };
 };
@@ -450,5 +452,6 @@ export const expressionFunctions = {
   getLabelWidth,
   hoverFraction,
   isDonutLabelVisible,
+  legendSymbolShape,
   truncateText,
 };

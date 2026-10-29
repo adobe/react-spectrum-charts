@@ -71,7 +71,17 @@ describe('getAreaMark', () => {
           fillOpacity: {
             value: 0.5,
           },
-          opacity: [DEFAULT_OPACITY_RULE],
+          opacity: [
+            {
+              test: "length(data('area0_highlightedData'))",
+              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+            },
+            {
+              test: 'isValid(controlledHighlightedSeries)',
+              signal: 'controlledHighlightedSeries === datum.rscSeriesId ? 1 : 0.2',
+            },
+            DEFAULT_OPACITY_RULE,
+          ],
         },
       },
     });
@@ -135,7 +145,17 @@ describe('getAreaMark', () => {
           fillOpacity: {
             value: 0.5,
           },
-          opacity: [DEFAULT_OPACITY_RULE],
+          opacity: [
+            {
+              test: "length(data('area0_highlightedData'))",
+              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+            },
+            {
+              test: 'isValid(controlledHighlightedSeries)',
+              signal: 'controlledHighlightedSeries === datum.rscSeriesId ? 1 : 0.2',
+            },
+            DEFAULT_OPACITY_RULE,
+          ],
         },
       },
     });
@@ -191,7 +211,17 @@ describe('getAreaMark', () => {
           fillOpacity: {
             value: 0.5,
           },
-          opacity: [DEFAULT_OPACITY_RULE],
+          opacity: [
+            {
+              test: "length(data('area0_highlightedData'))",
+              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+            },
+            {
+              test: 'isValid(controlledHighlightedSeries)',
+              signal: 'controlledHighlightedSeries === datum.rscSeriesId ? 1 : 0.2',
+            },
+            DEFAULT_OPACITY_RULE,
+          ],
         },
       },
     });
@@ -246,7 +276,17 @@ describe('getAreaMark', () => {
           fillOpacity: {
             value: 0.5,
           },
-          opacity: [DEFAULT_OPACITY_RULE],
+          opacity: [
+            {
+              test: "length(data('area0_highlightedData'))",
+              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+            },
+            {
+              test: 'isValid(controlledHighlightedSeries)',
+              signal: 'controlledHighlightedSeries === datum.rscSeriesId ? 1 : 0.2',
+            },
+            DEFAULT_OPACITY_RULE,
+          ],
         },
       },
     });

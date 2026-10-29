@@ -19,6 +19,10 @@ import { Color, LineType, LineWidth, Opacity, Supreme, Symbols } from './LegendS
 
 const colors = spectrum2Colors.light;
 
+// legend symbols end in move-only padding that matches their bounds to the hidden-series icon
+const getDrawnPath = (symbol: HTMLElement): string | undefined =>
+  symbol.getAttribute('d')?.replace(/(M[^A-Za-z]*)+$/, '');
+
 test('Symbols renders properly', async () => {
   render(<Symbols {...Symbols.args} />);
   const view = await screen.findByRole('graphics-document');
@@ -71,11 +75,11 @@ test('Symbols renders correctly', async () => {
 
   const symbols = getAllLegendSymbols(chart);
   // Square SVG path
-  expect(symbols[0].getAttribute('d')).toEqual('M-7.906,-7.906h15.811v15.811h-15.811Z');
+  expect(getDrawnPath(symbols[0])).toEqual('M-7.906,-7.906L7.906,-7.906L7.906,7.906L-7.906,7.906Z');
   // Triangle SVG path
-  expect(symbols[1].getAttribute('d')).toEqual('M0,-9.129L-7.906,4.564L7.906,4.564Z');
+  expect(getDrawnPath(symbols[1])).toEqual('M0,-9.129L-7.906,4.564L7.906,4.564Z');
   // Custom rounded square SVG path
-  expect(symbols[2].getAttribute('d')).toEqual(
+  expect(getDrawnPath(symbols[2])).toEqual(
     'M-4.348,-7.906L4.348,-7.906C6.313,-7.906,7.906,-6.313,7.906,-4.348L7.906,4.348C7.906,6.313,6.313,7.906,4.348,7.906L-4.348,7.906C-6.313,7.906,-7.906,6.313,-7.906,4.348L-7.906,-4.348C-7.906,-6.313,-6.313,-7.906,-4.348,-7.906Z'
   );
 });
@@ -97,11 +101,11 @@ test('Supreme renders correctly', async () => {
   expect(symbols[2].getAttribute('fill-opacity')).toEqual('0.5');
 
   // Square SVG path
-  expect(symbols[0].getAttribute('d')).toEqual('M-7.906,-7.906h15.811v15.811h-15.811Z');
+  expect(getDrawnPath(symbols[0])).toEqual('M-7.906,-7.906L7.906,-7.906L7.906,7.906L-7.906,7.906Z');
   // Triangle SVG path
-  expect(symbols[1].getAttribute('d')).toEqual('M0,-9.129L-7.906,4.564L7.906,4.564Z');
+  expect(getDrawnPath(symbols[1])).toEqual('M0,-9.129L-7.906,4.564L7.906,4.564Z');
   // Custom rounded square SVG path
-  expect(symbols[2].getAttribute('d')).toEqual(
+  expect(getDrawnPath(symbols[2])).toEqual(
     'M-4.348,-7.906L4.348,-7.906C6.313,-7.906,7.906,-6.313,7.906,-4.348L7.906,4.348C7.906,6.313,6.313,7.906,4.348,7.906L-4.348,7.906C-6.313,7.906,-7.906,6.313,-7.906,4.348L-7.906,-4.348C-7.906,-6.313,-6.313,-7.906,-4.348,-7.906Z'
   );
 });

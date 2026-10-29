@@ -39,6 +39,27 @@ import {
 } from './lineMarkUtils.js';
 import { defaultLineMarkOptions } from './lineTestUtils.js';
 
+const controlledOpacityRules = [
+  {
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+  },
+  {
+    test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+    signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+  },
+];
+const controlledStrokeWidthRules = [
+  {
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+  },
+  {
+    test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+    signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+  },
+];
+
 describe('getLineMark()', () => {
   test('should return line mark', () => {
     const lineMark = getLineMark(defaultLineMarkOptions, 'line0_facet');
@@ -58,8 +79,8 @@ describe('getLineMark()', () => {
         },
         update: {
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-          opacity: [DEFAULT_OPACITY_RULE],
-          strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+          opacity: [...controlledOpacityRules, DEFAULT_OPACITY_RULE],
+          strokeWidth: [...controlledStrokeWidthRules, DEFAULT_STROKE_WIDTH_RULE],
         },
       },
     });
@@ -75,7 +96,7 @@ describe('getLineMark()', () => {
 
   test('always uses the chart size signal for strokeWidth regardless of lineWidth', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, lineWidth: undefined }, 'line0_facet');
-    expect(lineMark.encode?.update?.strokeWidth).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+    expect(lineMark.encode?.update?.strokeWidth).toEqual([...controlledStrokeWidthRules, DEFAULT_STROKE_WIDTH_RULE]);
   });
 
   test('adds metric range opacity rules if isMetricRange and displayOnHover', () => {
@@ -88,7 +109,7 @@ describe('getLineMark()', () => {
 
   test('does not add metric range opacity rules if displayOnHover is false and isMetricRange', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, displayOnHover: false }, 'line0_facet');
-    expect(lineMark.encode?.update?.opacity).toEqual([{ value: 1 }]);
+    expect(lineMark.encode?.update?.opacity).toEqual([...controlledOpacityRules, DEFAULT_OPACITY_RULE]);
   });
 
   test('uses round strokeCap by default', () => {
@@ -217,9 +238,9 @@ describe('getLineHoverMarks()', () => {
 });
 
 describe('getLineOpacity()', () => {
-  test('should return a basic opacity rule when using default line options', () => {
+  test('should return the controlled highlight and default opacity rules when using default line options', () => {
     const opacityRule = getLineOpacity(defaultLineMarkOptions);
-    expect(opacityRule).toEqual([{ value: 1 }]);
+    expect(opacityRule).toEqual([...controlledOpacityRules, DEFAULT_OPACITY_RULE]);
   });
 
   test('should include hover rules if line has an inspect', () => {
@@ -233,14 +254,7 @@ describe('getLineOpacity()', () => {
         test: `isValid(line0_${HOVERED_ITEM})`,
         signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
+      ...controlledOpacityRules,
       { value: 1 },
     ]);
   });
@@ -296,14 +310,7 @@ describe('getLineOpacity()', () => {
         test: 'isValid(line0_hoveredItem)',
         signal: `line0_hoveredItem.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
       },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
-      },
+      ...controlledOpacityRules,
       { test: `isValid(${SELECTED_SERIES})`, signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}` },
       { value: 1 },
     ]);
@@ -364,14 +371,17 @@ describe('getLineOpacity()', () => {
 });
 
 describe('getLineStrokeWidth()', () => {
-  test('should return the default stroke width rule when no interactivity', () => {
-    expect(getLineStrokeWidth(defaultLineMarkOptions)).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+  test('should return only the controlled highlight and default stroke width rules when no interactivity', () => {
+    expect(getLineStrokeWidth(defaultLineMarkOptions)).toEqual([
+      ...controlledStrokeWidthRules,
+      DEFAULT_STROKE_WIDTH_RULE,
+    ]);
   });
 
-  test('should return the default stroke width rule when displayOnHover is true', () => {
+  test('should return only the controlled highlight and default stroke width rules when displayOnHover is true', () => {
     expect(
       getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', displayOnHover: true })
-    ).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
+    ).toEqual([...controlledStrokeWidthRules, DEFAULT_STROKE_WIDTH_RULE]);
   });
 
   test('should include hover rules if line has an inspect', () => {
@@ -381,14 +391,7 @@ describe('getLineStrokeWidth()', () => {
         test: `isValid(line0_${HOVERED_ITEM})`,
         signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
       },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
+      ...controlledStrokeWidthRules,
       DEFAULT_STROKE_WIDTH_RULE,
     ]);
   });
@@ -405,14 +408,7 @@ describe('getLineStrokeWidth()', () => {
         test: `isValid(line0_${HOVERED_ITEM})`,
         signal: `line0_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
       },
-      {
-        test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
-        signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
-      {
-        test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
-        signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
-      },
+      ...controlledStrokeWidthRules,
       {
         test: `isValid(${SELECTED_SERIES})`,
         signal: `${SELECTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,

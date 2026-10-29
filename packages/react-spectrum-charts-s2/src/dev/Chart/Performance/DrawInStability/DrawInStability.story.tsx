@@ -84,6 +84,8 @@ interface RenderOptions {
   /** ChartInspect and ChartPopover children for a mark plotting the given metric */
   dialogs: (metric: string) => ReactElement[];
   legendHighlight: boolean;
+  /** toggles a series in the chart's controlled hiddenSeries */
+  onLegendClick: (series: string) => void;
 }
 
 interface VariantConfig {
@@ -108,13 +110,13 @@ const stackedBar = (extra: { orientation?: 'horizontal'; type?: 'dodged' } = {})
   dimension: 'channel',
   metric: 'signups',
   series: 'device',
-  render: ({ dialogs, legendHighlight }: RenderOptions) => [
+  render: ({ dialogs, legendHighlight, onLegendClick }: RenderOptions) => [
     <Axis key="x" position={extra.orientation ? 'left' : 'bottom'} baseline />,
     <Axis key="y" position={extra.orientation ? 'bottom' : 'left'} grid />,
     <Bar key="bar" dimension="channel" metric="signups" color="device" order="order" {...extra}>
       {dialogs('signups')}
     </Bar>,
-    <Legend key="legend" highlight={legendHighlight} isToggleable />,
+    <Legend key="legend" highlight={legendHighlight} onClick={onLegendClick} />,
   ],
 });
 
@@ -151,13 +153,13 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'datetime',
     metric: 'visits',
     series: 'channel',
-    render: ({ dialogs, legendHighlight }) => [
+    render: ({ dialogs, legendHighlight, onLegendClick }) => [
       <Axis key="y" position="left" grid />,
       <Axis key="x" position="bottom" labelFormat="time" baseline ticks />,
       <Line key="line" dimension="datetime" metric="visits" color="channel">
         {dialogs('visits')}
       </Line>,
-      <Legend key="legend" highlight={legendHighlight} isToggleable />,
+      <Legend key="legend" highlight={legendHighlight} onClick={onLegendClick} />,
     ],
   },
   lineStaticPoints: {
@@ -165,13 +167,13 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'datetime',
     metric: 'visits',
     series: 'channel',
-    render: ({ dialogs, legendHighlight }) => [
+    render: ({ dialogs, legendHighlight, onLegendClick }) => [
       <Axis key="y" position="left" grid />,
       <Axis key="x" position="bottom" labelFormat="time" baseline ticks />,
       <Line key="line" dimension="datetime" metric="visits" color="channel" staticPoint="hasEvent">
         {dialogs('visits')}
       </Line>,
-      <Legend key="legend" highlight={legendHighlight} isToggleable />,
+      <Legend key="legend" highlight={legendHighlight} onClick={onLegendClick} />,
     ],
   },
   donutSummary: {
@@ -179,11 +181,11 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'browser',
     metric: 'count',
     series: 'browser',
-    render: ({ dialogs, legendHighlight }) => [
+    render: ({ dialogs, legendHighlight, onLegendClick }) => [
       <Donut key="donut" color="browser" metric="count">
         {[<DonutSummary key="summary" label="Visitors" />, ...dialogs('count')]}
       </Donut>,
-      <Legend key="legend" highlight={legendHighlight} isToggleable />,
+      <Legend key="legend" highlight={legendHighlight} onClick={onLegendClick} />,
     ],
   },
   donutSegmentLabels: {
@@ -191,11 +193,11 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'browser',
     metric: 'count',
     series: 'browser',
-    render: ({ dialogs, legendHighlight }) => [
+    render: ({ dialogs, legendHighlight, onLegendClick }) => [
       <Donut key="donut" color="browser" metric="count">
         {[<SegmentLabel key="labels" percent />, ...dialogs('count')]}
       </Donut>,
-      <Legend key="legend" highlight={legendHighlight} isToggleable />,
+      <Legend key="legend" highlight={legendHighlight} onClick={onLegendClick} />,
     ],
   },
   combo: {
@@ -407,6 +409,7 @@ interface DialogOptions {
   highlightBy: HighlightBy;
   popover: boolean;
   legendHighlight: boolean;
+  onLegendClick: (series: string) => void;
 }
 
 /**
@@ -415,7 +418,10 @@ interface DialogOptions {
  * @param options - dialog options
  * @returns chart children
  */
-const renderVariant = (config: VariantConfig, { inspect, highlightBy, popover, legendHighlight }: DialogOptions) =>
+const renderVariant = (
+  config: VariantConfig,
+  { inspect, highlightBy, popover, legendHighlight, onLegendClick }: DialogOptions
+) =>
   config.render({
     dialogs: (metric) => {
       const content = getDialogContent(config.dimension, metric, config.series);
@@ -431,6 +437,7 @@ const renderVariant = (config: VariantConfig, { inspect, highlightBy, popover, l
       ];
     },
     legendHighlight,
+    onLegendClick,
   });
 
 /**
@@ -452,6 +459,15 @@ const slowDrawIn = (view: View, slowdown: number): number => {
   const timer = readSignal(view, ANIMATION_TIMER) ?? 0;
   return Math.min(1, Math.max(0, (timer - restored) / (duration * slowdown)));
 };
+
+/**
+ * Adds a value to a list, or removes it if present.
+ * @param values - current values
+ * @param value - value to toggle
+ * @returns new values
+ */
+const toggleValue = (values: string[], value: string): string[] =>
+  values.includes(value) ? values.filter((current) => current !== value) : [...values, value];
 
 /**
  * Lists the labels of the active story toggles.
@@ -485,7 +501,7 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
   const [german, setGerman] = useState(false);
   const [padding, setPadding] = useState(0);
   const [highlightIndex, setHighlightIndex] = useState(-1);
-  const [hideFirst, setHideFirst] = useState(false);
+  const [hiddenSeries, setHiddenSeries] = useState<string[]>([]);
   const [drawIn, setDrawIn] = useState(true);
   const [animations, setAnimations] = useState(true);
   const store = useMemo(createLogStore, []);
@@ -548,7 +564,8 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
       act('cycle highlightedSeries', () =>
         setHighlightIndex((current) => (current + 1 < seriesValues.length ? current + 1 : -1))
       ),
-    toggleHidden: () => act('toggle hiddenSeries', () => setHideFirst((current) => !current)),
+    toggleHidden: () =>
+      act('toggle hiddenSeries', () => setHiddenSeries((current) => toggleValue(current, seriesValues[0]))),
     toggleDrawIn: () => act('toggle drawIn type', () => setDrawIn((current) => !current)),
     toggleAnimations: () => act('toggle animations', () => setAnimations((current) => !current)),
     resize: () => act('resize', () => setWidth((current) => (current === 640 ? 480 : 640))),
@@ -604,10 +621,11 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
     });
   };
 
-  const dialogOptions: DialogOptions = { inspect, highlightBy, popover, legendHighlight };
+  const onLegendClick = (series: string) =>
+    act(`legend click ${series}`, () => setHiddenSeries((current) => toggleValue(current, series)));
+  const dialogOptions: DialogOptions = { inspect, highlightBy, popover, legendHighlight, onLegendClick };
 
   const highlightedSeries = highlightIndex >= 0 ? seriesValues[highlightIndex] : undefined;
-  const hiddenSeries = hideFirst && seriesValues.length ? [seriesValues[0]] : undefined;
   const state = describeState({
     dark,
     canvas,
@@ -615,7 +633,7 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
     'padding 24': padding > 0,
     title: Boolean(title),
     [`highlight ${highlightedSeries}`]: Boolean(highlightedSeries),
-    [`hide ${hiddenSeries?.[0]}`]: Boolean(hiddenSeries),
+    [`hide ${hiddenSeries.join(', ')}`]: hiddenSeries.length > 0,
     'drawIn off': !drawIn,
     'animations off': !animations,
     [`inspect by ${highlightBy}`]: inspect,

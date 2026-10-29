@@ -35,7 +35,7 @@ import {
   isHighlightedByGroup,
 } from '../chartInspect/chartInspectUtils.js';
 import { addTimeTransform, getFilteredTableData, getTableData, getTransformSort } from '../data/dataUtils.js';
-import { getInteractiveMarkName, hasPopover, hasInspect, isInteractive } from '../marks/markUtils.js';
+import { getInteractiveMarkName, getSeriesFacet, hasInspect, hasPopover, isInteractive } from '../marks/markUtils.js';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import {
   addHoveredItemSignal,
@@ -121,7 +121,7 @@ export const addArea = produce<
 );
 
 export const addData = produce<Data[], [AreaSpecOptions]>((data, areaOptions) => {
-  const { color, dimension, highlightedItem, metric, metricEnd, metricStart, name, order, scaleType } = areaOptions;
+  const { color, dimension, metric, metricEnd, metricStart, name, order, scaleType } = areaOptions;
   if (scaleType === 'time') {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
@@ -142,24 +142,27 @@ export const addData = produce<Data[], [AreaSpecOptions]>((data, areaOptions) =>
     ];
   }
 
-  if (isInteractive(areaOptions) || highlightedItem !== undefined) {
-    const areaHasPopover = hasPopover(areaOptions);
-    const areaHasInspect = hasInspect(areaOptions);
-    data.push(
-      getAreaHighlightedData(name, areaOptions.idKey, areaHasInspect, areaHasPopover, isHighlightedByGroup(areaOptions))
-    );
-    if (areaHasPopover) {
-      data.push({
-        name: `${name}_selectedDataSeries`,
-        source: FILTERED_TABLE,
-        transform: [
-          {
-            type: 'filter',
-            expr: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${color}`,
-          },
-        ],
-      });
-    }
+  const areaHasPopover = hasPopover(areaOptions);
+  data.push(
+    getAreaHighlightedData(
+      name,
+      areaOptions.idKey,
+      hasInspect(areaOptions),
+      areaHasPopover,
+      isHighlightedByGroup(areaOptions)
+    )
+  );
+  if (areaHasPopover) {
+    data.push({
+      name: `${name}_selectedDataSeries`,
+      source: FILTERED_TABLE,
+      transform: [
+        {
+          type: 'filter',
+          expr: `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${color}`,
+        },
+      ],
+    });
   }
   addInspectData(data, areaOptions, false);
 });
@@ -197,11 +200,9 @@ export const getAreaHighlightedData = (
 
 export const addSignals = produce<Signal[], [AreaSpecOptions]>((signals, areaOptions) => {
   const { chartInspects, name } = areaOptions;
-  if (!isInteractive(areaOptions) && areaOptions.highlightedItem === undefined) return;
+  if (!isInteractive(areaOptions)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
-  if (areaOptions.highlightedItem) {
-    addHighlightedItemEvents(signals, name);
-  }
+  addHighlightedItemEvents(signals, name);
   if (isHighlightedByGroup(areaOptions)) {
     signals.push(getControlledHoveredGroupSignal(name));
   } else {
@@ -266,13 +267,7 @@ export const addAreaMarks = produce<Mark[], [AreaSpecOptions]>((marks, areaOptio
     {
       name: `${name}_group`,
       type: 'group',
-      from: {
-        facet: {
-          name: `${name}_facet`,
-          data: FILTERED_TABLE,
-          groupby: color,
-        },
-      },
+      ...getSeriesFacet(`${name}_facet`, FILTERED_TABLE, color),
       marks: [
         getAreaMark({
           chartPopovers,
@@ -336,8 +331,7 @@ const getAnchorPointMark = (areaOptions: AreaSpecOptions): Mark[] => {
  * returns a circle symbol and a rule on the hovered/selected point
  */
 const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
-  const { name, dimension, highlightedItem, scaleType, color } = areaOptions;
-  if (!isInteractive(areaOptions) && highlightedItem === undefined) return [];
+  const { name, dimension, scaleType, color } = areaOptions;
   const highlightMarks: Mark[] = [
     {
       name: `${name}_point`,
@@ -356,24 +350,25 @@ const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
       },
     },
   ];
-  if (isHighlightedByDimension(areaOptions) || highlightedItem) {
-    highlightMarks.unshift({
-      name: `${name}_rule`,
-      type: 'rule',
-      from: { data: `${name}_highlightedData` },
-      interactive: false,
-      encode: {
-        enter: {
-          y: { value: 0 },
-          y2: { signal: 'height' },
-          strokeWidth: { value: 1 },
-        },
-        update: {
-          x: getX(scaleType, dimension),
-        },
+  const highlightsByDimension = isHighlightedByDimension(areaOptions);
+  highlightMarks.unshift({
+    name: `${name}_rule`,
+    type: 'rule',
+    from: { data: `${name}_highlightedData` },
+    interactive: false,
+    encode: {
+      enter: {
+        y: { value: 0 },
+        y2: { signal: 'height' },
+        strokeWidth: { value: 1 },
       },
-    });
-  }
+      update: {
+        x: getX(scaleType, dimension),
+        // without dimension highlighting, the rule only marks controlled highlights, not hovered items
+        ...(highlightsByDimension ? {} : { opacity: { signal: `isValid(${CONTROLLED_HIGHLIGHTED_ITEM}) ? 1 : 0` } }),
+      },
+    },
+  });
   return highlightMarks;
 };
 

@@ -50,6 +50,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
+import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { baseData, initializeSpec } from '../specUtils.js';
 import { ChartInspectOptions } from '../types/dialogs/chartInspectSpec.types.js';
@@ -216,7 +217,7 @@ const defaultStackedMark: Mark = {
     update: {
       ...defaultBarStrokeEncodings,
       cursor: undefined,
-      opacity: [DEFAULT_OPACITY_RULE],
+      opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
       width: { scale: 'xBand', band: 1 },
       x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
     },
@@ -298,14 +299,13 @@ describe('barSpecBuilder', () => {
         expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: DEFAULT_CATEGORICAL_DIMENSION }]);
       });
 
-      test('should not attach a dimension for a bar that is only interactive via highlightedItem', () => {
-        // highlightedItem alone isn't "interactive" per isInteractive()
+      test('should not add an interactive mark for a bar with only a controlled highlightedItem', () => {
         const usermeta = addBar(startingSpec, {
           idKey: MARK_ID,
           markType: 'bar',
           highlightedItem: 'someValue',
         }).usermeta;
-        expect(usermeta.interactiveMarks).toStrictEqual([{ name: 'bar0', dimension: undefined }]);
+        expect(usermeta.interactiveMarks).toStrictEqual([]);
       });
 
       test('should add a divergingBarMarks entry for a single-series diverging bar', () => {
@@ -596,9 +596,9 @@ describe('barSpecBuilder', () => {
   });
 
   describe('addSignals()', () => {
-    test('should add the hovered item signal for a controlled highlightedItem on a non-interactive bar', () => {
+    test('should not add the hovered item signal for a controlled highlightedItem on a non-interactive bar', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, highlightedItem: 1 });
-      expect(signals.find((signal) => signal.name === 'bar0_hoveredItem')).toBeDefined();
+      expect(signals.find((signal) => signal.name === 'bar0_hoveredItem')).toBeUndefined();
     });
     test('should add padding signal', () => {
       const signals = addSignals(defaultSignals, defaultBarOptions);
