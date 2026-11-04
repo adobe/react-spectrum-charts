@@ -16,13 +16,21 @@ import { BACKGROUND_COLOR } from '@spectrum-charts/core-s2/constants';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { LineForecastOptions, LineForecastSpecOptions, LineSpecOptions } from '../types/index.js';
 
-export const getForecastAlternateFlagTransform = (name: string, dimension: string, start: LineForecastOptions['start']): FormulaTransform => ({
+export const getForecastAlternateFlagTransform = (
+  name: string,
+  dimension: string,
+  start: LineForecastOptions['start']
+): FormulaTransform => ({
   type: 'formula',
   as: `${name}_alternateFlag`,
   expr: `datum['${dimension}'] >= ${JSON.stringify(start)}`,
 });
 
-export const getForecastEffectiveValueTransform = (name: string, metric: string, forecastMetric: string): FormulaTransform => ({
+export const getForecastEffectiveValueTransform = (
+  name: string,
+  metric: string,
+  forecastMetric: string
+): FormulaTransform => ({
   type: 'formula',
   as: `${name}_effectiveValue`,
   expr: `isValid(datum['${metric}']) ? datum['${metric}'] : datum['${forecastMetric}']`,
@@ -70,11 +78,11 @@ export const getLineForecastBoundaryMark = (specOpts: LineForecastSpecOptions): 
     encode: {
       enter: {
         y: { value: 0 },
-        y2: { signal: 'height' },
         stroke: { value: '#909090' },
         strokeWidth: { value: 1 },
       },
       update: {
+        y2: { signal: 'height' },
         x: { signal: startSignal },
       },
     },
@@ -86,10 +94,7 @@ export const getLineForecastLabelMarks = (specOpts: LineForecastSpecOptions): Ma
   const xScaleName = getScaleName('x', scaleType);
   const startSignal = `scale('${xScaleName}', ${JSON.stringify(start)})`;
   const xSignal = `${startSignal} + 8`;
-  const opacityRules = [
-    { test: `width - ${startSignal} < 80`, value: 0 },
-    { value: 1 },
-  ];
+  const opacityRules = [{ test: `width - ${startSignal} < 80`, value: 0 }, { value: 1 }];
   const baseEnter = {
     text: { value: label },
     fontSize: { value: 14 },
@@ -104,11 +109,11 @@ export const getLineForecastLabelMarks = (specOpts: LineForecastSpecOptions): Ma
       encode: {
         enter: {
           ...baseEnter,
-          stroke: { signal: BACKGROUND_COLOR },
           strokeWidth: { value: 2 },
           fill: { value: 'transparent' },
         },
         update: {
+          stroke: { signal: BACKGROUND_COLOR },
           x: { signal: xSignal },
           y: { value: 4 },
           opacity: opacityRules,

@@ -99,13 +99,13 @@ const basicMetricRangeMarks = [
     interactive: false,
     encode: {
       enter: {
-        y: [{ scale: 'yLinear', field: 'metric' }],
-        stroke: { scale: COLOR_SCALE, field: 'series' },
         strokeCap: { value: 'round' },
-        strokeDash: { value: [3, 4] },
-        strokeOpacity: DEFAULT_OPACITY_RULE,
       },
       update: {
+        y: [{ scale: 'yLinear', field: 'metric' }],
+        stroke: { scale: COLOR_SCALE, field: 'series' },
+        strokeDash: { value: [3, 4] },
+        strokeOpacity: DEFAULT_OPACITY_RULE,
         x: {
           scale: 'xTime',
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -144,14 +144,12 @@ const basicMetricRangeMarks = [
     },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         tooltip: undefined,
         y: { scale: 'yLinear', field: 'metricStart' },
         y2: { scale: 'yLinear', field: 'metricEnd' },
         fill: { scale: COLOR_SCALE, field: 'series' },
         defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
-      },
-      update: {
         cursor: undefined,
         x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
         fillOpacity: { value: 0.2 },

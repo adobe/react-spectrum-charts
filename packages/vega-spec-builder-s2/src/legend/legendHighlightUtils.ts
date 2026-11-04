@@ -9,7 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AggregateTransform, Data, FormulaTransform, GroupMark, Mark, NumericValueRef, ProductionRule } from 'vega';
+import {
+  AggregateTransform,
+  Data,
+  EncodeEntry,
+  FormulaTransform,
+  GroupMark,
+  Mark,
+  NumericValueRef,
+  ProductionRule,
+} from 'vega';
 
 import {
   CHART_SIZE_HOVER_STROKE_WIDTH,
@@ -17,8 +26,8 @@ import {
   CONTROLLED_HIGHLIGHTED_SERIES,
   FADE_FACTOR,
   GROUP_ID,
-  HOVER_FRACTION_DATA,
   HOVERED_SERIES,
+  HOVER_FRACTION_DATA,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
@@ -89,7 +98,7 @@ const addGroupedFractionData = (
     key: SERIES_ID,
     fields: [SERIES_ID],
     values: [groupIdField],
-    as: [groupIdField]
+    as: [groupIdField],
   });
 
   data.push({
@@ -101,7 +110,7 @@ const addGroupedFractionData = (
         groupby: [groupIdField],
         fields: ['fraction'],
         ops: ['max'],
-        as: ['fraction']
+        as: ['fraction'],
       },
     ],
   });
@@ -182,8 +191,10 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
     if (opacity !== undefined) {
       // skip marks that explicitly manage their own visibility — their final fallback is opacity 0
       // (e.g. overlay lines and fg label marks that should only appear for the highlighted series)
+      // or that read it from data (e.g. trendline annotation badges hidden with their overlapping text)
       const lastRule = Array.isArray(opacity) ? opacity.at(-1) : opacity;
-      if ((lastRule as { value?: number })?.value === 0) return;
+      if ((lastRule as { value?: number })?.value === 0 || (lastRule as { field?: unknown })?.field !== undefined)
+        return;
 
       update.opacity = insertRule(opacity, getHighlightOpacityRule(legendName, controlled, keys));
     }
@@ -260,14 +271,11 @@ export const getHighlightOpacityRule = (
  * @returns boolean
  */
 export const markUsesSeriesColorScale = (mark: Mark): boolean => {
-  const enter = mark.encode?.enter;
-  if (!enter) return false;
+  const encodeSets = [mark.encode?.enter, mark.encode?.update].filter((set): set is EncodeEntry => set !== undefined);
 
-  const { fill, fillOpacity, stroke, strokeDash, strokeOpacity } = enter;
-  const facetEncodings = [fill, fillOpacity, stroke, strokeDash, strokeOpacity];
-
-  for (const facet of facetEncodings) {
-    if (encodingUsesScale(facet)) {
+  for (const { fill, fillOpacity, stroke, strokeDash, strokeOpacity } of encodeSets) {
+    const facetEncodings = [fill, fillOpacity, stroke, strokeDash, strokeOpacity];
+    if (facetEncodings.some((facet) => encodingUsesScale(facet))) {
       return true;
     }
   }

@@ -45,6 +45,7 @@ import {
 } from '../chartInspect/chartInspectUtils.js';
 import { addPopoverData, getPopovers } from '../chartPopover/chartPopoverUtils.js';
 import { addTimeTransform, getTableData, getTransformSort } from '../data/dataUtils.js';
+import { addRowKeyTransforms } from '../data/rowKeyUtils.js';
 import {
   addDrawInClockSignals,
   addDrawInDoneSignal,
@@ -95,6 +96,7 @@ import {
   getBarAnimIdField,
   getBarHoverRules,
   getBarPadding,
+  getBarRowKeyOptions,
   getBaseScaleName,
   getDimensionSelectionRing,
   getOrientationProperties,
@@ -323,6 +325,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
+  addRowKeyTransforms(data, getBarRowKeyOptions(options));
 
   const index = data.findIndex((d) => d.name === FILTERED_TABLE);
   data[index].transform = data[index].transform ?? [];

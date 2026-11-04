@@ -43,7 +43,7 @@ describe('getAreaMark', () => {
       },
       interactive: false,
       encode: {
-        enter: {
+        update: {
           y: {
             scale: 'yLinear',
             field: 'metricStart',
@@ -61,8 +61,6 @@ describe('getAreaMark', () => {
           defined: {
             signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])',
           },
-        },
-        update: {
           cursor: undefined,
           x: {
             scale: 'xLinear',
@@ -74,7 +72,8 @@ describe('getAreaMark', () => {
           opacity: [
             {
               test: "length(data('area0_highlightedData'))",
-              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+              signal:
+                "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
             },
             {
               test: 'isValid(controlledHighlightedSeries)',
@@ -109,7 +108,7 @@ describe('getAreaMark', () => {
       },
       interactive: false,
       encode: {
-        enter: {
+        update: {
           tooltip: undefined,
           y: {
             scale: 'yLinear',
@@ -135,8 +134,6 @@ describe('getAreaMark', () => {
           strokeJoin: {
             value: 'round',
           },
-        },
-        update: {
           cursor: undefined,
           x: {
             scale: 'xLinear',
@@ -148,7 +145,8 @@ describe('getAreaMark', () => {
           opacity: [
             {
               test: "length(data('area0_highlightedData'))",
-              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+              signal:
+                "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
             },
             {
               test: 'isValid(controlledHighlightedSeries)',
@@ -183,7 +181,7 @@ describe('getAreaMark', () => {
       },
       interactive: false,
       encode: {
-        enter: {
+        update: {
           tooltip: undefined,
 
           y: {
@@ -201,8 +199,6 @@ describe('getAreaMark', () => {
           defined: {
             signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])',
           },
-        },
-        update: {
           cursor: undefined,
           x: {
             scale: 'xTime',
@@ -214,7 +210,8 @@ describe('getAreaMark', () => {
           opacity: [
             {
               test: "length(data('area0_highlightedData'))",
-              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+              signal:
+                "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
             },
             {
               test: 'isValid(controlledHighlightedSeries)',
@@ -249,7 +246,7 @@ describe('getAreaMark', () => {
       },
       interactive: false,
       encode: {
-        enter: {
+        update: {
           tooltip: undefined,
           y: {
             scale: 'yLinear',
@@ -266,8 +263,6 @@ describe('getAreaMark', () => {
           defined: {
             signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])',
           },
-        },
-        update: {
           cursor: undefined,
           x: {
             scale: 'xPoint',
@@ -279,7 +274,8 @@ describe('getAreaMark', () => {
           opacity: [
             {
               test: "length(data('area0_highlightedData'))",
-              signal: "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
+              signal:
+                "indexof(pluck(data('area0_highlightedData'), 'rscSeriesId'), datum.rscSeriesId) !== -1 ? 1 : 0.2",
             },
             {
               test: 'isValid(controlledHighlightedSeries)',

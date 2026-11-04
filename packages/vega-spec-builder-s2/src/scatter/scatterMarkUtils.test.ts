@@ -22,7 +22,13 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { addScatterMarks, getOpacity, getScatterHoverMarks, getScatterMark, getSelectRingSize } from './scatterMarkUtils.js';
+import {
+  addScatterMarks,
+  getOpacity,
+  getScatterHoverMarks,
+  getScatterMark,
+  getSelectRingSize,
+} from './scatterMarkUtils.js';
 import { defaultScatterOptions } from './scatterTestUtils.js';
 
 describe('addScatterMarks()', () => {
@@ -51,6 +57,10 @@ describe('addScatterMarks()', () => {
     const marks = addScatterMarks([], { ...defaultScatterOptions, trendlines: [{}] });
     expect(marks).toHaveLength(2);
     expect(marks[1].name).toBe('scatter0Trendline0_group');
+  });
+  test('should key the symbol mark by the row key field', () => {
+    const marks = addScatterMarks([], defaultScatterOptions);
+    expect((marks[0] as GroupMark).marks?.[0]).toHaveProperty('key', 'scatter0_rowKey');
   });
   test('should make clip true to enable disable group clipping', () => {
     const marks = addScatterMarks([], { ...defaultScatterOptions, clip: true });
@@ -123,8 +133,8 @@ describe('getScatterSelectMarks()', () => {
 describe('getScatterMark() stroke', () => {
   test('should use color for stroke when stroke is not provided', () => {
     const mark = getScatterMark({ ...defaultScatterOptions, color: 'category' });
-    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'category' });
-    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.update?.stroke).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.update?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
   });
 
   test('should use stroke prop when provided', () => {
@@ -134,9 +144,9 @@ describe('getScatterMark() stroke', () => {
       stroke: { value: 'gray-800' },
     });
     // fill should use color
-    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.update?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
     // stroke should use the stroke prop value
-    expect(mark.encode?.enter?.stroke).toHaveProperty('value');
+    expect(mark.encode?.update?.stroke).toHaveProperty('value');
   });
 
   test('should use stroke as data field when stroke is a string', () => {
@@ -146,9 +156,9 @@ describe('getScatterMark() stroke', () => {
       stroke: 'borderCategory',
     });
     // fill should use color
-    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.update?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
     // stroke should use the stroke field
-    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'borderCategory' });
+    expect(mark.encode?.update?.stroke).toEqual({ scale: COLOR_SCALE, field: 'borderCategory' });
   });
 
   test('should allow different fill and stroke colors', () => {
@@ -158,7 +168,7 @@ describe('getScatterMark() stroke', () => {
       stroke: { value: 'gray-900' },
     });
     // fill and stroke should be different
-    expect(mark.encode?.enter?.fill).not.toEqual(mark.encode?.enter?.stroke);
+    expect(mark.encode?.update?.fill).not.toEqual(mark.encode?.update?.stroke);
   });
 
   test('should use round stroke caps so zero-length dotted dashes render', () => {

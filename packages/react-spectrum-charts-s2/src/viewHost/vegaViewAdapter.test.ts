@@ -90,25 +90,22 @@ describe('splitSpec()', () => {
 
 describe('updateView()', () => {
   const getView = () => {
-    const view = { signal: jest.fn(), change: jest.fn(), resize: jest.fn(), runAsync: jest.fn(() => Promise.resolve()) };
+    const view = {
+      signal: jest.fn(),
+      change: jest.fn(),
+      resize: jest.fn(),
+      runAsync: jest.fn(() => Promise.resolve()),
+    };
     view.resize.mockReturnValue(view);
     return view;
   };
 
-  test('should re-run enter encoders when signals change', () => {
+  test('should set signals and run without re-running enter encoders', () => {
     const view = getView();
 
     vegaViewAdapter.updateView(view as unknown as View, { signals: [['hiddenSeries', ['a']]] });
 
     expect(view.signal).toHaveBeenCalledWith('hiddenSeries', ['a']);
-    expect(view.runAsync).toHaveBeenCalledWith('enter');
-  });
-
-  test('should not re-run enter encoders for a table-only change', () => {
-    const view = getView();
-
-    vegaViewAdapter.updateView(view as unknown as View, { signals: [], table: [{ x: 1 }] });
-
-    expect(view.runAsync).toHaveBeenCalledWith(undefined);
+    expect(view.runAsync).toHaveBeenCalledWith();
   });
 });

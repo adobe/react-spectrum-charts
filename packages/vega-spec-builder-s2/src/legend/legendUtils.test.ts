@@ -43,7 +43,6 @@ describe('getSymbolEncodings()', () => {
     expect(getSymbolEncodings([], defaultLegendOptions)).toStrictEqual({
       entries: { name: 'legend0_legendEntry' },
       symbols: {
-        enter: {},
         update: {
           fill: [
             { test: hiddenTest, value: spectrum2Colors.light['gray-500'] },
@@ -79,6 +78,22 @@ describe('getSymbolEncodings()', () => {
     const encodings = getSymbolEncodings([], { ...defaultLegendOptions, symbolShape: 'shape' });
     expect(encodings.symbols?.update?.shape).toStrictEqual({
       signal: `legendSymbolShape(scale('symbolShape', data('legend0Aggregate')[datum.index].shape), ${hiddenTest})`,
+    });
+  });
+
+  test('should keep constant facets in enter and move signal facets to update', () => {
+    const encodings = getSymbolEncodings([], {
+      ...defaultLegendOptions,
+      lineType: 'lineType',
+      lineWidth: { value: 2 },
+      opacity: 'opacity',
+    });
+    expect(encodings.symbols?.enter).toStrictEqual({ strokeWidth: { value: 2 } });
+    expect(encodings.symbols?.update?.strokeDash).toStrictEqual({
+      signal: "scale('lineType', data('legend0Aggregate')[datum.index].lineType)",
+    });
+    expect(encodings.symbols?.update?.fillOpacity).toStrictEqual({
+      signal: "scale('opacity', data('legend0Aggregate')[datum.index].opacity)",
     });
   });
 

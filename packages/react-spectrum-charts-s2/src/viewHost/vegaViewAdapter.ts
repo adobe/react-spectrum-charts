@@ -175,10 +175,9 @@ export const vegaViewAdapter: ViewAdapter<Spec, View, VegaEnvironment> = {
       resizeView(view, size.width, size.height);
       return;
     }
-    // signals can change scale domains, and many marks encode positions only on enter
-    const resized = view.resize() as View & { runAsync(encode?: string): Promise<View> };
-    resized
-      .runAsync(signals.length ? 'enter' : undefined)
+    view
+      .resize()
+      .runAsync()
       .catch((error: unknown) => console.error('Failed to update chart:', error));
   },
   destroyView: (view) => view.finalize(),

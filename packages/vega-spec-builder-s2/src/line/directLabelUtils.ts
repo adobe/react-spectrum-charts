@@ -11,7 +11,13 @@
  */
 import { NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
-import { BACKGROUND_COLOR, CHART_SIZE_FONT_SIZE, CHART_SIZE_LABEL_GAP, DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT } from '@spectrum-charts/core-s2/constants';
+import {
+  BACKGROUND_COLOR,
+  CHART_SIZE_FONT_SIZE,
+  CHART_SIZE_LABEL_GAP,
+  DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
+  DIRECT_LABEL_FONT_WEIGHT,
+} from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { ColorScheme } from '../types/index.js';
@@ -70,9 +76,12 @@ export const getCascadeTransforms = (yScaleName: string, metric: string, namespa
 // Any visual change here automatically applies to hover labels AND static labels.
 const directLabelBackgroundStyle = {
   fill: { value: 'transparent' as const },
-  stroke: { signal: BACKGROUND_COLOR },
   strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
   fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+};
+
+const directLabelBackgroundSignalStyle = {
+  stroke: { signal: BACKGROUND_COLOR },
   fontSize: { signal: CHART_SIZE_FONT_SIZE },
 };
 
@@ -101,8 +110,8 @@ export const getDirectLabelTextMarks = (
       interactive: false,
       from: { data: dataSource },
       encode: {
-        enter: { text: { signal: textSignal }, ...directLabelBackgroundStyle },
-        update: { x, y, ...additional } as never,
+        enter: directLabelBackgroundStyle,
+        update: { text: { signal: textSignal }, ...directLabelBackgroundSignalStyle, x, y, ...additional } as never,
       },
     },
     {
@@ -112,12 +121,16 @@ export const getDirectLabelTextMarks = (
       from: { data: dataSource },
       encode: {
         enter: {
+          fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+        },
+        update: {
           text: { signal: textSignal },
           fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride),
-          fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
           fontSize: { signal: CHART_SIZE_FONT_SIZE },
-        },
-        update: { x, y, ...additional } as never,
+          x,
+          y,
+          ...additional,
+        } as never,
       },
     },
   ];
@@ -144,8 +157,12 @@ export const getLabelTransformTextMarks = (
     interactive: false,
     from: { data: dataSource },
     encode: {
-      enter: { text: { signal: textSignal }, ...directLabelBackgroundStyle },
-      update: { fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT } },
+      enter: directLabelBackgroundStyle,
+      update: {
+        text: { signal: textSignal },
+        ...directLabelBackgroundSignalStyle,
+        fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+      },
     },
     transform: [labelTransform],
   },
@@ -155,11 +172,9 @@ export const getLabelTransformTextMarks = (
     interactive: false,
     from: { data: backgroundMarkName },
     encode: {
-      enter: {
+      update: {
         fill: getDirectLabelForegroundFill(colorScheme, foregroundFillOverride),
         fontSize: { signal: CHART_SIZE_FONT_SIZE },
-      },
-      update: {
         text: { field: 'text' },
         x: { field: 'x' },
         y: { field: 'y' },

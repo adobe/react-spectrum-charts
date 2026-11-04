@@ -127,9 +127,9 @@ export const getScatterPathTrailMark = ({
           value: getS2ColorValue(color, colorScheme),
         },
         fillOpacity: { value: opacity },
-        size: getPathWidth(pathWidth),
       },
       update: {
+        size: getPathWidth(pathWidth),
         opacity: getOpacity(),
         x: getXProductionRule(dimensionScaleType, dimension),
         y: { scale: 'yLinear', field: metric },

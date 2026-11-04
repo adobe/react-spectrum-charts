@@ -29,6 +29,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import { getRowKeyField } from '../data/rowKeyUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
   defaultBarOptions,
@@ -54,7 +55,7 @@ const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
   cornerRadiusBottomRight: [{ test: `datum.${DEFAULT_METRIC} < 0`, value: 4 }, { value: 0 }],
 };
 
-const defaultDodgedStackedEnterEncodings: RectEncodeEntry = {
+const defaultDodgedStackedUpdateEncodings: RectEncodeEntry = {
   y: [
     { test: `datum.${DEFAULT_METRIC}0 === 0`, signal: `scale('yLinear', datum.${DEFAULT_METRIC}0)` },
     {
@@ -71,14 +72,15 @@ const defaultBackgroundMark: Mark = {
   name: 'bar0_background',
   type: 'rect',
   from: { data: 'bar0_facet' },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...defaultDodgedYEncodings,
       ...defaultDodgedCornerRadiusEncodings,
       fill: { signal: BACKGROUND_COLOR },
+      ...defaultDodgedXEncodings,
     },
-    update: { ...defaultDodgedXEncodings },
   },
 };
 
@@ -86,17 +88,16 @@ const defaultMark: Mark = {
   name: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...defaultDodgedYEncodings,
       ...defaultDodgedCornerRadiusEncodings,
+      ...defaultDodgedXEncodings,
       fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
       fillOpacity: DEFAULT_OPACITY_RULE,
       tooltip: undefined,
-    },
-    update: {
-      ...defaultDodgedXEncodings,
       ...defaultBarStrokeEncodings,
       cursor: undefined,
       opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
@@ -108,17 +109,16 @@ const defaultMarkWithInspect: Mark = {
   name: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
+  key: getRowKeyField(defaultBarOptions),
   interactive: true,
   encode: {
-    enter: {
+    update: {
       ...defaultDodgedYEncodings,
       ...defaultDodgedCornerRadiusEncodings,
+      ...defaultDodgedXEncodings,
       fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
       fillOpacity: DEFAULT_OPACITY_RULE,
       tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'bar0'})` },
-    },
-    update: {
-      ...defaultDodgedXEncodings,
       ...defaultBarStrokeEncodings,
       opacity: [
         {
@@ -144,13 +144,14 @@ const defaultDodgedStackedBackgroundMark: Mark = {
   name: 'bar0_background',
   type: 'rect',
   from: { data: 'bar0_facet' },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
-      ...defaultDodgedStackedEnterEncodings,
+    update: {
+      ...defaultDodgedStackedUpdateEncodings,
       fill: { signal: BACKGROUND_COLOR },
+      ...defaultDodgedXEncodings,
     },
-    update: { ...defaultDodgedXEncodings },
   },
 };
 
@@ -158,18 +159,17 @@ const defaultDodgedStackedMark: Mark = {
   name: 'bar0',
   type: 'rect',
   from: { data: 'bar0_facet' },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
-      ...defaultDodgedStackedEnterEncodings,
+    update: {
+      ...defaultDodgedStackedUpdateEncodings,
+      ...defaultDodgedXEncodings,
       fill: {
         signal: `scale('colors', datum.${DEFAULT_COLOR})[indexof(domain('secondaryColor'), datum.${DEFAULT_SECONDARY_COLOR})% length(scale('colors', datum.${DEFAULT_COLOR}))]`,
       },
       fillOpacity: DEFAULT_OPACITY_RULE,
       tooltip: undefined,
-    },
-    update: {
-      ...defaultDodgedXEncodings,
       cursor: undefined,
       opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
       stroke: [
@@ -197,7 +197,7 @@ export const defaultDodgedMark = {
       type: 'band',
     },
   ],
-  encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+  encode: { update: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
   marks: [defaultBackgroundMark, defaultMark],
 };
 
@@ -318,7 +318,11 @@ describe('dodgedBarUtils', () => {
 
     test('does not add a group focus ring for a single-series (no color field) dodged bar', () => {
       // a static {value} color (no series field) → single-series, so no per-group ring
-      const marks = getDodgedMarks({ ...defaultDodgedOptions, accessibleNavigation: true, color: { value: 'categorical-100' } });
+      const marks = getDodgedMarks({
+        ...defaultDodgedOptions,
+        accessibleNavigation: true,
+        color: { value: 'categorical-100' },
+      });
       expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toBeUndefined();
     });
   });

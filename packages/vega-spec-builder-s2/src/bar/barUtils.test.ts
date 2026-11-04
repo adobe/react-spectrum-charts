@@ -38,9 +38,9 @@ import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartIn
 import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
-  defaultBarEnterEncodings,
   defaultBarOptions,
   defaultBarOptionsWithSecondayColor,
+  defaultBarUpdateEncodings,
   defaultCornerRadiusEncodings,
   defaultDodgedCornerRadiusEncodings,
   defaultDodgedYEncodings,
@@ -58,7 +58,7 @@ import {
   getBarItemSelectionRing,
   getBarOpacity,
   getBarPadding,
-  getBaseBarEnterEncodings,
+  getBaseBarUpdateEncodings,
   getBaseScaleName,
   getCornerRadiusEncodings,
   getDimensionSelectionRing,
@@ -566,14 +566,12 @@ describe('barUtils', () => {
         from: { data: FILTERED_TABLE },
         interactive: false,
         encode: {
-          enter: {
+          update: {
             cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
             cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
             cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             fill: { signal: BACKGROUND_COLOR },
-          },
-          update: {
             y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
             y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
             x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
@@ -600,15 +598,15 @@ describe('barUtils', () => {
         interactive: false,
         encode: {
           enter: {
-            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
-            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
-            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
-            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             fill: { value: 'transparent' },
             stroke: { value: '#4B75FF' },
             strokeWidth: { value: 2 },
           },
           update: {
+            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
             y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
             x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
@@ -628,6 +626,10 @@ describe('barUtils', () => {
       const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
       // metric axis is x for a horizontal bar; the ring outsets x/x2 and the dimension band on y
       expect(ring.encode?.update).toStrictEqual({
+        cornerRadiusTopLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+        cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+        cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+        cornerRadiusBottomRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
         x: { signal: `min(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) - 3` },
         x2: { signal: `max(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) + 3` },
         y: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
@@ -682,15 +684,15 @@ describe('barUtils', () => {
         width: { scale: 'xBand', band: 1 },
       };
       const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
-      const enter = ring.encode?.enter as RectEncodeEntry;
+      const update = ring.encode?.update as RectEncodeEntry;
 
       // the ring reuses the bar's stacked corner-radius production rules (including the
       // data('..._stacks') test strings), each branch's value widened by the 2px gap
       const barCorners = getStackedCornerRadiusEncodings(options);
       const widenBranches = (rule: RectEncodeEntry['cornerRadiusTopLeft']) =>
         (rule as { test?: string; value: number }[]).map((branch) => ({ ...branch, value: branch.value + 2 }));
-      expect(enter.cornerRadiusTopLeft).toStrictEqual(widenBranches(barCorners.cornerRadiusTopLeft));
-      expect(enter.cornerRadiusBottomRight).toStrictEqual(widenBranches(barCorners.cornerRadiusBottomRight));
+      expect(update.cornerRadiusTopLeft).toStrictEqual(widenBranches(barCorners.cornerRadiusTopLeft));
+      expect(update.cornerRadiusBottomRight).toStrictEqual(widenBranches(barCorners.cornerRadiusBottomRight));
     });
 
     test('backdrop and outline ring share identical position and corner-radius encodings', () => {
@@ -698,13 +700,11 @@ describe('barUtils', () => {
       const dimensionEncodings = getDodgedDimensionEncodings(options);
       const backdrop = getBarItemSelectionBackdrop(options, FILTERED_TABLE, dimensionEncodings);
       const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
-      const backdropEnter = backdrop.encode?.enter as RectEncodeEntry;
-      const ringEnter = ring.encode?.enter as RectEncodeEntry;
+      const { fill, ...backdropUpdate } = backdrop.encode?.update as RectEncodeEntry;
 
       // the two marks must stay geometrically aligned — they differ only in fill/stroke
-      expect(backdrop.encode?.update).toStrictEqual(ring.encode?.update);
-      expect(backdropEnter.cornerRadiusTopLeft).toStrictEqual(ringEnter.cornerRadiusTopLeft);
-      expect(backdropEnter.cornerRadiusBottomRight).toStrictEqual(ringEnter.cornerRadiusBottomRight);
+      expect(fill).toStrictEqual({ signal: BACKGROUND_COLOR });
+      expect(backdropUpdate).toStrictEqual(ring.encode?.update);
     });
 
     test('serializes a plain value-ref dimension encoding into a numeric outset expression', () => {
@@ -779,16 +779,16 @@ describe('barUtils', () => {
     });
   });
 
-  describe('getBaseBarEnterEncodings()', () => {
+  describe('getBaseBarUpdateEncodings()', () => {
     test('default options', () => {
-      expect(getBaseBarEnterEncodings(defaultBarOptions)).toStrictEqual(defaultBarEnterEncodings);
+      expect(getBaseBarUpdateEncodings(defaultBarOptions)).toStrictEqual(defaultBarUpdateEncodings);
     });
   });
 
   describe('getDodgedGroupMark()', () => {
     test('should retrun group mark', () => {
       expect(getDodgedGroupMark(defaultBarOptions)).toStrictEqual({
-        encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+        encode: { update: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
         from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
         name: 'bar0_group',
         scales: [
@@ -807,7 +807,7 @@ describe('barUtils', () => {
     test('uses groupedPadding for paddingInner if it exists', () => {
       const groupedPadding = PADDING_RATIO + 0.1;
       expect(getDodgedGroupMark({ ...defaultBarOptions, groupedPadding })).toStrictEqual({
-        encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+        encode: { update: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
         from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
         name: 'bar0_group',
         scales: [
@@ -898,7 +898,7 @@ describe('getBarDimensionHoverArea()', () => {
 
   test('should not set a tooltip when no inspect targets dimensionArea', () => {
     const mark = getBarDimensionHoverArea({ ...defaultBarOptions, chartInspects: [{ targets: ['item'] }] }, 'stacked');
-    expect(mark.encode?.enter).toHaveProperty('tooltip', undefined);
+    expect(mark.encode?.update).toHaveProperty('tooltip', undefined);
   });
 
   test('should set a tooltip when an inspect targets dimensionArea', () => {
@@ -906,7 +906,7 @@ describe('getBarDimensionHoverArea()', () => {
       { ...defaultBarOptions, chartInspects: [{ targets: ['dimensionArea'] }] },
       'stacked'
     );
-    expect(mark.encode?.enter?.tooltip).toBeDefined();
+    expect(mark.encode?.update?.tooltip).toBeDefined();
   });
 });
 
@@ -1049,10 +1049,10 @@ describe('getBarOpacity()', () => {
 describe('bar draw-in encodings', () => {
   const drawInOptions: BarSpecOptions = { ...defaultBarOptions, isDrawInAnimate: true };
 
-  test('getBaseBarEnterEncodings() leaves the metric out of enter so it can animate', () => {
-    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y');
-    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y2');
-    expect(getBaseBarEnterEncodings(defaultBarOptions)).toHaveProperty('y2');
+  test('getBaseBarUpdateEncodings() leaves out the metric so the draw-in encodings can animate it', () => {
+    expect(getBaseBarUpdateEncodings(drawInOptions)).not.toHaveProperty('y');
+    expect(getBaseBarUpdateEncodings(drawInOptions)).not.toHaveProperty('y2');
+    expect(getBaseBarUpdateEncodings(defaultBarOptions)).toHaveProperty('y2');
   });
 
   test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for stacked bars', () => {

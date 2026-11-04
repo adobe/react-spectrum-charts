@@ -28,6 +28,7 @@ import {
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
+import { addRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { addDrawInClockSignals, addDrawInLabelFadeTimer } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
@@ -42,34 +43,30 @@ import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark } from '../specUtils.js';
 import { ChartData, ColorScheme, DonutOptions, DonutSpecOptions, HighlightedItem, ScSpec } from '../types/index.js';
-import {
-  getDonutSummaryData,
-  getDonutSummaryMarks,
-  getDonutSummarySignals,
-} from './donutSummaryUtils.js';
+import { getDonutSummaryData, getDonutSummaryMarks, getDonutSummarySignals } from './donutSummaryUtils.js';
 import {
   getArcMark,
   getDonutAnimIdField,
   getDonutHoverRules,
+  getDonutRadiusSignals,
   getDonutStartAngle,
   getDonutSweepExpr,
   getEmptyStateArcMark,
-  isDonutInteractive,
-  getDonutRadiusSignals,
-  getRingWidthSignal,
   getLabelRingGapSignals,
+  getRingWidthSignal,
   getSizeTierScale,
   getSizeTierSignal,
   getSliceGapSignal,
   getSumData,
+  isDonutInteractive,
 } from './donutUtils.js';
 import {
-  getSegmentLabelData,
-  getSegmentLabelMarks,
-  getSegmentLabelSignals,
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
   getRichSegmentLabelSignals,
+  getSegmentLabelData,
+  getSegmentLabelMarks,
+  getSegmentLabelSignals,
 } from './segmentLabelUtils.js';
 
 export const addDonut = produce<
@@ -153,6 +150,7 @@ export const addDonut = produce<
 export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
   const { color, legendHighlightSignals, name, isBoolean, metric, sortOrder } = options;
   const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
+  addRowKeyTransforms(data, { name, idKey: options.idKey, fields: [color] });
 
   //set up transform
   data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];

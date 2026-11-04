@@ -35,7 +35,8 @@ import {
   getLineHighlightOverlayGroup,
   getLineHoverMarks,
   getLineMark,
-  getLineOpacity, getLineStrokeWidth,
+  getLineOpacity,
+  getLineStrokeWidth,
 } from './lineMarkUtils.js';
 import { defaultLineMarkOptions } from './lineTestUtils.js';
 
@@ -71,13 +72,13 @@ describe('getLineMark()', () => {
       interactive: false,
       encode: {
         enter: {
-          stroke: { field: 'series', scale: COLOR_SCALE },
           strokeCap: { value: 'round' },
+        },
+        update: {
+          stroke: { field: 'series', scale: COLOR_SCALE },
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           y: [{ field: 'value', scale: 'yLinear' }],
-        },
-        update: {
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
           opacity: [...controlledOpacityRules, DEFAULT_OPACITY_RULE],
           strokeWidth: [...controlledStrokeWidthRules, DEFAULT_STROKE_WIDTH_RULE],
@@ -129,7 +130,7 @@ describe('getLineMark()', () => {
 
   test('uses array stroke encoding with exact other-series expression when primarySeries is set', () => {
     const lineMark = getLineMark({ ...defaultLineMarkOptions, primarySeries: 2 }, 'line0_facet');
-    const stroke = lineMark.encode?.enter?.stroke as { test: string; value: string }[];
+    const stroke = lineMark.encode?.update?.stroke as { test: string; value: string }[];
     expect(Array.isArray(stroke)).toBe(true);
     expect(stroke).toHaveLength(2);
     expect(stroke[0].test).toBe(`indexof(slice(domain('color'), 0, 2), datum.${SERIES_ID}) < 0`);
@@ -261,7 +262,12 @@ describe('getLineOpacity()', () => {
 
   test('should not thicken a single series', () => {
     expect(
-      getLineStrokeWidth({ ...defaultLineMarkOptions, interactiveMarkName: 'line0', chartInspects: [{}], seriesIds: ['a'] })
+      getLineStrokeWidth({
+        ...defaultLineMarkOptions,
+        interactiveMarkName: 'line0',
+        chartInspects: [{}],
+        seriesIds: ['a'],
+      })
     ).toEqual([DEFAULT_STROKE_WIDTH_RULE]);
   });
 
@@ -453,18 +459,18 @@ describe('getLineGradientMark()', () => {
     expect(gradientMark.from).toEqual({ data: 'line0_facet' });
   });
 
-  test('should have correct enter encoding with y, y2, fill, and fillOpacity', () => {
+  test('should have correct update encoding with y, y2, fill, and fillOpacity', () => {
     const gradientMark = getLineGradientMark(defaultLineMarkOptions, 'line0_facet');
-    const enter = gradientMark.encode?.enter;
-    expect(enter).toHaveProperty('y');
-    expect(enter).toHaveProperty('y2', { signal: 'height' });
-    expect(enter).toHaveProperty('fill');
-    expect(enter).toHaveProperty('fillOpacity');
+    const update = gradientMark.encode?.update;
+    expect(update).toHaveProperty('y');
+    expect(update).toHaveProperty('y2', { signal: 'height' });
+    expect(update).toHaveProperty('fill');
+    expect(update).toHaveProperty('fillOpacity');
   });
 
   test('should use a signal-based gradient fill with color from scale', () => {
     const gradientMark = getLineGradientMark(defaultLineMarkOptions, 'line0_facet');
-    const fill = gradientMark.encode?.enter?.fill as { signal: string };
+    const fill = gradientMark.encode?.update?.fill as { signal: string };
     expect(fill).toHaveProperty('signal');
     expect(fill.signal).toContain('gradient');
     expect(fill.signal).toContain('linear');
@@ -489,20 +495,14 @@ describe('getLineGradientMark()', () => {
   });
 
   test('should scale fillOpacity with static opacity value', () => {
-    const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, opacity: { value: 0.6 } },
-      'line0_facet'
-    );
-    const fillOpacity = gradientMark.encode?.enter?.fillOpacity;
+    const gradientMark = getLineGradientMark({ ...defaultLineMarkOptions, opacity: { value: 0.6 } }, 'line0_facet');
+    const fillOpacity = gradientMark.encode?.update?.fillOpacity;
     expect(fillOpacity).toEqual({ value: 0.6 * 0.2 });
   });
 
   test('should scale fillOpacity with dynamic opacity facet', () => {
-    const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, opacity: 'weight' },
-      'line0_facet'
-    );
-    const fillOpacity = gradientMark.encode?.enter?.fillOpacity;
+    const gradientMark = getLineGradientMark({ ...defaultLineMarkOptions, opacity: 'weight' }, 'line0_facet');
+    const fillOpacity = gradientMark.encode?.update?.fillOpacity;
     expect(fillOpacity).toEqual({ signal: `scale('${OPACITY_SCALE}', datum.weight) * 0.2` });
   });
 
@@ -511,7 +511,7 @@ describe('getLineGradientMark()', () => {
       { ...defaultLineMarkOptions, alternateSegmentKey: 'line0_alternateFlag' },
       'line0_facet'
     );
-    const fillOpacity = gradientMark.encode?.enter?.fillOpacity as { signal: string };
+    const fillOpacity = gradientMark.encode?.update?.fillOpacity as { signal: string };
     expect(fillOpacity.signal).toContain('line0_alternateFlag');
     expect(fillOpacity.signal).toContain('0.08');
     expect(fillOpacity.signal).toContain('0.2');
@@ -522,7 +522,7 @@ describe('getLineGradientMark()', () => {
       { ...defaultLineMarkOptions, alternateSegmentKey: 'line0_alternateFlag', opacity: 'weight' },
       'line0_facet'
     );
-    const fillOpacity = gradientMark.encode?.enter?.fillOpacity as { signal: string };
+    const fillOpacity = gradientMark.encode?.update?.fillOpacity as { signal: string };
     expect(fillOpacity.signal).toContain('line0_alternateFlag');
     expect(fillOpacity.signal).toContain(`scale('${OPACITY_SCALE}', datum.weight) * 0.08`);
     expect(fillOpacity.signal).toContain(`scale('${OPACITY_SCALE}', datum.weight) * 0.2`);
@@ -543,11 +543,8 @@ describe('getLineGradientMark()', () => {
   });
 
   test('should support dual metric axis y encoding', () => {
-    const gradientMark = getLineGradientMark(
-      { ...defaultLineMarkOptions, dualMetricAxis: true },
-      'line0_facet'
-    );
-    const y = gradientMark.encode?.enter?.y;
+    const gradientMark = getLineGradientMark({ ...defaultLineMarkOptions, dualMetricAxis: true }, 'line0_facet');
+    const y = gradientMark.encode?.update?.y;
     expect(Array.isArray(y)).toBe(true);
     expect((y as unknown[]).length).toBe(2);
   });
@@ -584,21 +581,30 @@ describe('getHighlightedSeriesOpacityRules()', () => {
   });
 
   test('with interactiveMarkName adds hover rule as first condition', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as {
+      test?: string;
+      value: number;
+    }[];
     expect(rules).toHaveLength(4);
     expect(rules[0].test).toContain(`line0_${HOVERED_ITEM}`);
     expect(rules[0].test).toContain(SERIES_ID);
   });
 
   test('with isHighlightedByGroup uses highlightedData condition instead of hover item', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0', isHighlightedByGroup: true }) as { test?: string; value: number }[];
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0', isHighlightedByGroup: true }) as {
+      test?: string;
+      value: number;
+    }[];
     expect(rules[0].test).toContain(`line0_highlightedData`);
     expect(rules[0].test).not.toContain(HOVERED_ITEM);
   });
 
   test('all show rules have value 1 and fallback has value 0', () => {
-    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as { test?: string; value: number }[];
-    rules.slice(0, -1).forEach(rule => expect(rule.value).toBe(1));
+    const rules = getHighlightedSeriesOpacityRules({ interactiveMarkName: 'line0' }) as {
+      test?: string;
+      value: number;
+    }[];
+    rules.slice(0, -1).forEach((rule) => expect(rule.value).toBe(1));
     expect(rules.at(-1)?.value).toBe(0);
   });
 
@@ -620,7 +626,6 @@ describe('getHighlightedSeriesOpacityRules()', () => {
     expect(rules.filter((r) => r.test?.includes('isValid(sig'))).toHaveLength(2);
   });
 });
-
 
 describe('getLineHighlightOverlayGroup()', () => {
   test('returns a group mark named <name>_highlightOverlay_group', () => {
@@ -662,12 +667,12 @@ describe('getLineHighlightOverlayGroup()', () => {
   });
 
   test('overlay group uses the line draw-in clip when the line is draw-in animated', () => {
-    const group = getLineHighlightOverlayGroup(
-      { ...defaultLineMarkOptions, isDrawInAnimate: true },
-      'filteredTable',
-      [SERIES_ID]
-    );
+    const group = getLineHighlightOverlayGroup({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'filteredTable', [
+      SERIES_ID,
+    ]);
     expect(group).toHaveProperty('clip', getLineDrawInClip('line0'));
-    expect(getLineHighlightOverlayGroup(defaultLineMarkOptions, 'filteredTable', [SERIES_ID])).not.toHaveProperty('clip');
+    expect(getLineHighlightOverlayGroup(defaultLineMarkOptions, 'filteredTable', [SERIES_ID])).not.toHaveProperty(
+      'clip'
+    );
   });
 });
