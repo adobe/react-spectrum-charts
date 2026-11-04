@@ -265,7 +265,7 @@ These are the acceptance criteria. Tests 2, 3, 6 and 7 are what prevent aggressi
 ## Documentation
 
 - A generated "Update behavior" docs page: for each update class, the expected behavior (view reused or rebuilt, state retained, draw-in replayed or not) and every input that triggers it, per chart type, mark, child component and chart option.
-- Update `.claude/architecture-rendering-and-signals.md`: its description of the embed effect and its dependencies is out of date, and the update routing becomes the new model.
+- Update `architecture/rendering-and-signals.md`: its description of the embed effect and its dependencies is out of date, and the update routing becomes the new model.
 - `onVegaViewReady` docs: it fires once per view, not once per prop change.
 - Changesets for the user-visible changes listed under Backwards Compatibility.
 
