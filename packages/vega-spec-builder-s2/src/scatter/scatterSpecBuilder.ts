@@ -30,11 +30,12 @@ import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils.js';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils.js';
+import { addRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils.js';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import { setScatterPathScales } from '../scatterPath/index.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
-import { addUserMetaInteractiveMark } from '../specUtils.js';
+import { addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils.js';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
 import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
 import { addScatterMarks } from './scatterMarkUtils.js';
@@ -117,6 +118,9 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
+  const { facets, secondaryFacets } = getFacetsFromOptions(scatterOptions);
+  // x is a measure, so points are identified by series and order rather than by position
+  addRowKeyTransforms(data, { name, idKey, fields: [...facets, ...secondaryFacets] });
 
   if (isInteractive(scatterOptions)) {
     data.push(getFilteredInspectData(chartInspects));

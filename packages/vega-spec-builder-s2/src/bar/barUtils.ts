@@ -40,6 +40,7 @@ import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils.js';
 import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
+import { RowKeyOptions } from '../data/rowKeyUtils.js';
 import {
   getBarDrawInSettleProgressExpr,
   getBarDrawInValueField,
@@ -58,12 +59,23 @@ import {
   isInteractive,
 } from '../marks/markUtils.js';
 import { getBandPadding } from '../scale/scaleSpecBuilder.js';
-import { getLineWidthPixelsFromLineWidth } from '../specUtils.js';
+import { getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils.js';
 import { BarSpecOptions, Orientation } from '../types/index.js';
 import { getTrellisProperties, isTrellised } from './trellisPropertyUtils.js';
 
 /** Per-mark-namespaced field name for the composite per-bar hover-animation identity (see `BarSpecOptions.barIds`). */
 export const getBarAnimIdField = (name: string): string => `${name}_${BAR_ANIM_ID}`;
+
+/**
+ * Gets the options that key each bar by its dimension, trellis and series facets.
+ * @param options
+ * @returns RowKeyOptions
+ */
+export const getBarRowKeyOptions = (options: BarSpecOptions): RowKeyOptions => {
+  const { dimension, idKey, name, trellis } = options;
+  const { facets, secondaryFacets } = getFacetsFromOptions(options);
+  return { name, idKey, fields: [dimension, ...(trellis ? [trellis] : []), ...facets, ...secondaryFacets] };
+};
 
 /**
  * checks to see if the bar is faceted in the stacked and dodged dimensions
@@ -119,7 +131,7 @@ export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
       },
     },
     encode: {
-      enter: {
+      update: {
         [dimensionAxis]: {
           scale: dimensionScaleKey,
           field: dimension,
@@ -323,7 +335,7 @@ export const rotateRectClockwiseIfNeeded = (
   };
 };
 
-export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
+export const getBaseBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   ...(options.isDrawInAnimate ? {} : getMetricEncodings(options)),
   ...getCornerRadiusEncodings(options),
 });
@@ -357,13 +369,10 @@ export const getBarFillEncoding = (options: BarSpecOptions): ColorValueRef => {
   return getColorProductionRule(color, colorScheme);
 };
 
-export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
+export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   fill: getBarFillEncoding(options),
   fillOpacity: getOpacityProductionRule(options.opacity),
   tooltip: getInspectEncoding(options.chartInspects, options.name),
-});
-
-export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   cursor: getCursor(options.chartPopovers, options.hasOnClick),
   opacity: getBarOpacity(options),
   stroke: getStroke(options),
@@ -595,11 +604,11 @@ export const getBarItemSelectionBackdrop = (
   from: { data: dataSource },
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...getSelectionRingCornerRadiusEncodings(options),
       fill: { signal: BACKGROUND_COLOR },
+      ...getSelectionRingUpdateEncodings(options, dimensionEncodings),
     },
-    update: getSelectionRingUpdateEncodings(options, dimensionEncodings),
   },
 });
 
@@ -621,12 +630,14 @@ export const getBarItemSelectionRing = (
   interactive: false,
   encode: {
     enter: {
-      ...getSelectionRingCornerRadiusEncodings(options),
       fill: { value: 'transparent' },
       stroke: { value: getS2ColorValue('blue-800', options.colorScheme) },
       strokeWidth: { value: SELECTION_RING_STROKE_WIDTH },
     },
-    update: getSelectionRingUpdateEncodings(options, dimensionEncodings),
+    update: {
+      ...getSelectionRingCornerRadiusEncodings(options),
+      ...getSelectionRingUpdateEncodings(options, dimensionEncodings),
+    },
   },
 });
 
@@ -765,11 +776,11 @@ export const getBarDimensionHoverArea = (options: BarSpecOptions, type: 'stacked
     encode: {
       enter: {
         fill: { value: 'transparent' },
+      },
+      update: {
         tooltip: hasInspectWithDimensionAreaTarget(options.chartInspects ?? [])
           ? getInspectEncoding(options.chartInspects ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension })
           : undefined,
-      },
-      update: {
         ...getBarDimensionAreaPositionEncodings(options),
       },
     },

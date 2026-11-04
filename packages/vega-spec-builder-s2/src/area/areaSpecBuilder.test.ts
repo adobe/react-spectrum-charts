@@ -76,8 +76,8 @@ const getDefaultHoverMarks = (x: { scale: string; field: string }): Mark[] => [
     from: { data: 'area0_highlightedData' },
     interactive: false,
     encode: {
-      enter: { y: { value: 0 }, y2: { signal: 'height' }, strokeWidth: { value: 1 } },
-      update: { x, opacity: { signal: `isValid(${CONTROLLED_HIGHLIGHTED_ITEM}) ? 1 : 0` } },
+      enter: { y: { value: 0 }, strokeWidth: { value: 1 } },
+      update: { x, y2: { signal: 'height' }, opacity: { signal: `isValid(${CONTROLLED_HIGHLIGHTED_ITEM}) ? 1 : 0` } },
     },
   },
   {
@@ -86,12 +86,12 @@ const getDefaultHoverMarks = (x: { scale: string; field: string }): Mark[] => [
     from: { data: 'area0_highlightedData' },
     interactive: false,
     encode: {
-      enter: {
+      update: {
+        x,
         y: { field: `${DEFAULT_METRIC}1`, scale: 'yLinear' },
         stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
         fill: { signal: BACKGROUND_COLOR },
       },
-      update: { x },
     },
   },
 ];
@@ -137,7 +137,7 @@ const defaultSpec = initializeSpec({
       marks: [
         {
           encode: {
-            enter: {
+            update: {
               fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
               y: { field: 'value0', scale: 'yLinear' },
               y2: { field: 'value1', scale: 'yLinear' },
@@ -146,8 +146,6 @@ const defaultSpec = initializeSpec({
               strokeJoin: { value: 'round' },
               tooltip: undefined,
               defined: { signal: 'isValid(datum["value0"]) || isValid(datum["value1"])' },
-            },
-            update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
               cursor: undefined,
               fillOpacity: { value: 0.8 },
@@ -406,8 +404,8 @@ describe('areaSpecBuilder', () => {
       const groupMark = marks[0] as GroupMark;
       const anchorPoint = groupMark.marks?.find((mark) => mark.name === 'area0_anchorPoint');
       const hoverPoint = marks.find((mark) => mark.name === 'area0_point');
-      expect(anchorPoint?.encode?.enter).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
-      expect(hoverPoint?.encode?.enter).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
+      expect(anchorPoint?.encode?.update).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
+      expect(hoverPoint?.encode?.update).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
     });
   });
 });

@@ -315,12 +315,12 @@ const getAnchorPointMark = (areaOptions: AreaSpecOptions): Mark[] => {
       interactive: false,
       encode: {
         enter: {
-          y: { scale: 'yLinear', field: getHoverPointMetric(areaOptions) },
           stroke: { value: 'transparent' },
           fill: { value: 'transparent' },
         },
         update: {
           x: getX(scaleType, dimension),
+          y: { scale: 'yLinear', field: getHoverPointMetric(areaOptions) },
         },
       },
     },
@@ -339,13 +339,11 @@ const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
       from: { data: `${name}_highlightedData` },
       interactive: false,
       encode: {
-        enter: {
+        update: {
+          x: getX(scaleType, dimension),
           y: { scale: 'yLinear', field: getHoverPointMetric(areaOptions) },
           stroke: { scale: COLOR_SCALE, field: color },
           fill: { signal: BACKGROUND_COLOR },
-        },
-        update: {
-          x: getX(scaleType, dimension),
         },
       },
     },
@@ -359,11 +357,11 @@ const getHoverMarks = (areaOptions: AreaSpecOptions): Mark[] => {
     encode: {
       enter: {
         y: { value: 0 },
-        y2: { signal: 'height' },
         strokeWidth: { value: 1 },
       },
       update: {
         x: getX(scaleType, dimension),
+        y2: { signal: 'height' },
         // without dimension highlighting, the rule only marks controlled highlights, not hovered items
         ...(highlightsByDimension ? {} : { opacity: { signal: `isValid(${CONTROLLED_HIGHLIGHTED_ITEM}) ? 1 : 0` } }),
       },
@@ -401,15 +399,15 @@ const getSelectedAreaMarks = ({
       interactive: false,
       encode: {
         enter: {
-          y: { scale: 'yLinear', field: metricStart },
-          y2: { scale: 'yLinear', field: metricEnd },
-          // need to fill this so the white border doesn't slightly bleed around the blue select border
-          fill: { scale: COLOR_SCALE, field: color },
           stroke: { value: spectrumColors.light['static-blue'] },
           strokeWidth: { value: 2 },
           strokeJoin: { value: 'round' },
         },
         update: {
+          y: { scale: 'yLinear', field: metricStart },
+          y2: { scale: 'yLinear', field: metricEnd },
+          // need to fill this so the white border doesn't slightly bleed around the blue select border
+          fill: { scale: COLOR_SCALE, field: color },
           // this has to be in update because when you resize the window that doesn't rebuild the spec
           // but it may change the x position if it causes the chart to resize
           x: getX(scaleType, dimension),

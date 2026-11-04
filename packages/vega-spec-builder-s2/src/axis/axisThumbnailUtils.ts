@@ -11,7 +11,12 @@
  */
 import { ImageMark, ScaleType, Signal, TextEncodeEntry } from 'vega';
 
-import { FILTERED_TABLE, MAX_THUMBNAIL_SIZE, MIN_THUMBNAIL_SIZE, THUMBNAIL_OFFSET } from '@spectrum-charts/core-s2/constants';
+import {
+  FILTERED_TABLE,
+  MAX_THUMBNAIL_SIZE,
+  MIN_THUMBNAIL_SIZE,
+  THUMBNAIL_OFFSET,
+} from '@spectrum-charts/core-s2/constants';
 
 import { getGenericUpdateSignal } from '../signal/signalSpecBuilder.js';
 import { AxisSpecOptions, AxisThumbnailOptions, AxisThumbnailSpecOptions, Position } from '../types/index.js';
@@ -114,10 +119,8 @@ export const getAxisThumbnailMarks = (
       name,
       from: { data: FILTERED_TABLE },
       encode: {
-        enter: {
-          url: { field: urlKey },
-        },
         update: {
+          url: { field: urlKey },
           ...getAxisThumbnailPosition(scaleName, scaleField, position, name, diverging),
           width: { signal: `${name}ThumbnailSize` },
           height: { signal: `${name}ThumbnailSize` },
@@ -161,10 +164,7 @@ export const getAxisThumbnailPosition = (
   // diverging: a row's thumbnail sits across the zero line from its own bar (mirrors the label align flip); else pinned to the edge
   const getPositionRule = (edgeExpr: string, farSide: string, nearSide: string) => {
     if (!diverging) return { signal: edgeExpr };
-    return [
-      { test: diverging.isNegativeBarExpr, signal: nearSide },
-      { signal: farSide },
-    ];
+    return [{ test: diverging.isNegativeBarExpr, signal: nearSide }, { signal: farSide }];
   };
 
   switch (position) {

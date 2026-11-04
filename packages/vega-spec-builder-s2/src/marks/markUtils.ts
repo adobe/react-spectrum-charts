@@ -49,7 +49,10 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { addHoveredItemOpacityRules, getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import {
+  addHoveredItemOpacityRules,
+  getControlledHighlightedItemOpacityRule,
+} from '../chartInspect/chartInspectUtils.js';
 import { LineMarkOptions } from '../line/lineUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import {
@@ -392,11 +395,11 @@ export const getPointsForVoronoi = (
     interactive: false,
     encode: {
       enter: {
-        y: getYProductionRule(metricAxis, metric),
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
       },
       update: {
+        y: getYProductionRule(metricAxis, metric),
         x: getXProductionRule(scaleType, dimension),
       },
     },
@@ -423,9 +426,9 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
         isVoronoi: { value: true },
-        tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
       },
       update: {
+        tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
         cursor: getCursor(chartPopovers ?? [], hasOnClick, chartActionBars),
       },
     },
@@ -472,13 +475,13 @@ export const getItemHoverArea = (
       encode: {
         enter: {
           shape: { value: HOVER_SHAPE },
-          y: yEncoding,
           fill: { value: 'transparent' },
           stroke: { value: 'transparent' },
-          tooltip: getInspectEncoding(chartInspects, name, false),
-          size: getHoverSizeSignal(size),
         },
         update: {
+          y: yEncoding,
+          tooltip: getInspectEncoding(chartInspects, name, false),
+          size: getHoverSizeSignal(size),
           x: getXProductionRule(scaleType, dimension),
         },
       },

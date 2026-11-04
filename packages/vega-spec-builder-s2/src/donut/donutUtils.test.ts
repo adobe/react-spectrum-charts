@@ -425,6 +425,9 @@ describe('getSumData()', () => {
 });
 
 describe('getArcMark()', () => {
+  test('should key arcs by the row key field', () => {
+    expect(getArcMark(defaultDonutOptions)).toHaveProperty('key', 'testName_rowKey');
+  });
   test('should hide the arcs when the donut is in the empty state', () => {
     const arcMark = getArcMark(defaultDonutOptions);
     const opacity = arcMark.encode?.update?.opacity;
@@ -433,11 +436,11 @@ describe('getArcMark()', () => {
   });
   test('should use the normal color scale when isBoolean is false', () => {
     const arcMark = getArcMark(defaultDonutOptions);
-    expect(arcMark.encode?.enter?.fill).toEqual({ scale: 'color', field: 'testColor' });
+    expect(arcMark.encode?.update?.fill).toEqual({ scale: 'color', field: 'testColor' });
   });
   test('should force the secondary segment to secondary-gray when isBoolean is true', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, isBoolean: true });
-    const fill = arcMark.encode?.enter?.fill;
+    const fill = arcMark.encode?.update?.fill;
     expect(fill).toEqual([
       {
         test: `!(datum.${defaultDonutOptions.idKey} === data('testName_booleanData')[0].${defaultDonutOptions.idKey})`,
@@ -577,19 +580,19 @@ describe('getArcMark()', () => {
 
   test('should use the normal categorical color when no segments are emphasized', () => {
     const arcMark = getArcMark(defaultDonutOptions);
-    expect(arcMark.encode?.enter?.fill).toEqual({ scale: 'color', field: 'testColor' });
+    expect(arcMark.encode?.update?.fill).toEqual({ scale: 'color', field: 'testColor' });
   });
 
   test('should swap non-emphasized segments to solid gray-400, at full opacity (not a fade)', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, emphasizedItems: ['Chrome'] });
-    expect(arcMark.encode?.enter?.fill).toEqual([
+    expect(arcMark.encode?.update?.fill).toEqual([
       {
         test: `indexof(["Chrome"], datum.testColor) < 0`,
         value: spectrum2Colors.light['gray-400'],
       },
       { scale: 'color', field: 'testColor' },
     ]);
-    // the color swap is a static `fill` rule (enter), fully independent from the opacity-based
+    // the color swap is a `fill` rule, fully independent from the opacity-based
     // hover/legend fade rules (update) - it must not add or alter any opacity rule
     const opacity = arcMark.encode?.update?.opacity as { test?: string }[];
     expect(opacity).toStrictEqual(getArcMark(defaultDonutOptions).encode?.update?.opacity);
@@ -597,7 +600,7 @@ describe('getArcMark()', () => {
 
   test('should support multiple emphasized segments', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, emphasizedItems: ['Chrome', 'Firefox'] });
-    expect(arcMark.encode?.enter?.fill).toEqual([
+    expect(arcMark.encode?.update?.fill).toEqual([
       {
         test: `indexof(["Chrome","Firefox"], datum.testColor) < 0`,
         value: spectrum2Colors.light['gray-400'],
@@ -608,7 +611,7 @@ describe('getArcMark()', () => {
 
   test('should use the dark theme gray-400 for non-emphasized segments', () => {
     const arcMark = getArcMark({ ...defaultDonutOptions, colorScheme: 'dark', emphasizedItems: ['Chrome'] });
-    expect(arcMark.encode?.enter?.fill).toEqual([
+    expect(arcMark.encode?.update?.fill).toEqual([
       {
         test: `indexof(["Chrome"], datum.testColor) < 0`,
         value: spectrum2Colors.dark['gray-400'],
@@ -675,13 +678,13 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark).toHaveProperty('interactive', false);
     expect(emptyStateMark.encode?.enter?.fill).toEqual({ value: spectrum2Colors.light['gray-200'] });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: 0 });
-    expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: '0 + 2 * PI' });
+    expect(emptyStateMark.encode?.update?.endAngle).toEqual({ signal: '0 + 2 * PI' });
   });
   test('should mirror the semicircle sweep and bottom anchor', () => {
     const emptyStateMark = getEmptyStateArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
     expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: 'height - 2' });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
-    expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
+    expect(emptyStateMark.encode?.update?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
   });
   test('should not reserve summary-delta space for the semicircle empty state', () => {
     const emptyStateMark = getEmptyStateArcMark({

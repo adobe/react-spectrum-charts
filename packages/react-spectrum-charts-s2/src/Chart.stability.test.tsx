@@ -9,22 +9,32 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 import { View } from 'vega';
 
-import { DRAW_IN_ANIM_T } from '@spectrum-charts/core-s2/constants';
+import { Provider } from '@react-spectrum/s2';
+import {
+  ANIMATION_TIMER,
+  DEFAULT_COLOR_SCHEME,
+  DRAW_IN_ANIM_T,
+  DRAW_IN_DURATION,
+} from '@spectrum-charts/core-s2/constants';
 
 import { Chart } from './Chart.js';
-import { Axis, Legend, Line } from './components/index.js';
+import { Axis, Bar, Donut, Legend, Line } from './components/index.js';
 import usePrefersReducedMotion from './hooks/usePrefersReducedMotion.js';
+import { Bullet, Scatter } from './lab/index.js';
 import {
+  act,
   clickNthElement,
   enableDrawIn,
   findChart,
   getAllLegendEntries,
   getScene,
+  render,
   setupChartHarness,
 } from './test-utils/index.js';
-import { ChartProps } from './types/index.js';
+import { ChartChildElement, ChartProps } from './types/index.js';
 
 // Baselines record behavior on main; the S2 chart stability RFC (#1022) tightens them to its targets.
 
@@ -260,7 +270,11 @@ describe('update equals fresh mount', () => {
     ['a built-in polygon', 'cross'],
     ['a custom path larger than the icon', 'M -1.5 -1.5 L 1.5 -1.5 L 0 1.5 Z'],
   ])('controlled hiddenSeries on a legend with %s', async (_, symbolShape) => {
-    const { updated, fresh } = await harness.compareUpdateToMount(shapedChart(symbolShape), {}, { hiddenSeries: ['a'] });
+    const { updated, fresh } = await harness.compareUpdateToMount(
+      shapedChart(symbolShape),
+      {},
+      { hiddenSeries: ['a'] }
+    );
 
     expect(updated).toEqual(fresh);
   });
@@ -287,5 +301,154 @@ describe('update equals fresh mount', () => {
       expect(harness.latestView().signal(DRAW_IN_ANIM_T)).toBe(1);
       expect(updated).toEqual(fresh);
     });
+  });
+});
+
+type SceneMark = { marktype?: string; name?: string; items?: SceneMark[] };
+
+const findSceneItems = (node: SceneMark, name: string): SceneMark[] => {
+  if (node.marktype && node.name === name) return node.items ?? [];
+  return (node.items ?? []).flatMap((child) => findSceneItems(child, name));
+};
+
+const getMarkItems = (view: View, name: string): SceneMark[] =>
+  findSceneItems((view.scenegraph() as unknown as { root: SceneMark }).root, name);
+
+describe('keyed marks', () => {
+  type KeyedRow = { category: string; series: string; value: number; target: number };
+
+  const keyedData: KeyedRow[] = [
+    { category: 'x', series: 'a', value: 3, target: 4 },
+    { category: 'x', series: 'b', value: 5, target: 4 },
+    { category: 'y', series: 'a', value: 2, target: 4 },
+    { category: 'y', series: 'b', value: 4, target: 4 },
+  ];
+
+  const doubled = keyedData.map((row) => ({ ...row, value: row.value * 2 }));
+
+  const renderKeyedChart = (mark: ChartChildElement, props: Partial<ChartProps>) => (
+    <Chart
+      data={keyedData}
+      width={400}
+      height={300}
+      animations={false}
+      onVegaViewReady={harness.onVegaViewReady}
+      {...props}
+    >
+      {mark}
+    </Chart>
+  );
+
+  const keyedChart = (mark: ChartChildElement) => (props: Partial<ChartProps>) => renderKeyedChart(mark, props);
+
+  const marks: [string, string, ChartChildElement][] = [
+    ['stacked bar', 'bar0', <Bar key="bar" dimension="category" metric="value" color="series" />],
+    ['dodged bar', 'bar0', <Bar key="bar" dimension="category" metric="value" color="series" type="dodged" />],
+    ['scatter', 'scatter0', <Scatter key="scatter" dimension="value" metric="target" color="series" />],
+    ['donut', 'donut0', <Donut key="donut" metric="value" color="category" />],
+    ['bullet', 'bullet0Rect', <Bullet key="bullet" dimension="category" metric="value" target="target" />],
+  ];
+
+  test.each(marks)('a %s data update keeps its items and matches a fresh mount', async (_, name, mark) => {
+    const keyed = keyedChart(mark);
+    const mounted = await harness.mount(keyed({}));
+    const before = getMarkItems(harness.latestView(), name);
+    await harness.update(mounted, keyed({ data: doubled }));
+    const after = getMarkItems(harness.latestView(), name);
+    const updated = getScene(harness.latestView());
+    mounted.unmount();
+
+    expect(before.length).toBeGreaterThan(0);
+    // compared by count so a failure doesn't print the cyclic scene items
+    expect(after.filter((item, i) => item === before[i]).length).toBe(before.length);
+    expect(after.length).toBe(before.length);
+
+    const fresh = await harness.mount(keyed({ data: doubled }));
+    expect(updated).toEqual(getScene(harness.latestView()));
+    fresh.unmount();
+  });
+});
+
+describe('mid-flight data updates', () => {
+  type KeyedRow = { category: string; series: string; value: number };
+
+  const rows: KeyedRow[] = [
+    { category: 'x', series: 'a', value: 3 },
+    { category: 'x', series: 'b', value: 5 },
+    { category: 'y', series: 'a', value: 2 },
+    { category: 'y', series: 'b', value: 4 },
+  ];
+
+  const changed = [...rows.map((row) => ({ ...row, value: row.value * 2 })), { category: 'z', series: 'a', value: 1 }];
+
+  const frames: FrameRequestCallback[] = [];
+  let frameSpy: jest.SpyInstance | undefined;
+
+  // the ticker never runs, so each test drives the draw-in clock itself
+  beforeEach(() => {
+    enableDrawIn();
+    frames.length = 0;
+    frameSpy = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => frames.push(callback));
+  });
+
+  afterEach(() => {
+    frameSpy?.mockRestore();
+    // releases the ticker's pending frame so later tests can schedule their own
+    frames.forEach((callback) => callback(performance.now()));
+    jest.mocked(usePrefersReducedMotion).mockReturnValue(true);
+  });
+
+  const waitForView = async (count: number): Promise<View> => {
+    for (let i = 0; i < 100 && harness.views.length < count; i++) {
+      await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+    }
+    const view = harness.latestView();
+    await act(async () => {
+      await view.runAsync();
+    });
+    return view;
+  };
+
+  const pinDrawIn = async (view: View, progress: number) => {
+    const start = 1000;
+    await act(async () => {
+      await view.signal(ANIMATION_TIMER, start).runAsync();
+      await view.signal(ANIMATION_TIMER, start + Number(view.signal(DRAW_IN_DURATION)) * progress).runAsync();
+    });
+  };
+
+  const renderMidFlightChart = (mark: ChartChildElement, chartData: KeyedRow[]) => (
+    <Chart data={chartData} width={400} height={300} onVegaViewReady={harness.onVegaViewReady}>
+      {mark}
+    </Chart>
+  );
+
+  const midFlightChart = (mark: ChartChildElement) => (chartData: KeyedRow[]) => renderMidFlightChart(mark, chartData);
+
+  const marks: [string, ChartChildElement][] = [
+    ['stacked bar', <Bar key="bar" dimension="category" metric="value" color="series" />],
+    ['dodged bar', <Bar key="bar" dimension="category" metric="value" color="series" type="dodged" />],
+    ['line', <Line key="line" dimension="category" metric="value" color="series" scaleType="point" />],
+    ['donut', <Donut key="donut" metric="value" color="category" />],
+  ];
+
+  test.each(marks)('a %s updated mid-draw-in matches a fresh mount at the same progress', async (_, mark) => {
+    const midFlight = midFlightChart(mark);
+    const mounted = render(midFlight(rows));
+    await pinDrawIn(await waitForView(1), 0.5);
+    mounted.rerender(<Provider colorScheme={DEFAULT_COLOR_SCHEME}>{midFlight(changed)}</Provider>);
+    const view = await waitForView(1);
+    await pinDrawIn(view, 0.5);
+    const updated = getScene(view);
+    mounted.unmount();
+
+    expect(harness.views).toHaveLength(1);
+    expect(view.signal(DRAW_IN_ANIM_T)).toBe(0.5);
+
+    const fresh = render(midFlight(changed));
+    const freshView = await waitForView(2);
+    await pinDrawIn(freshView, 0.5);
+    expect(updated).toEqual(getScene(freshView));
+    fresh.unmount();
   });
 });

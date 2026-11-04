@@ -131,9 +131,12 @@ export const stackedLabelWithStyles = {
     enter: {
       align: { value: 'center' },
       baseline: { value: 'middle' },
-      fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
       height: { value: 22 },
       width: { value: 48 },
+      cornerRadius: { value: 4 },
+    },
+    update: {
+      fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
       xc: { scale: stackedXScale, field: defaultBarOptions.dimension, band: 0.5 },
       yc: [
         {
@@ -144,7 +147,6 @@ export const stackedLabelWithStyles = {
           signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 13.5)`,
         },
       ],
-      cornerRadius: { value: 4 },
     },
   },
 };
@@ -158,8 +160,11 @@ export const stackedLabelBackground = {
     enter: {
       align: { value: 'center' },
       baseline: { value: 'middle' },
-      fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
       height: { value: 22 },
+      cornerRadius: { value: 4 },
+    },
+    update: {
+      fill: [{ test: `datum.textLabel && bandwidth('${stackedXScale}') >= 48`, signal: BACKGROUND_COLOR }],
       width: { signal: "getLabelWidth(datum.textLabel, 'bold', 12) + 10" },
       xc: { scale: stackedXScale, field: defaultBarOptions.dimension, band: 0.5 },
       yc: [
@@ -171,7 +176,6 @@ export const stackedLabelBackground = {
           signal: `min(scale('yLinear', datum.${defaultBarOptions.metric}1), scale('yLinear', 0) - 13.5)`,
         },
       ],
-      cornerRadius: { value: 4 },
     },
   },
 };
@@ -183,6 +187,12 @@ export const stackedLabelText = {
   interactive: false,
   encode: {
     enter: {
+      fontSize: { value: 12 },
+      fontWeight: { value: 'bold' },
+      baseline: { value: 'middle' },
+      align: { value: 'center' },
+    },
+    update: {
       x: { scale: stackedXScale, field: defaultBarOptions.dimension, band: 0.5 },
       y: [
         {
@@ -194,10 +204,6 @@ export const stackedLabelText = {
         },
       ],
       text: [{ test: `bandwidth('${stackedXScale}') >= 48`, field: 'textLabel' }],
-      fontSize: { value: 12 },
-      fontWeight: { value: 'bold' },
-      baseline: { value: 'middle' },
-      align: { value: 'center' },
     },
   },
 };
@@ -207,8 +213,8 @@ export const dodgedLabelWithStyles = {
   from: { data: `${defaultBarOptions.name}_facet` },
   encode: {
     ...stackedLabelWithStyles.encode,
-    enter: {
-      ...stackedLabelWithStyles.encode.enter,
+    update: {
+      ...stackedLabelWithStyles.encode.update,
       xc: { scale: dodgedXScale, field: dodgedGroupField, band: 0.5 },
       yc: [
         {
@@ -229,8 +235,8 @@ export const dodgedLabelBackground = {
   from: { data: `${defaultBarOptions.name}_facet` },
   encode: {
     ...stackedLabelBackground.encode,
-    enter: {
-      ...stackedLabelBackground.encode.enter,
+    update: {
+      ...stackedLabelBackground.encode.update,
       xc: { scale: dodgedXScale, field: dodgedGroupField, band: 0.5 },
       yc: [
         {
@@ -251,8 +257,8 @@ export const dodgedLabelText = {
   from: { data: `${defaultBarOptions.name}_facet` },
   encode: {
     ...stackedLabelText.encode,
-    enter: {
-      ...stackedLabelText.encode.enter,
+    update: {
+      ...stackedLabelText.encode.update,
       x: { scale: dodgedXScale, field: dodgedGroupField, band: 0.5 },
       y: [
         {
@@ -272,8 +278,8 @@ export const dodgedSubSeriesLabelBackground = {
   ...dodgedLabelBackground,
   encode: {
     ...dodgedLabelBackground.encode,
-    enter: {
-      ...dodgedLabelBackground.encode.enter,
+    update: {
+      ...dodgedLabelBackground.encode.update,
       yc: [
         {
           test: `datum.${defaultBarOptions.metric}1 < 0`,
@@ -291,8 +297,8 @@ export const dodgedSubSeriesLabelText = {
   ...dodgedLabelText,
   encode: {
     ...dodgedLabelText.encode,
-    enter: {
-      ...dodgedLabelText.encode.enter,
+    update: {
+      ...dodgedLabelText.encode.update,
       y: [
         {
           test: `datum.${defaultBarOptions.metric}1 < 0`,
@@ -312,7 +318,7 @@ export const dodgedAnnotationMarks = [dodgedLabelBackground, dodgedLabelText];
 export const dodgedAnnotationMarksWithStyles = [dodgedLabelWithStyles, dodgedLabelText];
 export const dodgedSubSeriesAnnotationMarks = [dodgedSubSeriesLabelBackground, dodgedSubSeriesLabelText];
 
-export const defaultBarEnterEncodings: RectEncodeEntry = {
+export const defaultBarUpdateEncodings: RectEncodeEntry = {
   ...defaultStackedYEncodings,
   ...defaultCornerRadiusEncodings,
 };

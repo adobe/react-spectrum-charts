@@ -46,10 +46,8 @@ export const getScatterAnnotationMarks = (scatterOptions: ScatterSpecOptions): T
         data: annotation.scatterOptions.name,
       },
       encode: {
-        enter: {
-          text: { signal: `datum.datum.${textKey}` },
-        },
         update: {
+          text: { signal: `datum.datum.${textKey}` },
           // use the same opacity as the scatter mark
           // have to use fillOpacity instead of opacity because there is a bug in Vega where using opacity will cause the marks to be redrawn when also using a label transform.
           fillOpacity: { signal: 'datum.opacity' },

@@ -51,6 +51,7 @@ import {
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import { getRowKeyField, getRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { baseData, initializeSpec } from '../specUtils.js';
 import { ChartInspectOptions } from '../types/dialogs/chartInspectSpec.types.js';
@@ -123,6 +124,16 @@ const defaultTableData: ValuesData = {
 };
 const defaultFilteredTableData: SourceData = { name: FILTERED_TABLE, source: TABLE };
 
+const getTableDataWithRowKey = (fields: string[], transforms: Transforms[] = []): ValuesData => ({
+  ...defaultTableData,
+  transform: [
+    ...(defaultTableData.transform ?? []),
+    ...transforms,
+    ...getRowKeyTransforms({ name: 'bar0', idKey: MARK_ID, fields }),
+  ],
+});
+const defaultTableDataWithRowKey = getTableDataWithRowKey([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR]);
+
 const defaultData: Data[] = [defaultTableData, defaultFilteredTableData];
 
 const defaultStacksTransforms: Transforms[] = [
@@ -187,14 +198,13 @@ const defaultBackgroundStackedMark: Mark = {
   description: 'bar0_background',
   type: 'rect',
   from: { data: FILTERED_TABLE },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...defaultStackedYEncodings,
       ...defaultCornerRadiusEncodings,
       fill: { signal: BACKGROUND_COLOR },
-    },
-    update: {
       x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
       width: { scale: 'xBand', band: 1 },
     },
@@ -205,16 +215,15 @@ const defaultStackedMark: Mark = {
   description: 'bar0',
   type: 'rect',
   from: { data: FILTERED_TABLE },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...defaultStackedYEncodings,
       ...defaultCornerRadiusEncodings,
       fill: { scale: COLOR_SCALE, field: DEFAULT_COLOR },
       fillOpacity: DEFAULT_OPACITY_RULE,
       tooltip: undefined,
-    },
-    update: {
       ...defaultBarStrokeEncodings,
       cursor: undefined,
       opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
@@ -233,7 +242,10 @@ const defaultSpec: ScSpec = {
   data: [
     {
       name: TABLE,
-      transform: [{ type: 'identifier', as: MARK_ID }],
+      transform: [
+        { type: 'identifier', as: MARK_ID },
+        ...getRowKeyTransforms({ name: 'bar0', idKey: MARK_ID, fields: [DEFAULT_CATEGORICAL_DIMENSION] }),
+      ],
       values: [],
     },
     {
@@ -251,12 +263,9 @@ const defaultSpec: ScSpec = {
       ...defaultStackedMark,
       encode: {
         ...defaultStackedMark.encode,
-        enter: {
-          ...defaultStackedMark.encode?.enter,
-          fill: { value: spectrum2Colors.light['categorical-100'] },
-        },
         update: {
           ...defaultStackedMark.encode?.update,
+          fill: { value: spectrum2Colors.light['categorical-100'] },
           stroke: [{ value: spectrum2Colors.light['categorical-100'] }],
         },
       },
@@ -1305,10 +1314,7 @@ describe('barSpecBuilder', () => {
             dimension: 'browser',
           })
         ).toStrictEqual([
-          {
-            ...defaultTableData,
-            transform: [...(defaultTableData.transform ? defaultTableData.transform : []), ...timeTransform],
-          },
+          getTableDataWithRowKey(['browser', DEFAULT_COLOR], timeTransform),
           {
             ...defaultFilteredTableData,
             transform: [
@@ -1333,7 +1339,7 @@ describe('barSpecBuilder', () => {
 
       test('new transform should be added to the data table', () => {
         expect(addData(defaultData, { ...defaultBarOptions, metric: 'views', dimension: 'browser' })).toStrictEqual([
-          defaultTableData,
+          getTableDataWithRowKey(['browser', DEFAULT_COLOR]),
           {
             ...defaultFilteredTableData,
             transform: [
@@ -1358,7 +1364,7 @@ describe('barSpecBuilder', () => {
 
       test('no options, transform should use default values', () => {
         expect(addData(defaultData, defaultBarOptions)).toStrictEqual([
-          defaultTableData,
+          defaultTableDataWithRowKey,
           {
             ...defaultFilteredTableData,
             transform: defaultStackedTransforms,
@@ -1369,7 +1375,7 @@ describe('barSpecBuilder', () => {
 
       test('order supplied, transform should include sort by order', () => {
         expect(addData(defaultData, { ...defaultBarOptions, order: 'order' })).toStrictEqual([
-          defaultTableData,
+          defaultTableDataWithRowKey,
           {
             ...defaultFilteredTableData,
             transform: [
@@ -1402,6 +1408,14 @@ describe('barSpecBuilder', () => {
       });
     });
 
+    test('custom idKey, should key bars by idKey without adding row key transforms', () => {
+      const options = { ...defaultBarOptions, idKey: 'id' };
+      expect(addData(defaultData, options)[0]).toStrictEqual(defaultTableData);
+      expect(addMarks([], options)).toEqual(
+        defaultStackedBarMarks.map((mark) => expect.objectContaining({ name: mark.name, key: 'id' }))
+      );
+    });
+
     describe('transform already exists', () => {
       test('no options, new transform should be pushed onto the end with default values', () => {
         expect(
@@ -1410,7 +1424,7 @@ describe('barSpecBuilder', () => {
             defaultBarOptions
           )
         ).toStrictEqual([
-          defaultTableData,
+          defaultTableDataWithRowKey,
           {
             ...defaultFilteredTableData,
             transform: [...defaultStackedTransforms, ...defaultStackedTransforms],
@@ -1437,7 +1451,7 @@ describe('barSpecBuilder', () => {
           color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
         })
       ).toStrictEqual([
-        defaultTableData,
+        getTableDataWithRowKey([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR]),
         {
           ...defaultFilteredTableData,
           transform: [
@@ -1492,7 +1506,7 @@ describe('barSpecBuilder', () => {
       expect(
         addData(defaultData, { ...defaultBarOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
       ).toStrictEqual([
-        defaultTableData,
+        getTableDataWithRowKey([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR]),
         {
           ...defaultFilteredTableData,
           transform: [

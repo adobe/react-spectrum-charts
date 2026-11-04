@@ -47,6 +47,8 @@ import * as signalSpecBuilder from '../signal/signalSpecBuilder.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
 import { LineOptions, ScSpec } from '../types/index.js';
+import { getHoverLabelData, getLineHighlightedData } from './lineDataUtils.js';
+import { getLineHoverMarks } from './lineMarkUtils.js';
 import {
   addData,
   addLine,
@@ -56,8 +58,6 @@ import {
   getLineDomainData,
   setScales,
 } from './lineSpecBuilder.js';
-import { getHoverLabelData, getLineHighlightedData } from './lineDataUtils.js';
-import { getLineHoverMarks } from './lineMarkUtils.js';
 import { defaultLineOptions } from './lineTestUtils.js';
 
 describe('fixed metric axis hover', () => {
@@ -266,13 +266,13 @@ const defaultSpec = initializeSpec({
         {
           encode: {
             enter: {
-              stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
               strokeCap: { value: 'round' },
+            },
+            update: {
+              stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
               strokeDash: { value: [] },
               strokeOpacity: DEFAULT_OPACITY_RULE,
               y: [{ field: 'value', scale: 'yLinear' }],
-            },
-            update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
               ...controlledLineUpdate,
               strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
@@ -343,13 +343,13 @@ const line0_groupMark = {
       interactive: false,
       encode: {
         enter: {
-          y: [{ scale: 'yLinear', field: 'value' }],
-          stroke: { scale: COLOR_SCALE, field: 'series' },
           strokeCap: { value: 'round' },
-          strokeDash: { value: [] },
-          strokeOpacity: DEFAULT_OPACITY_RULE,
         },
         update: {
+          y: [{ scale: 'yLinear', field: 'value' }],
+          stroke: { scale: COLOR_SCALE, field: 'series' },
+          strokeDash: { value: [] },
+          strokeOpacity: DEFAULT_OPACITY_RULE,
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
           ...controlledLineUpdate,
         },
@@ -374,6 +374,9 @@ const metricRangeGroupMark = {
       interactive: false,
       encode: {
         enter: {
+          strokeCap: { value: 'round' },
+        },
+        update: {
           y: [
             {
               scale: 'yLinear',
@@ -384,13 +387,10 @@ const metricRangeGroupMark = {
             scale: COLOR_SCALE,
             field: 'series',
           },
-          strokeCap: { value: 'round' },
           strokeDash: {
             value: [7, 4],
           },
           strokeOpacity: DEFAULT_OPACITY_RULE,
-        },
-        update: {
           x: {
             scale: 'xTime',
             field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -408,7 +408,7 @@ const metricRangeGroupMark = {
       },
       interactive: false,
       encode: {
-        enter: {
+        update: {
           y: {
             field: 'start',
             scale: 'yLinear',
@@ -423,8 +423,6 @@ const metricRangeGroupMark = {
           },
           tooltip: undefined,
           defined: { signal: 'isValid(datum["start"]) || isValid(datum["end"])' },
-        },
-        update: {
           cursor: undefined,
           x: {
             scale: 'xTime',
@@ -449,7 +447,7 @@ const staticPointMark = {
   },
   interactive: false,
   encode: {
-    enter: {
+    update: {
       y: [
         {
           scale: 'yLinear',
@@ -463,8 +461,6 @@ const staticPointMark = {
         scale: COLOR_SCALE,
         field: 'series',
       },
-    },
-    update: {
       x: {
         scale: 'xTime',
         field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -481,13 +477,11 @@ const staticPointBackgroundMark = {
   from: { data: 'line0_staticPointData' },
   interactive: false,
   encode: {
-    enter: {
+    update: {
       y: [{ scale: 'yLinear', field: 'value' }],
       size: { signal: CHART_SIZE_POINT_SIZE },
       fill: { signal: BACKGROUND_COLOR },
       stroke: { signal: BACKGROUND_COLOR },
-    },
-    update: {
       x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
     },
   },
@@ -722,7 +716,10 @@ describe('lineSpecBuilder', () => {
 
     test('scaleTypes "point" and "linear" should return the original data', () => {
       expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual([...baseData, ...highlightData]);
-      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual([...baseData, ...highlightData]);
+      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual([
+        ...baseData,
+        ...highlightData,
+      ]);
     });
 
     test('with dimensionHover adds groupId formula transform to table', () => {
@@ -1016,13 +1013,13 @@ describe('lineSpecBuilder', () => {
             {
               encode: {
                 enter: {
-                  stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
                   strokeCap: { value: 'round' },
+                },
+                update: {
+                  stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
                   strokeOpacity: DEFAULT_OPACITY_RULE,
                   strokeDash: { value: [8, 8] },
                   y: [{ field: 'value', scale: 'yLinear' }],
-                },
-                update: {
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
                   ...controlledLineUpdate,
                 },
@@ -1144,11 +1141,11 @@ describe('lineSpecBuilder', () => {
 
     test('voronoi points should reserve the same extent as the highlight point', () => {
       const marks = addLineMarks([], { ...defaultLineOptions, hasOnClick: true });
-      const voronoiPointsEnter = marks.at(-2)?.encode?.enter;
-      const highlightPointEnter = marks.find((mark) => mark.name === 'line0_point_highlight')?.encode?.enter;
+      const voronoiPointsUpdate = marks.at(-2)?.encode?.update;
+      const highlightPointUpdate = marks.find((mark) => mark.name === 'line0_point_highlight')?.encode?.update;
 
-      expect(voronoiPointsEnter).toHaveProperty('size', highlightPointEnter?.size);
-      expect(voronoiPointsEnter).toHaveProperty('strokeWidth', highlightPointEnter?.strokeWidth);
+      expect(voronoiPointsUpdate).toHaveProperty('size', highlightPointUpdate?.size);
+      expect(voronoiPointsUpdate).toHaveProperty('strokeWidth', highlightPointUpdate?.strokeWidth);
     });
 
     test('with gradient should add gradient area mark before line mark', () => {
@@ -1348,8 +1345,8 @@ describe('lineSpecBuilder', () => {
         alternateSegmentKey: 'isEstimated',
         alternateSegmentLineType: 'dotted',
       });
-      const groupMark = marks[0] as { marks: { encode: { enter: { strokeDash: unknown } } }[] };
-      const strokeDash = groupMark.marks[0].encode.enter.strokeDash;
+      const groupMark = marks[0] as { marks: { encode: { update: { strokeDash: unknown } } }[] };
+      const strokeDash = groupMark.marks[0].encode.update.strokeDash;
       expect(strokeDash).toHaveProperty('signal');
     });
 
@@ -1398,9 +1395,9 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       const groupMark = marks.find((m) => m.name === 'line0_group') as {
-        marks: { encode: { enter: { strokeDash: unknown } } }[];
+        marks: { encode: { update: { strokeDash: unknown } } }[];
       };
-      expect(groupMark?.marks?.[0]?.encode?.enter?.strokeDash).toHaveProperty('signal');
+      expect(groupMark?.marks?.[0]?.encode?.update?.strokeDash).toHaveProperty('signal');
     });
 
     test('with forecasts line mark y-encoding uses effectiveValue field', () => {
@@ -1409,9 +1406,9 @@ describe('lineSpecBuilder', () => {
         forecasts: [{ metric: 'forecastValue', start: 1725148800000 }],
       });
       const groupMark = marks.find((m) => m.name === 'line0_group') as {
-        marks: { encode: { enter: { y: { field: string }[] } } }[];
+        marks: { encode: { update: { y: { field: string }[] } } }[];
       };
-      const yEncoding = groupMark?.marks?.[0]?.encode?.enter?.y;
+      const yEncoding = groupMark?.marks?.[0]?.encode?.update?.y;
       expect(yEncoding).toBeDefined();
       expect(Array.isArray(yEncoding)).toBe(true);
       expect(yEncoding?.[0]).toHaveProperty('field', 'line0_effectiveValue');

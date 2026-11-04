@@ -23,7 +23,8 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
-import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils.js';
+import { getRowKeyField } from '../data/rowKeyUtils.js';
+import { defaultBarOptions, defaultBarStrokeEncodings, defaultBarUpdateEncodings } from './barTestUtils.js';
 import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils.js';
 
 const defaultStackedBarXEncondings: RectEncodeEntry = {
@@ -33,13 +34,14 @@ const defaultStackedBarXEncondings: RectEncodeEntry = {
 
 const defaultBackgroundMark: Mark = {
   encode: {
-    enter: {
-      ...defaultBarEnterEncodings,
+    update: {
+      ...defaultBarUpdateEncodings,
       fill: { signal: BACKGROUND_COLOR },
+      ...defaultStackedBarXEncondings,
     },
-    update: defaultStackedBarXEncondings,
   },
   from: { data: FILTERED_TABLE },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   name: 'bar0_background',
   description: 'bar0_background',
@@ -48,13 +50,11 @@ const defaultBackgroundMark: Mark = {
 
 const defaultMark = {
   encode: {
-    enter: {
-      ...defaultBarEnterEncodings,
+    update: {
+      ...defaultBarUpdateEncodings,
       fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
       fillOpacity: DEFAULT_OPACITY_RULE,
       tooltip: undefined,
-    },
-    update: {
       cursor: undefined,
       opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
       ...defaultStackedBarXEncondings,
@@ -62,6 +62,7 @@ const defaultMark = {
     },
   },
   from: { data: FILTERED_TABLE },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   name: 'bar0',
   description: 'bar0',

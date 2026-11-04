@@ -11,231 +11,240 @@
  */
 import { Data, Mark, NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
-import { DIRECT_LABEL_BACKGROUND_STROKE_WIDTH, DIRECT_LABEL_FONT_WEIGHT, FILTERED_TABLE, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import {
+  DIRECT_LABEL_BACKGROUND_STROKE_WIDTH,
+  DIRECT_LABEL_FONT_WEIGHT,
+  FILTERED_TABLE,
+  SERIES_ID,
+} from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils.js';
-
+import { MIN_LABEL_GAP, getCascadeTransforms } from '../line/directLabelUtils.js';
 import { getInPlotMetricFilter, getPrimarySeriesOtherExpr } from '../line/lineDataUtils.js';
 import { getLineOpacity } from '../line/lineMarkUtils.js';
 import { getEffectiveMetricField } from '../lineForecast/index.js';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { escapeD3FormatSpecifier, getDimensionField, getFacetsFromOptions } from '../specUtils.js';
-import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions, LabelValue } from '../types/index.js';
+import { LabelValue, LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions } from '../types/index.js';
 
 /**
  * Derived dataset: one row per series at the last (max-dimension) data point.
  */
 export const getLineDirectLabelData = (
-	lineName: string,
-	labelOptions: LineDirectLabelSpecOptions,
-	lineOptions: LineSpecOptions
+  lineName: string,
+  labelOptions: LineDirectLabelSpecOptions,
+  lineOptions: LineSpecOptions
 ): Data => {
-	const { color, dimension, excludeSeries, metric, position, scaleType, value } = labelOptions;
-	const dimField = getDimensionField(dimension, scaleType);
-	const isStart = position === 'start';
-	const yScaleName = lineOptions.metricAxis || 'yLinear';
+  const { color, dimension, excludeSeries, metric, position, scaleType, value } = labelOptions;
+  const dimField = getDimensionField(dimension, scaleType);
+  const isStart = position === 'start';
+  const yScaleName = lineOptions.metricAxis || 'yLinear';
 
-	const { facets } = getFacetsFromOptions({
-		color: lineOptions.color,
-		lineType: lineOptions.lineType,
-		opacity: lineOptions.opacity,
-	});
-	const colorField = typeof color === 'string' ? color : undefined;
+  const { facets } = getFacetsFromOptions({
+    color: lineOptions.color,
+    lineType: lineOptions.lineType,
+    opacity: lineOptions.opacity,
+  });
+  const colorField = typeof color === 'string' ? color : undefined;
 
-	const formatSpec = labelOptions.format || '';
-	const valueExpr = getLabelValueExpr(value, metric, colorField, formatSpec);
+  const formatSpec = labelOptions.format || '';
+  const valueExpr = getLabelValueExpr(value, metric, colorField, formatSpec);
 
-	const usesMin = isStart;
-	const transforms: Transforms[] = [
-		...(value === 'average'
-			? [
-					{
-						type: 'joinaggregate' as const,
-						groupby: facets,
-						fields: [metric],
-						ops: ['mean' as const],
-						as: ['directLabel_avg'],
-					},
-				]
-			: []),
-		{
-			type: 'joinaggregate' as const,
-			groupby: facets,
-			fields: [dimField],
-			ops: [usesMin ? ('min' as const) : ('max' as const)],
-			as: ['_extremeDim'],
-		},
-		{ type: 'filter' as const, expr: `datum["${dimField}"] === datum._extremeDim` },
-		{ type: 'formula' as const, as: 'directLabel_text', expr: valueExpr },
-		...(excludeSeries.length
-			? [
-					{
-						type: 'filter' as const,
-						expr: `indexof(${JSON.stringify(excludeSeries)}, datum.${SERIES_ID}) === -1`,
-					},
-				]
-			: []),
-		...(lineOptions.primarySeries
-			? [
-					{
-						type: 'filter' as const,
-						expr: `!(${getPrimarySeriesOtherExpr(lineOptions.primarySeries, 'datum')})`,
-					},
-				]
-			: []),
-		...(lineOptions.hasFixedMetricAxis ? [getInPlotMetricFilter(lineOptions, metric)] : []),
-		...getCascadeTransforms(yScaleName, metric, ''),
-	];
+  const usesMin = isStart;
+  const transforms: Transforms[] = [
+    ...(value === 'average'
+      ? [
+          {
+            type: 'joinaggregate' as const,
+            groupby: facets,
+            fields: [metric],
+            ops: ['mean' as const],
+            as: ['directLabel_avg'],
+          },
+        ]
+      : []),
+    {
+      type: 'joinaggregate' as const,
+      groupby: facets,
+      fields: [dimField],
+      ops: [usesMin ? ('min' as const) : ('max' as const)],
+      as: ['_extremeDim'],
+    },
+    { type: 'filter' as const, expr: `datum["${dimField}"] === datum._extremeDim` },
+    { type: 'formula' as const, as: 'directLabel_text', expr: valueExpr },
+    ...(excludeSeries.length
+      ? [
+          {
+            type: 'filter' as const,
+            expr: `indexof(${JSON.stringify(excludeSeries)}, datum.${SERIES_ID}) === -1`,
+          },
+        ]
+      : []),
+    ...(lineOptions.primarySeries
+      ? [
+          {
+            type: 'filter' as const,
+            expr: `!(${getPrimarySeriesOtherExpr(lineOptions.primarySeries, 'datum')})`,
+          },
+        ]
+      : []),
+    ...(lineOptions.hasFixedMetricAxis ? [getInPlotMetricFilter(lineOptions, metric)] : []),
+    ...getCascadeTransforms(yScaleName, metric, ''),
+  ];
 
-	return {
-		name: `${lineName}DirectLabel${labelOptions.index}_data`,
-		source: FILTERED_TABLE,
-		transform: transforms,
-	};
+  return {
+    name: `${lineName}DirectLabel${labelOptions.index}_data`,
+    source: FILTERED_TABLE,
+    transform: transforms,
+  };
 };
 
 const DEFAULT_NUMBER_FORMAT = ',.2~f';
 
 function getEscapedFormat(formatSpec?: string): string {
-	const resolved = formatSpec || DEFAULT_NUMBER_FORMAT;
-	return '"' + escapeD3FormatSpecifier(resolved) + '"';
+  const resolved = formatSpec || DEFAULT_NUMBER_FORMAT;
+  return '"' + escapeD3FormatSpecifier(resolved) + '"';
 }
 
 function getLabelValueExpr(value: LabelValue, metric: string, colorField?: string, formatSpec?: string): string {
-	const fmt = getEscapedFormat(formatSpec);
-	switch (value) {
-		case 'last':
-			return 'format(datum["' + metric + '"], ' + fmt + ')';
-		case 'average':
-			return 'format(datum.directLabel_avg, ' + fmt + ')';
-		case 'series':
-			return colorField ? 'datum["' + colorField + '"]' : "''";
-	}
+  const fmt = getEscapedFormat(formatSpec);
+  switch (value) {
+    case 'last':
+      return 'format(datum["' + metric + '"], ' + fmt + ')';
+    case 'average':
+      return 'format(datum.directLabel_avg, ' + fmt + ')';
+    case 'series':
+      return colorField ? 'datum["' + colorField + '"]' : "''";
+  }
 }
 
 /**
  * Text marks: background stroke halo + foreground fill, placed at the end of each line series.
  */
 export const getLineDirectLabelMarks = (
-	lineName: string,
-	labelOptions: LineDirectLabelSpecOptions,
-	lineOptions: LineSpecOptions,
-	backgroundColor: string | undefined,
-	colorScheme: 'light' | 'dark',
-	fgOpacityRules?: ProductionRule<NumericValueRef>
+  lineName: string,
+  labelOptions: LineDirectLabelSpecOptions,
+  lineOptions: LineSpecOptions,
+  backgroundColor: string | undefined,
+  colorScheme: 'light' | 'dark',
+  fgOpacityRules?: ProductionRule<NumericValueRef>
 ): Mark[] => {
-	const resolvedBg = getS2ColorValue(
-		backgroundColor === 'transparent' || !backgroundColor ? 'gray-25' : backgroundColor,
-		colorScheme
-	);
-	const dataName = `${lineName}DirectLabel${labelOptions.index}_data`;
-	const { prefix = '' } = labelOptions;
-	const textPrefix = prefix ? "'" + prefix.replaceAll("'", String.raw`\'`) + " ' + " : '';
-	const textExpr = `${textPrefix}datum.directLabel_text`;
+  const resolvedBg = getS2ColorValue(
+    backgroundColor === 'transparent' || !backgroundColor ? 'gray-25' : backgroundColor,
+    colorScheme
+  );
+  const dataName = `${lineName}DirectLabel${labelOptions.index}_data`;
+  const { prefix = '' } = labelOptions;
+  const textPrefix = prefix ? "'" + prefix.replaceAll("'", String.raw`\'`) + " ' + " : '';
+  const textExpr = `${textPrefix}datum.directLabel_text`;
 
-	const { dimension, metric, position, scaleType } = labelOptions;
-	const isStart = position === 'start';
-	const dimField = getDimensionField(dimension, scaleType);
-	const xScaleName = getScaleName('x', scaleType);
-	const yScaleName = lineOptions.metricAxis || 'yLinear';
+  const { dimension, metric, position, scaleType } = labelOptions;
+  const isStart = position === 'start';
+  const dimField = getDimensionField(dimension, scaleType);
+  const xScaleName = getScaleName('x', scaleType);
+  const yScaleName = lineOptions.metricAxis || 'yLinear';
 
-	const opacityRules = getLineOpacity(lineOptions);
-  	const fontSizeEncoding = getDirectLabelFontSizeProductionRule(labelOptions.fontSize);
+  const opacityRules = getLineOpacity(lineOptions);
+  const fontSizeEncoding = getDirectLabelFontSizeProductionRule(labelOptions.fontSize);
 
-	// Combined logic for direct label offset given 1, 2, or 3+ series
-	const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${MIN_LABEL_GAP} - 12 - datum._scaledY)`
+  // Combined logic for direct label offset given 1, 2, or 3+ series
+  const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${MIN_LABEL_GAP} - 12 - datum._scaledY)`;
 
-	const baseEnter = {
-		text: { signal: textExpr },
-		align: { value: isStart ? ('left' as const) : ('right' as const) },
-		limit: {
-			signal: isStart
-				? `scale('${xScaleName}', datum["${dimField}"])`
-				: `width - scale('${xScaleName}', datum["${dimField}"])`,
-		},
-		x: isStart ? ({ value: 0 } as const) : { signal: 'width' },
-		y: {
-			scale: yScaleName,
-			field: metric,
-			offset: { signal: offsetSignal },
-		},
-	};
+  const baseEnter = {
+    align: { value: isStart ? ('left' as const) : ('right' as const) },
+  };
+  const baseUpdate = {
+    text: { signal: textExpr },
+    limit: {
+      signal: isStart
+        ? `scale('${xScaleName}', datum["${dimField}"])`
+        : `width - scale('${xScaleName}', datum["${dimField}"])`,
+    },
+    x: isStart ? ({ value: 0 } as const) : { signal: 'width' },
+    y: {
+      scale: yScaleName,
+      field: metric,
+      offset: { signal: offsetSignal },
+    },
+  };
 
-	const backgroundTextMark: TextMark = {
-		name: `${lineName}DirectLabel${labelOptions.index}_bg`,
-		type: 'text',
-		from: { data: dataName },
-		interactive: false,
-		encode: {
-			enter: {
-				...baseEnter,
-				stroke: { value: resolvedBg },
-				strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
-				fill: { value: resolvedBg },
-			},
-			update: {
-				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
-				fontSize: fontSizeEncoding,
-				opacity: { value: 1 }
-			},
-		},
-	};
+  const backgroundTextMark: TextMark = {
+    name: `${lineName}DirectLabel${labelOptions.index}_bg`,
+    type: 'text',
+    from: { data: dataName },
+    interactive: false,
+    encode: {
+      enter: {
+        ...baseEnter,
+        stroke: { value: resolvedBg },
+        strokeWidth: { value: DIRECT_LABEL_BACKGROUND_STROKE_WIDTH },
+        fill: { value: resolvedBg },
+      },
+      update: {
+        ...baseUpdate,
+        fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+        fontSize: fontSizeEncoding,
+        opacity: { value: 1 },
+      },
+    },
+  };
 
-	const mainTextMark: TextMark = {
-		name: `${lineName}DirectLabel${labelOptions.index}`,
-		type: 'text',
-		from: { data: dataName },
-		interactive: false,
-		encode: {
-			enter: {
-				...baseEnter,
-				fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
-			},
-			update: {
-				fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
-				fontSize: fontSizeEncoding,
-				opacity: opacityRules,
-			},
-		},
-	};
+  const mainTextMark: TextMark = {
+    name: `${lineName}DirectLabel${labelOptions.index}`,
+    type: 'text',
+    from: { data: dataName },
+    interactive: false,
+    encode: {
+      enter: baseEnter,
+      update: {
+        ...baseUpdate,
+        fill: getColorProductionRule(labelOptions.color, labelOptions.colorScheme),
+        fontWeight: { value: DIRECT_LABEL_FONT_WEIGHT },
+        fontSize: fontSizeEncoding,
+        opacity: opacityRules,
+      },
+    },
+  };
 
-	const marks: Mark[] = [backgroundTextMark, mainTextMark];
+  const marks: Mark[] = [backgroundTextMark, mainTextMark];
 
-	if (!fgOpacityRules) {
-		return marks;
-	}
-	
-	// this is only returned when the line has a highlight state, so the labels always render on top of the overlay lines
-	const fgMarks = marks.map(mark => ({
-		...mark,
-		name: `${mark.name}_fg`,
-		encode: { ...mark.encode, update: { ...mark.encode?.update, opacity: fgOpacityRules } }
-	} as unknown as Mark));
+  if (!fgOpacityRules) {
+    return marks;
+  }
 
-	return fgMarks;
+  // this is only returned when the line has a highlight state, so the labels always render on top of the overlay lines
+  const fgMarks = marks.map(
+    (mark) =>
+      ({
+        ...mark,
+        name: `${mark.name}_fg`,
+        encode: { ...mark.encode, update: { ...mark.encode?.update, opacity: fgOpacityRules } },
+      } as unknown as Mark)
+  );
+
+  return fgMarks;
 };
 
 /**
  * Applies defaults to direct label options, inheriting context from the parent line.
  */
 export const getLineDirectLabelSpecOptions = (
-	labelOptions: LineDirectLabelOptions,
-	index: number,
-	lineOptions: LineSpecOptions
+  labelOptions: LineDirectLabelOptions,
+  index: number,
+  lineOptions: LineSpecOptions
 ): LineDirectLabelSpecOptions => ({
-	color: lineOptions.color,
-	colorScheme: lineOptions.colorScheme,
-	dimension: lineOptions.dimension,
-	excludeSeries: labelOptions.excludeSeries ?? [],
-	format: labelOptions.format ?? '',
-	index,
-	lineName: lineOptions.name,
-	metric: getEffectiveMetricField(lineOptions),
-	position: labelOptions.position ?? 'end',
-	prefix: labelOptions.prefix ?? '',
-	scaleType: lineOptions.scaleType,
-	value: labelOptions.value ?? 'last',
-	fontSize: labelOptions.fontSize,
+  color: lineOptions.color,
+  colorScheme: lineOptions.colorScheme,
+  dimension: lineOptions.dimension,
+  excludeSeries: labelOptions.excludeSeries ?? [],
+  format: labelOptions.format ?? '',
+  index,
+  lineName: lineOptions.name,
+  metric: getEffectiveMetricField(lineOptions),
+  position: labelOptions.position ?? 'end',
+  prefix: labelOptions.prefix ?? '',
+  scaleType: lineOptions.scaleType,
+  value: labelOptions.value ?? 'last',
+  fontSize: labelOptions.fontSize,
 });

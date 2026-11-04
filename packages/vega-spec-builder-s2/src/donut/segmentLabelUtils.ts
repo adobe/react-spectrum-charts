@@ -53,12 +53,12 @@ import { getTextNumberFormat } from '../textUtils.js';
 import { DonutSpecOptions, SegmentLabelOptions, SegmentLabelSpecOptions } from '../types/index.js';
 import { LabelFieldSuffix, getLabelField, getLabelPositionTransforms } from './donutLabelPositionUtils.js';
 import {
+  DONUT_SIZE_TIER,
   getDonutDrawInLabelVisibilityRules,
   getDonutEmptyStateTest,
   getDonutLabelOpacity,
   getDonutLabelRingGapSignalName,
   getDonutOuterRadiusExpr,
-  DONUT_SIZE_TIER,
   getDonutSizeTierSignalName,
   getSizeTierValueExpr,
   isDonutInteractive,
@@ -446,12 +446,12 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
     from: { data: getSegmentLabelDataName(options) },
     encode: {
       enter: {
-        ...getSegmentLabelInteractionEncode(donutOptions),
-        // drop all labels when there isn't any data to display, the empty state ring is shown instead
-        text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
       },
       update: {
+        ...getSegmentLabelInteractionEncode(donutOptions),
+        // drop all labels when there isn't any data to display, the empty state ring is shown instead
+        text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         ...getSegmentLabelUpdateEncode(options, `${labelName}NameFontSize`),
         dy:
           value || percent
@@ -484,12 +484,12 @@ export const getSegmentLabelValueTextMark = (options: SegmentLabelSpecOptions): 
       from: { data: getSegmentLabelDataName(options) },
       encode: {
         enter: {
-          ...getSegmentLabelInteractionEncode(donutOptions),
-          // drop all labels when there isn't any data to display, the empty state ring is shown instead
-          text: [{ test: getDonutEmptyStateTest(donutOptions.name), value: '' }, ...valueTextRules],
           fontWeight: { value: 'bold' },
         },
         update: {
+          ...getSegmentLabelInteractionEncode(donutOptions),
+          // drop all labels when there isn't any data to display, the empty state ring is shown instead
+          text: [{ test: getDonutEmptyStateTest(donutOptions.name), value: '' }, ...valueTextRules],
           ...getSegmentLabelUpdateEncode(options, `${labelName}ValueFontSize`),
           dy: {
             signal: `${labelName}NameFontSize / 2`,
@@ -990,11 +990,7 @@ const getRichSegmentLabelSharedEncode = (options: RichSegmentLabelSpecOptions): 
  * @param minimumTier smallest size tier the row shows at
  * @returns production rules
  */
-const getRichSegmentLabelFontSize = (
-  options: SegmentLabelSpecOptions,
-  fontSizeSignal: string,
-  minimumTier: number
-) => [
+const getRichSegmentLabelFontSize = (options: SegmentLabelSpecOptions, fontSizeSignal: string, minimumTier: number) => [
   ...getDonutDrawInLabelVisibilityRules(options.donutOptions),
   {
     test: `${getDonutEmptyStateTest(options.donutOptions.name)} || ${getDonutSizeTierSignalName(
@@ -1022,11 +1018,11 @@ const getRichSegmentLabelSwatchMark = (options: RichSegmentLabelSpecOptions): Sy
     from: { data: `${labelName}Data` },
     encode: {
       enter: {
-        ...getSegmentLabelInteractionEncode(donutOptions),
         shape: { value: getPathFromSymbolShape('rounded-square') },
-        fill: getColorProductionRule(color, colorScheme),
       },
       update: {
+        ...getSegmentLabelInteractionEncode(donutOptions),
+        fill: getColorProductionRule(color, colorScheme),
         x: {
           signal: `(${anchorX}) + (datum['${hemisphereField}'] === 'right' ? 1 : -1) * ${
             DONUT_ADVANCED_LABEL_SWATCH_SIZE / 2
@@ -1056,11 +1052,11 @@ const getRichSegmentLabelNameTextMark = (options: RichSegmentLabelSpecOptions): 
     from: { data: `${labelName}Data` },
     encode: {
       enter: {
-        ...getSegmentLabelInteractionEncode(donutOptions),
-        text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
       },
       update: {
+        ...getSegmentLabelInteractionEncode(donutOptions),
+        text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         ...shared,
         dx: {
           signal: options.swatch
@@ -1096,11 +1092,11 @@ const getRichSegmentLabelValueTextMark = (
       from: { data: `${labelName}Data` },
       encode: {
         enter: {
-          ...getSegmentLabelInteractionEncode(donutOptions),
-          text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...valueTextRules],
           fontWeight: { value: DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT },
         },
         update: {
+          ...getSegmentLabelInteractionEncode(donutOptions),
+          text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...valueTextRules],
           ...shared,
           dy: { signal: valueRow.dy },
           fontSize: getRichSegmentLabelFontSize(options, valueRow.fontSize, DONUT_SIZE_TIER.S),
@@ -1146,11 +1142,11 @@ const getRichSegmentLabelDetailTextMark = (
         from: { data: `${labelName}Data` },
         encode: {
           enter: {
-            ...getSegmentLabelInteractionEncode(donutOptions),
-            text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...(suffixTextRules ?? [])],
             fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
           },
           update: {
+            ...getSegmentLabelInteractionEncode(donutOptions),
+            text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...(suffixTextRules ?? [])],
             ...commonUpdate,
             limit: { signal: getRichSegmentLabelLimitExpr(options, suffixReservedWidth) },
             dx: {
@@ -1167,12 +1163,12 @@ const getRichSegmentLabelDetailTextMark = (
       from: { data: `${labelName}Data` },
       encode: {
         enter: {
-          ...getSegmentLabelInteractionEncode(donutOptions),
-          text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...valueTextRules],
           fill: { value: getS2ColorValue('gray-700', donutOptions.colorScheme) },
           fontWeight: { value: DONUT_ADVANCED_LABEL_VALUE_FONT_WEIGHT },
         },
         update: {
+          ...getSegmentLabelInteractionEncode(donutOptions),
+          text: [{ test: getDonutEmptyStateTest(name), value: '' }, ...valueTextRules],
           ...commonUpdate,
           limit: { signal: getRichSegmentLabelLimitExpr(options, detailValueReservedWidth) },
           dx: {
