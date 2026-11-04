@@ -1,22 +1,10 @@
----
-name: s2-donut-chart-tokens
-description: Donut-chart-specific design tokens (colors, sizes, typography, spacing, hover/emphasize behavior, and validation rules), sourced from the Figma "S2 – Charts" file. Use when generating, styling, or reviewing a Donut chart to get exact values instead of inventing them. For feature-specific implementation guidance (Regular/Binary/Benchmark donut, Metric labels, Direct labels, Advanced labels), see the feature skills listed below.
----
-
 # Donut Chart Tokens
 
 Source: Figma "S2 – Charts" file (`a9LVueYspAHETtc1x9Cll8`, node `4395:47102`), cross-referenced with design notes. Values below are pulled directly from Figma fills/text/layout data. Where Figma's flattened export didn't expose a field, it's marked **⚠ not exposed — confirm with design** rather than guessed.
 
-**When generating a Donut chart, use only the values below.** For anything marked ⚠, do not invent a replacement value — surface the gap to the user or flag it explicitly in output rather than guessing. See [`design-tokens`](../design-tokens/SKILL.md) for the base Spectrum 2 palette these color tokens alias.
+**When generating a Donut chart, use only the values below.** For anything marked ⚠, do not invent a replacement value — surface the gap to the user or flag it explicitly in output rather than guessing. See [`s2-design-tokens`](../../s2-design-tokens/SKILL.md) for the base Spectrum 2 palette these color tokens alias.
 
-This file is tokens only. Feature-specific implementation guidance lives in its own skill:
-
-- [`s2-donut-regular`](../s2-donut-regular/SKILL.md) — the standard multi-segment donut
-- [`s2-donut-binary`](../s2-donut-binary/SKILL.md) — the 2-segment variant
-- [`s2-donut-benchmark`](../s2-donut-benchmark/SKILL.md) — the benchmark/reference-line variant
-- [`s2-donut-metric-labels`](../s2-donut-metric-labels/SKILL.md) — the center-hole metric total/label
-- [`s2-donut-direct-labels`](../s2-donut-direct-labels/SKILL.md) — direct (no-connector) labels
-- [`s2-donut-advanced-labels`](../s2-donut-advanced-labels/SKILL.md) — advanced (swatch + connector-line) labels
+This file is tokens only. Feature guidance lives in the other references listed in [`SKILL.md`](../SKILL.md).
 
 ---
 

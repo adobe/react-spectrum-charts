@@ -1,11 +1,6 @@
----
-name: s2-donut-label-collision
-description: Shared collision-avoidance algorithm for donut chart labels (Direct or Advanced) that stack vertically within the same hemisphere. Use whenever multiple small/adjacent segments produce overlapping label positions.
----
-
 # Label collision avoidance
 
-Applies independently per hemisphere (left/right split — see the alignment rule in [`s2-donut-direct-labels`](../s2-donut-direct-labels/SKILL.md) or [`s2-donut-advanced-labels`](../s2-donut-advanced-labels/SKILL.md)). No token caps how close two slices' angles can be, so this is a routine case whenever several small segments cluster near the top or bottom of the ring.
+Applies independently per hemisphere (left/right split — see the alignment rule in [`direct-labels.md`](direct-labels.md) or [`advanced-labels.md`](advanced-labels.md)). No token caps how close two slices' angles can be, so this is a routine case whenever several small segments cluster near the top or bottom of the ring.
 
 **Algorithm:** sort a hemisphere's labels by ideal Y (their ring-anchored position before any adjustment). Walk top to bottom, pushing each label down only as far as needed so it's at least `minGap` below the previous *already-adjusted* label — don't re-sort mid-walk, so a run of several crowded labels cascades correctly instead of only resolving one collision at a time.
 

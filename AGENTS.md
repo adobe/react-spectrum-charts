@@ -432,9 +432,9 @@ Before writing any code, always:
 
 Skills live in `.agents/skills/<name>/SKILL.md` and follow the [Agent Skills spec](https://agentskills.io/specification), so any compatible agent discovers them. When adding or editing one:
 
-- Frontmatter has only spec fields; `name` and `description` are required. `name` is lowercase-hyphenated and matches the folder name; workflow skills use gerund names (`fixing-bugs`), reference skills use noun names (`s2-donut-chart-tokens`).
+- Frontmatter has only spec fields; `name` and `description` are required. `name` is lowercase-hyphenated and matches the folder name; workflow skills use gerund names (`fixing-bugs`), reference skills use noun names (`s2-donut`).
 - `description` is third person, says what the skill does and when to use it, and front-loads the trigger. Agents pick skills from it alone.
-- Folders are flat: no grouping directories under `.agents/skills/`. Prefix related skills instead (`s2-donut-*`).
+- One skill per topic. Put related detail in that skill's `references/` folder rather than splitting it into many small skills (see `s2-donut`). Skill folders sit directly under `.agents/skills/`; agents don't discover nested ones.
 - Keep `SKILL.md` under 500 lines; put long reference material in the skill's `references/` folder, linked one level deep.
 - Use only agent-agnostic syntax: no tool-specific argument placeholders, shell injection, or slash-command references.
 - `chart-features` and `s2-design-tokens` are generated; edit their source and run `yarn skills:update-chart-features` / `yarn skills:update-s2-design-tokens` instead.

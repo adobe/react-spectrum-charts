@@ -63,8 +63,8 @@ implements, and treat them as the requirements instead of rediscovering them.
 
 ### 3c. Check the chart type's S2 design-token skill *before* Figma-measuring or guessing any value
 
-Look for `.agents/skills/s2-<chartType>-chart-tokens/SKILL.md` (e.g.
-`.agents/skills/s2-donut-chart-tokens/SKILL.md`). If it exists, it is the authoritative
+Look for `.agents/skills/s2-<chartType>/references/tokens.md` (e.g.
+`.agents/skills/s2-donut/references/tokens.md`). If it exists, it is the authoritative
 source for every color/size/typography/spacing token this chart type uses — read it before
 opening Figma or inventing a plausible-looking value. If the RFC or issue quotes values,
 re-verify them against the skill file rather than trusting they were transcribed correctly,

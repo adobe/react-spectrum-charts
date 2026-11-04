@@ -24,7 +24,7 @@ ticket, a Figma link, or existing GitHub issues. Don't assume a fixed shape.
 - Fetch the Jira ticket via `mcp__corp-jira__*` if one is given. Ticket descriptions often
   contain exact design values.
 - Fetch the Figma node via `mcp__figma__*` if a Figma URL is given.
-- For S2 design values, check `.agents/skills/s2-<chartType>-chart-tokens/SKILL.md`
+- For S2 design values, check `.agents/skills/s2-<chartType>/references/tokens.md`
   first if it exists. It's the authoritative source for that chart's tokens.
 - List the existing GitHub issues this RFC covers:
 
