@@ -39,6 +39,8 @@ const chart = (value: number) => (
     height={300}
     animations={false}
     onVegaViewReady={harness.onVegaViewReady}
+    // a new title rebuilds the view, so updates go through a slow embed
+    title={`Value ${value}`}
   >
     <Line dimension="datetime" metric="value" scaleType="linear" />
   </Chart>

@@ -11,16 +11,7 @@
  */
 
 /* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
-import {
-  ReactElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { ReactElement, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
 
 import { StoryFn } from '@storybook/react';
 import { View } from 'vega';
@@ -33,13 +24,15 @@ import {
   DRAW_IN_START,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
-import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData, Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../../Chart.js';
 import {
   Axis,
   Bar,
   BarDirectLabel,
+  ChartInspect,
+  ChartPopover,
   Donut,
   DonutSummary,
   Legend,
@@ -85,12 +78,20 @@ type Scenario =
   | 'animationsOffOn'
   | 'resizeOnly';
 
+type HighlightBy = 'item' | 'series' | 'dimension';
+
+interface RenderOptions {
+  /** ChartInspect and ChartPopover children for a mark plotting the given metric */
+  dialogs: (metric: string) => ReactElement[];
+  legendHighlight: boolean;
+}
+
 interface VariantConfig {
   data: ChartData[];
   dimension: string;
   metric: string;
   series?: string;
-  render: () => ChartChildElement[];
+  render: (options: RenderOptions) => ChartChildElement[];
 }
 
 const comboData = [
@@ -107,11 +108,13 @@ const stackedBar = (extra: { orientation?: 'horizontal'; type?: 'dodged' } = {})
   dimension: 'channel',
   metric: 'signups',
   series: 'device',
-  render: () => [
+  render: ({ dialogs, legendHighlight }: RenderOptions) => [
     <Axis key="x" position={extra.orientation ? 'left' : 'bottom'} baseline />,
     <Axis key="y" position={extra.orientation ? 'bottom' : 'left'} grid />,
-    <Bar key="bar" dimension="channel" metric="signups" color="device" order="order" {...extra} />,
-    <Legend key="legend" highlight isToggleable />,
+    <Bar key="bar" dimension="channel" metric="signups" color="device" order="order" {...extra}>
+      {dialogs('signups')}
+    </Bar>,
+    <Legend key="legend" highlight={legendHighlight} isToggleable />,
   ],
 });
 
@@ -120,10 +123,12 @@ const variants: Record<Variant, VariantConfig> = {
     data: barData,
     dimension: 'browser',
     metric: 'downloads',
-    render: () => [
+    render: ({ dialogs }) => [
       <Axis key="x" position="bottom" baseline />,
       <Axis key="y" position="left" grid />,
-      <Bar key="bar" dimension="browser" metric="downloads" />,
+      <Bar key="bar" dimension="browser" metric="downloads">
+        {dialogs('downloads')}
+      </Bar>,
     ],
   },
   barStacked: stackedBar(),
@@ -133,11 +138,11 @@ const variants: Record<Variant, VariantConfig> = {
     data: newSubscribersData,
     dimension: 'channel',
     metric: 'subscribers',
-    render: () => [
+    render: ({ dialogs }) => [
       <Axis key="x" position="bottom" baseline />,
       <Axis key="y" position="left" grid />,
       <Bar key="bar" dimension="channel" metric="subscribers" color="series">
-        <BarDirectLabel position="end-outside" />
+        {[<BarDirectLabel key="label" position="end-outside" />, ...dialogs('subscribers')]}
       </Bar>,
     ],
   },
@@ -146,11 +151,13 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'datetime',
     metric: 'visits',
     series: 'channel',
-    render: () => [
+    render: ({ dialogs, legendHighlight }) => [
       <Axis key="y" position="left" grid />,
       <Axis key="x" position="bottom" labelFormat="time" baseline ticks />,
-      <Line key="line" dimension="datetime" metric="visits" color="channel" />,
-      <Legend key="legend" highlight isToggleable />,
+      <Line key="line" dimension="datetime" metric="visits" color="channel">
+        {dialogs('visits')}
+      </Line>,
+      <Legend key="legend" highlight={legendHighlight} isToggleable />,
     ],
   },
   lineStaticPoints: {
@@ -158,11 +165,13 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'datetime',
     metric: 'visits',
     series: 'channel',
-    render: () => [
+    render: ({ dialogs, legendHighlight }) => [
       <Axis key="y" position="left" grid />,
       <Axis key="x" position="bottom" labelFormat="time" baseline ticks />,
-      <Line key="line" dimension="datetime" metric="visits" color="channel" staticPoint="hasEvent" />,
-      <Legend key="legend" highlight isToggleable />,
+      <Line key="line" dimension="datetime" metric="visits" color="channel" staticPoint="hasEvent">
+        {dialogs('visits')}
+      </Line>,
+      <Legend key="legend" highlight={legendHighlight} isToggleable />,
     ],
   },
   donutSummary: {
@@ -170,11 +179,11 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'browser',
     metric: 'count',
     series: 'browser',
-    render: () => [
+    render: ({ dialogs, legendHighlight }) => [
       <Donut key="donut" color="browser" metric="count">
-        <DonutSummary label="Visitors" />
+        {[<DonutSummary key="summary" label="Visitors" />, ...dialogs('count')]}
       </Donut>,
-      <Legend key="legend" highlight isToggleable />,
+      <Legend key="legend" highlight={legendHighlight} isToggleable />,
     ],
   },
   donutSegmentLabels: {
@@ -182,23 +191,25 @@ const variants: Record<Variant, VariantConfig> = {
     dimension: 'browser',
     metric: 'count',
     series: 'browser',
-    render: () => [
+    render: ({ dialogs, legendHighlight }) => [
       <Donut key="donut" color="browser" metric="count">
-        <SegmentLabel percent />
+        {[<SegmentLabel key="labels" percent />, ...dialogs('count')]}
       </Donut>,
-      <Legend key="legend" highlight isToggleable />,
+      <Legend key="legend" highlight={legendHighlight} isToggleable />,
     ],
   },
   combo: {
     data: comboData,
     dimension: 'datetime',
     metric: 'orders',
-    render: () => [
+    render: ({ dialogs }) => [
       <Axis key="y" position="left" grid />,
       <Axis key="x" position="bottom" labelFormat="time" baseline ticks />,
       <Combo key="combo" dimension="datetime">
-        <Bar metric="orders" />
-        <Line metric="visits" color={{ value: 'categorical-200' }} scaleType="point" />
+        <Bar metric="orders">{dialogs('orders')}</Bar>
+        <Line metric="visits" color={{ value: 'categorical-200' }} scaleType="point">
+          {dialogs('visits')}
+        </Line>
       </Combo>,
     ],
   },
@@ -215,11 +226,15 @@ export default {
       options: [1, 2, 4, 10],
       description: 'Stretches the draw-in and the scripted scenario timings; label fades keep their real speed.',
     },
-    stableProps: {
-      control: 'boolean',
-      description:
-        'Memoizes children and onVegaViewReady, so data, size and highlight changes update the view in place.',
+    inspect: { control: 'boolean', description: 'Adds a ChartInspect to each mark.' },
+    highlightBy: {
+      control: 'inline-radio',
+      options: ['item', 'series', 'dimension'],
+      description: 'What the ChartInspect keeps highlighted while it is visible.',
+      if: { arg: 'inspect' },
     },
+    popover: { control: 'boolean', description: 'Adds a ChartPopover, opened by clicking a mark, to each mark.' },
+    legendHighlight: { control: 'boolean', description: 'Highlights a series while its legend entry is hovered.' },
     scenario: {
       control: 'select',
       options: [
@@ -361,8 +376,62 @@ interface StabilityArgs {
   variant: Variant;
   scenario: Scenario;
   slowdown: number;
-  stableProps: boolean;
+  inspect: boolean;
+  highlightBy: HighlightBy;
+  popover: boolean;
+  legendHighlight: boolean;
 }
+
+/**
+ * Gets dialog content listing the hovered or clicked row's dimension, series and metric.
+ * @param dimension - dimension field
+ * @param metric - metric field
+ * @param series - series field, if the variant has one
+ * @returns dialog content renderer
+ */
+const getDialogContent = (dimension: string, metric: string, series?: string) =>
+  function DialogContent(datum: Datum): ReactElement {
+    return (
+      <div>
+        <div>{String(datum[dimension])}</div>
+        {series ? <div>{String(datum[series])}</div> : null}
+        <div>
+          {metric}: {Number(datum[metric]).toLocaleString()}
+        </div>
+      </div>
+    );
+  };
+
+interface DialogOptions {
+  inspect: boolean;
+  highlightBy: HighlightBy;
+  popover: boolean;
+  legendHighlight: boolean;
+}
+
+/**
+ * Renders a variant's chart children with the selected inspect, popover and legend options.
+ * @param config - variant config
+ * @param options - dialog options
+ * @returns chart children
+ */
+const renderVariant = (config: VariantConfig, { inspect, highlightBy, popover, legendHighlight }: DialogOptions) =>
+  config.render({
+    dialogs: (metric) => {
+      const content = getDialogContent(config.dimension, metric, config.series);
+      return [
+        ...(inspect
+          ? [
+              <ChartInspect key="inspect" highlightBy={highlightBy}>
+                {content}
+              </ChartInspect>,
+            ]
+          : []),
+        ...(popover ? [<ChartPopover key="popover">{content}</ChartPopover>] : []),
+      ];
+    },
+    legendHighlight,
+  });
 
 /**
  * Stretches a view's draw-in by the slowdown factor.
@@ -395,7 +464,15 @@ const describeState = (flags: Record<string, boolean>): string[] =>
     .map(([label]) => label);
 
 // Every view of one mount must share a draw-in start; only Remount, Loading → data, and Empty → data restart it.
-const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowdown, stableProps }): ReactElement => {
+const DrawInStabilityStory: StoryFn<StabilityArgs> = ({
+  variant,
+  scenario,
+  slowdown,
+  inspect,
+  highlightBy,
+  popover,
+  legendHighlight,
+}): ReactElement => {
   const config = variants[variant];
   const [rows, setRows] = useState(config.data);
   const [, rerender] = useReducer((count: number) => count + 1, 0);
@@ -527,11 +604,7 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
     });
   };
 
-  const onViewRef = useRef(onView);
-  onViewRef.current = onView;
-  const stableOnView = useCallback((view: View) => onViewRef.current(view), []);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const stableChildren = useMemo(() => config.render(), [variant]);
+  const dialogOptions: DialogOptions = { inspect, highlightBy, popover, legendHighlight };
 
   const highlightedSeries = highlightIndex >= 0 ? seriesValues[highlightIndex] : undefined;
   const hiddenSeries = hideFirst && seriesValues.length ? [seriesValues[0]] : undefined;
@@ -545,6 +618,9 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
     [`hide ${hiddenSeries?.[0]}`]: Boolean(hiddenSeries),
     'drawIn off': !drawIn,
     'animations off': !animations,
+    [`inspect by ${highlightBy}`]: inspect,
+    popover,
+    'legend highlight off': !legendHighlight,
   });
 
   return (
@@ -606,9 +682,9 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
         hiddenSeries={hiddenSeries}
         animations={animations}
         animationTypes={drawIn ? WITH_DRAW_IN : HOVER_ONLY}
-        onVegaViewReady={stableProps ? stableOnView : onView}
+        onVegaViewReady={onView}
       >
-        {stableProps ? stableChildren : config.render()}
+        {renderVariant(config, dialogOptions)}
       </Chart>
       <LogPanel store={store} state={state.join(', ') || 'default'} />
     </div>
@@ -617,7 +693,15 @@ const DrawInStabilityStory: StoryFn<StabilityArgs> = ({ variant, scenario, slowd
 
 const story = (variant: Variant) => {
   const bound = bindWithProps(DrawInStabilityStory);
-  bound.args = { variant, scenario: 'none', slowdown: 1, stableProps: false };
+  bound.args = {
+    variant,
+    scenario: 'none',
+    slowdown: 1,
+    inspect: true,
+    highlightBy: 'item',
+    popover: true,
+    legendHighlight: true,
+  };
   return bound;
 };
 

@@ -31,7 +31,7 @@ The host owns the routing and lifecycle; every call into the rendering library g
 - **No-op**: equal inputs (table compared by content).
 - **None**: zero width or height, until the chart has a size.
 
-Updates that arrive while a view is being created are applied once it exists. `hiddenSeries` stays in the program (`PROGRAM_SIGNALS`) because Vega's legend layout doesn't re-measure symbols after a signal change. The host also owns the animation ticker and carries draw-in across rebuilds.
+`onNewView` (`hooks/useNewChartView.tsx`) keeps its identity across renders: it registers listeners once per view, and they read the latest legend state, popovers, action bars and click callbacks from a ref, as does `onVegaViewReady` in `RscChart.tsx`. Updates that arrive while a view is being created are applied once it exists. `hiddenSeries` stays in the program (`PROGRAM_SIGNALS`) because Vega's legend layout doesn't re-measure symbols after a signal change. The host also owns the animation ticker and carries draw-in across rebuilds.
 
 In both, the spec must never depend on `chartWidth`/`chartHeight`, or every resize rebuilds. The only exception is Venn (S1 only), which bakes circle positions into the spec itself.
 

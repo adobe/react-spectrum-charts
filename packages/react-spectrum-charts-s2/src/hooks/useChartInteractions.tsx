@@ -38,8 +38,8 @@ export const useChartInteractions = (
   sanitizedChildren: ChartChildElement[]
 ): ChartInteractions => {
   const { selectedData } = useChartContext();
-  const { inspectOptions } = useChartInspectInteractions(props, sanitizedChildren);
   const legendProps = useLegend(sanitizedChildren);
+  const { inspectOptions } = useChartInspectInteractions(props, sanitizedChildren, legendProps.descriptions);
   const { legendHiddenSeries, isToggleable: legendIsToggleable } = legendProps;
   const targetStyle = usePopoverAnchorStyle(props.padding);
   const axisLabelTooltipAnchorStyle = useAxisLabelTooltipAnchorStyle(props.padding);

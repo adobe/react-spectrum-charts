@@ -33,7 +33,6 @@ import { useChartContext } from '../context/RscChartContext.js';
 import { DefaultDonutContent, DonutDialogContent, getDonutSwatchColor } from '../components/Donut/DonutDialogContent.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import { debugLog } from '../utils/index.js';
-import useLegend from './useLegend.js';
 import useChartInspects, { type InspectDetail } from './useChartInspects.js';
 
 interface LegendInspectProps {
@@ -122,11 +121,14 @@ const getInspectContent = (
   return inspect.callback?.(value);
 };
 
-const useChartInspectInteractions = (props: RscChartProps, sanitizedChildren: ChartChildElement[]) => {
+const useChartInspectInteractions = (
+  props: RscChartProps,
+  sanitizedChildren: ChartChildElement[],
+  legendDescriptions: LegendDescription[] | undefined
+) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
   const { debug, colorScheme, idKey, locale, tooltipAnchor, tooltipPlacement } = props;
   const inspects = useChartInspects(sanitizedChildren);
-  const { descriptions: legendDescriptions } = useLegend(sanitizedChildren);
 
   const inspectOptions = useMemo(() => {
     const options = getInspectOptions(colorScheme, tooltipAnchor, tooltipPlacement);
