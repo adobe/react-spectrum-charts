@@ -12,54 +12,28 @@
 import dataNavigator, { NodeObject } from 'data-navigator';
 import { SignalListenerHandler, View } from 'vega';
 
-import {
-  COMPONENT_NAME,
-  DIMENSION_HOVER_AREA,
-  FOCUSED_DIMENSION,
-  FOCUSED_ITEM,
-  FOCUSED_REGION,
-  HOVERED_ITEM,
-  LAST_RSC_SERIES_ID,
-  MARK_ID,
-  SELECTED_ITEM,
-  SERIES_ID,
-  TABLE,
-} from '@spectrum-charts/core-s2/constants';
-import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { LAST_RSC_SERIES_ID, SERIES_ID, TABLE } from '@spectrum-charts/core-s2/constants';
+import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils.js';
-import {
-  clearAxisFocusRing,
-  getVisibleAxisLabelColumns,
-  padAxisBounds,
-  positionOverlayAtBounds,
-  setAxisFocusRing,
-} from './axisLabelGeometry.js';
-import {
-  Row,
-  applyHoverParitySignals,
-  findFocusedRow,
-  findFocusedStackRow,
-  getNodeFieldValues,
-} from './barHoverParity.js';
+import { getVisibleAxisLabelColumns, positionOverlayAtBounds } from './axisLabelGeometry.js';
+import { createAxisRegion } from './axisRegion.js';
+import { Row } from './barHoverParity.js';
 import { withViewKeys } from './barSeries.js';
-import { getMetricTitleBySeries, toNavigationKey } from './buildBarStructure.js';
-import {
-  AxisRegionOptions,
-  NavigableChartType,
-  buildChartStructure,
-  getNodeIdForDatum,
-} from './buildChartStructure.js';
-import { getNodeRegion, stripRegionPrefix } from './composeRegions.js';
+import { getMetricTitleBySeries } from './buildBarStructure.js';
+import { AxisRegionOptions, NavigableChartType, buildChartStructure } from './buildChartStructure.js';
+import { createChartRegion } from './chartRegion.js';
+import { getNodeRegion } from './composeRegions.js';
 import './dataNavigator.css';
+import { hideFocusedItemTooltip } from './focusedItemTooltip.js';
 import {
-  findFocusedBarSceneItem,
-  findFocusedDimensionAreaSceneItem,
-  hideFocusedItemTooltip,
-  pageBoundsForItem,
-  showAxisLabelTooltip,
-  showFocusedItemTooltip,
-} from './focusedItemTooltip.js';
+  CLEARED_FOCUS,
+  NavigationActions,
+  NavigationRegion,
+  applyFocusSignals,
+  logFocusError,
+} from './navigationRegion.js';
+
+export type { NavigationActions, Ref } from './navigationRegion.js';
 
 /*
  * data-navigator's `rendering()` and `input()` factories are typed as `() => any`.
@@ -78,25 +52,6 @@ interface DataNavigatorInput {
   move: (current: string | null, direction: string) => NodeObject | undefined;
   keydownValidator: (event: KeyboardEvent) => string | undefined;
   focus: (renderId: string) => void;
-}
-
-/** A mutable reference shared with the chart, like a React ref. */
-export interface Ref<T> {
-  current: T;
-}
-
-/** What activating a node does; can change without rebuilding the navigation. */
-export interface NavigationActions {
-  /** Same context refs `handleMarkClick` uses — Space opens a focused bar/segment's popover through the exact same trigger. */
-  selectedData?: Ref<Datum | null>;
-  selectedDataBounds?: Ref<MarkBounds | undefined>;
-  selectedDataName?: Ref<string | undefined>;
-  /** Lets the popover's own close handler know it doesn't need to clear hover-parity signals — keyboard focus still owns them. */
-  keyboardPopoverComponentName?: Ref<string | null>;
-  /** Fires the focused mark's `onClick` (if it declares one) on Enter/Space, mirroring a real click, which runs onClick alongside opening any popover. */
-  onNodeClick?: (datum: Datum) => void;
-  /** Whether the mark has a ChartPopover — a click that focuses a node also opens it, so focus must be retained through the popover. */
-  hasChartPopover?: boolean;
 }
 
 export interface NavigationSessionOptions extends NavigationActions {
@@ -156,54 +111,15 @@ export interface NavigationSession {
   destroy: () => void;
 }
 
-/** How a focused leaf finds its live row (`field`) and which series fields its tooltip lists. */
-interface SeriesLookup {
-  field: string | undefined;
-  labelFields: string[];
+/** Keyboard navigation mounted into a container for one view and one navigation structure. */
+export interface NavigationSession {
+  /** Replaces what activating a node does, keeping focus */
+  setActions: (actions: NavigationActions) => void;
+  /** Moves focus to the entry button */
+  focusEntry: () => void;
+  /** Clears focus, removes the navigation elements and the view listeners */
+  destroy: () => void;
 }
-
-interface FocusSignals {
-  item: string | null; // a single bar / stacked segment
-  region: string | null; // the whole chart (entry/root)
-  dimension: string | null; // a dimension group, e.g. a whole stack
-}
-
-const CLEARED_FOCUS: FocusSignals = { item: null, region: null, dimension: null };
-
-interface Bounds {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-/**
- * Resolves page-absolute bounds for the mark a focused content node represents, so `.dn-node` can be
- * sized to it for screen-magnifier support.
- * @returns `undefined` for the dimension-root (whole-chart) node or when no matching mark is found — callers fall back to the full container.
- */
-const resolveContentFocusBounds = (
-  view: View,
-  container: HTMLElement,
-  node: NodeObject,
-  markName: string,
-  dimension: string,
-  seriesField: string | undefined
-): Bounds | undefined => {
-  if (node.dimensionLevel === 1) return undefined;
-
-  if (node.dimensionLevel == null) {
-    const row = findFocusedRow(view, node, dimension, seriesField);
-    const item = row ? findFocusedBarSceneItem(view, markName, row[MARK_ID]) : undefined;
-    return item ? pageBoundsForItem(view, container, item) : undefined;
-  }
-
-  // Resolve the dimension directly rather than via findFocusedStackRow, which reads a stacked-only data source and would throw for a dodged bar.
-  const { dimensionValue } = getNodeFieldValues(node, dimension);
-  const item =
-    dimensionValue != null ? findFocusedDimensionAreaSceneItem(view, markName, dimension, dimensionValue) : undefined;
-  return item ? pageBoundsForItem(view, container, item) : undefined;
-};
 
 /** Elements a session adds to its container. */
 const NAVIGATION_ELEMENTS = '.dn-wrapper, .dn-exit-position, .dn-exit, .dn-axis-focus-ring';
@@ -211,153 +127,37 @@ const NAVIGATION_ELEMENTS = '.dn-wrapper, .dn-exit-position, .dn-exit, .dn-axis-
 /** vega-tooltip's default DOM element id — it toggles the `visible` class on this single shared element. */
 const CHART_INSPECT_TOOLTIP_ID = 'vg-tooltip-element';
 
-/**
- * Maps the focused node to the chart's focus signals:
- *  - x-axis region             → drives its own DOM ring + dimension-hover parity; must not also
- *    activate the bar/stack focus ring
- *  - leaf (no dimensionLevel)   → a single bar/segment (`item` = node id)
- *  - dimension root (level 1)   → the chart overview (`region` = 'chart')
- *  - division (level 2)         → a dimension group / stack (`dimension` = the column value)
- */
-const nodeFocusSignals = (node: NodeObject): FocusSignals => {
-  if (getNodeRegion(node) === 'xAxis') {
-    return CLEARED_FOCUS;
-  }
-  if (node.dimensionLevel == null) {
-    return { ...CLEARED_FOCUS, item: node.id };
-  }
-  if (node.dimensionLevel === 1) {
-    return { ...CLEARED_FOCUS, region: 'chart' };
-  }
-  const dimensionValue = node.derivedNode ? node.data?.[node.derivedNode] : undefined;
-  const dimension = dimensionValue === undefined ? null : toNavigationKey(dimensionValue);
-  return { ...CLEARED_FOCUS, dimension };
-};
-
-const logFocusError = (error: unknown): void => {
-  console.error('Failed to update accessible navigation focus:', error);
-};
-
-const applyFocusSignals = (
-  view: View | undefined,
-  { item, region, dimension }: FocusSignals
-): Promise<unknown> | undefined => {
-  if (!view) return undefined;
-  try {
-    view.signal(FOCUSED_ITEM, item);
-    view.signal(FOCUSED_REGION, region);
-    view.signal(FOCUSED_DIMENSION, dimension);
-    return view.runAsync();
-  } catch {
-    // FOCUSED_* only exist with accessibleNavigation and can be absent on a rebuilding/finalized view.
-    return undefined;
-  }
-};
-
-/**
- * Builds the focus tooltip value for a leaf. With a ChartInspect, the full datum is kept (its
- * `formatTooltip` renders it). Without one, vega-tooltip's default table would dump every field, so
- * instead emit only the dimension/color/metric fields, keyed by their axis/legend titles.
- */
-const buildLeafTooltipValue = (
-  row: Row,
-  markName: string,
-  hasChartInspect: boolean,
-  fieldLabels: Record<string, string>,
-  fields: (string | undefined)[]
-): Row => {
-  if (hasChartInspect) return { ...row, [COMPONENT_NAME]: markName };
-  const clean: Row = {};
-  for (const field of fields) {
-    if (field && field in row) clean[fieldLabels[field] ?? field] = row[field];
-  }
-  return clean;
-};
-
-/** Chart context shared by the focus-tooltip and hover-parity-guard functions below. */
-interface FocusTooltipContext {
-  markName: string;
-  dimension: string;
-  series: SeriesLookup;
-  metric: string | undefined;
-  fieldLabels: Record<string, string>;
-  hasChartInspect: boolean;
-}
-
-/** Shows the tooltip matching a focused node (leaf, stack, or none) — shared by the `focus` handler and the mouse-hover guard below. */
-const showTooltipForFocusedNode = (
-  container: HTMLElement,
-  view: View,
-  node: NodeObject,
-  context: FocusTooltipContext
-): void => {
-  const { markName, dimension, series, metric, fieldLabels, hasChartInspect } = context;
-  const signals = nodeFocusSignals(node);
-  if (signals.item != null) {
-    // Leaf: full datum for ChartInspect, otherwise a clean axis-titled subset.
-    const row = findFocusedRow(view, node, dimension, series.field);
-    const fields = [dimension, ...series.labelFields, metric];
-    const value = row ? buildLeafTooltipValue(row, markName, hasChartInspect, fieldLabels, fields) : null;
-    showFocusedItemTooltip(container, view, `${markName}_focusRing`, value);
-  } else if (signals.dimension != null) {
-    // Division (whole stack): empty unless a dimensionArea-targeted ChartInspect exists, matching real hover.
-    const stackRow = findFocusedStackRow(view, node, dimension, markName);
-    const value = stackRow ? { ...stackRow, [COMPONENT_NAME]: `${markName}_${DIMENSION_HOVER_AREA}`, dimension } : null;
-    showFocusedItemTooltip(container, view, `${markName}_stackFocusRing`, value);
-  } else {
-    showFocusedItemTooltip(container, view, `${markName}_focusRing`, null);
-  }
-};
-
 /** Vega view event callback shape (`(event, item) => void`); the item is the scene item under the pointer, if any. */
 type ViewEventHandler = (event: unknown, item: { datum?: Row } | null | undefined) => void;
 
 /**
- * Real mouse mouseout unconditionally nulls the shared `${markName}_hoveredItem` signals (see
- * `addHoveredItemSignal`), clobbering whatever the keyboard-focused item set. Reapplies that
- * item's value (and its tooltip) whenever this happens while a node is still keyboard-focused.
+ * Real mouse mouseout unconditionally nulls the chart's hover signals, clobbering whatever the
+ * keyboard-focused node set. Has the focused node's region restore its look whenever this happens.
+ * @param view
+ * @param signals hover signals to watch
+ * @param restore restores the focused node's look
  * @returns a function that removes the guard
  */
-const guardHoverParityAgainstMouseClear = (
-  container: HTMLElement,
-  view: View,
-  context: FocusTooltipContext,
-  getFocusedNode: () => NodeObject | undefined
-): (() => void) => {
-  const { markName, dimension, series } = context;
-  const itemSignal = `${markName}_${HOVERED_ITEM}`;
-  const dimensionSignal = `${markName}_${DIMENSION_HOVER_AREA}_${HOVERED_ITEM}`;
+const guardFocusedLookAgainstMouseClear = (view: View, signals: string[], restore: () => void): (() => void) => {
   const handler: SignalListenerHandler = (_name, value) => {
-    if (value != null) return;
-    const node = getFocusedNode();
-    // The chart root and axis root have no specific row to restore — nothing to guard.
-    if (!node || node.dimensionLevel === 1) return;
-    const isAxisNode = getNodeRegion(node) === 'xAxis';
-    applyHoverParitySignals(view, { markName, dimension, color: series.field }, node, isAxisNode);
-    // Axis ticks don't drive the chart tooltip (matching real axis-label hover), only the bar/stack does.
-    if (isAxisNode) {
-      view.runAfter((v) => v.runAsync());
-      return;
-    }
-    view.runAfter((v) => {
-      v.runAsync()
-        .then(() => showTooltipForFocusedNode(container, v, node, context))
-        .catch(logFocusError);
-    });
+    if (value == null) restore();
   };
+  const watched: string[] = [];
   try {
-    view.addSignalListener(itemSignal, handler);
-    view.addSignalListener(dimensionSignal, handler);
+    for (const signal of signals) {
+      view.addSignalListener(signal, handler);
+      watched.push(signal);
+    }
   } catch {
     // A view without these signals (e.g. finalized) has nothing to guard.
-    return () => undefined;
   }
   return () => {
-    try {
-      view.removeSignalListener(itemSignal, handler);
-      view.removeSignalListener(dimensionSignal, handler);
-    } catch {
-      // already finalized
+    for (const signal of watched) {
+      try {
+        view.removeSignalListener(signal, handler);
+      } catch {
+        // already finalized
+      }
     }
   };
 };
@@ -446,10 +246,6 @@ export const mountNavigationSession = ({
   });
   const seriesField = navData.some((row) => SERIES_ID in row) ? SERIES_ID : color;
   const colorLabelFields = color ? [color] : [];
-  const series: SeriesLookup = {
-    field: seriesField,
-    labelFields: seriesFields.length ? seriesFields : colorLabelFields,
-  };
 
   const built = buildChartStructure({
     chartType,
@@ -483,30 +279,13 @@ export const mountNavigationSession = ({
   let current: string | null = null;
   // The persisted node stays in the DOM after focus leaves the widget (so Shift+Tab returns to it), so
   // `current` alone can't tell whether focus is actually inside; this tracks that so the hover guard
-  // below doesn't re-apply the focused node's dimming once focus has left the chart.
+  // below doesn't re-apply the focused node's look once focus has left the chart.
   let focusInsideWidget = false;
   // Set when Space opens a popover: moving focus into it fires a focusout that looks identical to
   // leaving the widget. Consumed by the next focusout so the node survives for focus-restore on close.
   let suppressNextLeave = false;
   const width = container.clientWidth || 400;
   const height = container.clientHeight || 300;
-
-  const removeHoverGuard =
-    view && markName && dimension
-      ? guardHoverParityAgainstMouseClear(
-          container,
-          view,
-          {
-            markName,
-            dimension,
-            series,
-            metric,
-            fieldLabels: fieldLabels ?? {},
-            hasChartInspect: hasChartInspect ?? false,
-          },
-          () => (focusInsideWidget && current ? structure.nodes[current] : undefined)
-        )
-      : undefined;
 
   const rendering: DataNavigatorRenderer = dataNavigator.rendering({
     elementData: structure.nodes,
@@ -529,12 +308,38 @@ export const mountNavigationSession = ({
 
   rendering.initialize();
 
-  // Invisible DOM overlay for the axis focus ring, so it can extend past the plot's clipped bounds
-  // for overflowing/long axis labels — unlike the bar/stack ring, which is drawn on the Vega canvas.
-  const focusRing = document.createElement('div');
-  focusRing.className = 'dn-axis-focus-ring';
-  focusRing.setAttribute('aria-hidden', 'true');
-  container.appendChild(focusRing);
+  const chartRegion = createChartRegion({
+    view,
+    container,
+    chartId,
+    getActions: () => actions,
+    keepFocusThroughPopover: () => {
+      suppressNextLeave = true;
+    },
+    chartType,
+    markName,
+    dimension,
+    seriesField,
+    seriesLabelFields: seriesFields.length ? seriesFields : colorLabelFields,
+    metric,
+    fieldLabels: fieldLabels ?? {},
+    hasChartInspect: hasChartInspect ?? false,
+  });
+  const regions: Record<string, NavigationRegion> = { content: chartRegion };
+  if (xAxisRegion) {
+    regions.xAxis = createAxisRegion({ view, container, highlightDimension: chartRegion.highlightDimension });
+  }
+  const regionList = Object.values(regions);
+  // Content nodes are untagged when the chart has no other regions.
+  const regionFor = (node: NodeObject): NavigationRegion => regions[getNodeRegion(node) ?? 'content'] ?? chartRegion;
+
+  const removeHoverGuard = view
+    ? guardFocusedLookAgainstMouseClear(view, [...new Set(regionList.flatMap((r) => r.restoreSignals ?? []))], () => {
+        const node = focusInsideWidget && current ? structure.nodes[current] : undefined;
+        // A region root has no specific item to restore.
+        if (node && node.dimensionLevel !== 1) regionFor(node).restore?.(node);
+      })
+    : undefined;
 
   const input: DataNavigatorInput = dataNavigator.input({
     structure,
@@ -550,102 +355,10 @@ export const mountNavigationSession = ({
     }
   }
 
-  /**
-   * Draws the axis focus ring around the focused x-axis label's real rendered bounds, sizes the
-   * focused `.dn-node` to the same bounds (so a screen magnifier centers on the actual label instead
-   * of the whole chart), and drives dimension-only hover parity so the corresponding bar highlights
-   * like real axis-label hover does. The whole-axis root node rings the full label row with no single
-   * dimension value to highlight.
-   */
-  function applyAxisFocus(node: NodeObject, el: HTMLElement) {
-    if (!view || !markName || !dimension) {
-      clearAxisFocusRing(focusRing);
-      return;
-    }
-    const columns = getVisibleAxisLabelColumns(view, container, 'bottom');
-    if (!columns.length) {
-      clearAxisFocusRing(focusRing);
-      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null, true);
-      return;
-    }
-    const union = columns.reduce(
-      (acc, c) => ({
-        x1: Math.min(acc.x1, c.bounds.x1),
-        y1: Math.min(acc.y1, c.bounds.y1),
-        x2: Math.max(acc.x2, c.bounds.x2),
-        y2: Math.max(acc.y2, c.bounds.y2),
-      }),
-      columns[0].bounds
-    );
-    if (node.dimensionLevel === 1) {
-      // Axis-level focus: ring around the whole axis; no single tick value to highlight.
-      setAxisFocusRing(focusRing, union);
-      const bounds = padAxisBounds(union);
-      if (bounds) positionOverlayAtBounds(el, bounds);
-      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null, true);
-      return;
-    }
-
-    const value = stripRegionPrefix(node);
-    const column = columns.find((c) => c.value === value);
-    if (!column) {
-      clearAxisFocusRing(focusRing);
-      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null, true);
-      return;
-    }
-    setAxisFocusRing(focusRing, column.bounds);
-    const bounds = padAxisBounds(column.bounds);
-    if (bounds) positionOverlayAtBounds(el, bounds);
-    applyHoverParitySignals(view, { markName, dimension, color: seriesField }, node, true);
-    // Show the label's tooltip on focus, matching mouse hover. React Spectrum's TooltipTrigger dismisses
-    // it on Escape (via onOpenChange in RscChart) without moving focus — WCAG 2.2 SC 1.4.13.
-    showAxisLabelTooltip(view, value);
-  }
-
-  /** Sets the shared context refs and triggers the popover through the same DOM-button-click a real click uses. */
-  function triggerBarPopover(row: Row, sceneItem: unknown) {
-    const { selectedData, selectedDataBounds, selectedDataName, keyboardPopoverComponentName } = actions;
-    if (!markName || !selectedData || !selectedDataBounds || !selectedDataName) return;
-    selectedData.current = { ...row, [COMPONENT_NAME]: markName } as unknown as Datum;
-    selectedDataBounds.current = getItemBounds(sceneItem as ActionItem);
-    selectedDataName.current = markName;
-    if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = markName;
-    if (triggerPopover(chartId, markName, 'click')) {
-      suppressNextLeave = true;
-      if (view) {
-        view.signal(SELECTED_ITEM, row[MARK_ID] ?? null);
-      }
-      // Tells the popover's close handler hover-parity is still owned by keyboard focus (see keyboardPopoverComponentName's doc).
-    } else if (keyboardPopoverComponentName) {
-      keyboardPopoverComponentName.current = null;
-      selectedData.current = null;
-      selectedDataName.current = '';
-    }
-  }
-
-  /** Activates the focused leaf bar/segment — opens its popover (if any) and fires its `onClick` (if any), the same pair a real click runs. */
-  function activateBar(node: NodeObject) {
-    if (!view || !markName || !dimension) return;
-    const row = findFocusedRow(view, node, dimension, seriesField);
-    if (!row) return;
-    const sceneItem = findFocusedBarSceneItem(view, markName, row[MARK_ID]);
-    if (sceneItem) triggerBarPopover(row, sceneItem);
-    actions.onNodeClick?.(row as unknown as Datum);
-  }
-
-  /** Opens the focused whole-stack (dimension area) popover — same one a real click on the stack's exposed padding already opens. */
-  function openStackPopover(node: NodeObject) {
-    if (!view || !markName || !dimension) return;
-    const stackRow = findFocusedStackRow(view, node, dimension, markName);
-    if (!stackRow) return;
-    const sceneItem = findFocusedDimensionAreaSceneItem(view, markName, dimension, stackRow[dimension]);
-    if (!sceneItem) return;
-    triggerBarPopover(stackRow, sceneItem);
-  }
-
   function navigate(node: NodeObject) {
     const renderId = node.renderId || node.id;
     node.renderId = renderId;
+    const region = regionFor(node);
 
     // Take the entry button out of Tab order once inside, or Shift+Tab lands back on it (a real,
     // always-tabbable <button>) instead of leaving the widget — restored in clearFocusState().
@@ -660,16 +373,10 @@ export const mountNavigationSession = ({
     const el = rendering.render({ renderId, datum: node });
     if (!el) return;
 
-    // Size/position .dn-node to the real focused mark so a screen magnifier centers on it, not the
-    // whole chart. An x-axis node gets its bounds from applyAxisFocus below (its own scenegraph read);
-    // the dimension-root (whole-chart) node has no single mark, so it keeps the full-container default.
-    const isAxisNode = getNodeRegion(node) === 'xAxis';
-    const contentBounds =
-      !isAxisNode && view && markName && dimension
-        ? resolveContentFocusBounds(view, container, node, markName, dimension, seriesField)
-        : undefined;
-    if (contentBounds) {
-      positionOverlayAtBounds(el, contentBounds);
+    // Size/position .dn-node to the focused item so a screen magnifier centers on it, not the whole chart.
+    const bounds = region.getBounds?.(node);
+    if (bounds) {
+      positionOverlayAtBounds(el, bounds);
     } else {
       el.style.width = '100%';
       el.style.height = '100%';
@@ -680,21 +387,8 @@ export const mountNavigationSession = ({
     el.style.boxShadow = 'none';
 
     el.addEventListener('keydown', (event) => {
-      const isChartNode = getNodeRegion(node) !== 'xAxis';
-      // Enter/Space activate a focused leaf bar/segment — open its popover and fire its onClick, the
-      // same as a real click. Enter still drills into non-leaves (they own a 'child' edge); leaves don't.
-      if ((event.code === 'Enter' || event.code === 'Space') && isChartNode && node.dimensionLevel == null) {
+      if (region.handleKey?.(node, event)) {
         event.preventDefault();
-        activateBar(node);
-        return;
-      }
-      // Space on a whole stack opens its dimension-area popover (Enter keeps drilling into segments);
-      // axis labels have no popover at all.
-      if (event.code === 'Space') {
-        event.preventDefault();
-        if (isChartNode && node.dimensionLevel === 2) {
-          openStackPopover(node);
-        }
         return;
       }
       // WCAG 2.2 SC 1.4.13: content shown on focus must be dismissible without moving focus. The first
@@ -725,34 +419,10 @@ export const mountNavigationSession = ({
 
     el.addEventListener('focus', () => {
       focusInsideWidget = true;
-      const isAxisNode = getNodeRegion(node) === 'xAxis';
-      // Set before applyFocusSignals's runAsync() so both flush together in one dataflow pulse.
-      if (isAxisNode) {
-        applyAxisFocus(node, el);
-      } else {
-        clearAxisFocusRing(focusRing);
-        if (view && markName && dimension) {
-          applyHoverParitySignals(view, { markName, dimension, color: seriesField }, node);
-        }
+      for (const other of regionList) {
+        if (other !== region) other.clear();
       }
-      const signals = nodeFocusSignals(node);
-      applyFocusSignals(view, signals)
-        ?.then(() => {
-          if (!view || isAxisNode) return;
-          if (!markName || !dimension) {
-            showFocusedItemTooltip(container, view, `${markName ?? 'bar0'}_focusRing`, null);
-            return;
-          }
-          showTooltipForFocusedNode(container, view, node, {
-            markName,
-            dimension,
-            series,
-            metric,
-            fieldLabels: fieldLabels ?? {},
-            hasChartInspect: hasChartInspect ?? false,
-          });
-        })
-        .catch(logFocusError);
+      region.focus(node, el);
     });
 
     // Set before input.focus(): it synchronously fires the 'focus' listener above, which can
@@ -766,17 +436,13 @@ export const mountNavigationSession = ({
     if (previous && previous !== node.id) rendering.remove(previous);
   }
 
-  // Clears only the visual focus indicators (Vega ring, hover parity, tooltip, axis ring), leaving the
-  // focused node and `current` intact so Shift+Tab back into the widget restores focus to it.
+  // Clears only the visual focus indicators, leaving the focused node and `current` intact so
+  // Shift+Tab back into the widget restores focus to it.
   const clearFocusVisuals = () => {
-    // Clear before nulling the hover signal: the guard keys off this to know focus has left, so it
-    // won't re-apply the persisted node's dimming when it sees the signal go null.
+    // Clear before the regions reset hover signals: the guard keys off this to know focus has left.
     focusInsideWidget = false;
     hideFocusedItemTooltip(view);
-    if (view && markName && dimension) {
-      applyHoverParitySignals(view, { markName, dimension, color: seriesField }, null);
-    }
-    clearAxisFocusRing(focusRing);
+    regionList.forEach((region) => region.clear());
     applyFocusSignals(view, CLEARED_FOCUS)?.catch(logFocusError);
   };
 
@@ -792,7 +458,7 @@ export const mountNavigationSession = ({
   };
 
   // Focus leaving the navigator entirely (tab/click away) clears only the visual indicators; the node
-  // persists so Shift+Tab back returns to it (its `focus` listener re-applies the ring/signals). Moves
+  // persists so Shift+Tab back returns to it (its `focus` listener re-applies the look). Moves
   // within the widget (node→node, node→exit) keep a relatedTarget inside the container and are ignored.
   rendering.wrapper?.addEventListener('focusout', (event) => {
     if (suppressNextLeave) {
@@ -808,6 +474,14 @@ export const mountNavigationSession = ({
     rendering.exitElement.addEventListener('focus', clearFocusState);
   }
 
+  const findNodeId = (datum: Row) => {
+    for (const region of regionList) {
+      const nodeId = region.findNode?.(datum);
+      if (nodeId) return nodeId;
+    }
+    return undefined;
+  };
+
   // Clicking a mark moves keyboard focus to the matching node (hover never does). On mousedown, so the
   // node is focused before a click opens its popover — popover focus-restore then returns here on close.
   const handleMousedown: ViewEventHandler = (event, item) => {
@@ -815,9 +489,7 @@ export const mountNavigationSession = ({
     if (!datum) return;
     // Overlay marks (e.g. a voronoi cell) wrap the real datum one level deeper.
     const nested = (datum as { datum?: Row }).datum;
-    const nodeId =
-      getNodeIdForDatum(chartType, datum as SimpleData, { dimension, seriesField }) ??
-      (nested ? getNodeIdForDatum(chartType, nested as SimpleData, { dimension, seriesField }) : undefined);
+    const nodeId = findNodeId(datum) ?? (nested ? findNodeId(nested) : undefined);
     if (!nodeId || nodeId === current) return;
     const node = structure.nodes[nodeId];
     if (!node) return;
@@ -850,6 +522,7 @@ export const mountNavigationSession = ({
       } catch {
         // already finalized
       }
+      regionList.forEach((region) => region.destroy?.());
       container.querySelectorAll(NAVIGATION_ELEMENTS).forEach((node) => node.remove());
     },
   };
