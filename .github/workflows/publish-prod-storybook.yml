@@ -68,6 +68,7 @@ jobs:
 
       - name: Copy 'dist' to 'gh-pages' branch
         run: |
+          mkdir -p docs
           cp -r packages/docs/dist/* ./docs
 
       - name: Commit and push changes to 'gh-pages' branch
