@@ -13,7 +13,7 @@ import { RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { View } from 'vega';
 
-import { ChartData, Datum, NavigableChart, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData, Datum, NavigableChart, NavigableLegend, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext.js';
 import {
@@ -37,6 +37,8 @@ interface UseDataNavigatorOptions {
   chartId: string;
   /** The navigable mark's configuration the spec builder recorded in the spec's usermeta */
   navigation?: NavigableChart;
+  /** The navigable legends the spec builder recorded in the spec's usermeta */
+  legends?: NavigableLegend[];
 }
 
 interface DataNavigator {
@@ -73,6 +75,7 @@ export const useDataNavigator = ({
   popovers,
   chartId,
   navigation,
+  legends,
 }: UseDataNavigatorOptions): DataNavigator => {
   const { selectedData, selectedDataBounds, selectedDataName, keyboardPopoverComponentName } = useChartContext();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,6 +105,7 @@ export const useDataNavigator = ({
             data: data as SimpleData[],
             locale: navLocale,
             title,
+            legends,
             selectedData,
             selectedDataBounds,
             selectedDataName,
@@ -116,6 +120,7 @@ export const useDataNavigator = ({
       data,
       navLocale,
       title,
+      legends,
       selectedData,
       selectedDataBounds,
       selectedDataName,

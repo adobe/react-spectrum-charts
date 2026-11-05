@@ -13,7 +13,7 @@ import dataNavigator, { NodeObject } from 'data-navigator';
 import { SignalListenerHandler, View } from 'vega';
 
 import { LAST_RSC_SERIES_ID, SERIES_ID, TABLE } from '@spectrum-charts/core-s2/constants';
-import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { NavigableLegend, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { getVisibleAxisLabelColumns, positionOverlayAtBounds } from './axisLabelGeometry.js';
 import { createAxisRegion } from './axisRegion.js';
@@ -25,8 +25,11 @@ import { createChartRegion } from './chartRegion.js';
 import { getNodeRegion } from './composeRegions.js';
 import './dataNavigator.css';
 import { hideFocusedItemTooltip } from './focusedItemTooltip.js';
+import { getLegendEntries } from './legendGeometry.js';
+import { LEGEND_REGION, createLegendRegion } from './legendRegion.js';
 import {
   CLEARED_FOCUS,
+  ClickedItem,
   NavigationActions,
   NavigationRegion,
   applyFocusSignals,
@@ -93,22 +96,20 @@ export interface NavigationSessionOptions extends NavigationActions {
   markName?: string;
   /** Optional chart title for the accessible description. */
   title?: string;
-  /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
+  /** When provided, adds an x-axis region below chart content (Down moves to it, Up comes back). */
   xAxis?: AxisRegionOptions;
+  /** The chart's categorical legends; the one for the navigable mark's series becomes a legend region. */
+  legends?: NavigableLegend[];
   /** Stable id used to namespace the rendered nav elements. */
   chartId: string;
   /** The view the session reads and drives; focus signals are set on it as the user navigates. */
   view: View | undefined;
 }
 
-/** Keyboard navigation mounted into a container for one view and one navigation structure. */
-export interface NavigationSession {
-  /** Replaces what activating a node does, keeping focus */
-  setActions: (actions: NavigationActions) => void;
-  /** Moves focus to the entry button */
-  focusEntry: () => void;
-  /** Clears focus, removes the navigation elements and the view listeners */
-  destroy: () => void;
+/** The node focused when a session was destroyed, which the next session restores focus to. */
+export interface FocusedNode {
+  /** The node as it was before any rebuild since the last key press, so a change across rebuilds is still announced */
+  node: NodeObject;
 }
 
 /** Keyboard navigation mounted into a container for one view and one navigation structure. */
@@ -117,18 +118,22 @@ export interface NavigationSession {
   setActions: (actions: NavigationActions) => void;
   /** Moves focus to the entry button */
   focusEntry: () => void;
-  /** Clears focus, removes the navigation elements and the view listeners */
-  destroy: () => void;
+  /** The focused node, while focus is inside the navigation */
+  getFocusedNode: () => FocusedNode | undefined;
+  /** Moves focus to the same node of this session; returns false when it no longer exists */
+  restoreFocus: (focused: FocusedNode) => boolean;
+  /** Removes the navigation elements and the view listeners; `handOff` keeps the focus look for the next session to restore */
+  destroy: (options?: { handOff?: boolean }) => void;
 }
 
 /** Elements a session adds to its container. */
-const NAVIGATION_ELEMENTS = '.dn-wrapper, .dn-exit-position, .dn-exit, .dn-axis-focus-ring';
+const NAVIGATION_ELEMENTS = '.dn-wrapper, .dn-exit-position, .dn-exit, .dn-axis-focus-ring, .dn-legend-focus-ring';
 
 /** vega-tooltip's default DOM element id — it toggles the `visible` class on this single shared element. */
 const CHART_INSPECT_TOOLTIP_ID = 'vg-tooltip-element';
 
 /** Vega view event callback shape (`(event, item) => void`); the item is the scene item under the pointer, if any. */
-type ViewEventHandler = (event: unknown, item: { datum?: Row } | null | undefined) => void;
+type ViewEventHandler = (event: unknown, item: ClickedItem | null | undefined) => void;
 
 /**
  * Real mouse mouseout unconditionally nulls the chart's hover signals, clobbering whatever the
@@ -201,6 +206,39 @@ const readMetricTitleBySeries = (
   return getMetricTitleBySeries(data, color, titles, secondarySeries);
 };
 
+/** Reads the series the legend has toggled off from the view. */
+const readHiddenSeries = (view: View | undefined): string[] => {
+  try {
+    const value: unknown = view?.signal('hiddenSeries');
+    return Array.isArray(value) ? value.map(String) : [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * The legend for the navigable mark's series: the first whose symbols are colored by the mark's color.
+ * @param legends
+ * @param color
+ * @returns NavigableLegend | undefined
+ */
+const pickLegend = (legends: NavigableLegend[] | undefined, color: string | undefined): NavigableLegend | undefined =>
+  color === undefined
+    ? undefined
+    : legends?.find((legend) => legend.colorField === undefined || legend.colorField === color);
+
+/** The legend's entries in rendered order; falls back to the data's entries when the legend isn't in the scenegraph. */
+const getLegendSeries = (
+  view: View | undefined,
+  container: HTMLElement,
+  legend: NavigableLegend,
+  data: SimpleData[]
+): string[] => {
+  const entries = view ? getLegendEntries(view, container, legend.name) : [];
+  if (entries.length) return entries.map((entry) => entry.value);
+  return [...new Set(data.map((row) => legend.entryFields.map((field) => String(row[field])).join(' | ')))];
+};
+
 /**
  * Builds the navigation structure and mounts data-navigator's rendering +
  * input modules for one view. The visible focus indicator is drawn on the Vega canvas (focus-ring marks); the
@@ -227,6 +265,7 @@ export const mountNavigationSession = ({
   markName,
   title,
   xAxis,
+  legends,
   chartId,
   view,
   ...initialActions
@@ -246,6 +285,8 @@ export const mountNavigationSession = ({
   });
   const seriesField = navData.some((row) => SERIES_ID in row) ? SERIES_ID : color;
   const colorLabelFields = color ? [color] : [];
+  const legend = pickLegend(legends, color);
+  const hiddenSeries = legend ? readHiddenSeries(view) : [];
 
   const built = buildChartStructure({
     chartType,
@@ -266,6 +307,11 @@ export const mountNavigationSession = ({
     dimensionLabels,
     metricTitleBySeries: readMetricTitleBySeries(view, navData, color, metricAxisTitles),
     xAxis: xAxisRegion,
+    legend: legend && {
+      ...legend,
+      series: getLegendSeries(view, container, legend, navData),
+    },
+    hiddenSeries,
   });
   if (!built) return undefined;
   const { structure, entryPoint } = built;
@@ -284,6 +330,10 @@ export const mountNavigationSession = ({
   // Set when Space opens a popover: moving focus into it fires a focusout that looks identical to
   // leaving the widget. Consumed by the next focusout so the node survives for focus-restore on close.
   let suppressNextLeave = false;
+  // Set once the session is destroyed, so a focusout from removing its elements is ignored.
+  let destroyed = false;
+  // The node focused before the rebuild that restored focus here, until the next key press or move.
+  let restoredFrom: NodeObject | undefined;
   const width = container.clientWidth || 400;
   const height = container.clientHeight || 300;
 
@@ -329,6 +379,22 @@ export const mountNavigationSession = ({
   if (xAxisRegion) {
     regions.xAxis = createAxisRegion({ view, container, highlightDimension: chartRegion.highlightDimension });
   }
+  if (legend && Object.values(structure.nodes).some((node) => getNodeRegion(node) === LEGEND_REGION)) {
+    regions[LEGEND_REGION] = createLegendRegion({
+      view,
+      container,
+      chartId,
+      getActions: () => actions,
+      keepFocusThroughPopover: () => {
+        suppressNextLeave = true;
+      },
+      legend,
+      hiddenSeries,
+      chartRegion,
+      getNode: (id) => structure.nodes[id],
+      moveTo: (node) => navigate(node),
+    });
+  }
   const regionList = Object.values(regions);
   // Content nodes are untagged when the chart has no other regions.
   const regionFor = (node: NodeObject): NavigationRegion => regions[getNodeRegion(node) ?? 'content'] ?? chartRegion;
@@ -367,6 +433,7 @@ export const mountNavigationSession = ({
     }
 
     const previous = current;
+    if (restoredFrom && restoredFrom.id !== node.id) restoredFrom = undefined;
     // Hide synchronously so a stale tooltip never lingers while the new focus's bounds resolve.
     hideFocusedItemTooltip(view);
 
@@ -387,6 +454,7 @@ export const mountNavigationSession = ({
     el.style.boxShadow = 'none';
 
     el.addEventListener('keydown', (event) => {
+      restoredFrom = undefined;
       if (region.handleKey?.(node, event)) {
         event.preventDefault();
         return;
@@ -461,6 +529,7 @@ export const mountNavigationSession = ({
   // persists so Shift+Tab back returns to it (its `focus` listener re-applies the look). Moves
   // within the widget (node→node, node→exit) keep a relatedTarget inside the container and are ignored.
   rendering.wrapper?.addEventListener('focusout', (event) => {
+    if (destroyed) return;
     if (suppressNextLeave) {
       suppressNextLeave = false;
       return;
@@ -474,9 +543,9 @@ export const mountNavigationSession = ({
     rendering.exitElement.addEventListener('focus', clearFocusState);
   }
 
-  const findNodeId = (datum: Row) => {
+  const findNodeId = (item: ClickedItem) => {
     for (const region of regionList) {
-      const nodeId = region.findNode?.(datum);
+      const nodeId = region.findNode?.(item);
       if (nodeId) return nodeId;
     }
     return undefined;
@@ -485,11 +554,7 @@ export const mountNavigationSession = ({
   // Clicking a mark moves keyboard focus to the matching node (hover never does). On mousedown, so the
   // node is focused before a click opens its popover — popover focus-restore then returns here on close.
   const handleMousedown: ViewEventHandler = (event, item) => {
-    const datum = item?.datum;
-    if (!datum) return;
-    // Overlay marks (e.g. a voronoi cell) wrap the real datum one level deeper.
-    const nested = (datum as { datum?: Row }).datum;
-    const nodeId = findNodeId(datum) ?? (nested ? findNodeId(nested) : undefined);
+    const nodeId = item ? findNodeId(item) : undefined;
     if (!nodeId || nodeId === current) return;
     const node = structure.nodes[nodeId];
     if (!node) return;
@@ -499,9 +564,10 @@ export const mountNavigationSession = ({
     navigate(node);
     // The ensuing click opens this mark's popover, pulling focus into it. Suppress the resulting
     // focusout (as the keyboard path does) so the node survives for React Spectrum's focus-restore on close.
-    if (actions.hasChartPopover) {
+    const popover = regionFor(node).getClickPopover?.(node);
+    if (popover) {
       suppressNextLeave = true;
-      if (actions.keyboardPopoverComponentName && markName) actions.keyboardPopoverComponentName.current = markName;
+      if (actions.keyboardPopoverComponentName) actions.keyboardPopoverComponentName.current = popover;
     }
   };
   view?.addEventListener('mousedown', handleMousedown);
@@ -511,11 +577,33 @@ export const mountNavigationSession = ({
       actions = next;
     },
     focusEntry: () => rendering.entryButton?.focus(),
-    destroy: () => {
-      if (current) {
+    getFocusedNode: () => {
+      const node = focusInsideWidget && current ? structure.nodes[current] : undefined;
+      return node && { node: restoredFrom ?? node };
+    },
+    restoreFocus: ({ node: previous }) => {
+      const node = structure.nodes[previous.id];
+      if (!node) {
         clearFocusVisuals();
-        current = null;
+        return false;
       }
+      const label = regionFor(node).getRestoredLabel?.(node, previous);
+      if (!label || !node.semantics) {
+        navigate(node);
+        return true;
+      }
+      // Only the restored node reads the change; moving away and back reads its usual name.
+      const usual = node.semantics.label;
+      node.semantics.label = label;
+      navigate(node);
+      node.semantics.label = usual;
+      restoredFrom = previous;
+      return true;
+    },
+    destroy: ({ handOff = false } = {}) => {
+      destroyed = true;
+      if (current && !handOff) clearFocusVisuals();
+      current = null;
       removeHoverGuard?.();
       try {
         view?.removeEventListener('mousedown', handleMousedown);

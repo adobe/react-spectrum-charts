@@ -28,7 +28,19 @@ const inputs = (overrides: Partial<NavigationInputs> = {}): NavigationInputs => 
   ...overrides,
 });
 
-const mockView = () => ({ runAsync: jest.fn().mockResolvedValue(undefined) } as unknown as View);
+const mockView = () =>
+  ({
+    runAsync: jest.fn().mockResolvedValue(undefined),
+    runAfter: jest.fn((callback: () => void) => callback()),
+    addSignalListener: jest.fn(),
+    removeSignalListener: jest.fn(),
+  } as unknown as View & { [K in 'addSignalListener' | 'removeSignalListener']: jest.Mock });
+
+const focusInside = () => {
+  const focusable = document.createElement('button');
+  container.appendChild(focusable);
+  focusable.focus();
+};
 
 const flush = () => new Promise((resolve) => setTimeout(resolve));
 
@@ -37,7 +49,13 @@ beforeEach(() => {
   document.body.appendChild(container);
   sessions = [];
   mountMock.mockReset().mockImplementation(() => {
-    const session = { setActions: jest.fn(), focusEntry: jest.fn(), destroy: jest.fn() };
+    const session = {
+      setActions: jest.fn(),
+      focusEntry: jest.fn(),
+      getFocusedNode: jest.fn(),
+      restoreFocus: jest.fn().mockReturnValue(true),
+      destroy: jest.fn(),
+    };
     sessions.push(session);
     return session;
   });
@@ -108,14 +126,55 @@ describe('createNavigationController()', () => {
   test('focuses the new entry button when focus was inside the navigation', async () => {
     const controller = createNavigationController(container, 'chart');
     controller.update(inputs());
-    const focusable = document.createElement('button');
-    container.appendChild(focusable);
-    focusable.focus();
+    focusInside();
 
     controller.setView(mockView());
     await flush();
 
     expect(sessions[1].focusEntry).toHaveBeenCalled();
+  });
+
+  test('restores focus to the same node, handing off its focus look', async () => {
+    const controller = createNavigationController(container, 'chart');
+    controller.update(inputs());
+    const focused = { node: { id: 'Chrome' } };
+    sessions[0].getFocusedNode.mockReturnValue(focused);
+    focusInside();
+
+    controller.setView(mockView());
+    await flush();
+
+    expect(sessions[0].destroy).toHaveBeenCalledWith({ handOff: true });
+    expect(sessions[1].restoreFocus).toHaveBeenCalledWith(focused);
+    expect(sessions[1].focusEntry).not.toHaveBeenCalled();
+  });
+
+  test('does not hand off when the navigation is removed', () => {
+    const controller = createNavigationController(container, 'chart');
+    controller.update(inputs());
+    focusInside();
+
+    controller.update(inputs({ data: [] }));
+
+    expect(sessions[0].destroy).toHaveBeenCalledWith({ handOff: false });
+  });
+
+  test('remounts when the legend toggles a series on the view', async () => {
+    const view = mockView();
+    const controller = createNavigationController(container, 'chart');
+    controller.setView(view);
+    controller.update(inputs());
+    await flush();
+    const [[signal, listener]] = view.addSignalListener.mock.calls;
+
+    listener();
+    await flush();
+
+    expect(signal).toBe('hiddenSeries');
+    expect(mountMock).toHaveBeenCalledTimes(2);
+
+    controller.destroy();
+    expect(view.removeSignalListener).toHaveBeenCalledWith('hiddenSeries', listener);
   });
 
   test('does not take focus when it was outside the navigation', async () => {

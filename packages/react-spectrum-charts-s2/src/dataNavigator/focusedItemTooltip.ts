@@ -28,7 +28,7 @@ interface Bounds {
  * `data(name)` reference isn't reliably re-evaluated on data changes (unlike a mark's own encode),
  * so the focused item is read directly off the rendered scenegraph instead of a derived signal.
  */
-interface SceneNode {
+export interface SceneNode {
   marktype?: string;
   name?: string;
   items?: SceneNode[];
@@ -81,7 +81,9 @@ export const findFocusedDimensionAreaSceneItem = (
   dimension: string,
   dimensionValue: unknown
 ): SceneNode | undefined =>
-  findSceneItems(view, 'rect', `${markName}_${DIMENSION_HOVER_AREA}`).find((item) => item.datum?.[dimension] === dimensionValue);
+  findSceneItems(view, 'rect', `${markName}_${DIMENSION_HOVER_AREA}`).find(
+    (item) => item.datum?.[dimension] === dimensionValue
+  );
 
 /** Bounds are group-relative; walk up the mark's owning groups to make them view-relative. */
 const absoluteBounds = (item: SceneNode): Bounds | undefined => {
@@ -133,7 +135,12 @@ export const showAxisLabelTooltip = (view: View, value: string): boolean => {
  * whichever ring is visible for the node, used to read its bounds for positioning — call only
  * after `view.runAsync()` resolves so those bounds reflect the new focus.
  */
-export const showFocusedItemTooltip = (container: HTMLElement, view: View, ringMarkName: string, value: unknown): void => {
+export const showFocusedItemTooltip = (
+  container: HTMLElement,
+  view: View,
+  ringMarkName: string,
+  value: unknown
+): void => {
   const tooltipCallback = getRegisteredTooltipCallback(view);
   if (!tooltipCallback) return;
 
@@ -143,11 +150,19 @@ export const showFocusedItemTooltip = (container: HTMLElement, view: View, ringM
   }
 
   const ringItem = findVisibleRingItem(view, ringMarkName);
-  const bounds = ringItem ? absoluteBounds(ringItem) : undefined;
-  if (!ringItem || !bounds) {
+  if (!ringItem || !showSceneItemTooltip(container, view, ringItem, value)) {
     tooltipCallback(undefined, undefined, undefined, null);
-    return;
   }
+};
+
+/**
+ * Shows the tooltip for a rendered scene item through the registered tooltip callback, positioned
+ * relative to the item as mouse hover would be. Returns whether a tooltip was shown.
+ */
+export const showSceneItemTooltip = (container: HTMLElement, view: View, item: SceneNode, value: unknown): boolean => {
+  const tooltipCallback = getRegisteredTooltipCallback(view);
+  const bounds = absoluteBounds(item);
+  if (!tooltipCallback || !bounds || value == null) return false;
 
   const [originX, originY] = view.origin();
   const containerRect = container.getBoundingClientRect();
@@ -160,5 +175,6 @@ export const showFocusedItemTooltip = (container: HTMLElement, view: View, ringM
     clientY: containerRect.top + originY + bounds.y1,
   };
 
-  tooltipCallback(fakeHandler, syntheticEvent, ringItem, value);
+  tooltipCallback(fakeHandler, syntheticEvent, item, value);
+  return true;
 };

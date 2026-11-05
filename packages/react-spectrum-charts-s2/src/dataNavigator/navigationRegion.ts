@@ -43,6 +43,13 @@ export interface Bounds {
   y2: number;
 }
 
+/** A clicked Vega scene item; overlay marks (e.g. a voronoi cell) wrap the real datum one level deeper. */
+export interface ClickedItem {
+  datum?: Row & { datum?: Row };
+  mark?: { role?: string; name?: string };
+  items?: ClickedItem[];
+}
+
 /** What a session shares with its regions. */
 export interface RegionContext {
   view: View | undefined;
@@ -61,8 +68,12 @@ export interface NavigationRegion {
   focus: (node: NodeObject, el: HTMLElement) => void;
   /** Handles a key on a focused node; returns true when handled */
   handleKey?: (node: NodeObject, event: KeyboardEvent) => boolean;
-  /** The node for a clicked scene item's datum, if it belongs to this region */
-  findNode?: (datum: Row) => string | undefined;
+  /** The node for a clicked scene item, if it belongs to this region */
+  findNode?: (item: ClickedItem) => string | undefined;
+  /** The popover a click on the node opens, so focus is kept through it */
+  getClickPopover?: (node: NodeObject) => string | undefined;
+  /** The name read once when focus is restored onto the node after a rebuild, given the node focused before it */
+  getRestoredLabel?: (node: NodeObject, previous: NodeObject) => string | undefined;
   /** Signals the mouse clears that also carry a focused node's look */
   restoreSignals?: string[];
   /** Reapplies a focused node's look after the mouse cleared it */

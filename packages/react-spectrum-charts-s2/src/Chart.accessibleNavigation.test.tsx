@@ -302,25 +302,38 @@ describe('host updates', () => {
     expect(await isRingVisible('bar0_focusRing')).toBe(true);
   });
 
-  const resetsFocus = async (props: Props) => {
+  const keepsFocusedNode = async (props: Props) => {
     const mounted = await harness.mount(chart());
     await focusSegment();
 
     await harness.update(mounted, chart(props));
 
+    await waitFor(() => expect(focusedId()).toBe('Chrome__rsc__Mac'));
+    expect(document.activeElement).toBe(node());
+    expect(await isRingVisible('bar0_focusRing')).toBe(true);
+  };
+
+  test('keeps focus on the same node after a rebuild', () => keepsFocusedNode({ title: 'Retitled' }));
+
+  test('keeps focus on the same node after a data update', () =>
+    keepsFocusedNode({ data: data.map((row) => ({ ...row, downloads: row.downloads * 2 })) }));
+
+  test('resets focus when the focused node no longer exists', async () => {
+    const mounted = await harness.mount(chart());
+    await focusSegment();
+
+    await harness.update(mounted, chart({ data: data.filter((row) => row.browser !== 'Chrome') }));
+
+    await waitFor(() => expect(document.activeElement).toBe(entryButton()));
     expect(node()).toBeNull();
     expect(entryButton().tabIndex).toBe(0);
     expect(signal(FOCUSED_ITEM)).toBeNull();
-  };
-
-  test('resets focus after a rebuild', () => resetsFocus({ title: 'Retitled' }));
-
-  test('resets focus after a data update', () =>
-    resetsFocus({ data: data.map((row) => ({ ...row, downloads: row.downloads * 2 })) }));
+  });
 
   test('keeps the entry button focused when navigation resets', async () => {
     const mounted = await harness.mount(chart());
-    await enter();
+    await waitFor(() => expect(entryButton()).toBeTruthy());
+    act(() => entryButton().focus());
 
     await harness.update(mounted, chart({ data: data.map((row) => ({ ...row, downloads: row.downloads * 2 })) }));
 

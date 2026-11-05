@@ -203,7 +203,15 @@ export const createChartRegion = ({
       }
       return false;
     },
-    findNode: (datum) => getNodeIdForDatum(chartType, datum as SimpleData, { dimension, seriesField }),
+    findNode: ({ datum }) => {
+      if (!datum) return undefined;
+      const options = { dimension, seriesField };
+      return (
+        getNodeIdForDatum(chartType, datum as SimpleData, options) ??
+        (datum.datum ? getNodeIdForDatum(chartType, datum.datum as SimpleData, options) : undefined)
+      );
+    },
+    getClickPopover: () => (getActions().hasChartPopover ? markName : undefined),
     restoreSignals: view && ctx ? strategy.getHoverSignals?.(ctx) : undefined,
     restore: (node) => {
       if (!view || !ctx) return;

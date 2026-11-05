@@ -25,9 +25,7 @@ describe('buildChartStructure()', () => {
 
     expect(viaDispatch).toBeDefined();
     expect(viaDispatch?.entryPoint).toBe(direct.entryPoint);
-    expect(Object.keys(viaDispatch?.structure.nodes ?? {}).sort()).toEqual(
-      Object.keys(direct.structure.nodes).sort()
-    );
+    expect(Object.keys(viaDispatch?.structure.nodes ?? {}).sort()).toEqual(Object.keys(direct.structure.nodes).sort());
   });
 
   describe('with an x-axis region', () => {
@@ -79,7 +77,6 @@ describe('buildChartStructure()', () => {
       expect(axisNodes).toHaveLength(0);
     });
   });
-
 });
 
 describe('getNodeIdForDatum()', () => {
@@ -89,9 +86,9 @@ describe('getNodeIdForDatum()', () => {
   });
 
   test('returns the segment id for a multi-series bar', () => {
-    expect(getNodeIdForDatum('bar', { browser: 'Chrome', os: 'Mac' }, { dimension: 'browser', seriesField: 'os' })).toBe(
-      segmentId('Chrome', 'Mac')
-    );
+    expect(
+      getNodeIdForDatum('bar', { browser: 'Chrome', os: 'Mac' }, { dimension: 'browser', seriesField: 'os' })
+    ).toBe(segmentId('Chrome', 'Mac'));
   });
 
   test('keys Date dimension values the same way the structure does', () => {
@@ -102,5 +99,105 @@ describe('getNodeIdForDatum()', () => {
   test('returns undefined when the dimension value cannot be a key', () => {
     expect(getNodeIdForDatum('bar', {}, { dimension: 'browser' })).toBeUndefined();
     expect(getNodeIdForDatum('bar', { browser: { a: 1 } }, { dimension: 'browser' })).toBeUndefined();
+  });
+
+  describe('with a legend region', () => {
+    const seriesData = [
+      { browser: 'Chrome', os: 'Windows', downloads: 18000 },
+      { browser: 'Chrome', os: 'Mac', downloads: 9000 },
+      { browser: 'Firefox', os: 'Windows', downloads: 5000 },
+    ];
+    const options = {
+      chartType: 'bar' as const,
+      data: seriesData,
+      dimension: 'browser',
+      color: 'os',
+      metric: 'downloads',
+    };
+
+    test('adds a namespaced legend region; a bottom legend sits below the x-axis', () => {
+      const composed = buildChartStructure({
+        ...options,
+        xAxis: { field: 'browser', type: 'categorical' },
+        legend: { series: ['Windows', 'Mac'], title: 'Operating system' },
+      });
+      const nodes = composed?.structure.nodes ?? {};
+
+      expect(nodes['legend::root']).toBeDefined();
+      expect(nodes['legend::series__rsc__Mac']).toBeDefined();
+      const chained = Object.values(composed?.structure.edges ?? {}).some(
+        (edge) => String(edge.source).startsWith('xAxis::') && edge.target === 'legend::root'
+      );
+      expect(chained).toBe(true);
+    });
+
+    const regionEdge = (composed: ReturnType<typeof buildChartStructure>, region: string) =>
+      Object.values(composed?.structure.edges ?? {}).find(
+        (edge) =>
+          [edge.source, edge.target].includes(composed?.entryPoint ?? '') &&
+          [edge.source, edge.target].some((id) => String(id).startsWith(`${region}::`))
+      );
+
+    test('the x-axis is reached with Down from the chart root, not the other arrows', () => {
+      const composed = buildChartStructure({ ...options, xAxis: { field: 'browser', type: 'categorical' } });
+      const edge = regionEdge(composed, 'xAxis');
+
+      expect(edge?.source).toBe(composed?.entryPoint);
+      expect(edge?.navigationRules).toEqual(['down', 'up']);
+    });
+
+    test.each([
+      ['left', 'legend::root', ['left', 'right']],
+      ['right', undefined, ['right', 'left']],
+      ['top', 'legend::root', ['up', 'down']],
+    ] as const)(
+      'a %s legend is reached from the chart root with the arrow pointing at it',
+      (position, source, rules) => {
+        const composed = buildChartStructure({
+          ...options,
+          xAxis: { field: 'browser', type: 'categorical' },
+          legend: { series: ['Windows', 'Mac'], position },
+        });
+        const edge = regionEdge(composed, 'legend');
+
+        expect(edge?.source).toBe(source ?? composed?.entryPoint);
+        expect(edge?.navigationRules).toEqual(rules);
+      }
+    );
+
+    test('binds region moves to the physical arrows in a horizontal chart', () => {
+      const composed = buildChartStructure({
+        ...options,
+        orientation: 'horizontal',
+        legend: { series: ['Windows'], position: 'right' },
+      });
+
+      // Horizontal charts map ArrowRight/ArrowLeft onto the `down`/`up` rules.
+      expect(regionEdge(composed, 'legend')?.navigationRules).toEqual(['down', 'up']);
+    });
+
+    test('skips the legend region without a color series', () => {
+      const composed = buildChartStructure({
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        legend: { series: ['Windows'] },
+      });
+
+      expect(Object.keys(composed?.structure.nodes ?? {}).some((id) => id.startsWith('legend::'))).toBe(false);
+    });
+
+    test('hidden series are skipped by content and not drillable from the legend', () => {
+      const composed = buildChartStructure({
+        ...options,
+        legend: { series: ['Windows', 'Mac'] },
+        hiddenSeries: ['Mac'],
+      });
+      const nodes = composed?.structure.nodes ?? {};
+
+      expect(nodes['Chrome__rsc__Mac']).toBeUndefined();
+      expect(nodes['legend::series__rsc__Mac']).toBeDefined();
+      expect(nodes['legend::item__rsc__Chrome__rsc__Mac']).toBeUndefined();
+    });
   });
 });

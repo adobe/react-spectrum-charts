@@ -12,6 +12,7 @@
 import { View } from 'vega';
 
 import {
+  FocusedNode,
   NavigationActions,
   NavigationSession,
   NavigationSessionOptions,
@@ -80,8 +81,28 @@ export const getStructureKey = (inputs: NavigationInputs): string =>
   );
 
 /**
+ * Calls back when a legend toggles a series on the view, which changes the navigation structure without a new view.
+ * @param view
+ * @param onChange
+ * @returns a function removing the listener, if one was added
+ */
+const listenForHiddenSeries = (view: View | undefined, onChange: () => void): (() => void) | undefined => {
+  if (!view) return undefined;
+  // The signal changes mid-dataflow; remount once the view has rendered the toggle.
+  const listener = () => view.runAfter(onChange);
+  try {
+    view.addSignalListener('hiddenSeries', listener);
+  } catch {
+    // Charts without a toggleable legend have no such signal.
+    return undefined;
+  }
+  return () => view.removeSignalListener('hiddenSeries', listener);
+};
+
+/**
  * Creates a controller that mounts keyboard navigation into a container.
- * The session is remounted when the view or the navigation structure changes, which resets focus.
+ * The session is remounted when the view, the navigation structure or the legend's hidden series change;
+ * focus moves to the same node in the new session, or to the entry button when it no longer exists.
  * @param container
  * @param chartId
  * @returns NavigationController
@@ -93,22 +114,31 @@ export const createNavigationController = (container: HTMLElement, chartId: stri
   let session: NavigationSession | undefined;
   let generation = 0;
   let restoreFocus = false;
+  let focusedNode: FocusedNode | undefined;
+  let removeViewListener: (() => void) | undefined;
 
   const mount = (mountGeneration: number) => {
     if (mountGeneration !== generation || !inputs) return;
     session = mountNavigationSession({ ...inputs, container, chartId, view });
-    if (restoreFocus) session?.focusEntry();
+    if (restoreFocus && !(focusedNode && session?.restoreFocus(focusedNode))) session?.focusEntry();
     restoreFocus = false;
+    focusedNode = undefined;
   };
 
   const remount = () => {
     generation += 1;
+    const willMount = !!inputs && inputs.data.length > 0;
     if (session) {
-      restoreFocus ||= container.contains(document.activeElement);
-      session.destroy();
+      const focusInside = container.contains(document.activeElement);
+      if (focusInside) {
+        restoreFocus = true;
+        focusedNode = session.getFocusedNode();
+      }
+      // The next session restores focus to the same node, so its focus look stays until then.
+      session.destroy({ handOff: focusInside && willMount });
       session = undefined;
     }
-    if (!inputs || inputs.data.length === 0) return;
+    if (!willMount) return;
     const mountGeneration = generation;
     if (!view) {
       mount(mountGeneration);
@@ -134,10 +164,14 @@ export const createNavigationController = (container: HTMLElement, chartId: stri
     },
     setView: (next) => {
       if (next === view) return;
+      removeViewListener?.();
       view = next;
+      removeViewListener = listenForHiddenSeries(next, remount);
       remount();
     },
     destroy: () => {
+      removeViewListener?.();
+      removeViewListener = undefined;
       inputs = undefined;
       structureKey = undefined;
       view = undefined;

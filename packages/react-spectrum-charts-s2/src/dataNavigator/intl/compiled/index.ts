@@ -14,7 +14,7 @@ import type { LocalizedString } from '@internationalized/string';
 
 import enUS from './en-US.js';
 
-export type DataNavigatorMessageKey = 'bar.description' | 'bar.stackedDescription';
+export type DataNavigatorMessageKey = 'bar.description' | 'bar.stackedDescription' | 'legend.description' | 'legend.seriesHidden' | 'legend.seriesShown';
 
 export const dataNavigatorStrings: Record<string, Record<DataNavigatorMessageKey, LocalizedString>> = {
   'en-US': enUS,

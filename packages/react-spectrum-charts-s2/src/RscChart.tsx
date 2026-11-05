@@ -160,6 +160,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     popovers,
     chartId,
     navigation: (spec.usermeta as UserMeta | undefined)?.navigation,
+    legends: (spec.usermeta as UserMeta | undefined)?.legends,
   });
 
   // read from a ref so an inline onVegaViewReady doesn't rebuild the view

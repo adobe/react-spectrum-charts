@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Edges, NodeObject, Nodes, Structure } from 'data-navigator';
+import { Edges, NavigationRules, NodeObject, Nodes, Structure } from 'data-navigator';
 
 import { baseNavigationRules } from './navigationRules.js';
 
@@ -30,12 +30,22 @@ export interface NamedRegion {
   namespace?: boolean;
 }
 
+export type RegionArrowKey = 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown';
+
+/** A spatial move between two regions' roots: `key` on `from` goes to `to`, and the opposite arrow comes back. */
+export interface RegionLink {
+  from: string;
+  to: string;
+  key: RegionArrowKey;
+}
+
 export interface ComposedStructure {
   structure: Structure;
   entryPoint: string | undefined;
 }
 
-const prefixed = (name: string, id: string): string => `${name}${REGION_SEPARATOR}${id}`;
+/** An auxiliary region node's composed id, e.g. `legend::root`. */
+export const prefixed = (name: string, id: string): string => `${name}${REGION_SEPARATOR}${id}`;
 
 const namespaceNodes = (
   structure: Structure,
@@ -93,32 +103,76 @@ const chainRegionEntryPoints = (nodes: Nodes, edges: Edges, rootIds: string[]): 
   }
 };
 
+const OPPOSITE_KEY: Record<RegionArrowKey, RegionArrowKey> = {
+  ArrowLeft: 'ArrowRight',
+  ArrowRight: 'ArrowLeft',
+  ArrowUp: 'ArrowDown',
+  ArrowDown: 'ArrowUp',
+};
+
+const ruleForKey = (rules: NavigationRules, key: RegionArrowKey): string | undefined =>
+  Object.entries(rules).find(([, rule]) => rule.key === key)?.[0];
+
+/** Links region roots with one edge per link, bound to the rule names `navigationRules` maps its arrow keys to. */
+const linkRegionEntryPoints = (
+  nodes: Nodes,
+  edges: Edges,
+  rootByRegion: Record<string, string>,
+  links: RegionLink[],
+  navigationRules: NavigationRules
+): void => {
+  for (const { from, to, key } of links) {
+    const fromId = rootByRegion[from];
+    const toId = rootByRegion[to];
+    const forward = ruleForKey(navigationRules, key);
+    const back = ruleForKey(navigationRules, OPPOSITE_KEY[key]);
+    if (!fromId || !toId || fromId === toId || !forward || !back) continue;
+    const forwardIsTarget = navigationRules[forward].direction === 'target';
+    const source = forwardIsTarget ? fromId : toId;
+    const target = forwardIsTarget ? toId : fromId;
+    const edgeId = `region${REGION_SEPARATOR}${source}->${target}`;
+    if (edges[edgeId]) continue;
+    edges[edgeId] = { source, target, navigationRules: [forward, back] };
+    nodes[fromId].edges.push(edgeId);
+    nodes[toId].edges.push(edgeId);
+  }
+};
+
 /**
- * Merges independently-built region structures (chart content, axes) into one composite structure:
- * each region keeps its own internal navigation untouched, and new sibling edges chain the regions'
- * entry/root nodes together in order (no wraparound — matching every other level of this navigator)
- * so Left/Right/Up/Down also move between regions, the same navIds used for sibling navigation
- * inside a region, since data-navigator resolves valid moves per-node from that node's own edges,
- * not from a global mode.
+ * Merges independently-built region structures (chart content, axes, legend) into one composite structure:
+ * each region keeps its own internal navigation untouched, and new edges join the regions' root nodes.
+ * With `links`, each link binds one arrow key (and its opposite back) between two roots; without them,
+ * roots are chained in order on every arrow key (no wraparound). data-navigator resolves valid moves
+ * per-node from that node's own edges, so these don't interfere with navigation inside a region.
  */
-export const composeRegions = (regions: NamedRegion[]): ComposedStructure => {
+export const composeRegions = (
+  regions: NamedRegion[],
+  links?: RegionLink[],
+  navigationRules: NavigationRules = baseNavigationRules
+): ComposedStructure => {
   if (regions.length === 0) {
-    return { structure: { nodes: {}, edges: {}, navigationRules: baseNavigationRules }, entryPoint: undefined };
+    return { structure: { nodes: {}, edges: {}, navigationRules }, entryPoint: undefined };
   }
 
   const nodes: Nodes = {};
   const edges: Edges = {};
   const rootIds: string[] = [];
+  const rootByRegion: Record<string, string> = {};
 
   for (const region of regions) {
     const namespaced = namespaceRegion(region);
     Object.assign(nodes, namespaced.nodes);
     Object.assign(edges, namespaced.edges);
     rootIds.push(namespaced.entryPoint);
+    rootByRegion[region.name] = namespaced.entryPoint;
   }
-  chainRegionEntryPoints(nodes, edges, rootIds);
+  if (links) {
+    linkRegionEntryPoints(nodes, edges, rootByRegion, links, navigationRules);
+  } else {
+    chainRegionEntryPoints(nodes, edges, rootIds);
+  }
 
-  return { structure: { nodes, edges, navigationRules: baseNavigationRules }, entryPoint: rootIds[0] };
+  return { structure: { nodes, edges, navigationRules }, entryPoint: rootIds[0] };
 };
 
 export const getNodeRegion = (node: NodeObject): string | undefined => node.region as string | undefined;

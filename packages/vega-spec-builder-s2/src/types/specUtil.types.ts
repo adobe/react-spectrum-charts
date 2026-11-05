@@ -49,6 +49,22 @@ export type DivergingBarMark = {
   metric: string;
 };
 
+/** A categorical legend's configuration for keyboard navigation; written only with `accessibleNavigation`. */
+export type NavigableLegend = {
+  name: string;
+  /** Fields each entry joins with " | ", in order */
+  entryFields: string[];
+  /** The field the legend's own `color` facets by, when it doesn't use the marks' color */
+  colorField?: string;
+  position: Position;
+  highlight: boolean;
+  title?: string;
+  /** Series value → its displayed label */
+  labels?: Record<string, string>;
+  /** Series value → its description and optional title */
+  descriptions?: Record<string, { description: string; title?: string }>;
+};
+
 /** The navigable mark's configuration for keyboard navigation; written only with `accessibleNavigation`. */
 export type NavigableChart = {
   chartType: 'bar';
@@ -84,6 +100,7 @@ export type UserMeta = {
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];
+  legends?: NavigableLegend[];
   navigation?: NavigableChart;
 };
 
@@ -110,7 +127,13 @@ export type Datum = object & {
   [key: string]: any;
 };
 
-export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | (string & NonNullable<unknown>);
+export type NumberFormat =
+  | 'currency'
+  | 'shortCurrency'
+  | 'shortNumber'
+  | 'standardNumber'
+  | 'percentage'
+  | (string & NonNullable<unknown>);
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 export type ScaleType = 'linear' | 'point' | 'time' | 'band';
