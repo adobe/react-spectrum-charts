@@ -15,6 +15,7 @@ import { View } from 'vega';
 import { MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Row } from './barHoverParity.js';
+import { SceneNode } from './focusedItemTooltip.js';
 import { Bounds } from './navigationRegion.js';
 
 /** The navigable mark's fields a ChartNavStrategy reads. */
@@ -30,6 +31,8 @@ export interface StrategyContext {
 export interface ChartNavStrategy {
   /** The live row a leaf node represents */
   findLeafRow: (view: View, node: NodeObject, ctx: StrategyContext) => Row | undefined;
+  /** The rendered mark for a leaf's row, which pointer events target */
+  findLeafSceneItem: (view: View, row: Row, ctx: StrategyContext) => SceneNode | undefined;
   /** Page bounds for a division node's rendered mark */
   resolveDivisionBounds: (
     view: View,

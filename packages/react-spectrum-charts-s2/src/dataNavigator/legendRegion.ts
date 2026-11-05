@@ -28,7 +28,7 @@ import {
 } from './buildLegendStructure.js';
 import { ChartRegion } from './chartRegion.js';
 import { prefixed } from './composeRegions.js';
-import { SceneNode, hideFocusedItemTooltip, showSceneItemTooltip } from './focusedItemTooltip.js';
+import { SceneNode, hideFocusedItemTooltip, pageBoundsForItem, showSceneItemTooltip } from './focusedItemTooltip.js';
 import { ArrowKey, LegendEntry, findLegendNeighbor, getLegendBounds, getLegendEntries } from './legendGeometry.js';
 import {
   CLEARED_FOCUS,
@@ -36,6 +36,8 @@ import {
   NavigationRegion,
   RegionContext,
   applyFocusSignals,
+  contextMenuEventAt,
+  isContextMenuKey,
   logFocusError,
 } from './navigationRegion.js';
 
@@ -148,12 +150,14 @@ export const createLegendRegion = ({
     if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = legend.name;
   };
 
-  /** Runs the legend's own click (popover, onClick, toggle) for the series' entry. */
-  const activateSeries = (node: NodeObject) => {
+  /** Runs the legend's own click (popover, onClick, toggle) or right-click (its `rightClick` popover) for the series' entry. */
+  const activateSeries = (node: NodeObject, trigger: 'click' | 'contextmenu') => {
     const entry = findEntry(node);
-    if (!entry) return;
-    keepFocusThroughLegendPopover();
-    dispatchViewEvent(view, 'click', entry.item);
+    if (!view || !entry) return;
+    keepFocusThroughLegendPopover(trigger);
+    const bounds = pageBoundsForItem(view, container, entry.item as SceneNode);
+    const event = trigger === 'contextmenu' ? contextMenuEventAt(bounds) : undefined;
+    dispatchViewEvent(view, trigger, entry.item, event);
   };
 
   /** Moves to the adjacent series in the legend's rendered grid, which wraps with its size. */
@@ -204,8 +208,8 @@ export const createLegendRegion = ({
       const contentNode = getContentNode(node);
       if (contentNode) return chartRegion.handleKey?.(contentNode, event) ?? false;
       if (getLegendNodeLevel(node) !== 'series') return false;
-      if (event.code === 'Space') {
-        activateSeries(node);
+      if (event.code === 'Space' || isContextMenuKey(event)) {
+        activateSeries(node, event.code === 'Space' ? 'click' : 'contextmenu');
         return true;
       }
       if (ARROW_KEYS.has(event.key)) {

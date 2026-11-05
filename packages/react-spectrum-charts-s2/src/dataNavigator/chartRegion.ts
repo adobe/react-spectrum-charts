@@ -15,19 +15,22 @@ import { View } from 'vega';
 import { COMPONENT_NAME, MARK_ID, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { triggerPopover } from '../utils/markClickUtils.js';
+import { getPopoverButton, triggerPopover } from '../utils/markClickUtils.js';
+import { dispatchViewEvent } from '../utils/viewEvents.js';
 import { Row } from './barHoverParity.js';
 import { barNavStrategy } from './barNavStrategy.js';
 import { toNavigationKey } from './buildBarStructure.js';
 import { NavigableChartType, getNodeIdForDatum } from './buildChartStructure.js';
 import { ChartNavStrategy, StrategyContext } from './chartNavStrategy.js';
-import { hideFocusedItemTooltip } from './focusedItemTooltip.js';
+import { hideFocusedItemTooltip, pageBoundsForItem } from './focusedItemTooltip.js';
 import {
   CLEARED_FOCUS,
   FocusSignals,
   NavigationRegion,
   RegionContext,
   applyFocusSignals,
+  contextMenuEventAt,
+  isContextMenuKey,
   logFocusError,
 } from './navigationRegion.js';
 
@@ -164,6 +167,20 @@ export const createChartRegion = ({
     getActions().onNodeClick?.(row as unknown as Datum);
   };
 
+  /** Right-clicks a focused leaf's mark: its `rightClick` popover and `onContextMenu` run as for a real right-click. */
+  const openContextMenu = (node: NodeObject) => {
+    if (!view || !ctx) return;
+    const row = strategy.findLeafRow(view, node, ctx);
+    const item = row && strategy.findLeafSceneItem(view, row, ctx);
+    if (!item) return;
+    if (getPopoverButton(chartId, ctx.markName, 'contextmenu')) {
+      keepFocusThroughPopover();
+      const { keyboardPopoverComponentName } = getActions();
+      if (keyboardPopoverComponentName) keyboardPopoverComponentName.current = ctx.markName;
+    }
+    dispatchViewEvent(view, 'contextmenu', item, contextMenuEventAt(pageBoundsForItem(view, container, item)));
+  };
+
   const openDivisionPopover = (node: NodeObject) => {
     if (!view || !ctx) return;
     const popover = strategy.resolveDivisionPopover?.(view, node, ctx);
@@ -190,6 +207,11 @@ export const createChartRegion = ({
         .catch(logFocusError);
     },
     handleKey: (node, event) => {
+      // A stack or category isn't a single mark, so only a leaf can be right-clicked.
+      if (isContextMenuKey(event) && node.dimensionLevel == null) {
+        openContextMenu(node);
+        return true;
+      }
       if (event.code !== 'Enter' && event.code !== 'Space') return false;
       // Enter/Space activate a leaf, the same as a real click. Enter still drills into non-leaves.
       if (node.dimensionLevel == null) {

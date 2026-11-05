@@ -24,6 +24,7 @@ import {
 /** Bars anchor focus to their rendered rects and mirror mouse hover through the bar's own hover signals. */
 export const barNavStrategy: ChartNavStrategy = {
   findLeafRow: (view, node, { dimension, color }) => findFocusedRow(view, node, dimension, color),
+  findLeafSceneItem: (view, row, { markName }) => findFocusedBarSceneItem(view, markName, row[MARK_ID]),
   resolveDivisionBounds: (view, container, node, { markName, dimension }) => {
     // Resolved directly rather than via findFocusedStackRow, which reads a stacked-only data source and would throw for a dodged bar.
     const { dimensionValue } = getNodeFieldValues(node, dimension);
@@ -31,8 +32,8 @@ export const barNavStrategy: ChartNavStrategy = {
       dimensionValue != null ? findFocusedDimensionAreaSceneItem(view, markName, dimension, dimensionValue) : undefined;
     return item ? pageBoundsForItem(view, container, item) : undefined;
   },
-  resolveLeafBounds: (view, container, row, { markName }) => {
-    const item = findFocusedBarSceneItem(view, markName, row[MARK_ID]);
+  resolveLeafBounds: (view, container, row, ctx) => {
+    const item = barNavStrategy.findLeafSceneItem(view, row, ctx);
     return item ? pageBoundsForItem(view, container, item) : undefined;
   },
   resolveLeafPopoverBounds: (view, row, { markName }) => {

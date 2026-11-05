@@ -36,6 +36,27 @@ export interface NavigationActions {
   hasChartPopover?: boolean;
 }
 
+/**
+ * Whether a key press is the keyboard right-click: Shift+F10 or the ContextMenu key.
+ * @param event
+ * @returns boolean
+ */
+export const isContextMenuKey = (event: KeyboardEvent): boolean =>
+  event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
+
+/**
+ * A synthetic right-click at the center of an item's viewport bounds, so `onContextMenu` can place a menu next to it.
+ * @param bounds
+ * @returns MouseEvent
+ */
+export const contextMenuEventAt = (bounds: Bounds | undefined): MouseEvent =>
+  new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: bounds ? (bounds.x1 + bounds.x2) / 2 : 0,
+    clientY: bounds ? (bounds.y1 + bounds.y2) / 2 : 0,
+  });
+
 export interface Bounds {
   x1: number;
   y1: number;
