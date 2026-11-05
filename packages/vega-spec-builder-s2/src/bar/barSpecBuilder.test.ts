@@ -35,9 +35,7 @@ import {
   DRAW_IN_ANIM_T_EASED,
   DRAW_IN_DONE,
   FILTERED_TABLE,
-  FOCUSED_DIMENSION,
   FOCUSED_ITEM,
-  FOCUSED_REGION,
   GROUP_ID,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
@@ -609,16 +607,9 @@ describe('barSpecBuilder', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, barDirectLabels: [{}] });
       expect(signals).toEqual(addSignals(defaultSignals, defaultBarOptions));
     });
-    test('should add focus signals when accessibleNavigation is enabled', () => {
+    test('should leave the chart-level focus signals to buildSpec', () => {
       const signals = addSignals(defaultSignals, { ...defaultBarOptions, accessibleNavigation: true });
-      expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeDefined();
-      expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeDefined();
-      expect(signals.find((signal) => signal.name === FOCUSED_DIMENSION)).toBeDefined();
-    });
-    test('should not add focus signals by default', () => {
-      const signals = addSignals(defaultSignals, defaultBarOptions);
       expect(signals.find((signal) => signal.name === FOCUSED_ITEM)).toBeUndefined();
-      expect(signals.find((signal) => signal.name === FOCUSED_REGION)).toBeUndefined();
     });
     test('should add hoveredItem signals when accessibleNavigation is enabled, even with no other interactivity', () => {
       // keyboard hover-parity (the navigation session's guardHoverParityAgainstMouseClear) always registers
@@ -1162,16 +1153,18 @@ describe('barSpecBuilder', () => {
     });
 
     describe('accessibleNavigation', () => {
-      test('should add chart and bar focus rings when enabled (stacked/basic bar)', () => {
+      test('should add the bar focus ring but not the chart ring when enabled (stacked/basic bar)', () => {
         const marks = addMarks([], { ...defaultBarOptions, accessibleNavigation: true });
-        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeDefined();
+        expect(marks.find((mark) => mark.name === 'chartFocusRing')).toBeUndefined();
         expect(marks.find((mark) => mark.name === 'bar0_focusRing')).toBeDefined();
       });
       test('adds a segment ring inside a dodged-and-stacked group and a group ring beside it', () => {
         const marks = addMarks([], { ...defaultBarOptionsWithSecondayColor, accessibleNavigation: true });
         const group = marks.find((mark) => mark.name === 'bar0_group') as GroupMark;
         expect(group.marks?.find((mark) => mark.name === 'bar0_focusRing')).toBeDefined();
-        expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toHaveProperty('from', { data: 'bar0_groups' });
+        expect(marks.find((mark) => mark.name === 'bar0_stackFocusRing')).toHaveProperty('from', {
+          data: 'bar0_groups',
+        });
       });
 
       test('should add the bar focus ring inside the dodge group when enabled (dodged bar)', () => {

@@ -15,6 +15,7 @@ import { Axis, Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from
 import {
   BACKGROUND_COLOR,
   CHART_SIZE_BREAKPOINTS,
+  CHART_SIZE_FONT_SIZE,
   CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_HOVER_STROKE_WIDTHS,
   CHART_SIZE_LABEL_GAP,
@@ -23,14 +24,15 @@ import {
   CHART_SIZE_POINT_SIZES,
   CHART_SIZE_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTHS,
-  CHART_SIZE_FONT_SIZE,
-  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
+  DIRECT_LABEL_FONT_SIZE_L,
+  DIRECT_LABEL_FONT_SIZE_M,
+  DIRECT_LABEL_FONT_SIZE_S,
   FILTERED_TABLE,
   HIGHLIGHTED_GROUP,
   LINEAR_COLOR_SCALE,
@@ -38,6 +40,7 @@ import {
   LINE_WIDTH_SCALE,
   MARK_ID,
   OPACITY_SCALE,
+  REFERENCE_LINE_LABEL_BACKGROUND_STROKE,
   SELECTED_GROUP,
   SELECTED_ITEM,
   SELECTED_SERIES,
@@ -46,14 +49,11 @@ import {
   SYMBOL_SHAPE_SCALE,
   SYMBOL_SIZE_SCALE,
   TABLE,
-  DIRECT_LABEL_FONT_SIZE_S,
-  DIRECT_LABEL_FONT_SIZE_M,
-  DIRECT_LABEL_FONT_SIZE_L,
 } from '@spectrum-charts/core-s2/constants';
 import { colorSchemes, getColorSchemeColors, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { jsonClone } from '@spectrum-charts/core-s2/utils';
 
-import { getNavigableChart } from './accessibleNavigation/navigableChartUtils.js';
+import { addAccessibleNavigation, hasNavigableMark } from './accessibleNavigation/accessibleNavigationSpecBuilder.js';
 import { addArea } from './area/areaSpecBuilder.js';
 import { addAxis } from './axis/axisSpecBuilder.js';
 import { addBar } from './bar/barSpecBuilder.js';
@@ -62,7 +62,11 @@ import { addCombo } from './combo/comboSpecBuilder.js';
 import { getSeriesIdTransform } from './data/dataUtils.js';
 import { addDonutLegendLayout } from './donut/donutLegendLayoutUtils.js';
 import { addDonut } from './donut/donutSpecBuilder.js';
-import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils.js';
+import {
+  getLegendHighlightSignals,
+  setHoverOpacityForMarks,
+  setHoverStrokeWidthForMarks,
+} from './legend/legendHighlightUtils.js';
 import { addLegend } from './legend/legendSpecBuilder.js';
 import { addLine, getLineDomainData } from './line/lineSpecBuilder.js';
 import { getOrdinalScale } from './scale/scaleSpecBuilder.js';
@@ -100,7 +104,12 @@ import { addVenn } from './venn/vennSpecBuilder.js';
 /** True for an axis repositioned to its opposing scale's zero line (its `offset` is a `scale(…, 0)` signal). */
 const isDivergingAxis = (axis: Axis): boolean => {
   const { offset } = axis;
-  return typeof offset === 'object' && offset !== null && 'signal' in offset && /scale\(.*,\s*0\)/.test(String(offset.signal));
+  return (
+    typeof offset === 'object' &&
+    offset !== null &&
+    'signal' in offset &&
+    /scale\(.*,\s*0\)/.test(String(offset.signal))
+  );
 };
 
 export function buildSpec({
@@ -206,8 +215,9 @@ export function buildSpec({
     }
   }, spec);
 
-  const navigation = accessibleNavigation ? getNavigableChart({ marks, axes, legends }) : undefined;
-  if (navigation) spec = { ...spec, usermeta: { ...spec.usermeta, navigation } };
+  if (accessibleNavigation && hasNavigableMark(marks)) {
+    spec = addAccessibleNavigation(spec, { colorScheme, marks, axes, legends });
+  }
 
   spec = [...legends].reduce((acc: ScSpec, legend, index) => {
     return addLegend(acc, {
@@ -325,8 +335,8 @@ export const getDefaultSignals = ({
 
   const chartSizeFontSizeSignal: Signal = {
     name: CHART_SIZE_FONT_SIZE,
-    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`
-  }
+    update: `rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.M} ? ${DIRECT_LABEL_FONT_SIZE_S} : rscContainerWidth(width) < ${CHART_SIZE_BREAKPOINTS.L} ? ${DIRECT_LABEL_FONT_SIZE_M} : ${DIRECT_LABEL_FONT_SIZE_L}`,
+  };
 
   const chartSizeLabelGapSignal: Signal = {
     name: CHART_SIZE_LABEL_GAP,

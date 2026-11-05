@@ -9,35 +9,32 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { RectEncodeEntry, RectMark } from 'vega';
 
 import {
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
-  FOCUSED_REGION,
   NAVIGATION_ID_SEPARATOR,
   SELECTED_ITEM,
   SERIES_ID,
   STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
-import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { BarSpecOptions } from '../types/index.js';
+import {
+  FOCUS_RING_FLAT_RADIUS,
+  FOCUS_RING_OFFSET,
+  FOCUS_RING_ROUNDED_RADIUS,
+  getFocusRingStroke,
+  toNavigationKey,
+} from '../accessibleNavigation/focusRingUtils.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
-import { getOrientationProperties, isDodgedAndStacked, isDualMetricAxis, rotateRectClockwiseIfNeeded } from './barUtils.js';
-
-const FOCUS_RING_STROKE_WIDTH = 2;
-const FOCUS_RING_ROUNDED_RADIUS = 6;
-const FOCUS_RING_FLAT_RADIUS = 2;
-const FOCUS_RING_OFFSET = 3;
-
-/**
- * Converts a value to the string navigation keys it by (JS `String(value)`), unlike Vega's `toString`, which maps '' and null to null.
- * @param expression
- * @returns string
- */
-const toNavigationKey = (expression: string): string => `("" + ${expression})`;
+import { BarSpecOptions } from '../types/index.js';
+import {
+  getOrientationProperties,
+  isDodgedAndStacked,
+  isDualMetricAxis,
+  rotateRectClockwiseIfNeeded,
+} from './barUtils.js';
 
 /** Ring corners for a single bar or whole stack treated as one shape: rounded metric end, flat base. */
 const getStaticFocusRingCorners = ({ hasSquareCorners, orientation }: BarSpecOptions): RectEncodeEntry => {
@@ -99,9 +96,7 @@ export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
     interactive: false,
     encode: {
       enter: {
-        fill: { value: 'transparent' },
-        strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
-        stroke: { value: getS2ColorValue('blue-800', colorScheme) },
+        ...getFocusRingStroke(colorScheme),
         // Mirror the segment's own corners so stacked middle segments stay square.
         ...getDynamicFocusRingCorners(options),
       },
@@ -111,30 +106,6 @@ export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
         y: { signal: `datum.bounds.y1 - ${FOCUS_RING_OFFSET}` },
         y2: { signal: `datum.bounds.y2 + ${FOCUS_RING_OFFSET}` },
         opacity: [{ test: `${FOCUSED_ITEM} === (${focusedItemId}) && !(${isSelected})`, value: 1 }, { value: 0 }],
-      },
-    },
-  };
-};
-
-export const getChartFocusRing = (options: BarSpecOptions): RectMark => {
-  const { colorScheme } = options;
-  return {
-    name: 'chartFocusRing',
-    type: 'rect',
-    interactive: false,
-    encode: {
-      enter: {
-        fill: { value: 'transparent' },
-        strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
-        stroke: { value: getS2ColorValue('blue-800', colorScheme) },
-        cornerRadius: { value: FOCUS_RING_ROUNDED_RADIUS },
-      },
-      update: {
-        x: { value: 0 },
-        x2: { signal: 'width' },
-        y: { value: 0 },
-        y2: { signal: 'height' },
-        opacity: [{ test: `${FOCUSED_REGION} === 'chart'`, value: 1 }, { value: 0 }],
       },
     },
   };
@@ -152,15 +123,13 @@ export const getStackFocusRing = (options: BarSpecOptions): RectMark => {
   const baseline = `scale('${metricScaleKey}', 0)`;
   const update: RectEncodeEntry =
     orientation === 'vertical'
-      ? 
-        {
+      ? {
           x: { signal: dimStart },
           x2: { signal: dimEnd },
           y: { signal: `${stackTop} - ${FOCUS_RING_OFFSET}` },
           y2: { signal: `${baseline} + ${FOCUS_RING_OFFSET}` },
         }
-      : 
-        {
+      : {
           y: { signal: dimStart },
           y2: { signal: dimEnd },
           x: { signal: `${baseline} - ${FOCUS_RING_OFFSET}` },
@@ -173,9 +142,7 @@ export const getStackFocusRing = (options: BarSpecOptions): RectMark => {
     interactive: false,
     encode: {
       enter: {
-        fill: { value: 'transparent' },
-        strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
-        stroke: { value: getS2ColorValue('blue-800', colorScheme) },
+        ...getFocusRingStroke(colorScheme),
         ...getStaticFocusRingCorners(options),
       },
       update: {
@@ -247,9 +214,7 @@ export const getDodgedGroupFocusRing = (options: BarSpecOptions): RectMark => {
     interactive: false,
     encode: {
       enter: {
-        fill: { value: 'transparent' },
-        strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
-        stroke: { value: getS2ColorValue('blue-800', colorScheme) },
+        ...getFocusRingStroke(colorScheme),
         ...getStaticFocusRingCorners(options),
       },
       update: {

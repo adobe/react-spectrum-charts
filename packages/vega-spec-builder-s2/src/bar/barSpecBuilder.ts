@@ -21,9 +21,6 @@ import {
   DIMENSION_HOVER_AREA,
   DRAW_IN_GROW_DURATION_MS,
   FILTERED_TABLE,
-  FOCUSED_DIMENSION,
-  FOCUSED_ITEM,
-  FOCUSED_REGION,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -90,7 +87,7 @@ import {
 } from '../specUtils.js';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline/index.js';
 import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types/index.js';
-import { getChartFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils.js';
+import { getDodgedGroupFocusRing } from './barFocusRingUtils.js';
 import {
   getBarAnimIdField,
   getBarHoverRules,
@@ -270,14 +267,6 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   // We use this value to calculate ReferenceLine positions.
   const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
-
-  if (options.accessibleNavigation) {
-    signals.push(
-      getGenericValueSignal(FOCUSED_ITEM),
-      getGenericValueSignal(FOCUSED_REGION),
-      getGenericValueSignal(FOCUSED_DIMENSION)
-    );
-  }
 
   if (isDualMetricAxis(options)) {
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
@@ -638,10 +627,6 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   }
 
   marks.push(...getTrendlineMarks(options));
-
-  if (options.accessibleNavigation) {
-    marks.push(getChartFocusRing(options));
-  }
 });
 
 export const getRepeatedScale = (options: BarSpecOptions): Scale => {

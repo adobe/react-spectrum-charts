@@ -31,6 +31,9 @@ import {
   DEFAULT_SECONDARY_COLOR,
   FADE_FACTOR,
   FILTERED_TABLE,
+  FOCUSED_DIMENSION,
+  FOCUSED_ITEM,
+  FOCUSED_REGION,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
   MARK_ID,
@@ -110,55 +113,88 @@ describe('hidden-series axis domains', () => {
     { dualMetricAxis: true, metricAxis: undefined },
     { dualMetricAxis: true, metricAxis: 'customMetric' },
     { dualMetricAxis: true, metricAxis: 'custom-metric' },
-  ])(
-    'line axes fit visible series and fall back only when empty with %j',
-    async ({ dualMetricAxis, metricAxis }) => {
-      const spec = buildSpec({
-        data,
-        marks: [{ markType: 'line', dimension: 'x', color: 'series', scaleType: 'linear', dualMetricAxis, metricAxis }],
-        legends: [{ isToggleable: true }],
-      });
-      const table = spec.data?.find(({ name }) => name === TABLE);
-      if (!table || !('values' in table)) throw new Error('Expected inline table data');
-      table.values = data;
-      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
-      try {
-        await view.runAsync();
-        const baseMetricScale = metricAxis ?? 'yLinear';
-        const scaleNames = [
-          'xLinear',
-          baseMetricScale,
-          ...(dualMetricAxis ? [`${baseMetricScale}Primary`, `${baseMetricScale}Secondary`] : []),
-        ];
-        const getDomains = () => scaleNames.map((name) => view.scale(name).domain().map(Number));
-        const fullDomains = getDomains();
-        expect(fullDomains).toEqual([[0, 6], [0, 1000], ...(dualMetricAxis ? [[0, 1000], [0, 100]] : [])]);
-        expect(view.data(FILTERED_TABLE)).toHaveLength(6);
+  ])('line axes fit visible series and fall back only when empty with %j', async ({ dualMetricAxis, metricAxis }) => {
+    const spec = buildSpec({
+      data,
+      marks: [{ markType: 'line', dimension: 'x', color: 'series', scaleType: 'linear', dualMetricAxis, metricAxis }],
+      legends: [{ isToggleable: true }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+    try {
+      await view.runAsync();
+      const baseMetricScale = metricAxis ?? 'yLinear';
+      const scaleNames = [
+        'xLinear',
+        baseMetricScale,
+        ...(dualMetricAxis ? [`${baseMetricScale}Primary`, `${baseMetricScale}Secondary`] : []),
+      ];
+      const getDomains = () => scaleNames.map((name) => view.scale(name).domain().map(Number));
+      const fullDomains = getDomains();
+      expect(fullDomains).toEqual([
+        [0, 6],
+        [0, 1000],
+        ...(dualMetricAxis
+          ? [
+              [0, 1000],
+              [0, 100],
+            ]
+          : []),
+      ]);
+      expect(view.data(FILTERED_TABLE)).toHaveLength(6);
 
-        await view.signal('hiddenSeries', ['A']).runAsync();
-        expect(view.data(FILTERED_TABLE)).toHaveLength(4);
-        expect(getDomains()).toEqual([[0, 6], [0, 100], ...(dualMetricAxis ? [[0, 10], [0, 100]] : [])]);
+      await view.signal('hiddenSeries', ['A']).runAsync();
+      expect(view.data(FILTERED_TABLE)).toHaveLength(4);
+      expect(getDomains()).toEqual([
+        [0, 6],
+        [0, 100],
+        ...(dualMetricAxis
+          ? [
+              [0, 10],
+              [0, 100],
+            ]
+          : []),
+      ]);
 
-        await view.signal('hiddenSeries', ['A', 'C']).runAsync();
-        expect(view.data(FILTERED_TABLE)).toHaveLength(2);
-        expect(getDomains()).toEqual([[0, 4], [0, 10], ...(dualMetricAxis ? [[0, 10], [0, 100]] : [])]);
+      await view.signal('hiddenSeries', ['A', 'C']).runAsync();
+      expect(view.data(FILTERED_TABLE)).toHaveLength(2);
+      expect(getDomains()).toEqual([
+        [0, 4],
+        [0, 10],
+        ...(dualMetricAxis
+          ? [
+              [0, 10],
+              [0, 100],
+            ]
+          : []),
+      ]);
 
-        await view.signal('hiddenSeries', ['A', 'B', 'C']).runAsync();
-        expect(view.data(FILTERED_TABLE)).toHaveLength(0);
-        expect(getDomains()).toEqual(fullDomains);
+      await view.signal('hiddenSeries', ['A', 'B', 'C']).runAsync();
+      expect(view.data(FILTERED_TABLE)).toHaveLength(0);
+      expect(getDomains()).toEqual(fullDomains);
 
-        await view.signal('hiddenSeries', ['A', 'B']).runAsync();
-        expect(view.data(FILTERED_TABLE)).toHaveLength(2);
-        expect(getDomains()).toEqual([[0, 6], [0, 100], ...(dualMetricAxis ? [[0, 1000], [0, 100]] : [])]);
+      await view.signal('hiddenSeries', ['A', 'B']).runAsync();
+      expect(view.data(FILTERED_TABLE)).toHaveLength(2);
+      expect(getDomains()).toEqual([
+        [0, 6],
+        [0, 100],
+        ...(dualMetricAxis
+          ? [
+              [0, 1000],
+              [0, 100],
+            ]
+          : []),
+      ]);
 
-        await view.signal('hiddenSeries', []).runAsync();
-        expect(view.data(FILTERED_TABLE)).toHaveLength(6);
-        expect(getDomains()).toEqual(fullDomains);
-      } finally {
-        view.finalize();
-      }
+      await view.signal('hiddenSeries', []).runAsync();
+      expect(view.data(FILTERED_TABLE)).toHaveLength(6);
+      expect(getDomains()).toEqual(fullDomains);
+    } finally {
+      view.finalize();
     }
-  );
+  });
 
   test('controlled hidden series preserve domains on the initial render', async () => {
     const spec = buildSpec({
@@ -557,8 +593,25 @@ describe('Chart spec builder', () => {
         spectrum2Colors.dark['pink-700'],
       ]);
     });
+  });
 
-    test('records the navigation configuration in usermeta with accessibleNavigation', () => {
+  describe('accessibleNavigation', () => {
+    const countNamed = (items: { name?: string }[] | undefined, name: string) =>
+      items?.filter((item) => item.name === name).length;
+
+    test('adds the focus signals and chart ring once for a chart with navigable marks', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        accessibleNavigation: true,
+        marks: [defaultBarOptions, { ...defaultBarOptions, name: 'bar1' }],
+      });
+      expect(countNamed(spec.signals, FOCUSED_ITEM)).toBe(1);
+      expect(countNamed(spec.signals, FOCUSED_REGION)).toBe(1);
+      expect(countNamed(spec.signals, FOCUSED_DIMENSION)).toBe(1);
+      expect(countNamed(spec.marks, 'chartFocusRing')).toBe(1);
+    });
+
+    test('records the navigation configuration in usermeta', () => {
       const spec = buildSpec({
         ...defaultSpecOptions,
         accessibleNavigation: true,
@@ -568,6 +621,19 @@ describe('Chart spec builder', () => {
       expect(spec.usermeta?.navigation).toMatchObject({ chartType: 'bar', markName: 'revenueBars' });
       expect(spec.usermeta?.navigation?.xAxis).toHaveProperty('title', 'Browser');
       expect(buildSpec({ ...defaultSpecOptions, marks: [defaultBarOptions] }).usermeta?.navigation).toBeUndefined();
+    });
+
+    test('adds nothing when disabled or no mark is navigable', () => {
+      const disabled = buildSpec({ ...defaultSpecOptions, marks: [defaultBarOptions] });
+      const unsupported = buildSpec({
+        ...defaultSpecOptions,
+        accessibleNavigation: true,
+        marks: [{ markType: 'scatter' }],
+      });
+      for (const spec of [disabled, unsupported]) {
+        expect(countNamed(spec.signals, FOCUSED_ITEM)).toBe(0);
+        expect(countNamed(spec.marks, 'chartFocusRing')).toBe(0);
+      }
     });
   });
 
@@ -878,14 +944,21 @@ describe('Chart spec builder', () => {
             { region: 'B', channel: 'X', changeRate: 0.3 },
           ],
           marks: [
-            { markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', trellis: 'region', diverging: true },
+            {
+              markType: 'bar',
+              orientation: 'horizontal',
+              dimension: 'channel',
+              metric: 'changeRate',
+              trellis: 'region',
+              diverging: true,
+            },
           ],
           axes: [{ position: 'left', baseline: true }],
         });
       expect(build).not.toThrow();
       const allAxes = [
         ...(build().axes ?? []),
-        ...(build().marks ?? []).flatMap((mark) => ('axes' in mark ? (mark.axes ?? []) : [])),
+        ...(build().marks ?? []).flatMap((mark) => ('axes' in mark ? mark.axes ?? [] : [])),
       ];
       expect(allAxes.filter((axis) => 'offset' in axis)).toHaveLength(0);
     });
@@ -894,7 +967,9 @@ describe('Chart spec builder', () => {
       const spec = buildSpec({
         ...defaultSpecOptions,
         data: divergingData,
-        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        marks: [
+          { markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true },
+        ],
         axes: [
           {
             position: 'left',
@@ -913,7 +988,9 @@ describe('Chart spec builder', () => {
       const spec = buildSpec({
         ...defaultSpecOptions,
         data: divergingData,
-        marks: [{ markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        marks: [
+          { markType: 'bar', orientation: 'horizontal', dimension: 'channel', metric: 'changeRate', diverging: true },
+        ],
         // diverging (left) axis declared BEFORE the grid axis; it must be reordered to paint last
         axes: [
           { position: 'left', baseline: true },
@@ -931,7 +1008,9 @@ describe('Chart spec builder', () => {
       const spec = buildSpec({
         ...defaultSpecOptions,
         data: divergingData,
-        marks: [{ markType: 'bar', orientation: 'vertical', dimension: 'channel', metric: 'changeRate', diverging: true }],
+        marks: [
+          { markType: 'bar', orientation: 'vertical', dimension: 'channel', metric: 'changeRate', diverging: true },
+        ],
         axes: [{ position: 'bottom', baseline: true }],
       });
       expect(spec.autosize).toBeUndefined();
