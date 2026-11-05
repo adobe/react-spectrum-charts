@@ -77,7 +77,7 @@ Series can span several fields. When `color`, `lineType`, and `opacity` name dif
 
 Number and time dimensions are supported, including `0` and `dimensionDataType="time"` with date-string data. Bars, stacks, and groups get their focus rings, and bars read the dimension value as written in the data (e.g. "Day: 2024-01-01 00:00:00.0"), not the parsed timestamp. Empty-string dimension values are navigable too; their empty axis tick is skipped, since it has no label to read.
 
-## Focusing a stack — before drilling into a segment — shows the dimension-area tooltip or popover, if configured, the same one a mouse hovering the stack's exposed padding would show. See the `targets` prop on [`ChartInspect`](/docs/spectrum2/overview#chartinspect-props).
+Focusing a stack — before drilling into a segment — shows the dimension-area tooltip or popover, if configured, the same one a mouse hovering the stack's exposed padding would show. See the `targets` prop on [`ChartInspect`](/docs/spectrum2/overview#chartinspect-props).
 
 ## Legend
 
