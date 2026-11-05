@@ -1,5 +1,21 @@
 # @spectrum-charts/react-spectrum-charts-s2
 
+## 0.12.0
+
+### Minor Changes
+
+- 7bac1c1: Charts now apply data, size and highlight changes to the current view instead of recreating it, so `onVegaViewReady` fires less often.
+
+### Patch Changes
+
+- 645cca9: Toggling legend entries and changing `hiddenSeries`, `highlightedItem`, or `highlightedSeries` now update the chart in place instead of recreating it, and re-shown series keep their stacking order. Legend entries may be spaced slightly wider so the hidden-series icon fits.
+- 25c7e6a: Re-rendering a chart with the same children or an inline `onVegaViewReady` no longer recreates the chart view, and interaction callbacks always use the latest props.
+- Updated dependencies [645cca9]
+- Updated dependencies [25c7e6a]
+- Updated dependencies [7bac1c1]
+  - @spectrum-charts/vega-spec-builder-s2@0.12.0
+  - @spectrum-charts/core-s2@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes
