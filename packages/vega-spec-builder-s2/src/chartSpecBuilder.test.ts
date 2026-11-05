@@ -557,6 +557,18 @@ describe('Chart spec builder', () => {
         spectrum2Colors.dark['pink-700'],
       ]);
     });
+
+    test('records the navigation configuration in usermeta with accessibleNavigation', () => {
+      const spec = buildSpec({
+        ...defaultSpecOptions,
+        accessibleNavigation: true,
+        marks: [{ ...defaultBarOptions, name: 'Revenue Bars' }],
+        axes: [{ position: 'bottom', title: 'Browser' }],
+      });
+      expect(spec.usermeta?.navigation).toMatchObject({ chartType: 'bar', markName: 'revenueBars' });
+      expect(spec.usermeta?.navigation?.xAxis).toHaveProperty('title', 'Browser');
+      expect(buildSpec({ ...defaultSpecOptions, marks: [defaultBarOptions] }).usermeta?.navigation).toBeUndefined();
+    });
   });
 
   describe('controlled highlighting', () => {

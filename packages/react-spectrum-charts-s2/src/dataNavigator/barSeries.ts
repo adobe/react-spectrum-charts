@@ -12,56 +12,6 @@
 import { SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-export interface BarFacetProps {
-  color?: unknown;
-  lineType?: unknown;
-  opacity?: unknown;
-  type?: 'dodged' | 'stacked';
-}
-
-export interface BarSeriesFields {
-  /** The field read as the series' name in labels: `color`, or a dual facet's first field. */
-  color?: string;
-  /** Every field that divides the bar into series, in the order the chart's series id joins them. */
-  seriesFields: string[];
-  /** For a dodged-and-stacked bar, the fields that split each category into side-by-side groups. */
-  dodgeFields?: string[];
-  /** For a dodged-and-stacked bar, the remaining series fields, which tell a stack's segments apart. */
-  stackFields?: string[];
-}
-
-/** The field a facet prop names at `index` (a dual facet's primary or secondary field). */
-const facetField = (facet: unknown, index: 0 | 1): string | undefined => {
-  let value: unknown;
-  if (Array.isArray(facet)) value = facet[index];
-  else if (index === 0) value = facet;
-  return typeof value === 'string' ? value : undefined;
-};
-
-const uniqueFields = (fields: (string | undefined)[]): string[] => [
-  ...new Set(fields.filter((field): field is string => field !== undefined)),
-];
-
-/** Mirrors vega-spec-builder-s2's `isDodgedAndStacked` (barUtils.ts): any facet is a two-field array. */
-export const isDodgedAndStackedBar = ({ color, lineType, opacity }: BarFacetProps): boolean =>
-  [color, lineType, opacity].some((facet) => Array.isArray(facet) && facet.length === 2);
-
-/**
- * A bar's series fields, mirroring the spec builder's `getFacetsFromOptions` and dodge grouping.
- * @param props
- * @returns BarSeriesFields
- */
-export const getBarSeriesFields = (props: BarFacetProps): BarSeriesFields => {
-  const facets = [props.color, props.lineType, props.opacity];
-  const primary = uniqueFields(facets.map((facet) => facetField(facet, 0)));
-  const secondary = uniqueFields(facets.map((facet) => facetField(facet, 1)));
-  const seriesFields = uniqueFields([...primary, ...secondary]);
-  let dodgeFields: string[] | undefined;
-  if (isDodgedAndStackedBar(props)) dodgeFields = props.type === 'dodged' ? primary : secondary;
-  const stackFields = dodgeFields && seriesFields.filter((field) => !dodgeFields.includes(field));
-  return { color: facetField(props.color, 0) ?? seriesFields[0], seriesFields, dodgeFields, stackFields };
-};
-
 /** A row's series id the way the chart computes `rscSeriesId`: a single field's raw value, or every field joined with " | ". */
 export const getSeriesKey = (row: SimpleData, seriesFields: string[]): unknown =>
   seriesFields.length === 1 ? row[seriesFields[0]] : seriesFields.map((field) => String(row[field])).join(' | ');

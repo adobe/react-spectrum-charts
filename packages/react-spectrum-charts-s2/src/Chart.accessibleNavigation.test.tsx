@@ -22,7 +22,7 @@ import {
   setupChartHarness,
   waitFor,
 } from './test-utils/index.js';
-import { ChartProps } from './types/index.js';
+import { BarProps, ChartProps } from './types/index.js';
 
 type Props = Partial<ChartProps>;
 
@@ -39,7 +39,7 @@ const onClick = jest.fn();
 
 const harness = setupChartHarness();
 
-const chart = (props: Props = {}) => (
+const chart = (props: Props = {}, barProps: Partial<BarProps> = {}) => (
   <Chart
     data={data}
     width={600}
@@ -51,7 +51,7 @@ const chart = (props: Props = {}) => (
   >
     <Axis position="bottom" />
     <Axis position="left" />
-    <Bar dimension="browser" metric="downloads" color="os" onClick={onClick}>
+    <Bar dimension="browser" metric="downloads" color="os" onClick={onClick} {...barProps}>
       <ChartPopover>{(datum) => <div>Popover {`${datum.browser} ${datum.os}`}</div>}</ChartPopover>
     </Bar>
     <Legend title="Operating system" />
@@ -76,7 +76,7 @@ const press = async (key: string) => {
 
 const enter = async () => {
   await waitFor(() => expect(entryButton()).toBeTruthy());
-  await act(async () => entryButton().click());
+  act(() => entryButton().click());
   await harness.settle();
   await waitFor(() => expect(node()).toBeTruthy());
 };
@@ -209,6 +209,19 @@ describe('bars', () => {
     expect(node()).toBeTruthy();
   });
 
+  test('a named bar drives its own hover signal, popover and onClick', async () => {
+    await harness.mount(chart({}, { name: 'Revenue Bars' }));
+    await enter();
+    await press('Enter');
+    await press('Enter');
+    expect(signal('revenueBars_hoveredItem')).not.toBeNull();
+
+    await press('Enter');
+
+    expect(await screen.findByText('Popover Chrome Mac')).toBeInTheDocument();
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
   test('clicking a bar focuses its node', async () => {
     await harness.mount(chart());
     const bars = await findAllMarksByGroupName(await findChart(), 'bar0');
@@ -239,6 +252,18 @@ describe('bottom axis', () => {
 
     await press('ArrowRight');
     expect(label()).toContain('Firefox');
+  });
+
+  test('uses the default dimension when the bar does not set one', async () => {
+    const categoryData = data.map(({ browser, ...row }) => ({ ...row, category: browser }));
+    await harness.mount(chart({ data: categoryData }, { dimension: undefined }));
+    await enter();
+
+    await press('ArrowDown');
+    expect(axisRing()).not.toBeNull();
+    await press('Enter');
+
+    expect(label()).toContain('Chrome');
   });
 
   test('a focused label does not open a popover', async () => {
@@ -290,8 +315,15 @@ describe('host updates', () => {
 
   test('resets focus after a rebuild', () => resetsFocus({ title: 'Retitled' }));
 
-  // Known failure: a data update keeps the focused node.
-  test.failing('resets focus after a data update', () =>
-    resetsFocus({ data: data.map((row) => ({ ...row, downloads: row.downloads * 2 })) })
-  );
+  test('resets focus after a data update', () =>
+    resetsFocus({ data: data.map((row) => ({ ...row, downloads: row.downloads * 2 })) }));
+
+  test('keeps the entry button focused when navigation resets', async () => {
+    const mounted = await harness.mount(chart());
+    await enter();
+
+    await harness.update(mounted, chart({ data: data.map((row) => ({ ...row, downloads: row.downloads * 2 })) }));
+
+    expect(document.activeElement).toBe(entryButton());
+  });
 });

@@ -129,7 +129,7 @@ export const showAxisLabelTooltip = (view: View, value: string): boolean => {
 /**
  * Triggers the real ChartInspect tooltip by calling the same callback Vega calls on mouseover, so
  * keyboard focus gets identical content and positioning. `value` must match the mark's own
- * `tooltip` encoding shape (see `dataNavigatorAdapter.ts`); `null` hides it. `ringMarkName` is
+ * `tooltip` encoding shape (see `navigationSession.ts`); `null` hides it. `ringMarkName` is
  * whichever ring is visible for the node, used to read its bounds for positioning — call only
  * after `view.runAsync()` resolves so those bounds reflect the new focus.
  */

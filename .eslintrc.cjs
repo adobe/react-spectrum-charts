@@ -158,6 +158,26 @@ module.exports = {
       },
     },
     {
+      // Keyboard navigation is framework-agnostic; React wiring lives in hooks/useDataNavigator.ts.
+      files: ['packages/react-spectrum-charts-s2/src/dataNavigator/**/*.ts'],
+      excludedFiles: ['**/*.test.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            ...s2RestrictedImports,
+            patterns: [
+              ...s2RestrictedImports.patterns,
+              {
+                group: ['react', 'react-dom', 'react/*', 'react-dom/*'],
+                message: 'dataNavigator must not depend on React.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
       // The adapter contract is shared by every rendering library, so it can't depend on one.
       files: ['packages/react-spectrum-charts-s2/src/viewHost/viewAdapter.ts'],
       rules: {

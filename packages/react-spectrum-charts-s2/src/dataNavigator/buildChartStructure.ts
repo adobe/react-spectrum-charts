@@ -12,14 +12,14 @@
 import { Structure } from 'data-navigator';
 
 import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/core-s2/constants';
-import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { NavigableChart, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisFieldType, buildAxisStructure } from './buildAxisStructure.js';
 import { barId, buildBarStructure, segmentId, toDimensionKey } from './buildBarStructure.js';
 import { composeRegions, NamedRegion } from './composeRegions.js';
 import { getBaseNavigationRules } from './navigationRules.js';
 
-export type NavigableChartType = 'bar';
+export type NavigableChartType = NavigableChart['chartType'];
 
 export interface AxisRegionOptions {
   /** The field this axis represents — the dimension for a categorical x-axis. */

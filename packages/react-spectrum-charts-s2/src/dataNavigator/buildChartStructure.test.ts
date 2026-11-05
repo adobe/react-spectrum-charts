@@ -11,26 +11,12 @@
  */
 import { buildBarStructure, segmentId } from './buildBarStructure.js';
 import { buildChartStructure, getNodeIdForDatum } from './buildChartStructure.js';
-import { getNavigableChartType } from './navigableMarks.js';
 
 const data = [
   { browser: 'Chrome', downloads: 27000 },
   { browser: 'Firefox', downloads: 8000 },
   { browser: 'Safari', downloads: 4000 },
 ];
-
-describe('getNavigableChartType()', () => {
-  test('resolves the Bar mark to the bar chart type', () => {
-    expect(getNavigableChartType('Bar')).toBe('bar');
-  });
-  test('returns undefined for non-navigable marks', () => {
-    expect(getNavigableChartType('Axis')).toBeUndefined();
-    expect(getNavigableChartType('Line')).toBeUndefined();
-  });
-  test('returns undefined when there is no displayName', () => {
-    expect(getNavigableChartType(undefined)).toBeUndefined();
-  });
-});
 
 describe('buildChartStructure()', () => {
   test('delegates the bar chart type to buildBarStructure', () => {

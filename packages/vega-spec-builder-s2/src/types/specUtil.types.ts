@@ -49,6 +49,34 @@ export type DivergingBarMark = {
   metric: string;
 };
 
+/** The navigable mark's configuration for keyboard navigation; written only with `accessibleNavigation`. */
+export type NavigableChart = {
+  chartType: 'bar';
+  /** The mark's name in the spec, which its hover signals and data sets are prefixed with */
+  markName: string;
+  dimension: string;
+  metric: string;
+  /** The field read as the series' name in labels */
+  color?: string;
+  /** Every field dividing the mark into series, in the order the series id joins them */
+  seriesFields: string[];
+  /** For a dodged-and-stacked bar, the fields splitting each category into side-by-side stacks */
+  dodgeFields?: string[];
+  /** For a dodged-and-stacked bar, the fields that tell a stack's segments apart */
+  stackFields?: string[];
+  type: 'dodged' | 'stacked';
+  colorOverride?: string;
+  order?: string;
+  orientation: Orientation;
+  /** Data field → its axis or legend title, in reading order (dimension, series, metric) */
+  fieldLabels: Record<string, string>;
+  /** The metric axis titles of a dual-metric-axis bar; the secondary one belongs to the last series */
+  metricAxisTitles?: { primary?: string; secondary?: string };
+  hasChartInspect: boolean;
+  /** The categorical axis below the plot, when there is one */
+  xAxis?: { field: string; title?: string };
+};
+
 export type UserMeta = {
   animatedMarks?: string[];
   interactiveMarks?: InteractiveMark[];
@@ -56,6 +84,7 @@ export type UserMeta = {
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];
+  navigation?: NavigableChart;
 };
 
 export interface MarkBounds {

@@ -188,7 +188,7 @@ export const getStackFocusRing = (options: BarSpecOptions): RectMark => {
 
 /**
  * Focus ring around a whole dodge group (a category's cluster of side-by-side bars) when that group
- * is focused. Named the same as `getStackFocusRing`'s mark so the adapter's ring lookups work
+ * is focused. Named the same as `getStackFocusRing`'s mark so the navigation session's ring lookups work
  * unchanged for either bar type.
  */
 export const getDodgedGroupFocusRing = (options: BarSpecOptions): RectMark => {

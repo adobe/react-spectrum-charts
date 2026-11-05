@@ -12,49 +12,7 @@
 import { SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
-import { getBarSeriesFields, getSeriesKey, isDodgedAndStackedBar, withViewKeys } from './barSeries.js';
-
-describe('getBarSeriesFields', () => {
-  test('a single color field is the only series field', () => {
-    expect(getBarSeriesFields({ color: 'os' })).toEqual({ color: 'os', seriesFields: ['os'] });
-  });
-
-  test('has no series without a facet', () => {
-    expect(getBarSeriesFields({})).toEqual({ color: undefined, seriesFields: [] });
-  });
-
-  test('combines distinct color, lineType and opacity fields', () => {
-    expect(getBarSeriesFields({ color: 'series', lineType: 'period', opacity: 'period' })).toEqual({
-      color: 'series',
-      seriesFields: ['series', 'period'],
-    });
-  });
-
-  test('stacked dual facets dodge by the secondary fields and stack by the primary', () => {
-    expect(getBarSeriesFields({ color: 'series', opacity: ['series', 'period'], type: 'stacked' })).toEqual({
-      color: 'series',
-      seriesFields: ['series', 'period'],
-      dodgeFields: ['period'],
-      stackFields: ['series'],
-    });
-  });
-
-  test('dodged dual facets dodge by the primary fields and stack by the secondary', () => {
-    expect(getBarSeriesFields({ color: ['series', 'subSeries'], opacity: 'period', type: 'dodged' })).toEqual({
-      color: 'series',
-      seriesFields: ['series', 'period', 'subSeries'],
-      dodgeFields: ['series', 'period'],
-      stackFields: ['subSeries'],
-    });
-  });
-});
-
-describe('isDodgedAndStackedBar', () => {
-  test('is true only when a facet is a two-field array', () => {
-    expect(isDodgedAndStackedBar({ color: ['a', 'b'] })).toBe(true);
-    expect(isDodgedAndStackedBar({ color: 'a', opacity: 'b' })).toBe(false);
-  });
-});
+import { getSeriesKey, withViewKeys } from './barSeries.js';
 
 describe('getSeriesKey', () => {
   test('keeps a single field raw and joins several with " | "', () => {

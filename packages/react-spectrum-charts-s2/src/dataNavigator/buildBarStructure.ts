@@ -370,7 +370,7 @@ export const buildBarStructure = ({
   };
 
   const structure = dataNavigator.structure(structureOptions);
-  // Carry the oriented key mapping on the structure itself — the adapter reads it for keydown handling
+  // Carry the oriented key mapping on the structure itself — the navigation session reads it for keydown handling
   // and the no-axis path returns this structure directly (composeRegions overrides for the axis path).
   structure.navigationRules = navigationRules;
   addSiblingKeySynonyms(structure);
@@ -543,16 +543,26 @@ export const prepareNodeSemantics = (structure: Structure, options: NodeLabelOpt
   }
 };
 
-export const isDualMetricAxisNavigation = (fields: {
-  color?: unknown;
-  lineType?: unknown;
-  opacity?: unknown;
-  dualMetricAxis?: boolean;
-  trellis?: unknown;
-  type?: string;
-}): boolean => {
-  const isDodgedAndStacked = [fields.color, fields.lineType, fields.opacity].some(
-    (facet) => Array.isArray(facet) && facet.length === 2
-  );
-  return Boolean(fields.dualMetricAxis && !fields.trellis && fields.type === 'dodged' && !isDodgedAndStacked);
+/**
+ * Gets each series' metric-axis title for a dual-metric-axis bar, whose secondary axis belongs to the last series.
+ * @param data
+ * @param color
+ * @param titles
+ * @param secondarySeries the series on the secondary axis; defaults to the last one in data order
+ * @returns Record<string, string> | undefined
+ */
+export const getMetricTitleBySeries = (
+  data: SimpleData[],
+  color: string,
+  { primary, secondary }: { primary?: string; secondary?: string },
+  secondarySeries?: string
+): Record<string, string> | undefined => {
+  const series = [...new Set(data.map((row) => String(row[color])))];
+  const secondaryKey = secondarySeries ?? series.at(-1);
+  const labels: Record<string, string> = {};
+  for (const value of series) {
+    const title = value === secondaryKey ? secondary : primary;
+    if (title) labels[value] = title;
+  }
+  return Object.keys(labels).length > 0 ? labels : undefined;
 };

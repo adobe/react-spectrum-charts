@@ -53,6 +53,7 @@ import {
 import { colorSchemes, getColorSchemeColors, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { jsonClone } from '@spectrum-charts/core-s2/utils';
 
+import { getNavigableChart } from './accessibleNavigation/navigableChartUtils.js';
 import { addArea } from './area/areaSpecBuilder.js';
 import { addAxis } from './axis/axisSpecBuilder.js';
 import { addBar } from './bar/barSpecBuilder.js';
@@ -204,6 +205,9 @@ export function buildSpec({
         return acc;
     }
   }, spec);
+
+  const navigation = accessibleNavigation ? getNavigableChart({ marks, axes, legends }) : undefined;
+  if (navigation) spec = { ...spec, usermeta: { ...spec.usermeta, navigation } };
 
   spec = [...legends].reduce((acc: ScSpec, legend, index) => {
     return addLegend(acc, {

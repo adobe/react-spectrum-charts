@@ -17,7 +17,7 @@ import { baseNavigationRules } from './navigationRules.js';
 const REGION_SEPARATOR = '::';
 
 export interface NamedRegion {
-  /** Region identifier; read back off `NodeObject.region` by the adapter to decide focus-signal behavior. */
+  /** Region identifier; read back off `NodeObject.region` by the navigation session to decide focus-signal behavior. */
   name: string;
   structure: Structure;
   entryPoint: string | undefined;

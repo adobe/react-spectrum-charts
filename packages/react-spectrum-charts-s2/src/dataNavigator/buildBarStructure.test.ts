@@ -14,7 +14,13 @@ import { NodeObject, Structure } from 'data-navigator';
 import { SERIES_ID } from '@spectrum-charts/core-s2/constants';
 
 import { withViewKeys } from './barSeries.js';
-import { buildBarStructure, buildNodeLabel, segmentId, toDimensionKey } from './buildBarStructure.js';
+import {
+  buildBarStructure,
+  buildNodeLabel,
+  getMetricTitleBySeries,
+  segmentId,
+  toDimensionKey,
+} from './buildBarStructure.js';
 
 const hasEdgeBetween = (structure: Structure, a: string, b: string): boolean =>
   Object.values(structure.edges).some((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));
@@ -628,5 +634,22 @@ describe('buildBarStructure() dimensionLabels', () => {
       dimensionLabels: new Map([[String(day), '2024-01-01']]),
     });
     expect(structure.nodes[String(day)].semantics?.label).toBe('day: 2024-01-01. downloads: 5.');
+  });
+});
+
+describe('getMetricTitleBySeries()', () => {
+  const rows = [{ series: 'Users' }, { series: 'Revenue' }, { series: 'Users' }];
+  const titles = { primary: 'Count', secondary: 'Dollars' };
+
+  test('gives the secondary title to the series the chart puts on the secondary axis', () => {
+    expect(getMetricTitleBySeries(rows, 'series', titles, 'Users')).toEqual({ Users: 'Dollars', Revenue: 'Count' });
+  });
+
+  test('falls back to the last series in data order', () => {
+    expect(getMetricTitleBySeries(rows, 'series', titles)).toEqual({ Users: 'Count', Revenue: 'Dollars' });
+  });
+
+  test('is undefined when neither axis has a title', () => {
+    expect(getMetricTitleBySeries(rows, 'series', {})).toBeUndefined();
   });
 });

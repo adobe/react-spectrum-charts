@@ -9,11 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { getNavigationLocale } from './useDataNavigator.js';
 
-import { Bar } from '../components/Bar/index.js';
-import { NavigableChartType } from './buildChartStructure.js';
+describe('getNavigationLocale()', () => {
+  test('reads a locale code or the code of a split locale', () => {
+    expect(getNavigationLocale('fr-FR')).toBe('fr-FR');
+    expect(getNavigationLocale({ number: 'de-DE', time: 'fr-FR' })).toBe('de-DE');
+    expect(getNavigationLocale({ time: 'fr-FR' })).toBe('fr-FR');
+  });
 
-export const getNavigableChartType = (displayName: unknown): NavigableChartType | undefined => {
-  if (displayName === Bar.displayName) return 'bar';
-  return undefined;
-};
+  test('is undefined for locale definitions', () => {
+    expect(getNavigationLocale({ number: { decimal: ',' } })).toBeUndefined();
+    expect(getNavigationLocale(undefined)).toBeUndefined();
+  });
+});
