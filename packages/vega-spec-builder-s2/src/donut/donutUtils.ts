@@ -16,6 +16,7 @@ import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_HOLE_RATIO,
+  DEFAULT_OPACITY_RULE,
   DONUT_BOOLEAN_SECONDARY_COLOR,
   DONUT_LABELED_RADIUS,
   DONUT_LABEL_MIN_SPACE_RATIO,
@@ -91,11 +92,12 @@ export const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } &
   if (options.isHoverAnimate) {
     return [{ signal: getHoverDeemphasisOpacitySignal(options.name, getDonutAnimIdField(options.name)) }];
   }
-  const opacity = getMarkOpacity(options);
   if (!isInteractive(options) && isDonutInteractive(options)) {
+    const opacity = [DEFAULT_OPACITY_RULE];
     addHoveredItemOpacityRules(opacity, options);
+    return opacity;
   }
-  return opacity;
+  return getMarkOpacity(options);
 };
 
 /** Gets the 0-1 linear label fade that starts when the label's slice finishes drawing. */

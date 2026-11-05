@@ -70,6 +70,10 @@ const stableChart = (props: Partial<ChartProps> = {}, children = stableChildren)
 
 const untoggleableChart = (props: Partial<ChartProps> = {}) => stableChart(props, untoggleableChildren);
 
+// without axes, fit autosize takes a second pass when the topmost line's stroke overflow moves
+const axedUntoggleableChart = (props: Partial<ChartProps> = {}) =>
+  stableChart(props, [<Axis key="left" position="left" />, ...untoggleableChildren]);
+
 const append = (rows: Row[], i: number): Row[] => [
   ...rows,
   { datetime: 3 + i, value: i, series: 'a' },
@@ -93,11 +97,10 @@ describe('view counts', () => {
       [chart({}, (view) => harness.onVegaViewReady(view)), chart({}, (view) => harness.onVegaViewReady(view))],
       { views: 0, renders: 0 },
     ],
-    // the first highlight changes the program (#1065); a → b updates the live view
     [
       'controlled highlightedSeries undefined → a → b',
       [chart(), chart({ highlightedSeries: 'a' }), chart({ highlightedSeries: 'b' })],
-      { views: 1, renders: 2 },
+      { views: 0, renders: 2 },
     ],
   ])('%s', async (_, elements, expected) => {
     const { views, renders } = await harness.countUpdates(elements);
@@ -105,7 +108,6 @@ describe('view counts', () => {
     expect({ views, renders }).toEqual(expected);
   });
 
-  // Rebuilds while hiddenSeries is a program signal (#1065); the RFC targets 0 new views.
   test('a legend toggle', async () => {
     const mounted = await harness.mount(chart());
     const views = harness.views.length;
@@ -115,10 +117,23 @@ describe('view counts', () => {
     await harness.settle();
 
     expect({ views: harness.views.length - views, renders: harness.renderCount() - renders }).toEqual({
-      views: 1,
+      views: 0,
       renders: 1,
     });
     mounted.unmount();
+  });
+
+  test('a static chart rebuilds once when its first controlled highlight adds hover animation', async () => {
+    const animated = (props: Partial<ChartProps> = {}) =>
+      untoggleableChart({ animations: true, animationTypes: ['hover'], ...props });
+
+    const { views } = await harness.countUpdates([
+      animated(),
+      animated({ highlightedSeries: 'a' }),
+      animated({ highlightedSeries: 'b' }),
+    ]);
+
+    expect(views).toBe(1);
   });
 
   test('streaming 8 appends', async () => {
@@ -142,9 +157,28 @@ describe('view counts with stable children', () => {
     ['a width change', [stableChart(), stableChart({ width: 500 })], { views: 0, renders: 1 }],
     ['a title change', [stableChart(), stableChart({ title: 'Retitled' })], { views: 1, renders: 1 }],
     [
-      'controlled hiddenSeries undefined → a → b (rebuilds: legend layout depends on it)',
-      [untoggleableChart(), untoggleableChart({ hiddenSeries: ['a'] }), untoggleableChart({ hiddenSeries: ['b'] })],
-      { views: 2, renders: 2 },
+      'controlled hiddenSeries undefined → a → b',
+      [
+        axedUntoggleableChart(),
+        axedUntoggleableChart({ hiddenSeries: ['a'] }),
+        axedUntoggleableChart({ hiddenSeries: ['b'] }),
+      ],
+      { views: 0, renders: 2 },
+    ],
+    [
+      'controlled highlightedSeries undefined → a → b → undefined',
+      [
+        untoggleableChart(),
+        untoggleableChart({ highlightedSeries: 'a' }),
+        untoggleableChart({ highlightedSeries: 'b' }),
+        untoggleableChart(),
+      ],
+      { views: 0, renders: 3 },
+    ],
+    [
+      'controlled highlightedItem undefined → id → undefined',
+      [untoggleableChart(), untoggleableChart({ highlightedItem: 1 }), untoggleableChart()],
+      { views: 0, renders: 2 },
     ],
     [
       'controlled highlightedSeries a → b → c',
@@ -206,8 +240,27 @@ describe('update equals fresh mount', () => {
     ['changed controlled hiddenSeries', { hiddenSeries: ['a'] }, { hiddenSeries: ['b'] }],
     ['cleared controlled hiddenSeries', { hiddenSeries: ['a'] }, {}],
     ['a controlled highlightedSeries', {}, { highlightedSeries: 'a' }],
+    ['a cleared highlightedSeries', { highlightedSeries: 'a' }, {}],
+    ['a controlled highlightedItem', {}, { highlightedItem: 1 }],
+    ['a cleared highlightedItem', { highlightedItem: 1 }, {}],
   ])('%s with an untoggleable legend', async (_, a, b) => {
     const { updated, fresh } = await harness.compareUpdateToMount(untoggleableChart, a, b);
+
+    expect(updated).toEqual(fresh);
+  });
+
+  const shapedChart = (symbolShape: string) => (props: Partial<ChartProps>) =>
+    stableChart(props, [
+      <Line key="line" dimension="datetime" metric="value" color="series" scaleType="linear" />,
+      <Legend key="legend" symbolShape={{ value: symbolShape }} />,
+    ]);
+
+  test.each([
+    ['a built-in shape', 'circle'],
+    ['a built-in polygon', 'cross'],
+    ['a custom path larger than the icon', 'M -1.5 -1.5 L 1.5 -1.5 L 0 1.5 Z'],
+  ])('controlled hiddenSeries on a legend with %s', async (_, symbolShape) => {
+    const { updated, fresh } = await harness.compareUpdateToMount(shapedChart(symbolShape), {}, { hiddenSeries: ['a'] });
 
     expect(updated).toEqual(fresh);
   });

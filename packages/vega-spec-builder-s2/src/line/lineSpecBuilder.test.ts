@@ -14,14 +14,19 @@ import { Data, GroupMark, View, expressionFunction, parse } from 'vega';
 import {
   ANIMATION_TIMER,
   BACKGROUND_COLOR,
+  CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_POINT_SIZE,
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
   DEFAULT_OPACITY_RULE,
   DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -37,6 +42,7 @@ import {
 import { buildSpec } from '../chartSpecBuilder.js';
 import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
+import { getSeriesFacet } from '../marks/markUtils.js';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
@@ -50,6 +56,8 @@ import {
   getLineDomainData,
   setScales,
 } from './lineSpecBuilder.js';
+import { getHoverLabelData, getLineHighlightedData } from './lineDataUtils.js';
+import { getLineHoverMarks } from './lineMarkUtils.js';
 import { defaultLineOptions } from './lineTestUtils.js';
 
 describe('fixed metric axis hover', () => {
@@ -197,6 +205,34 @@ describe('getLineDomainData()', () => {
   });
 });
 
+const controlledOpacityRules = [
+  {
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+  },
+  {
+    test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+    signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+  },
+];
+const controlledStrokeWidthRules = [
+  {
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+  },
+  {
+    test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+    signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+  },
+];
+const controlledLineUpdate = {
+  opacity: [...controlledOpacityRules, DEFAULT_OPACITY_RULE],
+  strokeWidth: [...controlledStrokeWidthRules, DEFAULT_STROKE_WIDTH_RULE],
+};
+// always-present (non-interactive) controlled highlight data and marks
+const highlightData = [getLineHighlightedData(defaultLineOptions), getHoverLabelData(defaultLineOptions)];
+const hoverMarks = getLineHoverMarks(defaultLineOptions, `${FILTERED_TABLE}ForInspect`, undefined, false);
+
 const defaultSpec = initializeSpec({
   data: [
     {
@@ -221,10 +257,11 @@ const defaultSpec = initializeSpec({
       name: FILTERED_TABLE,
       source: TABLE,
     },
+    ...highlightData,
   ],
   marks: [
     {
-      from: { facet: { data: FILTERED_TABLE, groupby: [DEFAULT_COLOR], name: 'line0_facet' } },
+      ...getSeriesFacet('line0_facet', FILTERED_TABLE, [DEFAULT_COLOR]),
       marks: [
         {
           encode: {
@@ -237,7 +274,7 @@ const defaultSpec = initializeSpec({
             },
             update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-              opacity: [DEFAULT_OPACITY_RULE],
+              ...controlledLineUpdate,
               strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
             },
           },
@@ -251,6 +288,7 @@ const defaultSpec = initializeSpec({
       name: 'line0_group',
       type: 'group',
     },
+    ...hoverMarks,
   ],
   scales: [
     { domain: { data: TABLE, fields: [DEFAULT_COLOR] }, name: COLOR_SCALE, type: 'ordinal' },
@@ -293,13 +331,7 @@ const defaultPointScale = {
 const line0_groupMark = {
   name: 'line0_group',
   type: 'group',
-  from: {
-    facet: {
-      name: 'line0_facet',
-      data: FILTERED_TABLE,
-      groupby: ['series'],
-    },
-  },
+  ...getSeriesFacet('line0_facet', FILTERED_TABLE, ['series']),
   marks: [
     {
       name: 'line0',
@@ -319,8 +351,7 @@ const line0_groupMark = {
         },
         update: {
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
-          opacity: [DEFAULT_OPACITY_RULE],
-          strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+          ...controlledLineUpdate,
         },
       },
     },
@@ -331,13 +362,7 @@ const metricRangeGroupMark = {
   name: 'line0MetricRange0_group',
   type: 'group',
   clip: true,
-  from: {
-    facet: {
-      name: 'line0MetricRange0_facet',
-      data: FILTERED_TABLE,
-      groupby: ['series'],
-    },
-  },
+  ...getSeriesFacet('line0MetricRange0_facet', FILTERED_TABLE, ['series']),
   marks: [
     {
       name: 'line0MetricRange0_line',
@@ -370,8 +395,7 @@ const metricRangeGroupMark = {
             scale: 'xTime',
             field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
           },
-          opacity: [DEFAULT_OPACITY_RULE],
-          strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+          ...controlledLineUpdate,
         },
       },
     },
@@ -414,7 +438,7 @@ const metricRangeGroupMark = {
   ],
 };
 
-const metricRangeMarks = [line0_groupMark, metricRangeGroupMark];
+const metricRangeMarks = [line0_groupMark, metricRangeGroupMark, ...hoverMarks];
 
 const staticPointMark = {
   name: 'line0_staticPoints',
@@ -474,9 +498,10 @@ const metricRangeWithDisplayPointMarks = [
   staticPointBackgroundMark,
   staticPointMark,
   metricRangeGroupMark,
+  ...hoverMarks,
 ];
 
-const displayPointMarks = [line0_groupMark, staticPointBackgroundMark, staticPointMark];
+const displayPointMarks = [line0_groupMark, staticPointBackgroundMark, staticPointMark, ...hoverMarks];
 
 describe('lineSpecBuilder', () => {
   describe('addLine()', () => {
@@ -566,22 +591,15 @@ describe('lineSpecBuilder', () => {
         expect(hoveredMatchRule?.expr).toContain(`line0_${HOVERED_ITEM}`);
       });
 
-      test('a chart-level highlightedItem alone (no other line interactivity) resolves isHoverAnimate true', () => {
+      test('an interactive line resolves isHoverAnimate true, registers usermeta.animatedMarks, and creates hover-animation data', () => {
         const spec = addLine(startingSpec, {
           idKey: MARK_ID,
           color: DEFAULT_COLOR,
           markType: 'line',
-          highlightedItem: 'abc123',
+          chartInspects: [{}],
         });
         expect(spec.usermeta?.animatedMarks).toStrictEqual(['line0']);
-
-        const hoverTargetData = spec.data?.find((d) => d.name === 'line0_hoverTargetData');
-        expect(hoverTargetData).toBeDefined();
-
-        // controlledTableMatch/controlledSeriesMatch are pushed unconditionally by getLineHoverRules,
-        // so a highlightedItem-only line still gets both controlled-highlight rules wired.
-        const rules = (hoverTargetData?.transform as { as?: string }[] | undefined)?.map((t) => t.as);
-        expect(rules).toEqual(expect.arrayContaining(['controlledTableMatch', 'controlledSeriesMatch']));
+        expect(spec.data?.some((d) => d.name === 'line0_hoverTargetData')).toBe(true);
       });
     });
 
@@ -703,8 +721,8 @@ describe('lineSpecBuilder', () => {
     });
 
     test('scaleTypes "point" and "linear" should return the original data', () => {
-      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual(baseData);
-      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual(baseData);
+      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'point' })).toEqual([...baseData, ...highlightData]);
+      expect(addData(baseData, { ...defaultLineOptions, scaleType: 'linear' })).toEqual([...baseData, ...highlightData]);
     });
 
     test('with dimensionHover adds groupId formula transform to table', () => {
@@ -732,7 +750,7 @@ describe('lineSpecBuilder', () => {
         addData(baseData, {
           ...defaultLineOptions,
           trendlines: [{ method: 'average' }],
-        })[2].transform
+        })[4].transform
       ).toStrictEqual([
         { type: 'filter', expr: `isValid(datum["${DEFAULT_METRIC}"])` },
         {
@@ -987,13 +1005,13 @@ describe('lineSpecBuilder', () => {
 
   describe('addLineMarks()', () => {
     test('basic', () => {
-      expect(addLineMarks([], defaultLineOptions)).toStrictEqual(defaultSpec.marks);
+      expect(addLineMarks([], defaultLineOptions)).toStrictEqual([line0_groupMark, ...hoverMarks]);
     });
 
     test('dashed', () => {
       expect(addLineMarks([], { ...defaultLineOptions, lineType: { value: [8, 8] } })).toStrictEqual([
         {
-          from: { facet: { data: FILTERED_TABLE, groupby: [DEFAULT_COLOR], name: 'line0_facet' } },
+          ...getSeriesFacet('line0_facet', FILTERED_TABLE, [DEFAULT_COLOR]),
           marks: [
             {
               encode: {
@@ -1006,8 +1024,7 @@ describe('lineSpecBuilder', () => {
                 },
                 update: {
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
-                  opacity: [DEFAULT_OPACITY_RULE],
-                  strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+                  ...controlledLineUpdate,
                 },
               },
               from: { data: 'line0_facet' },
@@ -1020,6 +1037,7 @@ describe('lineSpecBuilder', () => {
           name: 'line0_group',
           type: 'group',
         },
+        ...hoverMarks,
       ]);
     });
 
@@ -1045,8 +1063,8 @@ describe('lineSpecBuilder', () => {
           staticPoint: 'staticPoint',
           linePointAnnotations: [{}],
         });
-        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0
-        expect(marks).toHaveLength(5);
+        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0 + hover marks
+        expect(marks).toHaveLength(5 + hoverMarks.length);
         expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
         expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
       });
@@ -1057,8 +1075,8 @@ describe('lineSpecBuilder', () => {
           isSparkline: true,
           linePointAnnotations: [{}],
         });
-        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0
-        expect(marks).toHaveLength(5);
+        // line0_group + line0_staticPointBackground + line0_staticPoints + line0Annotation0_bg + line0Annotation0 + hover marks
+        expect(marks).toHaveLength(5 + hoverMarks.length);
         expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
         expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
       });
@@ -1068,7 +1086,7 @@ describe('lineSpecBuilder', () => {
           ...defaultLineOptions,
           linePointAnnotations: [{}],
         });
-        expect(marks).toHaveLength(1); // line0_group only
+        expect(marks).toHaveLength(1 + hoverMarks.length); // line0_group + hover marks
         expect(marks.find((m) => m.name?.includes('Annotation'))).toBeUndefined();
       });
 
@@ -1087,8 +1105,8 @@ describe('lineSpecBuilder', () => {
           staticPoint: 'staticPoint',
           linePointAnnotations: [{}, {}],
         });
-        // line0_group + line0_staticPointBackground + line0_staticPoints + 2×(bg + fg)
-        expect(marks).toHaveLength(7);
+        // line0_group + line0_staticPointBackground + line0_staticPoints + 2×(bg + fg) + hover marks
+        expect(marks).toHaveLength(7 + hoverMarks.length);
         expect(marks[3]).toHaveProperty('name', 'line0Annotation0_bg');
         expect(marks[4]).toHaveProperty('name', 'line0Annotation0');
         expect(marks[5]).toHaveProperty('name', 'line0Annotation1_bg');
@@ -1192,13 +1210,13 @@ describe('lineSpecBuilder', () => {
       expect(overlayGroup?.type).toBe('group');
     });
 
-    test('does not add highlight overlay group when no highlight state', () => {
+    test('adds highlight overlay group for a non-interactive line with lineDirectLabels', () => {
       const marks = addLineMarks([], {
         ...defaultLineOptions,
         lineDirectLabels: [{ value: 'last' }],
       });
       const overlayGroup = marks.find((m) => m.name === 'line0_highlightOverlay_group');
-      expect(overlayGroup).toBeUndefined();
+      expect(overlayGroup).toBeDefined();
     });
 
     test('does not add highlight overlay group when no lineDirectLabels', () => {
@@ -1405,9 +1423,9 @@ describe('lineSpecBuilder', () => {
       expect(addSignals([], defaultLineOptions)).toStrictEqual([]);
     });
 
-    test('adds the hovered item signal when only highlightedItem is set', () => {
+    test('does not add the hovered item signal when only highlightedItem is set', () => {
       const signals = addSignals([], { ...defaultLineOptions, highlightedItem: 'a1' });
-      expect(signals.some((signal) => signal.name === `${defaultLineOptions.name}_${HOVERED_ITEM}`)).toBe(true);
+      expect(signals.some((signal) => signal.name === `${defaultLineOptions.name}_${HOVERED_ITEM}`)).toBe(false);
     });
 
     test('does not add selected series if it already exists', () => {

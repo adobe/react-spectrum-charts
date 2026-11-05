@@ -19,6 +19,7 @@ import {
   getColorProductionRule,
   getLineWidthProductionRule,
   getOpacityProductionRule,
+  getSeriesFacet,
   getStrokeDashProductionRule,
   hasInspect,
 } from '../marks/markUtils.js';
@@ -53,13 +54,7 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
         name: `${name}_group`,
         type: 'group',
         clip: true,
-        from: {
-          facet: {
-            name: `${name}_facet`,
-            data,
-            groupby: facets,
-          },
-        },
+        ...getSeriesFacet(`${name}_facet`, data, facets),
         marks: [getTrendlineLineMark(markOptions, trendlineOptions)],
       });
     }

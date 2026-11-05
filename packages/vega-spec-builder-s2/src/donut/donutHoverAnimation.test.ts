@@ -16,6 +16,7 @@ import {
   COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
+  DEFAULT_OPACITY_RULE,
   FADE_FACTOR,
   FILTERED_TABLE,
   MARK_ID,
@@ -23,6 +24,7 @@ import {
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
 import { buildSpec } from '../chartSpecBuilder.js';
 import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { ChartOptions } from '../types/index.js';
@@ -138,7 +140,10 @@ describe('donut hover animations', () => {
     expect(directLabels.length).toBeGreaterThan(0);
     expect(richLabels.length).toBeGreaterThan(3);
     [...directLabels, ...richLabels].forEach((mark) => expect(mark.encode?.update).toHaveProperty('opacity', opacity));
-    expect(getDonutOpacity(defaultDonutOptions)).toEqual([{ value: 1 }]);
+    expect(getDonutOpacity(defaultDonutOptions)).toEqual([
+      getControlledHighlightedItemOpacityRule(MARK_ID),
+      DEFAULT_OPACITY_RULE,
+    ]);
   });
 
   test.each([

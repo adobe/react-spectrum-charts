@@ -19,7 +19,6 @@ import {
   GROUP_ID,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
-  VISIBILITY_OFF_PATH,
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
@@ -37,6 +36,8 @@ import {
   mergeLegendEncodings,
 } from './legendUtils.js';
 
+const hiddenTest = 'indexof(hiddenSeries, datum.value) !== -1';
+
 describe('getSymbolEncodings()', () => {
   test('no facets and no custom values, should return all the defaults', () => {
     expect(getSymbolEncodings([], defaultLegendOptions)).toStrictEqual({
@@ -44,16 +45,19 @@ describe('getSymbolEncodings()', () => {
       symbols: {
         enter: {},
         update: {
-          fill: [{ value: spectrum2Colors.light['categorical-100'] }],
-          stroke: [{ value: spectrum2Colors.light['categorical-100'] }],
+          fill: [
+            { test: hiddenTest, value: spectrum2Colors.light['gray-500'] },
+            { value: spectrum2Colors.light['categorical-100'] },
+          ],
+          stroke: [{ test: hiddenTest, value: 'transparent' }, { value: spectrum2Colors.light['categorical-100'] }],
+          shape: { signal: `legendSymbolShape(${JSON.stringify(ROUNDED_SQUARE_PATH)}, ${hiddenTest})` },
         },
       },
     });
   });
 
-  test('isToggleable: true should add a hidden-series shape rule, a gray-700 fill rule, and a transparent stroke rule', () => {
+  test('isToggleable: true should use a gray-700 hidden fill rule and a transparent hidden stroke rule', () => {
     const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true });
-    const hiddenTest = 'indexof(hiddenSeries, datum.value) !== -1';
     expect(encodings.symbols?.update?.fill).toStrictEqual([
       { test: hiddenTest, value: spectrum2Colors.light['gray-700'] },
       { value: spectrum2Colors.light['categorical-100'] },
@@ -64,26 +68,25 @@ describe('getSymbolEncodings()', () => {
       { test: hiddenTest, value: 'transparent' },
       { value: spectrum2Colors.light['categorical-100'] },
     ]);
-    expect(encodings.symbols?.update?.shape).toStrictEqual([
-      { test: hiddenTest, value: VISIBILITY_OFF_PATH },
-      { value: ROUNDED_SQUARE_PATH },
-    ]);
   });
 
-  test('hiddenSeries non-empty should add a hidden-series shape rule and a gray-500 icon color rule', () => {
-    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, hiddenSeries: ['Windows'] });
-    const hiddenTest = 'indexof(hiddenSeries, datum.value) !== -1';
-    expect(encodings.symbols?.update?.fill?.[0]).toEqual({ test: hiddenTest, value: spectrum2Colors.light['gray-500'] });
-    expect(encodings.symbols?.update?.stroke?.[0]).toEqual({ test: hiddenTest, value: 'transparent' });
-    expect(encodings.symbols?.update?.shape?.[0]).toEqual({ test: hiddenTest, value: VISIBILITY_OFF_PATH });
+  test('should pass a custom symbol shape to legendSymbolShape', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, symbolShape: { value: 'circle' } });
+    expect(encodings.symbols?.update?.shape).toStrictEqual({ signal: `legendSymbolShape("circle", ${hiddenTest})` });
+  });
+
+  test('should pass a faceted symbol shape signal to legendSymbolShape', () => {
+    const encodings = getSymbolEncodings([], { ...defaultLegendOptions, symbolShape: 'shape' });
+    expect(encodings.symbols?.update?.shape).toStrictEqual({
+      signal: `legendSymbolShape(scale('symbolShape', data('legend0Aggregate')[datum.index].shape), ${hiddenTest})`,
+    });
   });
 
   test('isToggleable with keys should use filteredTable rule for the shape and color swap', () => {
     const encodings = getSymbolEncodings([], { ...defaultLegendOptions, isToggleable: true, keys: ['key1'] });
-    const hiddenShapeRule = encodings.symbols?.update?.shape?.[0] as { test?: string; value?: string };
-    expect(hiddenShapeRule?.test).toContain(FILTERED_TABLE);
-    expect(hiddenShapeRule?.test).toContain(GROUP_ID);
-    expect(hiddenShapeRule?.value).toBe(VISIBILITY_OFF_PATH);
+    const shape = encodings.symbols?.update?.shape as { signal: string };
+    expect(shape.signal).toContain(FILTERED_TABLE);
+    expect(shape.signal).toContain(GROUP_ID);
 
     const hiddenFillRule = encodings.symbols?.update?.fill?.[0] as { test?: string; value?: string };
     expect(hiddenFillRule?.test).toContain(FILTERED_TABLE);
@@ -109,9 +112,12 @@ describe('getShowHideEncodings()', () => {
     expect(fill[1]).toStrictEqual({ value: spectrum2Colors.light['gray-700'] });
   });
 
-  test('default (no toggle, no hiddenSeries) should return gray-700 with no conditional rule', () => {
+  test('non-toggleable without hiddenSeries should still gray-out labels when hiddenSeries changes later', () => {
     const encodings = getShowHideEncodings(defaultLegendOptions);
-    expect(encodings.labels?.update?.fill).toStrictEqual([{ value: spectrum2Colors.light['gray-700'] }]);
+    expect(encodings.labels?.update?.fill).toStrictEqual([
+      { test: hiddenTest, value: spectrum2Colors.light['gray-500'] },
+      { value: spectrum2Colors.light['gray-700'] },
+    ]);
   });
 });
 
@@ -190,8 +196,10 @@ describe('getSymbolType()', () => {
 });
 
 describe('getHiddenSeriesColorRule()', () => {
-  test('should return empty array if not toggleable and no hiddenSeries', () => {
-    expect(getHiddenSeriesColorRule(defaultLegendOptions, 'gray-300')).toEqual([]);
+  test('should return a hiddenSeries rule even if not toggleable and no hiddenSeries', () => {
+    expect(getHiddenSeriesColorRule(defaultLegendOptions, 'gray-300')).toEqual([
+      { test: hiddenTest, value: spectrum2Colors.light['gray-300'] },
+    ]);
   });
 
   test('should use filteredTable if there are keys', () => {
@@ -232,7 +240,9 @@ describe('getColumns()', () => {
   });
 
   test('should use DEFAULT_LEGEND_LABEL_LIMIT when labelLimit is undefined', () => {
-    expect(getColumns('top', 'legend0', undefined)).toEqual(getExpectedColumnsSignal('legend0', DEFAULT_LEGEND_LABEL_LIMIT));
+    expect(getColumns('top', 'legend0', undefined)).toEqual(
+      getExpectedColumnsSignal('legend0', DEFAULT_LEGEND_LABEL_LIMIT)
+    );
   });
 
   test('should use measured label widths capped at labelLimit when labelLimit is provided', () => {

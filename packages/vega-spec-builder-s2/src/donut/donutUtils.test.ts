@@ -428,7 +428,7 @@ describe('getArcMark()', () => {
   test('should hide the arcs when the donut is in the empty state', () => {
     const arcMark = getArcMark(defaultDonutOptions);
     const opacity = arcMark.encode?.update?.opacity;
-    expect(opacity).toHaveLength(2);
+    expect(opacity).toHaveLength(3);
     expect(opacity?.[0]).toEqual({ test: getDonutEmptyStateTest('testName'), value: 0 });
   });
   test('should use the normal color scale when isBoolean is false', () => {
@@ -592,7 +592,7 @@ describe('getArcMark()', () => {
     // the color swap is a static `fill` rule (enter), fully independent from the opacity-based
     // hover/legend fade rules (update) - it must not add or alter any opacity rule
     const opacity = arcMark.encode?.update?.opacity as { test?: string }[];
-    expect(opacity).toHaveLength(2);
+    expect(opacity).toStrictEqual(getArcMark(defaultDonutOptions).encode?.update?.opacity);
   });
 
   test('should support multiple emphasized segments', () => {

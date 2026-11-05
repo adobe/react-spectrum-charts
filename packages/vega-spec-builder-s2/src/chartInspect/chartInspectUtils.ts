@@ -190,6 +190,16 @@ const addMouseEvents = (highlightedGroupSignal: Signal, markName: string, update
   );
 };
 
+/**
+ * Gets the opacity rule that fades items not in the controlled highlightedItem list.
+ * @param idKey
+ * @returns opacity rule
+ */
+export const getControlledHighlightedItemOpacityRule = (idKey: string): { test: string } & NumericValueRef => ({
+  test: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) === -1`,
+  value: FADE_FACTOR,
+});
+
 export const addHoveredItemOpacityRules = (
   opacityRules: ({ test?: string } & NumericValueRef)[],
   markOptions: InspectParentOptions
@@ -210,10 +220,7 @@ export const addHoveredItemOpacityRules = (
       test: `isValid(${hoveredItemSignal})`,
       signal: `${hoveredItemSignal}.${key} === datum.${key} ? 1 : ${FADE_FACTOR}`,
     },
-    {
-      test: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && length(${CONTROLLED_HIGHLIGHTED_ITEM}) > 0 && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${markOptions.idKey}) === -1`,
-      value: FADE_FACTOR,
-    },
+    getControlledHighlightedItemOpacityRule(markOptions.idKey),
   ];
 
   addHoverdDimenstionAreaOpacityRules(rules, markOptions);
@@ -222,7 +229,6 @@ export const addHoveredItemOpacityRules = (
     const test = markOptions.comboSiblingNames
       .map((siblingName) => `isValid(${siblingName}_${HOVERED_ITEM})`)
       .join(' || ');
-    console.log('test', test);
     rules.push({ test, value: FADE_FACTOR });
   }
 

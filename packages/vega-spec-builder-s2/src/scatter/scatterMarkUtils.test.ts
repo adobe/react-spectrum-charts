@@ -15,6 +15,7 @@ import {
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
   HOVERED_ITEM,
   MARK_ID,
   SELECTED_ITEM,
@@ -59,8 +60,14 @@ describe('addScatterMarks()', () => {
 });
 
 describe('getOpacity()', () => {
-  test('should return the default rule if there are not any interactive children', () => {
-    expect(getOpacity(defaultScatterOptions)).toEqual([DEFAULT_OPACITY_RULE]);
+  test('should only fade for controlled highlights if there are not any interactive children', () => {
+    expect(getOpacity(defaultScatterOptions)).toEqual([
+      {
+        test: 'isArray(controlledHighlightedItem) && length(controlledHighlightedItem) > 0 && indexof(controlledHighlightedItem, datum.rscMarkId) === -1',
+        value: FADE_FACTOR,
+      },
+      DEFAULT_OPACITY_RULE,
+    ]);
   });
   test('should include hover rules if inspect exists', () => {
     const opacity = getOpacity({ ...defaultScatterOptions, chartInspects: [{}] });

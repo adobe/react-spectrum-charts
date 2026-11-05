@@ -112,13 +112,13 @@ export const addScatter = produce<
 );
 
 export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptions) => {
-  const { chartInspects, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
+  const { chartInspects, dimension, dimensionScaleType, idKey, name } = scatterOptions;
   if (dimensionScaleType === 'time') {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
 
-  if (isInteractive(scatterOptions) || highlightedItem !== undefined) {
+  if (isInteractive(scatterOptions)) {
     data.push(getFilteredInspectData(chartInspects));
   }
 
@@ -144,12 +144,11 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
  * @param scatterOptions ScatterSpecOptions
  */
 export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scatterOptions) => {
-  const { highlightedItem, name: scatterName } = scatterOptions;
+  const { name: scatterName } = scatterOptions;
   // trendline signals
   setTrendlineSignals(signals, scatterOptions);
 
-  // highlightedItem alone still needs the hovered item signal that the voronoi and opacity rules reference
-  if (!isInteractive(scatterOptions) && highlightedItem === undefined) return;
+  if (!isInteractive(scatterOptions)) return;
   // interactive signals
   addHoveredItemSignal(signals, scatterName, `${scatterName}_voronoi`, 2);
   addInspectSignals(signals, scatterOptions);

@@ -337,8 +337,14 @@ describe('getColorProductionRuleSignalString()', () => {
 });
 
 describe('getMarkOpacity()', () => {
-  test('no children, should use default opacity', () => {
-    expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([DEFAULT_OPACITY_RULE]);
+  test('no children, should only fade for controlled highlights', () => {
+    expect(getMarkOpacity(defaultBarOptions)).toStrictEqual([
+      {
+        test: 'isArray(controlledHighlightedItem) && length(controlledHighlightedItem) > 0 && indexof(controlledHighlightedItem, datum.rscMarkId) === -1',
+        value: FADE_FACTOR,
+      },
+      DEFAULT_OPACITY_RULE,
+    ]);
   });
   test('Inspect child, should return tests for hover and default to opacity', () => {
     // defaultBarOptions has a `dimension`, so a dimension-hover-area rule is now always spliced in too
@@ -370,8 +376,8 @@ describe('getInteractiveMarkName()', () => {
   test('should return the name provided if options.onClick is defined', () => {
     expect(getInteractiveMarkName({ hasOnClick: true }, 'line0')).toEqual('line0');
   });
-  test('should return the name provided if highlightedItem is defined', () => {
-    expect(getInteractiveMarkName({ highlightedItem: 'someItem0' }, 'line0')).toEqual('line0');
+  test('should not treat a controlled highlightedItem as interactive', () => {
+    expect(getInteractiveMarkName({ highlightedItem: 'someItem0' }, 'line0')).toBeUndefined();
   });
   test('should return the aggregated trendline name if the line has a trendline with any interactive children', () => {
     expect(getInteractiveMarkName({ trendlines: [{ chartInspects: [{}] }] }, 'line0')).toEqual('line0Trendline');

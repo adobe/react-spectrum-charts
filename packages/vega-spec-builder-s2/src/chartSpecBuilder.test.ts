@@ -191,6 +191,8 @@ describe('hidden-series axis domains', () => {
       TABLE,
       FILTERED_TABLE,
       CONTROLLED_HIGHLIGHTED_TABLE,
+      'line0_highlightedData',
+      'line0_hoverLabelData',
       'lineDomainTable',
     ]);
   });

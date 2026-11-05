@@ -14,13 +14,18 @@ import { Data, Legend, LegendEncode, Scale, SymbolEncodeEntry } from 'vega';
 import {
   COLOR_SCALE,
   COMPONENT_NAME,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
+  DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
+  FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
+  ROUNDED_SQUARE_PATH,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
@@ -41,7 +46,13 @@ import {
 } from '../specTestUtils.js';
 import { baseData } from '../specUtils.js';
 import { ScSpec } from '../types/index.js';
-import { addData, addLegend, addSignals, formatFacetRefsWithPresets, getContinuousLegend } from './legendSpecBuilder.js';
+import {
+  addData,
+  addLegend,
+  addSignals,
+  formatFacetRefsWithPresets,
+  getContinuousLegend,
+} from './legendSpecBuilder.js';
 import { defaultLegendOptions, opacityEncoding } from './legendTestUtils.js';
 
 const defaultSpec: ScSpec = {
@@ -59,12 +70,28 @@ const defaultSpec: ScSpec = {
 
 const colorEncoding = { signal: `scale('${COLOR_SCALE}', data('legend0Aggregate')[datum.index].${DEFAULT_COLOR})` };
 
+const controlledHighlightOpacityRules = [
+  {
+    test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+    signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+  },
+  {
+    test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+    signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.value ? 1 : ${FADE_FACTOR}`,
+  },
+];
+const defaultOpacityEncoding = [...controlledHighlightOpacityRules, DEFAULT_OPACITY_RULE];
+const highlightOpacityEncoding = [opacityEncoding[0], ...defaultOpacityEncoding];
+
+const hiddenSeriesTest = 'indexof(hiddenSeries, datum.value) !== -1';
 const defaultSymbolUpdateEncodings: SymbolEncodeEntry = {
-  fill: [colorEncoding],
-  stroke: [colorEncoding],
+  fill: [{ test: hiddenSeriesTest, value: '#8F8F8F' }, colorEncoding], // S2 gray-500
+  stroke: [{ test: hiddenSeriesTest, value: 'transparent' }, colorEncoding],
+  shape: { signal: `legendSymbolShape(${JSON.stringify(ROUNDED_SQUARE_PATH)}, ${hiddenSeriesTest})` },
 };
 const hiddenSeriesLabelUpdateEncoding = {
   fill: [
+    { test: hiddenSeriesTest, value: '#8F8F8F' }, // S2 gray-500
     {
       value: '#505050', // S2 gray-700
     },
@@ -77,8 +104,8 @@ const defaultDescriptionLegendEncoding: LegendEncode = {
     enter: { tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'legend0'})` } },
     update: { fill: { value: 'transparent' } },
   },
-  labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: undefined } },
-  symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: undefined } },
+  labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: defaultOpacityEncoding } },
+  symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
 };
 
 const defaultHighlightLegendEncoding: LegendEncode = {
@@ -88,12 +115,12 @@ const defaultHighlightLegendEncoding: LegendEncode = {
     enter: { tooltip: undefined },
     update: { fill: { value: 'transparent' } },
   },
-  labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: opacityEncoding } },
+  labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: highlightOpacityEncoding } },
   symbols: {
     enter: {},
     update: {
       ...defaultSymbolUpdateEncodings,
-      opacity: opacityEncoding,
+      opacity: highlightOpacityEncoding,
     },
   },
 };
@@ -102,14 +129,17 @@ const defaultLegend: Legend = {
   direction: 'horizontal',
   encode: {
     entries: { name: 'legend0_legendEntry' },
-    labels: { update: { ...hiddenSeriesLabelUpdateEncoding } },
-    symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings } },
+    labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: defaultOpacityEncoding } },
+    symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
   },
   fill: 'legend0Entries',
   labelLimit: undefined,
   orient: 'bottom',
   title: undefined,
-  columns: { signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 184, 184) + 36)))" },
+  columns: {
+    signal:
+      "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 184, 184) + 36)))",
+  },
 };
 
 const defaultLegendAggregateData: Data = {
@@ -219,12 +249,13 @@ describe('addLegend()', () => {
     });
 
     test('hidden entries exclude an empty legend and its title from layout', () => {
-      const legend = addLegend(defaultSpec, { hiddenEntries: ['test'], position: 'right', title: 'Series' }).legends?.[0];
+      const legend = addLegend(defaultSpec, { hiddenEntries: ['test'], position: 'right', title: 'Series' })
+        .legends?.[0];
       expect(legend).toHaveProperty('orient', {
         signal: "length(domain('legend0Entries')) > 0 ? 'right' : 'none'",
       });
       expect(legend).toHaveProperty('title', {
-        signal: "length(domain('legend0Entries')) > 0 ? \"Series\" : null",
+        signal: 'length(domain(\'legend0Entries\')) > 0 ? "Series" : null',
       });
     });
 
@@ -243,6 +274,7 @@ describe('addLegend()', () => {
         labels: {
           update: {
             ...hiddenSeriesLabelUpdateEncoding,
+            opacity: defaultOpacityEncoding,
             text: [
               {
                 test: "indexof(pluck(legend0_labels, 'seriesName'), datum.value) > -1",
@@ -254,7 +286,7 @@ describe('addLegend()', () => {
             ],
           },
         },
-        symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings } },
+        symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
       });
     });
 
@@ -313,7 +345,10 @@ describe('addLegend()', () => {
       });
       const legend = legendSpec.legends?.[0];
       expect(legend?.labelLimit).toBe(300);
-      expect(legend?.columns).toEqual({ signal: "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 300, 300) + 36)))" });
+      expect(legend?.columns).toEqual({
+        signal:
+          "max(1, floor(width / (min(length(data('legend0_maxLabelWidth')) > 0 ? data('legend0_maxLabelWidth')[0].maxLabelWidth : 300, 300) + 36)))",
+      });
       expect(legendSpec.data).toHaveLength(2);
       expect(legendSpec.scales).toEqual([...(defaultSpec.scales || []), defaultLegendEntriesScale]);
     });

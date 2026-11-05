@@ -130,6 +130,7 @@ export const HOVER_SERIES_FRACTION_DATA = 'hoverSeriesFractionData';
 export const DIMENSION_FIELD = 'rscDimensionField';
 export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
+export const FIRST_MARK_ID = 'rscFirstMarkId';
 export const GROUP_ID = 'rscGroupId';
 export const SERIES_ID = 'rscSeriesId';
 /** Composite per-bar hover-animation identity: dimension + series (+ trellis) values joined, since MARK_ID is runtime-assigned and not JS-computable ahead of time */
