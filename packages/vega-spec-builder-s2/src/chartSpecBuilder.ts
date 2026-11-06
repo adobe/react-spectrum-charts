@@ -76,6 +76,7 @@ import {
   getVegaSymbolSizeFromRscSymbolSize,
   initializeSpec,
   moveConstantEncodingsToEnter,
+  removeInvisibleStrokes,
 } from './specUtils.js';
 import { addTitle } from './title/titleSpecBuilder.js';
 import {
@@ -257,6 +258,7 @@ export function buildSpec({
   }
 
   moveConstantEncodingsToEnter(spec.marks);
+  removeInvisibleStrokes(spec.marks);
   spec = removeUnusedHoverSeriesFractionData(spec);
 
   // clear out all scales that don't have any fields on the domain

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BandScale, Mark, OrdinalScale } from 'vega';
+import { BandScale, EncodeEntry, Mark, OrdinalScale } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -42,6 +42,7 @@ import {
   getStrokeDashFromLineType,
   getVegaSymbolSizeFromRscSymbolSize,
   moveConstantEncodingsToEnter,
+  removeInvisibleStrokes,
 } from './specUtils.js';
 
 const defaultColorScale: OrdinalScale = {
@@ -293,5 +294,23 @@ describe('moveConstantEncodingsToEnter()', () => {
       enter: { y: { value: 0 }, fill: [{ value: 'red' }] },
       update: { x: { field: 'x' }, y: { value: 0 }, opacity: [{ test: 'a', value: 1 }, { value: 0 }] },
     });
+  });
+});
+
+describe('removeInvisibleStrokes()', () => {
+  const getRect = (enter: EncodeEntry, update: EncodeEntry): Mark => ({ type: 'rect', encode: { enter, update } });
+
+  test('should remove the update stroke when the stroke width is always 0, including in group marks', () => {
+    const rect = getRect({ strokeWidth: [{ value: 0 }] }, { stroke: { value: 'red' } });
+    removeInvisibleStrokes([{ type: 'group', marks: [rect] }]);
+    expect(rect.encode?.update).toEqual({});
+  });
+
+  test('should keep the stroke when the stroke width can change or is not 0', () => {
+    const dynamic = getRect({ strokeWidth: [{ value: 0 }] }, { stroke: { value: 'red' }, strokeWidth: { signal: 'w' } });
+    const visible = getRect({ strokeWidth: { value: 1 } }, { stroke: { value: 'red' } });
+    removeInvisibleStrokes([dynamic, visible]);
+    expect(dynamic.encode?.update?.stroke).toEqual({ value: 'red' });
+    expect(visible.encode?.update?.stroke).toEqual({ value: 'red' });
   });
 });

@@ -390,3 +390,20 @@ export const moveConstantEncodingsToEnter = (marks: Mark[] = []): void => {
     if (mark.type === 'group') moveConstantEncodingsToEnter(mark.marks);
   }
 };
+
+const isZeroStrokeWidth = (rule: unknown): boolean =>
+  isConstantRule(rule) && (Array.isArray(rule) ? rule[0] : rule).value === 0;
+
+/**
+ * Removes `update` strokes from marks whose stroke width is always 0, since Vega never draws them.
+ * @param marks
+ */
+export const removeInvisibleStrokes = (marks: Mark[] = []): void => {
+  for (const mark of marks) {
+    const { enter, update } = mark.encode ?? {};
+    if (update?.stroke && update.strokeWidth === undefined && isZeroStrokeWidth(enter?.strokeWidth)) {
+      delete update.stroke;
+    }
+    if (mark.type === 'group') removeInvisibleStrokes(mark.marks);
+  }
+};
