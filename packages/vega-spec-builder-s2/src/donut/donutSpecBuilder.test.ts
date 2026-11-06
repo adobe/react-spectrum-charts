@@ -645,7 +645,7 @@ describe('donutSpecBuilder', () => {
     const result = addDonut(spec, { ...defaultDonutOptions, variant: 'semicircle' });
     const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
     expect(emptyStateMark?.encode?.enter).toHaveProperty('startAngle', { value: -Math.PI / 2 });
-    expect(emptyStateMark?.encode?.update).toHaveProperty('endAngle', { signal: `${-Math.PI / 2} + PI` });
+    expect(emptyStateMark?.encode?.enter).toHaveProperty('endAngle', { value: Math.PI / 2 });
   });
 
   test('should start a circle donut at 0', () => {
@@ -653,6 +653,6 @@ describe('donutSpecBuilder', () => {
     const result = addDonut(spec, defaultDonutOptions);
     const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
     expect(emptyStateMark?.encode?.enter).toHaveProperty('startAngle', { value: 0 });
-    expect(emptyStateMark?.encode?.update).toHaveProperty('endAngle', { signal: '0 + 2 * PI' });
+    expect(emptyStateMark?.encode?.enter).toHaveProperty('endAngle', { value: 2 * Math.PI });
   });
 });

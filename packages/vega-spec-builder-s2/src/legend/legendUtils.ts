@@ -25,7 +25,6 @@ import {
 
 import {
   COLOR_SCALE,
-  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_LEGEND_COLUMN_PADDING,
@@ -213,7 +212,7 @@ export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta)
 
 const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefined, name: string) => {
   if (descriptions?.length) {
-    return { signal: `merge(datum, {'${COMPONENT_NAME}': '${name}'})` };
+    return { signal: `inspectDatum(datum, '${name}')` };
   }
   return undefined;
 };

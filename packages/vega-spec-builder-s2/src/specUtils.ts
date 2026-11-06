@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Config, Data, Scale, ScaleType, Spec } from 'vega';
+import { Config, Data, Mark, Scale, ScaleType, Spec } from 'vega';
 import { mergeConfig } from 'vega-util';
 
 import {
@@ -365,3 +365,28 @@ export const addUserMetaAnimatedMark = produce<UserMeta, [string?]>((usermeta, a
     ...(animatedMarkName ? [animatedMarkName] : []),
   ];
 });
+// Vega only resolves spatial channels against each other within the same encode set.
+const SPATIAL_CHANNELS = new Set(['x', 'x2', 'xc', 'width', 'y', 'y2', 'yc', 'height']);
+
+const isConstantRule = (rule: unknown): boolean => {
+  const single = Array.isArray(rule) && rule.length === 1 ? rule[0] : rule;
+  return typeof single === 'object' && single !== null && !Array.isArray(single) && Object.keys(single).join() === 'value';
+};
+
+/**
+ * Moves constant `update` encodings to `enter` so animation frames don't re-evaluate them.
+ * @param marks
+ */
+export const moveConstantEncodingsToEnter = (marks: Mark[] = []): void => {
+  for (const mark of marks) {
+    const update = mark.encode?.update;
+    if (mark.encode && update) {
+      for (const [property, rule] of Object.entries(update)) {
+        if (SPATIAL_CHANNELS.has(property) || !isConstantRule(rule)) continue;
+        mark.encode.enter = { ...mark.encode.enter, [property]: rule };
+        delete update[property];
+      }
+    }
+    if (mark.type === 'group') moveConstantEncodingsToEnter(mark.marks);
+  }
+};

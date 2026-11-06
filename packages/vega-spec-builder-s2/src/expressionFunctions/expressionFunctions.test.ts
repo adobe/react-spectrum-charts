@@ -27,7 +27,9 @@ import {
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
   hoverFraction,
+  inspectDatum,
   isDonutLabelVisible,
+  toPlainInspectDatum,
 } from './expressionFunctions.js';
 
 describe('cubicBezier()', () => {
@@ -501,5 +503,29 @@ describe('hoverFraction()', () => {
       await view.change('fractions', changeset().insert({ id: 'c', fraction: 0.9 })).runAsync();
       expect(getOpacities(view)).toEqual([0.5, 0.1, 0.9]);
     });
+  });
+});
+
+describe('inspectDatum()', () => {
+  test('should return the same object for the same datum and component', () => {
+    const datum = { value: 1 };
+    expect(inspectDatum(datum, 'bar0')).toBe(inspectDatum(datum, 'bar0'));
+    expect(inspectDatum(datum, 'bar0')).not.toBe(inspectDatum(datum, 'line0'));
+    expect(inspectDatum(datum, 'bar0', { metric: 'a' })).not.toBe(inspectDatum(datum, 'bar0', { metric: 'b' }));
+  });
+
+  test('should read the current values of a mutated datum', () => {
+    const datum: Record<string, unknown> = { value: 1 };
+    const value = inspectDatum(datum, 'bar0', { metric: 'value' });
+    datum.value = 2;
+    expect(toPlainInspectDatum(value)).toEqual({ value: 2, rscComponentName: 'bar0', metric: 'value' });
+  });
+});
+
+describe('toPlainInspectDatum()', () => {
+  test('should return plain objects and non-objects unchanged', () => {
+    const plain = { value: 1 };
+    expect(toPlainInspectDatum(plain)).toBe(plain);
+    expect(toPlainInspectDatum('text')).toBe('text');
   });
 });

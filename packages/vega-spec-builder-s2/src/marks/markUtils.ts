@@ -29,7 +29,6 @@ import {
   BACKGROUND_COLOR,
   CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
-  COMPONENT_NAME,
   DEFAULT_ANIMATION_TYPES,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -136,10 +135,9 @@ export function getInspectEncoding(
   // skip annotations
   if (chartInspects.length) {
     const datumRef = nestedDatum ? 'datum.datum' : 'datum';
-    const componentInfo = `{'${COMPONENT_NAME}': '${name}'}`;
     const metaDataPart = metaData ? `, ${JSON.stringify(metaData)}` : '';
     const defaultInspectSignal = {
-      signal: `merge(${datumRef}, ${componentInfo}${metaDataPart})`,
+      signal: `inspectDatum(${datumRef}, '${name}'${metaDataPart})`,
     };
     // if the inspect has an excludeDataKey option, then disable the inspect where that key is present
     const excludeDataKeys = chartInspects[0].excludeDataKeys;

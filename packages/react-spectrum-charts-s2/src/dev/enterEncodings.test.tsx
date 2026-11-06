@@ -33,8 +33,10 @@ const findDashboardFiles = (dir: string): string[] =>
     return entry.name.endsWith('.dashboard.tsx') ? [fullPath] : [];
   });
 
-const isConstant = (rule: unknown): boolean =>
-  typeof rule === 'object' && rule !== null && !Array.isArray(rule) && Object.keys(rule).join() === 'value';
+const isConstant = (rule: unknown): boolean => {
+  const single = Array.isArray(rule) && rule.length === 1 ? (rule[0] as unknown) : rule;
+  return typeof single === 'object' && single !== null && !Array.isArray(single) && Object.keys(single).join() === 'value';
+};
 
 const getEnterErrors = (encode: Encode | undefined, location: string): string[] => {
   if (!encode) return [];

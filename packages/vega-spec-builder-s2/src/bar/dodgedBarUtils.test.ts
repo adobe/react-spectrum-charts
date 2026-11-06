@@ -14,7 +14,6 @@ import { GroupMark, Mark, RectEncodeEntry } from 'vega';
 import {
   BACKGROUND_COLOR,
   COLOR_SCALE,
-  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_ITEM,
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
@@ -118,7 +117,7 @@ const defaultMarkWithInspect: Mark = {
       ...defaultDodgedXEncodings,
       fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
       fillOpacity: DEFAULT_OPACITY_RULE,
-      tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'bar0'})` },
+      tooltip: { signal: "inspectDatum(datum, 'bar0')" },
       ...defaultBarStrokeEncodings,
       opacity: [
         {

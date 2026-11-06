@@ -12,7 +12,7 @@
 import { formatLocale } from 'd3-format';
 import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
-import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/core-s2/constants';
+import { COMPONENT_NAME, DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/core-s2/constants';
 import {
   LocaleCode,
   NumberLocaleCode,
@@ -50,6 +50,7 @@ export const getExpressionFunctions = (
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
     hoverFraction,
+    inspectDatum,
     isDonutLabelVisible,
     legendSymbolShape,
     truncateText,
@@ -454,4 +455,52 @@ export const expressionFunctions = {
   isDonutLabelVisible,
   legendSymbolShape,
   truncateText,
+};
+
+const inspectDatums = new WeakMap<object, Map<string, object>>();
+const inspectDatumParts = new WeakMap<object, { datum: object; fields: Record<string, unknown> }>();
+
+const getInspectDatumHandler = (fields: Record<string, unknown>): ProxyHandler<object> => ({
+  get: (datum, property, receiver) => (Object.hasOwn(fields, property) ? fields[property as string] : Reflect.get(datum, property, receiver)),
+  has: (datum, property) => Object.hasOwn(fields, property) || Reflect.has(datum, property),
+  ownKeys: (datum) => [...new Set([...Reflect.ownKeys(datum), ...Reflect.ownKeys(fields)])],
+  getOwnPropertyDescriptor: (datum, property) =>
+    Object.hasOwn(fields, property)
+      ? { value: fields[property as string], writable: true, enumerable: true, configurable: true }
+      : Reflect.getOwnPropertyDescriptor(datum, property),
+});
+
+/**
+ * Gets a cached read-only view of `datum` plus the component fields, so re-encoding returns the same object.
+ * @param datum - the row the inspect describes
+ * @param componentName - the component that owns the inspect
+ * @param metaData - extra fields that are constant for the component
+ * @returns a proxy that reads the row's current fields and the component fields
+ */
+export const inspectDatum = (datum: unknown, componentName: string, metaData?: Record<string, unknown>): object => {
+  const fields = { [COMPONENT_NAME]: componentName, ...metaData };
+  if (typeof datum !== 'object' || datum === null) return fields;
+  const key = metaData ? `${componentName}${JSON.stringify(metaData)}` : componentName;
+  let byKey = inspectDatums.get(datum);
+  if (!byKey) {
+    byKey = new Map();
+    inspectDatums.set(datum, byKey);
+  }
+  let value = byKey.get(key);
+  if (!value) {
+    value = new Proxy(datum, getInspectDatumHandler(fields));
+    inspectDatumParts.set(value, { datum, fields });
+    byKey.set(key, value);
+  }
+  return value;
+};
+
+/**
+ * Copies an `inspectDatum` value into a plain object with the row's current fields.
+ * @param value - a tooltip value
+ * @returns plain object, or `value` unchanged if it isn't an `inspectDatum` value
+ */
+export const toPlainInspectDatum = <T>(value: T): T => {
+  const parts = typeof value === 'object' && value !== null ? inspectDatumParts.get(value) : undefined;
+  return parts ? ({ ...parts.datum, ...parts.fields } as T) : value;
 };

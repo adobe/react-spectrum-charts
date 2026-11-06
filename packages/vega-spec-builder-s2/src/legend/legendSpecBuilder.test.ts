@@ -13,7 +13,6 @@ import { Data, Legend, LegendEncode, Scale, SymbolEncodeEntry } from 'vega';
 
 import {
   COLOR_SCALE,
-  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
@@ -103,7 +102,7 @@ const defaultDescriptionLegendEncoding: LegendEncode = {
     interactive: true,
     update: {
       fill: { value: 'transparent' },
-      tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'legend0'})` },
+      tooltip: { signal: "inspectDatum(datum, 'legend0')" },
     },
   },
   labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: defaultOpacityEncoding } },
