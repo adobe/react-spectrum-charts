@@ -92,7 +92,9 @@ const addGroupedFractionData = (
   groupIdField: string
 ): void => {
   const markName = fractionDataName.replace('_hoverFractionData', '');
-  transform.push({
+  // insert before the per-frame formulas so the lookup only re-runs when the hover targets change
+  const firstFormula = transform.findIndex((t) => t.type === 'formula');
+  transform.splice(firstFormula === -1 ? transform.length : firstFormula, 0, {
     type: 'lookup' as const,
     from: `${markName}_hoverTargetData`,
     key: SERIES_ID,

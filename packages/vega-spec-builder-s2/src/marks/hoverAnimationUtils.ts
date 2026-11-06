@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { AggregateTransform, Data, FormulaTransform, OnTrigger, Signal, SourceData, ValuesData } from 'vega';
+import { AggregateTransform, Data, FormulaTransform, LookupTransform, OnTrigger, Signal, SourceData, ValuesData } from 'vega';
 
 import {
   ANIMATION_HOVER_SPEED,
@@ -137,15 +137,31 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
 /**
  * Calculates the fraction of the animation for each hoverable item, easing quadratically in and out of the transition.
  * @param name - the name of the mark
+ * @param keyField - the identity field the animation rows are keyed by (defaults to SERIES_ID)
  * @returns SourceData - the source data for the hover fraction data
  */
-export const getHoverFractionData = (name: string): SourceData => {
+export const getHoverFractionData = (name: string, keyField: string = SERIES_ID): SourceData => {
   const easedProgress = getCubicBezierExpr(S2_EASE_IN_OUT, 'datum.progress');
+  // looked up before the per-frame formulas so it only re-runs when the hover targets change
+  const seriesLookup: LookupTransform[] =
+    keyField === SERIES_ID
+      ? []
+      : [
+          {
+            type: 'lookup',
+            from: `${name}_${HOVER_TARGET_DATA}`,
+            key: keyField,
+            fields: [keyField],
+            values: [SERIES_ID],
+            as: [SERIES_ID],
+          },
+        ];
 
   return {
     name: `${name}_${HOVER_FRACTION_DATA}`,
     source: `${name}_${HOVER_ANIM_STATE_DATA}`,
     transform: [
+      ...seriesLookup,
       {
         type: 'formula',
         as: 'progress',
@@ -168,23 +184,12 @@ export const getHoverFractionData = (name: string): SourceData => {
 /**
  * Aggregates a mark's `hoverFractionData` up to one row per series (max fraction) for legend use.
  * @param name - the name of the mark
- * @param keyField - the identity field `hoverFractionData` is keyed by (defaults to SERIES_ID)
  * @returns SourceData - the series-aggregated fraction data
  */
-export const getHoverSeriesFractionData = (name: string, keyField: string = SERIES_ID): SourceData => ({
+export const getHoverSeriesFractionData = (name: string): SourceData => ({
   name: `${name}_${HOVER_SERIES_FRACTION_DATA}`,
   source: `${name}_${HOVER_FRACTION_DATA}`,
-  transform: [
-    {
-      type: 'lookup',
-      from: `${name}_${HOVER_TARGET_DATA}`,
-      key: keyField,
-      fields: [keyField],
-      values: [SERIES_ID],
-      as: [SERIES_ID],
-    },
-    { type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] },
-  ],
+  transform: [{ type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] }],
 });
 
 /**

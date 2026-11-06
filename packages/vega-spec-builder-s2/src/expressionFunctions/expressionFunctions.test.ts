@@ -511,12 +511,12 @@ describe('inspectDatum()', () => {
     const datum = { value: 1 };
     expect(inspectDatum(datum, 'bar0')).toBe(inspectDatum(datum, 'bar0'));
     expect(inspectDatum(datum, 'bar0')).not.toBe(inspectDatum(datum, 'line0'));
-    expect(inspectDatum(datum, 'bar0', { metric: 'a' })).not.toBe(inspectDatum(datum, 'bar0', { metric: 'b' }));
+    expect(inspectDatum(datum, 'bar0', '{"metric":"a"}')).not.toBe(inspectDatum(datum, 'bar0', '{"metric":"b"}'));
   });
 
   test('should read the current values of a mutated datum', () => {
     const datum: Record<string, unknown> = { value: 1 };
-    const value = inspectDatum(datum, 'bar0', { metric: 'value' });
+    const value = inspectDatum(datum, 'bar0', '{"metric":"value"}');
     datum.value = 2;
     expect(toPlainInspectDatum(value)).toEqual({ value: 2, rscComponentName: 'bar0', metric: 'value' });
   });

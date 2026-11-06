@@ -457,8 +457,13 @@ export const expressionFunctions = {
   truncateText,
 };
 
-const inspectDatums = new WeakMap<object, Map<string, object>>();
+const inspectDatums = new WeakMap<object, Map<string, Map<string, object>>>();
 const inspectDatumParts = new WeakMap<object, { datum: object; fields: Record<string, unknown> }>();
+
+const getInspectFields = (componentName: string, metaData: string): Record<string, unknown> => ({
+  [COMPONENT_NAME]: componentName,
+  ...(metaData ? (JSON.parse(metaData) as Record<string, unknown>) : {}),
+});
 
 const getInspectDatumHandler = (fields: Record<string, unknown>): ProxyHandler<object> => ({
   get: (datum, property, receiver) => (Object.hasOwn(fields, property) ? fields[property as string] : Reflect.get(datum, property, receiver)),
@@ -474,23 +479,27 @@ const getInspectDatumHandler = (fields: Record<string, unknown>): ProxyHandler<o
  * Gets a cached read-only view of `datum` plus the component fields, so re-encoding returns the same object.
  * @param datum - the row the inspect describes
  * @param componentName - the component that owns the inspect
- * @param metaData - extra fields that are constant for the component
+ * @param metaData - JSON object of extra fields that are constant for the component
  * @returns a proxy that reads the row's current fields and the component fields
  */
-export const inspectDatum = (datum: unknown, componentName: string, metaData?: Record<string, unknown>): object => {
-  const fields = { [COMPONENT_NAME]: componentName, ...metaData };
-  if (typeof datum !== 'object' || datum === null) return fields;
-  const key = metaData ? `${componentName}${JSON.stringify(metaData)}` : componentName;
-  let byKey = inspectDatums.get(datum);
-  if (!byKey) {
-    byKey = new Map();
-    inspectDatums.set(datum, byKey);
+export const inspectDatum = (datum: unknown, componentName: string, metaData = ''): object => {
+  if (typeof datum !== 'object' || datum === null) return getInspectFields(componentName, metaData);
+  let byName = inspectDatums.get(datum);
+  if (!byName) {
+    byName = new Map();
+    inspectDatums.set(datum, byName);
   }
-  let value = byKey.get(key);
+  let byMetaData = byName.get(componentName);
+  if (!byMetaData) {
+    byMetaData = new Map();
+    byName.set(componentName, byMetaData);
+  }
+  let value = byMetaData.get(metaData);
   if (!value) {
+    const fields = getInspectFields(componentName, metaData);
     value = new Proxy(datum, getInspectDatumHandler(fields));
     inspectDatumParts.set(value, { datum, fields });
-    byKey.set(key, value);
+    byMetaData.set(metaData, value);
   }
   return value;
 };

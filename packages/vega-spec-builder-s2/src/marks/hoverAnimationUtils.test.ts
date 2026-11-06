@@ -150,6 +150,19 @@ describe('getHoverFractionData()', () => {
     });
   });
 
+  test('looks up SERIES_ID before the fraction formulas when keyed by another field', () => {
+    const result = getHoverFractionData('bar0', 'bar0_rscBarAnimId');
+    expect(result.transform?.[0]).toStrictEqual({
+      type: 'lookup',
+      from: 'bar0_hoverTargetData',
+      key: 'bar0_rscBarAnimId',
+      fields: ['bar0_rscBarAnimId'],
+      values: [SERIES_ID],
+      as: [SERIES_ID],
+    });
+    expect(result.transform?.[1]).toHaveProperty('as', 'progress');
+  });
+
   test('eases progress with the S2 in-out curve before lerping startValue -> target', () => {
     const result = getHoverFractionData('line0');
     expect(result.transform?.[1]).toStrictEqual({
@@ -178,39 +191,11 @@ describe('getHoverFractionData() deemphasis opacity', () => {
 });
 
 describe('getHoverSeriesFractionData()', () => {
-  test('defaults to SERIES_ID as the keyField (line: hoverFractionData is already keyed by series, so the lookup is a no-op)', () => {
+  test('aggregates hoverFractionData by series', () => {
     expect(getHoverSeriesFractionData('line0')).toStrictEqual({
       name: 'line0_hoverSeriesFractionData',
       source: 'line0_hoverFractionData',
-      transform: [
-        {
-          type: 'lookup',
-          from: 'line0_hoverTargetData',
-          key: SERIES_ID,
-          fields: [SERIES_ID],
-          values: [SERIES_ID],
-          as: [SERIES_ID],
-        },
-        { type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] },
-      ],
-    });
-  });
-
-  test('looks up SERIES_ID via the mark-specific keyField before aggregating (bar: hoverFractionData is keyed by the composite barAnimId, which carries no SERIES_ID field of its own)', () => {
-    expect(getHoverSeriesFractionData('bar0', 'bar0_rscBarAnimId')).toStrictEqual({
-      name: 'bar0_hoverSeriesFractionData',
-      source: 'bar0_hoverFractionData',
-      transform: [
-        {
-          type: 'lookup',
-          from: 'bar0_hoverTargetData',
-          key: 'bar0_rscBarAnimId',
-          fields: ['bar0_rscBarAnimId'],
-          values: [SERIES_ID],
-          as: [SERIES_ID],
-        },
-        { type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] },
-      ],
+      transform: [{ type: 'aggregate', groupby: [SERIES_ID], fields: ['fraction'], ops: ['max'], as: ['fraction'] }],
     });
   });
 });

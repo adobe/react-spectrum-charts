@@ -178,8 +178,8 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
         rules: getDonutHoverRules(options),
       }),
       getHoverAnimStateData({ name, keys: options.segmentIds ?? [], keyField }),
-      getHoverFractionData(name),
-      getHoverSeriesFractionData(name, keyField)
+      getHoverFractionData(name, keyField),
+      getHoverSeriesFractionData(name)
     );
     addHoverAnimLastChangeData(data, name);
   }
