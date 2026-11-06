@@ -22,7 +22,6 @@ import {
   FILTERED_TABLE,
   MARK_ID,
   PADDING_RATIO,
-  STACK_ID,
   TRELLIS_PADDING,
 } from '@spectrum-charts/core-s2/constants';
 
@@ -82,28 +81,28 @@ export const defaultDodgedYEncodings: RectEncodeEntry = {
 export const defaultCornerRadiusEncodings: RectEncodeEntry = {
   cornerRadiusTopLeft: [
     {
-      test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+      test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
       value: 4,
     },
     { value: 0 },
   ],
   cornerRadiusTopRight: [
     {
-      test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+      test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
       value: 4,
     },
     { value: 0 },
   ],
   cornerRadiusBottomLeft: [
     {
-      test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+      test: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1`,
       value: 4,
     },
     { value: 0 },
   ],
   cornerRadiusBottomRight: [
     {
-      test: `datum.${DEFAULT_METRIC}1 < 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+      test: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1`,
       value: 4,
     },
     { value: 0 },

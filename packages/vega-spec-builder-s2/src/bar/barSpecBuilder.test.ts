@@ -169,6 +169,13 @@ const defaultStackedTransforms: Transforms[] = [
     as: STACK_ID,
     expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
   },
+  {
+    type: 'joinaggregate',
+    groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+    fields: [`${DEFAULT_METRIC}1`, `${DEFAULT_METRIC}1`],
+    ops: ['max', 'min'],
+    as: ['bar0_stackMax', 'bar0_stackMin'],
+  },
 ];
 
 const timeTransform: Transforms[] = [
@@ -405,11 +412,11 @@ describe('barSpecBuilder', () => {
         expect(findMark(spec.marks, 'bar0_background')?.from).toStrictEqual({ data: FILTERED_TABLE });
       });
 
-      test("stacked bars get each stack's totals so segments can fill in order", () => {
+      test("stacked bars get each stack's totals for corner radii and the sequential fill", () => {
         const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
         const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
         expect(filteredTable.transform).toContainEqual(
-          expect.objectContaining({ type: 'joinaggregate', as: ['bar0_drawInStackMax', 'bar0_drawInStackMin'] })
+          expect.objectContaining({ type: 'joinaggregate', as: ['bar0_stackMax', 'bar0_stackMin'] })
         );
       });
 
@@ -1325,6 +1332,7 @@ describe('barSpecBuilder', () => {
                 as: ['views0', 'views1'],
               },
               { ...defaultStackedTransforms[1], expr: 'datum.browser' },
+              { ...defaultStackedTransforms[2], groupby: ['browser'], fields: ['views1', 'views1'] },
             ],
           },
           {
@@ -1350,6 +1358,7 @@ describe('barSpecBuilder', () => {
                 as: ['views0', 'views1'],
               },
               { ...defaultStackedTransforms[1], expr: 'datum.browser' },
+              { ...defaultStackedTransforms[2], groupby: ['browser'], fields: ['views1', 'views1'] },
             ],
           },
           {
@@ -1385,7 +1394,7 @@ describe('barSpecBuilder', () => {
                   field: 'order',
                 },
               },
-              defaultStackedTransforms[1],
+              ...defaultStackedTransforms.slice(1),
             ],
           },
           defaultStacksData,
@@ -1467,6 +1476,13 @@ describe('barSpecBuilder', () => {
               expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
               type: 'formula',
             },
+            {
+              type: 'joinaggregate',
+              groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR],
+              fields: [`${DEFAULT_METRIC}1`, `${DEFAULT_METRIC}1`],
+              ops: ['max', 'min'],
+              as: ['bar0_stackMax', 'bar0_stackMin'],
+            },
             { as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
           ],
         },
@@ -1521,6 +1537,13 @@ describe('barSpecBuilder', () => {
               as: STACK_ID,
               expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
               type: 'formula',
+            },
+            {
+              type: 'joinaggregate',
+              groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_SECONDARY_COLOR],
+              fields: [`${DEFAULT_METRIC}1`, `${DEFAULT_METRIC}1`],
+              ops: ['max', 'min'],
+              as: ['bar0_stackMax', 'bar0_stackMin'],
             },
             { as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_SECONDARY_COLOR}`, type: 'formula' },
           ],

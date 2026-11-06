@@ -51,7 +51,7 @@ import {
   addDrawInDoneSignal,
   addDrawInLabelFadeTimer,
   getBarDrawInData,
-  getBarDrawInStackFields,
+  getBarStackTotalFields,
 } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
@@ -339,7 +339,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     });
 
     data[index].transform?.push(getStackIdTransform(options));
-    if (options.isDrawInAnimate) data[index].transform?.push(getDrawInStackTotalsTransform(options));
+    data[index].transform?.push(getStackTotalsTransform(options));
     data.push(getStackAggregateData(options));
   }
   if (type === 'dodged' || isDodgedAndStacked(options)) {
@@ -434,15 +434,15 @@ export const getStackAggregateData = (options: BarSpecOptions): Data => {
   };
 };
 
-/** Adds each stack's positive and negative totals to every row so stacked segments can draw in sequentially. */
-const getDrawInStackTotalsTransform = (options: BarSpecOptions): JoinAggregateTransform => {
+/** Adds each stack's positive and negative totals to every row for corner radii and the sequential draw-in. */
+const getStackTotalsTransform = (options: BarSpecOptions): JoinAggregateTransform => {
   const { metric, name } = options;
   return {
     type: 'joinaggregate',
     groupby: getStackFields(options),
     fields: [`${metric}1`, `${metric}1`],
     ops: ['max', 'min'],
-    as: getBarDrawInStackFields(name),
+    as: getBarStackTotalFields(name),
   };
 };
 

@@ -31,7 +31,6 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SERIES_ID,
-  STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
 import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
@@ -296,7 +295,7 @@ describe('barUtils', () => {
     test('defaultBarOptions with secondary color, should include secondaryColor in singal path', () => {
       expect(getStackedCornerRadiusEncodings(defaultBarOptionsWithSecondayColor).cornerRadiusTopLeft).toStrictEqual([
         {
-          test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+          test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
           value: 4,
         },
         { value: 0 },
@@ -310,7 +309,7 @@ describe('barUtils', () => {
         }).cornerRadiusTopLeft
       ).toStrictEqual([
         {
-          test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
+          test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
           value: 4,
         },
         { value: 0 },

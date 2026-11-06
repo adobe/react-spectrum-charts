@@ -17,10 +17,10 @@ import {
   FOCUSED_REGION,
   NAVIGATION_ID_SEPARATOR,
   SELECTED_ITEM,
-  STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
+import { getBarStackTotalFields } from '../marks/drawInAnimationUtils.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
@@ -65,10 +65,9 @@ const getDynamicFocusRingCorners = (options: BarSpecOptions): RectEncodeEntry =>
     topTest = `datum.datum.${metric} > 0`;
     bottomTest = `datum.datum.${metric} < 0`;
   } else {
-    const stacks = `data('${name}_stacks')`;
-    const stackIndex = `indexof(pluck(${stacks}, '${STACK_ID}'), datum.datum.${STACK_ID})`;
-    topTest = `datum.datum.${metric}1 > 0 && ${stacks}[${stackIndex}].max_${metric}1 === datum.datum.${metric}1`;
-    bottomTest = `datum.datum.${metric}1 < 0 && ${stacks}[${stackIndex}].min_${metric}1 === datum.datum.${metric}1`;
+    const [stackMax, stackMin] = getBarStackTotalFields(name);
+    topTest = `datum.datum.${metric}1 > 0 && datum.datum.${stackMax} === datum.datum.${metric}1`;
+    bottomTest = `datum.datum.${metric}1 < 0 && datum.datum.${stackMin} === datum.datum.${metric}1`;
   }
   const rect: RectEncodeEntry = {
     cornerRadiusTopLeft: [{ test: topTest, value: rounded }, { value: flat }],

@@ -53,7 +53,7 @@ describe('getBarFocusRing()', () => {
 
   test('uses stack-extent corner tests for stacked bars', () => {
     const corners = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.update);
-    expect(corners).toContain('_stacks');
+    expect(corners).toContain('datum.datum.bar0_stackMax');
   });
 
   test('flattens the rounded corner radius when square corners are requested', () => {

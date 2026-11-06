@@ -34,7 +34,6 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SERIES_ID,
-  STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
@@ -45,6 +44,7 @@ import {
   getBarDrawInSettleProgressExpr,
   getBarDrawInValueField,
   getBarMarkDataSource,
+  getBarStackTotalFields,
   getDrawInLabelFadeExpr,
 } from '../marks/drawInAnimationUtils.js';
 import { HoverMatchRule, getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
@@ -309,8 +309,9 @@ export const getStackedCornerRadiusEncodings = ({
   metric,
   hasSquareCorners,
 }: BarSpecOptions): RectEncodeEntry => {
-  const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
-  const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
+  const [stackMax, stackMin] = getBarStackTotalFields(name);
+  const topTestString = `datum.${metric}1 > 0 && datum.${stackMax} === datum.${metric}1`;
+  const bottomTestString = `datum.${metric}1 < 0 && datum.${stackMin} === datum.${metric}1`;
   // S2 always uses 4px corner radius (or 0 if square corners requested)
   const cornerRadius = hasSquareCorners ? 0 : 4;
 
