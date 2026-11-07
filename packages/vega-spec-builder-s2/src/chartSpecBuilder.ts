@@ -32,7 +32,6 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_LINE_TYPES,
   FILTERED_TABLE,
-  HOVER_SERIES_FRACTION_DATA,
   HIGHLIGHTED_GROUP,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
@@ -259,7 +258,6 @@ export function buildSpec({
 
   moveConstantEncodingsToEnter(spec.marks);
   removeInvisibleStrokes(spec.marks);
-  spec = removeUnusedHoverSeriesFractionData(spec);
 
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
@@ -272,20 +270,6 @@ export const removeUnusedScales = produce<ScSpec>((spec) => {
     return !('domain' in scale && scale.domain && 'fields' in scale.domain && scale.domain.fields.length === 0);
   });
 });
-
-/**
- * Removes series hover fraction data that no legend reads, since it re-aggregates on every hover animation frame.
- * @param spec
- * @returns spec
- */
-export const removeUnusedHoverSeriesFractionData = (spec: ScSpec): ScSpec => {
-  const isSeriesFractionData = (d: Data) => d.name.endsWith(`_${HOVER_SERIES_FRACTION_DATA}`);
-  const unused = (spec.data ?? []).filter(isSeriesFractionData).map((d) => d.name);
-  if (!unused.length) return spec;
-  const references = JSON.stringify({ ...spec, data: spec.data?.filter((d) => !isSeriesFractionData(d)) });
-  const removable = new Set(unused.filter((name) => !references.includes(`'${name}'`)));
-  return removable.size ? { ...spec, data: spec.data?.filter((d) => !removable.has(d.name)) } : spec;
-};
 
 const initializeComponentCounts = () => {
   return {

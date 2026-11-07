@@ -135,13 +135,13 @@ describe('injectLegendHoverIntoData()', () => {
     );
   });
 
-  test('adds a grouped fraction data source and a lookup ahead of the fraction formulas when keys are provided', () => {
+  test('adds a grouped fraction data source and lookup transform when keys are provided and a _hoverFractionData source exists', () => {
     const data = JSON.parse(JSON.stringify([hoverTargetData, hoverFractionData]));
     injectLegendHoverIntoData('legend0', data, ['category']);
 
     const fractionTransform = data[1].transform as LookupTransform[];
     expect(fractionTransform).toHaveLength(2);
-    expect(fractionTransform[0]).toEqual({
+    expect(fractionTransform[1]).toEqual({
       type: 'lookup',
       from: 'line0_hoverTargetData',
       key: SERIES_ID,

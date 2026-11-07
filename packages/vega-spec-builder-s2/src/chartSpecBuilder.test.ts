@@ -58,7 +58,6 @@ import {
   getTwoDimensionalColorScheme,
   getTwoDimensionalLineTypes,
   getTwoDimensionalOpacities,
-  removeUnusedHoverSeriesFractionData,
 } from './chartSpecBuilder.js';
 import { getExpressionFunctions } from './expressionFunctions/expressionFunctions.js';
 import { defaultSignals } from './specTestUtils.js';
@@ -935,18 +934,5 @@ describe('Chart spec builder', () => {
       });
       expect(spec.autosize).toBeUndefined();
     });
-  });
-});
-
-describe('removeUnusedHoverSeriesFractionData()', () => {
-  const data: Data[] = [{ name: 'table' }, { name: 'bar0_hoverSeriesFractionData', source: 'table' }];
-
-  test('should remove series fraction data that nothing references', () => {
-    expect(removeUnusedHoverSeriesFractionData({ data, usermeta: {} }).data).toEqual([{ name: 'table' }]);
-  });
-
-  test('should keep series fraction data that a legend references', () => {
-    const legends = [{ encode: { symbols: { update: { opacity: { signal: "data('bar0_hoverSeriesFractionData')" } } } } }];
-    expect(removeUnusedHoverSeriesFractionData({ data, legends, usermeta: {} }).data).toEqual(data);
   });
 });

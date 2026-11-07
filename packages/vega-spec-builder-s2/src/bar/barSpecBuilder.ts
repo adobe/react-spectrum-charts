@@ -394,8 +394,8 @@ const addBarHoverData = (data: Data[], options: BarSpecOptions): void => {
   data.push(
     getHoverTargetData({ name, groupby, rules: getBarHoverRules(options), formulas }),
     getHoverAnimStateData({ name, keys: options.barIds ?? [], keyField: barAnimIdField }),
-    getHoverFractionData(name, barAnimIdField),
-    getHoverSeriesFractionData(name)
+    getHoverFractionData(name),
+    getHoverSeriesFractionData(name, barAnimIdField)
   );
   addHoverAnimLastChangeData(data, name);
 };

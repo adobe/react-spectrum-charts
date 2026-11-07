@@ -273,6 +273,7 @@ describe('donut hover animations', () => {
     expect(await getArcOpacities(chart)).toEqual(
       chart.data(FILTERED_TABLE).map(({ id }) => (id === hovered.id ? 1 : FADE_FACTOR))
     );
+    expect(chart.data('donut_hoverSeriesFractionData').find((row) => row.rscSeriesId === 'Chrome').fraction).toBe(1);
     await chart.signal('donut_hoveredItem', null).runAsync();
     await settle(chart);
     expect(chart.data('donut_hoverFractionData').map((row) => row.fraction)).toEqual([0.5, 0.5, 0.5]);
@@ -320,11 +321,6 @@ describe('donut hover animations', () => {
     expect(chart.data('donut_hoverTargetData').map((row) => row.target)).toEqual([0, 0, 1]);
     await settle(chart);
     expect(chart.data('donut_hoverFractionData').map((row) => row.fraction)).toEqual([0, 0, 1]);
-    const seriesFractions = chart.data('donut_hoverSeriesFractionData');
-    expect(seriesFractions.map(({ rscSeriesId, fraction }) => [rscSeriesId, fraction])).toEqual([
-      ['Chrome', 0],
-      ['Safari', 1],
-    ]);
   });
 
   test('keeps animation identities stable across semicircle sorting and legend filtering', async () => {

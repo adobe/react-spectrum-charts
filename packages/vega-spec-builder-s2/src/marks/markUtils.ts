@@ -135,7 +135,7 @@ export function getInspectEncoding(
   // skip annotations
   if (chartInspects.length) {
     const datumRef = nestedDatum ? 'datum.datum' : 'datum';
-    const metaDataPart = metaData ? `, ${JSON.stringify(JSON.stringify(metaData))}` : '';
+    const metaDataPart = metaData ? `, ${JSON.stringify(metaData)}` : '';
     const defaultInspectSignal = {
       signal: `inspectDatum(${datumRef}, '${name}'${metaDataPart})`,
     };
