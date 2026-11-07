@@ -678,13 +678,13 @@ describe('getEmptyStateArcMark()', () => {
     expect(emptyStateMark).toHaveProperty('interactive', false);
     expect(emptyStateMark.encode?.enter?.fill).toEqual({ value: spectrum2Colors.light['gray-200'] });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: 0 });
-    expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ value: 2 * Math.PI });
+    expect(emptyStateMark.encode?.update?.endAngle).toEqual({ signal: '0 + 2 * PI' });
   });
   test('should mirror the semicircle sweep and bottom anchor', () => {
     const emptyStateMark = getEmptyStateArcMark({ ...defaultDonutOptions, variant: 'semicircle' });
     expect(emptyStateMark.encode?.update).toHaveProperty('y', { signal: 'height - 2' });
     expect(emptyStateMark.encode?.enter?.startAngle).toEqual({ value: -Math.PI / 2 });
-    expect(emptyStateMark.encode?.enter?.endAngle).toEqual({ value: Math.PI / 2 });
+    expect(emptyStateMark.encode?.update?.endAngle).toEqual({ signal: `${-Math.PI / 2} + PI` });
   });
   test('should not reserve summary-delta space for the semicircle empty state', () => {
     const emptyStateMark = getEmptyStateArcMark({

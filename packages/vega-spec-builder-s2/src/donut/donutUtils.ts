@@ -512,7 +512,7 @@ export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
   const { colorScheme, name } = options;
   const startAngle = getDonutStartAngle(options);
   const outerRadius = getDonutOuterRadiusExpr(options);
-  const sweep = options.variant === 'semicircle' ? Math.PI : 2 * Math.PI;
+  const sweep = getDonutSweepExpr(options);
   return {
     type: 'arc',
     name: `${name}_emptyState`,
@@ -522,9 +522,9 @@ export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
       enter: {
         fill: { value: getS2ColorValue('gray-200', colorScheme) },
         startAngle: { value: startAngle },
-        endAngle: { value: startAngle + sweep },
       },
       update: {
+        endAngle: { signal: `${startAngle} + ${sweep}` },
         x: { signal: 'width / 2' },
         y: { signal: getDonutCenterYSignal(options) },
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },
