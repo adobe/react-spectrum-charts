@@ -142,9 +142,11 @@ export const buildChartStructure = (options: ChartStructureOptions): ChartStruct
   if (!buildContent) return undefined;
   const content = buildContent(options);
 
-  const regions: NamedRegion[] = [
-    { name: 'content', structure: content.structure, entryPoint: content.entryPoint, namespace: false },
-  ];
+  const regions: NamedRegion[] = [];
+  // Every series hidden leaves no bars; the legend stays reachable so they can be shown again.
+  if (content.entryPoint) {
+    regions.push({ name: 'content', structure: content.structure, entryPoint: content.entryPoint, namespace: false });
+  }
   if (options.xAxis) {
     const xAxis = buildAxisStructure({ data: options.data, ...options.xAxis });
     // No navigable ticks (e.g. none painted, or a mismatched axis): skip the region rather than letting composeRegions throw.
@@ -166,7 +168,8 @@ export const buildChartStructure = (options: ChartStructureOptions): ChartStruct
     if (legend.entryPoint) regions.push({ name: 'legend', structure: legend.structure, entryPoint: legend.entryPoint });
   }
 
-  if (regions.length === 1) return content;
+  if (regions.length === 0) return content;
+  if (regions.length === 1 && regions[0].name === 'content') return content;
   return composeRegions(
     regions,
     getRegionLinks(regions, options.legend?.position),

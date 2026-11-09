@@ -41,6 +41,7 @@ import {
   VariationFilter,
   VariationSizePreset,
   VariationViewMode,
+  useVariationAccessibleNavigation,
   useVariationAnimationTypes,
   useVariationDataset,
   useVariationRenderer,
@@ -163,6 +164,7 @@ const BarVariationChart = ({
   const viewMode = useVariationViewMode();
   const animationTypes = useVariationAnimationTypes();
   const renderer = useVariationRenderer();
+  const accessibleNavigation = useVariationAccessibleNavigation();
   if (!selectedDataset || !(selectedDataset in barVariationDatasets)) {
     throw new Error(`Unknown Bar variation dataset: ${selectedDataset}`);
   }
@@ -186,6 +188,7 @@ const BarVariationChart = ({
       {...chartProps}
       animationTypes={animationTypes}
       renderer={renderer}
+      accessibleNavigation={accessibleNavigation}
       {...resolve(chartPropOverrides, chartData)}
     >
       {axes ? axes(chartData) : showDefaultAxes && DefaultAxes(resolvedBarProps?.orientation)}
@@ -1161,6 +1164,7 @@ export const BarDashboard = (): ReactElement => (
     initialViewMode="axes"
     sizePresets={barSizePresets}
     animationControls={['hover', 'drawIn']}
+    navigationControl
     viewModes={barViewModes}
   />
 );

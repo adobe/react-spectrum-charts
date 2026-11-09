@@ -79,6 +79,9 @@ export interface VariationDashboardHeaderProps {
   onAnimationTypesChange: (animationTypes: AnimationType[]) => void;
   renderer: VariationRenderer;
   onRendererChange: (renderer: VariationRenderer) => void;
+  /** Whether keyboard navigation is on; the switch is hidden when undefined. */
+  accessibleNavigation?: boolean;
+  onAccessibleNavigationChange?: (accessibleNavigation: boolean) => void;
 }
 
 const groupStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 };
@@ -134,6 +137,8 @@ export const VariationDashboardHeader = ({
   onAnimationTypesChange,
   renderer,
   onRendererChange,
+  accessibleNavigation,
+  onAccessibleNavigationChange,
 }: VariationDashboardHeaderProps): ReactElement => {
   const [isExpanded, setIsExpanded] = usePersistedState(`rsc-s2-variation-dashboard:${chartType}:expanded`, true);
   const coverageSections = Object.entries(coverage).map(([component, componentCoverage]) => ({
@@ -274,6 +279,11 @@ export const VariationDashboardHeader = ({
                 {animationLabels[type]}
               </Switch>
             ))}
+            {accessibleNavigation !== undefined && (
+              <Switch isSelected={accessibleNavigation} onChange={onAccessibleNavigationChange}>
+                Keyboard navigation
+              </Switch>
+            )}
           </ControlGroup>
           <ControlGroup title="Filter">
             {filters.length > 0 && (

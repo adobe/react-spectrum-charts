@@ -26,6 +26,7 @@ const VariationDisplayContext = createContext<{
   viewMode?: string;
   animationTypes?: AnimationType[];
   renderer?: VariationRenderer;
+  accessibleNavigation?: boolean;
 }>({});
 
 export interface VariationDataset {
@@ -90,6 +91,8 @@ interface VariationDashboardProps {
   sizePresets?: VariationSizePreset[];
   /** Animation types the chart supports; each gets a header switch. Hidden when omitted. */
   animationControls?: AnimationType[];
+  /** Adds a header switch that turns on `accessibleNavigation` for every variation. */
+  navigationControl?: boolean;
   viewModes?: VariationViewMode[];
 }
 
@@ -134,6 +137,32 @@ export const useVariationViewMode = (): string | undefined => useContext(Variati
 export const useVariationAnimationTypes = (): AnimationType[] | undefined =>
   useContext(VariationDisplayContext).animationTypes;
 export const useVariationRenderer = (): VariationRenderer | undefined => useContext(VariationDisplayContext).renderer;
+export const useVariationAccessibleNavigation = (): boolean =>
+  Boolean(useContext(VariationDisplayContext).accessibleNavigation);
+
+/** Provides the dashboard's controls to a variation rendered on its own, as tests do. */
+export const VariationProvider = ({
+  dataset,
+  size = DEFAULT_SIZE,
+  viewMode,
+  accessibleNavigation,
+  children,
+}: {
+  dataset?: string;
+  size?: number;
+  viewMode?: string;
+  accessibleNavigation?: boolean;
+  children: ReactNode;
+}): ReactElement => {
+  const display = useMemo(() => ({ viewMode, accessibleNavigation }), [viewMode, accessibleNavigation]);
+  return (
+    <VariationSizeContext.Provider value={size}>
+      <VariationDatasetContext.Provider value={dataset}>
+        <VariationDisplayContext.Provider value={display}>{children}</VariationDisplayContext.Provider>
+      </VariationDatasetContext.Provider>
+    </VariationSizeContext.Provider>
+  );
+};
 
 export const VariationDashboard = ({
   chartType,
@@ -151,6 +180,7 @@ export const VariationDashboard = ({
   sizePresetGroups,
   sizePresets = defaultSizePresets,
   animationControls,
+  navigationControl,
   viewModes = [],
 }: VariationDashboardProps): ReactElement => {
   const storageKey = `rsc-s2-variation-dashboard:${chartType}`;
@@ -173,6 +203,11 @@ export const VariationDashboard = ({
     'svg',
     isOneOf(['svg', 'canvas'])
   );
+  const [accessibleNavigation, setAccessibleNavigation] = usePersistedState(
+    `${storageKey}:accessibleNavigation`,
+    false,
+    (value) => typeof value === 'boolean'
+  );
   const [filter, setFilter] = usePersistedState(
     `${storageKey}:filter`,
     initialFilter ?? filters[0]?.value,
@@ -185,8 +220,13 @@ export const VariationDashboard = ({
     isOneOf(viewModes.map(({ value }) => value))
   );
   const displayContextValue = useMemo(
-    () => ({ viewMode, animationTypes: animationControls ? animationTypes : undefined, renderer }),
-    [viewMode, animationTypes, animationControls, renderer]
+    () => ({
+      viewMode,
+      animationTypes: animationControls ? animationTypes : undefined,
+      renderer,
+      accessibleNavigation: navigationControl && accessibleNavigation,
+    }),
+    [viewMode, animationTypes, animationControls, renderer, navigationControl, accessibleNavigation]
   );
   const coveredPropKeys = Object.entries(coverage ?? {}).flatMap(([component, props]) =>
     Object.keys(props).map((prop) => `${component}.${prop}`)
@@ -255,6 +295,8 @@ export const VariationDashboard = ({
           onAnimationTypesChange={setAnimationTypes}
           renderer={renderer}
           onRendererChange={setRenderer}
+          accessibleNavigation={navigationControl ? accessibleNavigation : undefined}
+          onAccessibleNavigationChange={setAccessibleNavigation}
         />
         <VariationDatasetContext.Provider value={dataset}>
           <VariationDisplayContext.Provider value={displayContextValue}>

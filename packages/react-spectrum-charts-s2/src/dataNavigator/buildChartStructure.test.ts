@@ -199,5 +199,16 @@ describe('getNodeIdForDatum()', () => {
       expect(nodes['legend::series__rsc__Mac']).toBeDefined();
       expect(nodes['legend::item__rsc__Chrome__rsc__Mac']).toBeUndefined();
     });
+
+    test('with every series hidden, enters at the legend so they can be shown again', () => {
+      const composed = buildChartStructure({
+        ...options,
+        legend: { series: ['Windows', 'Mac'] },
+        hiddenSeries: ['Windows', 'Mac'],
+      });
+
+      expect(composed?.entryPoint).toBe('legend::root');
+      expect(Object.keys(composed?.structure.nodes ?? {}).every((id) => id.startsWith('legend::'))).toBe(true);
+    });
   });
 });
