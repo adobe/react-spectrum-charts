@@ -9,6 +9,37 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+// S2 packages must not import S1 packages.
+const s2RestrictedImports = {
+  paths: [
+    { name: 'types', message: 'Please use relative path import for types instead (ex. ../types).' },
+    {
+      name: 'types/locales',
+      message: 'Please use relative path import for types instead (ex. ../types/locales).',
+    },
+  ],
+  patterns: [
+    {
+      group: [
+        '@spectrum-charts/constants',
+        '@spectrum-charts/constants/*',
+        '@spectrum-charts/themes',
+        '@spectrum-charts/themes/*',
+        '@spectrum-charts/utils',
+        '@spectrum-charts/utils/*',
+        '@spectrum-charts/locales',
+        '@spectrum-charts/locales/*',
+        '@spectrum-charts/vega-spec-builder',
+        '@spectrum-charts/vega-spec-builder/*',
+        '@adobe/react-spectrum-charts',
+        '@adobe/react-spectrum-charts/*',
+      ],
+      message:
+        'S2 packages must not import S1 packages. Use @spectrum-charts/core-s2/{constants,tokens,utils,locales} instead.',
+    },
+  ],
+};
+
 module.exports = {
   extends: [
     'plugin:@typescript-eslint/recommended',
@@ -23,6 +54,7 @@ module.exports = {
     'react/jsx-uses-vars': 'error',
     'react/jsx-uses-react': 'error',
     '@typescript-eslint/no-non-null-assertion': 'error',
+    '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
     'jest/no-focused-tests': 'error',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': [
@@ -68,6 +100,30 @@ module.exports = {
   },
   overrides: [
     {
+      // Docusaurus plugins are CommonJS.
+      files: ['packages/docs-s2/plugins/**/*.js'],
+      rules: { '@typescript-eslint/no-var-requires': 'off', '@typescript-eslint/no-require-imports': 'off' },
+    },
+    {
+      // Client-only docs content must say what the page's Markdown export shows instead.
+      files: ['packages/docs-s2/src/**/*.{ts,tsx}'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          { name: 'types', message: 'Please use relative path import for types instead (ex. ../types).' },
+          {
+            name: 'types/locales',
+            message: 'Please use relative path import for types instead (ex. ../types/locales).',
+          },
+          {
+            name: '@docusaurus/BrowserOnly',
+            message:
+              'Use ClientOnly from src/components/ClientOnly so the Markdown export for agents gets this content too.',
+          },
+        ],
+      },
+    },
+    {
       // ESM packages: Node requires fully specified relative imports. Fix with scripts/addRelativeImportExtensions.mjs.
       files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}'],
       rules: {
@@ -79,34 +135,41 @@ module.exports = {
             message: 'Relative imports in ESM packages must be fully specified (e.g. ./foo.js or ./dir/index.js).',
           },
         ],
+        'no-restricted-imports': ['error', s2RestrictedImports],
+      },
+    },
+    {
+      // The view host is framework-agnostic so it can be reused outside React.
+      files: ['packages/react-spectrum-charts-s2/src/viewHost/**/*.ts'],
+      rules: {
         'no-restricted-imports': [
           'error',
           {
-            paths: [
-              { name: 'types', message: 'Please use relative path import for types instead (ex. ../types).' },
+            ...s2RestrictedImports,
+            patterns: [
+              ...s2RestrictedImports.patterns,
               {
-                name: 'types/locales',
-                message: 'Please use relative path import for types instead (ex. ../types/locales).',
+                group: ['react', 'react-dom', 'react/*', 'react-dom/*'],
+                message: 'viewHost must not depend on React.',
               },
             ],
+          },
+        ],
+      },
+    },
+    {
+      // The adapter contract is shared by every rendering library, so it can't depend on one.
+      files: ['packages/react-spectrum-charts-s2/src/viewHost/viewAdapter.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            ...s2RestrictedImports,
             patterns: [
+              ...s2RestrictedImports.patterns,
               {
-                group: [
-                  '@spectrum-charts/constants',
-                  '@spectrum-charts/constants/*',
-                  '@spectrum-charts/themes',
-                  '@spectrum-charts/themes/*',
-                  '@spectrum-charts/utils',
-                  '@spectrum-charts/utils/*',
-                  '@spectrum-charts/locales',
-                  '@spectrum-charts/locales/*',
-                  '@spectrum-charts/vega-spec-builder',
-                  '@spectrum-charts/vega-spec-builder/*',
-                  '@adobe/react-spectrum-charts',
-                  '@adobe/react-spectrum-charts/*',
-                ],
-                message:
-                  'S2 packages must not import S1 packages. Use @spectrum-charts/core-s2/{constants,tokens,utils,locales} instead.',
+                group: ['react', 'react-dom', 'react/*', 'react-dom/*', 'vega', 'vega-*', 'vega/*'],
+                message: 'viewAdapter must not depend on React or a rendering library.',
               },
             ],
           },
@@ -115,9 +178,7 @@ module.exports = {
     },
     {
       // S2 publish closure: circular imports are not allowed. Type-definition folders hold recursive types.
-      files: [
-        'packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}',
-      ],
+      files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}'],
       excludedFiles: ['**/src/types/**'],
       plugins: ['import'],
       settings: {

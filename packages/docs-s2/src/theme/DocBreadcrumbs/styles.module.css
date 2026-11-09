@@ -1,0 +1,17 @@
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 0.8rem;
+}
+
+.row > nav {
+  margin-bottom: 0;
+}
+
+@media (min-width: 997px) {
+  .actions {
+    display: none;
+  }
+}

@@ -26,50 +26,45 @@ export type LegendDescription = { seriesName: string; description: string; title
 export type LegendLabel = { seriesName: string | number; label: string; maxLength?: number };
 
 export interface LegendOptions {
-  /**
-   * Alignment of the legend along its main axis.
-   * For horizontal legends (bottom/top): start=left, middle=center, end=right.
-   * For vertical legends (left/right): start=top, middle=center, end=bottom.
-   * @default 'start' for bottom/top legends, 'middle' for left/right legends
-   */
+  /** Alignment along the legend's edge: left to right for bottom/top legends, top to bottom for left/right legends. Defaults to `'start'` for bottom/top and `'middle'` for left/right. */
   align?: 'start' | 'middle' | 'end';
-  /** color or key in the data that is used as the color facet for the symbols */
+  /** Symbol color: a data field to facet by, or a static value like `{ value: 'gray-700' }`. Defaults to the marks' color. */
   color?: ColorFacet;
-  /** series that should be hidden by default (uncontrolled) */
+  /** Series hidden when the chart first renders, for a toggleable legend (uncontrolled). */
   defaultHiddenSeries?: string[];
-  /** descriptions for each of the series */
+  /** Tooltip text for each entry, matched by `seriesName`; `title` replaces the series name as the heading. */
   descriptions?: LegendDescription[];
   /** `true` if there is a onMouseOut of onMouseOver on the LegendProps. */
   hasMouseInteraction?: boolean;
   /** `true` if there is an onClick on the LegendProps */
   hasOnClick?: boolean;
-  /** series names to hide from the legend */
+  /** Series names to leave out of the legend. Their marks still render. */
   hiddenEntries?: string[];
-  /** whether or not to include highlight interactions (controlled) */
+  /** Fades the other series while an entry is hovered. */
   highlight?: boolean;
-  /** allows the user to hide/show series by clicking on the legend entry (uncontrolled) */
+  /** Lets users click an entry to hide or show its series (uncontrolled). */
   isToggleable?: boolean;
-  /** keys from the data to generate the legend for. Defaults to all keys used to facet the data. */
+  /** Data fields to generate entries from. Defaults to every field the marks facet by. */
   keys?: string[];
-  /** labels for each of the series */
+  /** Display labels for entries, matched by `seriesName`. */
   legendLabels?: LegendLabel[];
-  /** max width in pixels before truncating a legend label. Influences legend column layout by calculating how many legend items can fit horizontally based on the label width. */
+  /** Max label width in pixels before truncating; also sets the column width of bottom/top legends. Defaults to `184`. */
   labelLimit?: number;
-  /** line type or key in the data that is used as the line type facet for the symbols */
+  /** Symbol outline line type: a data field to facet by, or a static value like `{ value: 'dashed' }`. */
   lineType?: LineTypeFacet;
-  /** line type or key in the data that is used as the line type facet for the symbols */
+  /** Symbol outline width: a data field to facet by, or a static value like `{ value: 'L' }`. */
   lineWidth?: LineWidthFacet;
   /** Sets the name of the component. */
   name?: string;
-  /** opacity or key in the data that is used as the opacity facet for the symbols */
+  /** Symbol fill opacity: a data field to facet by, or a static value like `{ value: 0.5 }`. */
   opacity?: OpacityFacet;
-  /** where the legend should be displayed */
+  /** Side of the plot the legend is placed on. */
   position?: Position;
-  /** customize the legend symbol shape */
+  /** Symbol shape: a data field that picks from the chart's `symbolShapes`, or a static value like `{ value: 'circle' }`. Defaults to a rounded square. */
   symbolShape?: SymbolShapeFacet;
-  /** legend title */
+  /** Heading shown above the entries. */
   title?: string;
-  /** The maximum allowed length in pixels of the legend title. */
+  /** Max title width in pixels before truncating. */
   titleLimit?: number;
 
   // children

@@ -61,107 +61,57 @@ export type AxisTooltip = {
 export interface AxisOptions {
   /** Sets the name of the component. */
   name?: string;
-  /** Sets the where the axis is placed on the chart */
+  /** Side of the chart the axis is drawn on; bottom and top label the x scale, left and right the y scale. */
   position: Position;
-  /** Adds a baseline rule for this axis */
+  /** Draws a solid baseline along the axis. Defaults to `false`. */
   baseline?: boolean;
-  /**
-   * Adds an offset to the baseline.
-   * If basline is false then this prop is ignored.
-   * If baseline is drawn relative to a categorical axis, this prop is ignored
-   */
+  /** Value on the opposite linear scale where the baseline is drawn; ignored without `baseline` or when that scale is categorical. Defaults to `0`. */
   baselineOffset?: number;
-  /** Sets the granularity of the primary axis labels for time axis. If this axis is not for a time axis, this prop is ignored. */
+  /** Time unit for the ticks and labels of a time axis; ignored on other axes. Defaults to `day`. */
   granularity?: Granularity;
-  /** Displays gridlines at each tick location */
+  /** Draws a gridline across the plot at each tick. Defaults to `false`. */
   grid?: boolean;
-  /** Hides the axis labels. If labels have been explicitly added using the `labels` prop, these will still be visible */
+  /** Hides the axis labels, including any set with `labels`. Defaults to `false`. */
   hideDefaultLabels?: boolean;
-  /** Sets the alignment of axis labels */
+  /** Alignment of each label relative to its tick. Defaults to `center`. */
   labelAlign?: LabelAlign;
-  /** Sets the font weight of axis labels */
+  /** Font weight of the axis labels. Defaults to `normal`. */
   labelFontWeight?: FontWeight;
-  /** Sets the format of the axis labels */
+  /** How label values are written: `linear` numbers, `percentage` fractions, `duration` seconds, or `time` dates. Defaults to `linear`. */
   labelFormat?: LabelFormat;
-  /** Sets the orientation of the label. Defaults to horizontal. */
+  /** Orientation of the axis labels; `vertical` rotates them 90°. Defaults to `horizontal`. */
   labelOrientation?: Orientation;
-  /**
-   * Sets the maximum allowed length, in pixels, of axis tick labels. Defaults to 180.
-   *
-   * Note: Vega's layout calculations are based on 180, so alignment may be affected if setting greater thatn 180.
-   * Combine with truncateLabels to keep upper limit within bandwidth.
-   */
+  /** Maximum label length in pixels; longer labels end with an ellipsis. Defaults to `180`. */
   labelLimit?: number;
-  /** Explicityly sets the axis labels (controlled). Providing a Label object allows for more control over the label display. */
+  /** Labels to show instead of the automatic ones, as values or `{ value, label, align, fontWeight }` objects; not supported on time axes. */
   labels?: (Label | string | number)[];
-  /** Sets the minimum number of axis ticks.
-   * The default is 2. Smaller charts may want to use a minimum of 3 instead to show a more accurate representation of the data.
-   */
+  /** Minimum number of ticks when ticks are spaced automatically. */
   tickCountMinimum?: number;
-  /** Sets the upper limit on the number of axis ticks.
-   *  Base tick, typically 0, is not included in the count. e.g. 0, 1, 2, 3 is considered 3 ticks.
-   *  Note: The final tick count may vary based on Vega's automatic calculations to create visually pleasing values.
-   *
-   *  Warning: On time-based axes (labelFormat="time"), setting this prop overrides the automatic
-   *  granularity-based tick interval. Vega will pick a tick interval based on the requested count
-   *  rather than the axis granularity, which can produce duplicate labels (e.g. "Q1 Q1 Q1 Q2 Q2 Q2"
-   *  for quarterly data). If used on a time axis, you are responsible for ensuring the tick count
-   *  aligns with the data granularity.
-   */
+  /** Maximum number of ticks, not counting the base tick; on time axes it replaces the granularity interval and can repeat labels. */
   tickCountLimit?: number;
-  /** d3 number format specifier. Only valid if labelFormat is linear or undefined.
-   *
-   * see {@link https://d3js.org/d3-format#locale_format}
-   */
+  /** Format for `linear` labels: `shortNumber`, `standardNumber`, `currency`, `shortCurrency`, or a d3-format specifier. Defaults to `shortNumber`. */
   numberFormat?: NumberFormat;
-  /** The minimum and maximum values for the axis, for example: `[-10, 10]`.
-   *
-   * Note: This prop is only supported for axes with `linear` or `time` scale types.
-   */
+  /** Fixed minimum and maximum axis values, such as `[-10, 10]`; only for linear and time scales. */
   range?: [number, number];
-  /** Adds sublabels below the axis lables */
+  /** Second row of labels under specific values, as `{ value, subLabel, align, fontWeight }` objects; horizontal labels only. */
   subLabels?: SubLabel[];
-  /** Displays ticks at each label location */
+  /** Draws a tick mark at each label. Defaults to `false`. */
   ticks?: boolean;
-  /** Enables hover tooltips on axis labels for this axis. */
+  /** Shows a tooltip with the full label value when a label is hovered; not supported on time axes. Defaults to `false`. */
   hasTooltip?: boolean;
-  /** Per-value tooltip text overrides. Unlisted values use the default; `text: null` suppresses. */
+  /** Tooltip text for specific values as `{ value, text }` objects; `text: null` hides that value's tooltip. */
   tooltipText?: AxisTooltip[];
   /** Whether the axis has an onClick callback set. */
   hasOnClick?: boolean;
-  /**
-   * The minimum desired step between axis ticks, in terms of scale domain values.
-   * For example, a value of 1 indicates that ticks should not be less than 1 unit apart.
-   * https://vega.github.io/vega/docs/axes/
-   *
-   * Note: This prop is only supported for linear axes.
-   */
+  /** Smallest step between ticks in data units, such as `1` for whole numbers; only for linear scales. */
   tickMinStep?: number;
-  /** Sets the axis title */
+  /** Axis title; an array of strings makes a multi-line title. */
   title?: string | string[];
-  /** If the text is wider than the bandwidth that is labels, it will be truncated so that it stays within that bandwidth. */
+  /** Cuts category labels wider than their band on bottom and top band axes. Defaults to `false`. */
   truncateLabels?: boolean;
-  /**
-   * Set the locale for currency formatting (affects symbol position and spacing).
-   *
-   * ⚠️ Limited Support:
-   * Support for and changes to this prop will be limited.
-   * Only use this if you need to override the currency locale formatting from the chart locale.
-   *
-   * **Important:** This prop requires 'currencyCode' prop to take effect.
-   *
-   * Example: 'en-US' ($100) vs 'de-DE' (100 $)
-   */
+  /** Limited support: locale for the currency symbol's position, such as `de-DE`; requires `currencyCode` and `numberFormat="currency"` or a `,.Nf` specifier. */
   currencyLocale?: string;
-  /**
-   * Override the currency symbol from the chart locale with a specific currency code.
-   *
-   * ⚠️ Limited Support:
-   * Support for and changes to this prop will be limited.
-   * Only use this if you need to override the currency symbol from the chart locale.
-   *
-   * **Important:** This prop requires 'currencyLocale' prop to take effect.
-   */
+  /** Limited support: currency code, such as `EUR`, that overrides the chart locale's symbol; requires `currencyLocale`. */
   currencyCode?: string;
 
   // children

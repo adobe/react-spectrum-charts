@@ -23,6 +23,7 @@ import { barData, barDataLongLabels, barDataTwoSeries } from '../../../../storyS
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Coverage/Accessible Navigation',
+  tags: ['alpha'],
   component: Axis,
 };
 

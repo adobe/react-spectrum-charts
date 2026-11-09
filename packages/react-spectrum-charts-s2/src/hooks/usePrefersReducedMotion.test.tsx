@@ -13,6 +13,8 @@ import { act, renderHook } from '@testing-library/react';
 
 import usePrefersReducedMotion from './usePrefersReducedMotion.js';
 
+jest.unmock('./usePrefersReducedMotion.js');
+
 describe('usePrefersReducedMotion', () => {
   test('returns false when matchMedia is unavailable', () => {
     const matchMedia = window.matchMedia;

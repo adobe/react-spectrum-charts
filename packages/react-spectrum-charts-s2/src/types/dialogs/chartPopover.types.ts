@@ -19,7 +19,7 @@ export type PopoverHandler = (datum: Datum, close: () => void) => ReactNode;
  * Props for the ChartPopover component
  */
 export interface ChartPopoverProps extends ChartPopoverOptions {
-  /** Callback used to control the content rendered in the popover */
+  /** Function that returns the popover content for the clicked `datum`; call `close` to close the popover. */
   children?: PopoverHandler;
 }
 

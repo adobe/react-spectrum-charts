@@ -19,7 +19,7 @@ import { action } from 'storybook/actions';
 import { Chart } from '../../../Chart.js';
 import { Axis, Bar, BarDirectLabel, Line, LineDirectLabel, LineForecast } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Combo } from '../../../pre-alpha/index.js';
+import { Combo } from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ComboProps, ContextMenuCallback } from '../../../types/index.js';
 import {
@@ -97,7 +97,8 @@ interface ComboPlaygroundArgs extends ComboProps, PlaygroundInspectArgs, Playgro
 }
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Playground',
+  title: 'React Spectrum Charts 2/Lab/Combo/Playground',
+  tags: ['lab'],
   component: Combo,
   argTypes: {
     ...chartArgTypes,

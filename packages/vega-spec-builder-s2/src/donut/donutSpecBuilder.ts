@@ -15,17 +15,20 @@ import { Data, FormulaTransform, Mark, PieTransform, Scale, Signal } from 'vega'
 import {
   AnimationType,
   COLOR_SCALE,
-  DEFAULT_ANIMATION_TYPES,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_HOLE_RATIO,
   DEFAULT_METRIC,
+  DRAW_IN_ANIM_CUTOFF,
+  DRAW_IN_ANIM_T_EASED,
+  DRAW_IN_DONUT_DURATION_MS,
   FILTERED_TABLE,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getSeriesIdTransform, getTableData } from '../data/dataUtils.js';
+import { addDrawInClockSignals, addDrawInLabelFadeTimer } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
@@ -34,7 +37,7 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { isInteractive } from '../marks/markUtils.js';
+import { isDrawInAnimationEnabled, isHoverAnimationEnabled, isInteractive } from '../marks/markUtils.js';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
 import { addUserMetaAnimatedMark, addUserMetaInteractiveMark } from '../specUtils.js';
@@ -49,8 +52,10 @@ import {
   getDonutAnimIdField,
   getDonutHoverRules,
   getDonutStartAngle,
+  getDonutSweepExpr,
   getEmptyStateArcMark,
   isDonutInteractive,
+  getDonutRadiusSignals,
   getRingWidthSignal,
   getLabelRingGapSignals,
   getSizeTierScale,
@@ -123,12 +128,14 @@ export const addDonut = produce<
       segmentIds: data?.map((_, index) => index + 1) ?? [],
       ...options,
     };
-    donutOptions.isHoverAnimate =
-      animations !== false &&
-      (animationTypes ?? DEFAULT_ANIMATION_TYPES).includes('hover') &&
-      (isDonutInteractive(donutOptions) ||
+    donutOptions.isHoverAnimate = isHoverAnimationEnabled(
+      animations,
+      animationTypes,
+      isDonutInteractive(donutOptions) ||
         donutOptions.highlightedItem !== undefined ||
-        donutOptions.highlightedSeries !== undefined);
+        donutOptions.highlightedSeries !== undefined
+    );
+    donutOptions.isDrawInAnimate = isDrawInAnimationEnabled(animations, animationTypes);
 
     if (isDonutInteractive(donutOptions)) {
       spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, donutOptions.name);
@@ -144,13 +151,12 @@ export const addDonut = produce<
 );
 
 export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
-  const { color, legendHighlightSignals, name, isBoolean, metric, sortOrder, variant } = options;
+  const { color, legendHighlightSignals, name, isBoolean, metric, sortOrder } = options;
   const filteredTableIndex = data.findIndex((d) => d.name === FILTERED_TABLE);
 
   //set up transform
   data[filteredTableIndex].transform = data[filteredTableIndex].transform ?? [];
-  // Semicircles default to largest-first but can preserve source order for ordinal data.
-  if (variant === 'semicircle' && sortOrder === 'valueDescending') {
+  if (!isBoolean && sortOrder === 'valueDescending') {
     data[filteredTableIndex].transform?.push({ type: 'collect', sort: { field: metric, order: 'descending' } });
   }
   data[filteredTableIndex].transform?.push(...getPieTransforms(options));
@@ -208,9 +214,9 @@ export const addData = produce<Data[], [DonutSpecOptions]>((data, options) => {
 });
 
 const getPieTransforms = (options: DonutSpecOptions): (FormulaTransform | PieTransform)[] => {
-  const { metric, name, variant } = options;
+  const { metric, name } = options;
   const startAngle = getDonutStartAngle(options);
-  const sweep = variant === 'semicircle' ? 'PI' : '2 * PI';
+  const sweep = getDonutSweepExpr(options);
   return [
     {
       type: 'pie',
@@ -258,11 +264,22 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   if (options.isHoverAnimate) {
     addHoverAnimationSignals(signals, name);
   }
+  if (options.isDrawInAnimate) {
+    addDrawInClockSignals(signals, DRAW_IN_DONUT_DURATION_MS);
+    addDrawInLabelFadeTimer(signals);
+    const sweep = getDonutSweepExpr(options);
+    const startAngle = getDonutStartAngle(options);
+    signals.push({
+      name: `${name}_${DRAW_IN_ANIM_CUTOFF}`,
+      update: `${startAngle} + (${sweep}) * ${DRAW_IN_ANIM_T_EASED}`,
+    });
+  }
   if (holeRatio === DEFAULT_HOLE_RATIO) {
     signals.push(getRingWidthSignal(options));
   }
   signals.push(
     getSizeTierSignal(options),
+    ...getDonutRadiusSignals(options),
     ...getLabelRingGapSignals(options),
     getSliceGapSignal(options),
     ...getDonutSummarySignals(options),
@@ -271,4 +288,12 @@ export const addSignals = produce<Signal[], [DonutSpecOptions]>((signals, option
   );
   if (!isDonutInteractive(options)) return;
   addHoveredItemSignal(signals, name, undefined, 1, chartInspects[0]?.excludeDataKeys);
+  const labelMarks = [...getSegmentLabelMarks(options), ...getRichSegmentLabelMarks(options)].flatMap(
+    (group) => group.marks ?? []
+  );
+  for (const mark of labelMarks) {
+    if (mark.name) {
+      addHoveredItemSignal(signals, name, mark.name);
+    }
+  }
 });

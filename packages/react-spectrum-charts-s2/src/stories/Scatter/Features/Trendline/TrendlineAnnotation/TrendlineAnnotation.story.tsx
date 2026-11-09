@@ -16,13 +16,14 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../../../Chart.js';
 import { Axis, Legend } from '../../../../../components/index.js';
 import useChartProps from '../../../../../hooks/useChartProps.js';
-import { Scatter, Trendline, TrendlineAnnotation } from '../../../../../pre-alpha/index.js';
+import { Scatter, Trendline, TrendlineAnnotation } from '../../../../../lab/index.js';
 import { bindWithProps } from '../../../../../test-utils/index.js';
 import { TrendlineAnnotationProps } from '../../../../../types/index.js';
 import { characterData } from '../../../../data/marioKartData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Trendline/Trendline Annotation',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Features/Trendline/Trendline Annotation',
+  tags: ['lab'],
   component: TrendlineAnnotation,
 };
 

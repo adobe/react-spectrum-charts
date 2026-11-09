@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- only used to derive the union type below
 const numberLocaleCodes = [
   'ar-AE',
   'ar-BH',
@@ -71,6 +72,7 @@ const numberLocaleCodes = [
 /** locale code used for default number locales */
 export type NumberLocaleCode = (typeof numberLocaleCodes)[number];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- only used to derive the union type below
 const timeLocaleCodes = [
   'ar-EG',
   'ar-SY',
@@ -111,6 +113,7 @@ const timeLocaleCodes = [
 /** locale code used for default time locales */
 export type TimeLocaleCode = (typeof timeLocaleCodes)[number];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- only used to derive the union type below
 const localeCodes = [
   'ar-EG',
   'ar-SY',

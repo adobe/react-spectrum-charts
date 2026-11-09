@@ -26,6 +26,7 @@ import {
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Labels',
+  tags: ['alpha'],
   component: Axis,
   argTypes: {
     granularity: {

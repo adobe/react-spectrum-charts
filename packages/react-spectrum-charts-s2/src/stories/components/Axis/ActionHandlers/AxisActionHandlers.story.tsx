@@ -17,6 +17,7 @@ import { BrowserBarStory, controls } from '../axisStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Action Handlers',
+  tags: ['alpha'],
   component: Axis,
 };
 

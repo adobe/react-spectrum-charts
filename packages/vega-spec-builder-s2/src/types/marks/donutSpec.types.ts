@@ -13,7 +13,7 @@ import { ColorScheme, HighlightedItem } from '../chartSpec.types.js';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
 import { PartiallyRequired } from '../specUtil.types.js';
-import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types.js';
+import { DonutSummaryOptions } from './supplemental/donutSummarySpec.types.js';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types.js';
 
 export interface DonutOptions {
@@ -21,16 +21,15 @@ export interface DonutOptions {
 
   /** Key in the data that is used as the color facet */
   color?: string;
-  /** Ratio of the donut inner radius / donut outer radius. 0 is a pie chart. 0.85 is the default. */
+  /** Inner radius as a share of the outer radius. `0` draws a pie. Defaults to `0.85`. */
   holeRatio?: number;
-  /** Determines if the center metric should be displayed as a percent. if true, data should only be two data points, which sum to 1
-   * Also, if true, will display the first datapoint as a percent */
+  /** Shows the first row's value as a percent in the center. Use with two rows whose values sum to 1. */
   isBoolean?: boolean;
   /** Key in the data that is used as the metric */
   metric?: string;
   /** Sets the name of the component. */
   name?: string;
-  /** Segment ordering for semicircle donuts. Use `data` to preserve ordinal source order. */
+  /** Categorical segment ordering. Use `data` to preserve source order; boolean donuts always preserve source order. */
   sortOrder?: 'valueDescending' | 'data';
   /**
    * Designates which segments (by their `color` facet value) render with full categorical color.
@@ -74,6 +73,7 @@ export interface DonutSpecOptions extends PartiallyRequired<DonutOptions, DonutO
   highlightedSeries?: string | number;
   idKey: string;
   index: number;
+  isDrawInAnimate?: boolean;
   isHoverAnimate?: boolean;
   segmentIds?: number[];
   legendHighlightSignals?: string[];

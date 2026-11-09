@@ -36,7 +36,7 @@ import {
   SYMBOL_SIZE_SCALE,
   TABLE,
 } from '@spectrum-charts/constants';
-import { colorSchemes, getColorValue } from '@spectrum-charts/themes';
+import { colorSchemes, getColorSchemeColors, getColorValue } from '@spectrum-charts/themes';
 
 import { addArea } from './area/areaSpecBuilder';
 import { addAxis } from './axis/axisSpecBuilder';
@@ -395,7 +395,7 @@ function getColors(colors: Colors, colorScheme: ColorScheme): string[] {
   if (Array.isArray(colors)) {
     return colors.map((color: string) => getColorValue(color, colorScheme));
   }
-  return colorSchemes[colors];
+  return getColorSchemeColors(colors, colorScheme);
 }
 
 function getStrokeDashesFromLineTypes(lineTypes: LineType[]): number[][] {

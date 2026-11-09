@@ -13,7 +13,7 @@ import { ColorScheme, HighlightedItem } from '../chartSpec.types';
 import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types';
 import { ChartTooltipOptions } from '../dialogs/chartTooltipSpec.types';
 import { PartiallyRequired } from '../specUtil.types';
-import { DonutSummaryOptions } from './supplemental/dountSummarySpec.types';
+import { DonutSummaryOptions } from './supplemental/donutSummarySpec.types';
 import { SegmentLabelOptions } from './supplemental/segmentLabelSpec.types';
 
 export interface DonutOptions {

@@ -1,6 +1,6 @@
 {
   "name": "@spectrum-charts/react-spectrum-charts-s2",
-  "version": "0.9.0",
+  "version": "0.11.1",
   "description": "Declarative library for composing Spectrum 2 visualizations in React.",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,9 +10,9 @@
       "types": "./dist/@types/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./pre-alpha": {
-      "types": "./dist/@types/pre-alpha/index.d.ts",
-      "default": "./dist/pre-alpha/index.js"
+    "./lab": {
+      "types": "./dist/@types/lab/index.d.ts",
+      "default": "./dist/lab/index.js"
     },
     "./ai-catalog": {
       "types": "./dist/@types/src/ai-catalog/index.d.ts",
@@ -25,15 +25,15 @@
     "./dist/src/VegaChart.js"
   ],
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.12.0"
   },
   "typesVersions": {
     "*": {
       "*": [
         "./dist/@types/index.d.ts"
       ],
-      "pre-alpha": [
-        "./dist/@types/pre-alpha/index.d.ts"
+      "lab": [
+        "./dist/@types/lab/index.d.ts"
       ],
       "ai-catalog": [
         "./dist/@types/src/ai-catalog/index.d.ts"
@@ -70,9 +70,9 @@
   },
   "dependencies": {
     "@internationalized/string": "^3.2.1",
-    "@spectrum-charts/core-s2": "0.9.0",
-    "@spectrum-charts/schemas": "^1.52.0",
-    "@spectrum-charts/vega-spec-builder-s2": "0.9.0",
+    "@spectrum-charts/core-s2": "0.11.1",
+    "@spectrum-charts/schemas": "^2.1.0",
+    "@spectrum-charts/vega-spec-builder-s2": "0.11.1",
     "d3-array": "^3.2.4",
     "d3-format": "^3.1.0",
     "data-navigator": "^2.4.1",
@@ -91,7 +91,8 @@
     "vega-lite": "^6.4.2"
   },
   "devDependencies": {
-    "@internationalized/string-compiler": "^3.4.1"
+    "@internationalized/string-compiler": "^3.4.1",
+    "react-aria": "3.48.0"
   },
   "resolutions": {
     "jackspeak": "2.1.1"

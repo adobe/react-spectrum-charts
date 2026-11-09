@@ -22,6 +22,7 @@ import { setControls } from '../../lineStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Forecast',
+  tags: ['alpha'],
   component: LineForecast,
 };
 

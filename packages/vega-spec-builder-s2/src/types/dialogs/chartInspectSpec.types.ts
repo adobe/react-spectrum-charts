@@ -12,10 +12,11 @@
 import { PartiallyRequired } from '../specUtil.types.js';
 
 export interface ChartInspectOptions {
-  /** The keys in the data that will disable the inspect if they have truthy values */
+  /** Data keys that turn off the inspect for rows with a truthy value in any of them. */
   excludeDataKeys?: string[];
-  /** Sets which marks should be highlighted when an inspect is visible */
+  /** What stays highlighted while the inspect is visible: the item, its series, its dimension value, or rows matching a list of keys. Defaults to `'item'`. */
   highlightBy?: 'series' | 'dimension' | 'item' | string[];
+  /** What shows the inspect on stacked or dodged bars: single bars (`'item'`) and/or whole columns (`'dimensionArea'`). Defaults to `['item']`. */
   targets?: ('dimensionArea' | 'item')[];
 }
 

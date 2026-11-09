@@ -11,4 +11,5 @@
  */
 
 /** Marker for an action bar's presence on a mark; rendering config lives on ChartActionBarProps. */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ChartActionBarOptions {}

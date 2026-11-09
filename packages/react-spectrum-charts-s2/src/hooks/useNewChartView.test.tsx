@@ -11,7 +11,6 @@
  */
 import { renderHook } from '@testing-library/react';
 import { View } from 'vega';
-import { Options as TooltipOptions } from 'vega-tooltip';
 
 import { useChartContext } from '../context/RscChartContext.js';
 import { RscChartProps } from '../types/index.js';
@@ -54,59 +53,36 @@ const mockUseAxisLabelOnClickDetails = jest.mocked(useAxisLabelOnClickDetails);
 
 const baseProps = { idKey: 'rscMarkId' } as unknown as RscChartProps;
 const legendProps: UseLegendProps = { legendHiddenSeries: [], setLegendHiddenSeries: jest.fn() };
-const inspectOptions = {} as TooltipOptions;
 
-const getOnNewView = () => {
-  const { result } = renderHook(() => useNewChartView(baseProps, [], inspectOptions, legendProps));
-  return result.current;
-};
+const renderOnNewView = (initialLegendProps: UseLegendProps = legendProps) =>
+  renderHook(({ legend }) => useNewChartView(baseProps, [], legend), {
+    initialProps: { legend: initialLegendProps },
+  });
+
+const getOnNewView = () => renderOnNewView().result.current;
+
+type Listener = (event: { type: string }, item: unknown) => void;
 
 const makeFakeView = () =>
   ({
     tooltip: jest.fn(),
+    signal: jest.fn(),
     addEventListener: jest.fn(),
-  } as unknown as View);
+  }) as unknown as View;
 
-const mockSetHoveredAxisLabel = jest.fn();
+const fire = (view: View, type: string, item: unknown) => {
+  (view.addEventListener as jest.Mock).mock.calls
+    .filter(([eventName]) => eventName === type)
+    .forEach(([, listener]: [string, Listener]) => listener({ type }, item));
+};
 
-describe('useNewChartView - axis label click wiring', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseChartContext.mockReturnValue({
-      chartView: { current: undefined },
-      selectedData: { current: null },
-      selectedDataBounds: { current: undefined },
-      selectedDataName: { current: undefined },
-      chartId: 'test-chart',
-      setHoveredAxisLabel: mockSetHoveredAxisLabel,
-    } as unknown as ReturnType<typeof useChartContext>);
-    mockUsePopovers.mockReturnValue([]);
-    mockUseMarkOnClickDetails.mockReturnValue([]);
-    mockUseMarkMouseInputDetails.mockReturnValue([]);
-  });
-
-  test('registers an axis label click listener when useAxisLabelOnClickDetails returns details', () => {
-    mockUseAxisLabelOnClickDetails.mockReturnValue([{ markName: 'axis0', onClick: jest.fn() }]);
-    const view = makeFakeView();
-    getOnNewView()(view);
-    const clickListenerCount = (view.addEventListener as jest.Mock).mock.calls.filter(
-      ([eventName]) => eventName === 'click'
-    ).length;
-    expect(clickListenerCount).toBe(2);
-  });
-
-  test('does not register an axis label click listener when there are no axis onClick details', () => {
-    mockUseAxisLabelOnClickDetails.mockReturnValue([]);
-    const view = makeFakeView();
-    getOnNewView()(view);
-    const clickListenerCount = (view.addEventListener as jest.Mock).mock.calls.filter(
-      ([eventName]) => eventName === 'click'
-    ).length;
-    expect(clickListenerCount).toBe(1);
-  });
+const sceneItem = (role: string, name: string, datum: Record<string, unknown>) => ({
+  bounds: { x1: 0, x2: 1, y1: 0, y2: 1 },
+  datum,
+  mark: { role, name, marktype: 'symbol', group: {}, items: [{}, {}] },
 });
 
-describe('useNewChartView - axis label tooltip wiring', () => {
+describe('useNewChartView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseChartContext.mockReturnValue({
@@ -115,7 +91,6 @@ describe('useNewChartView - axis label tooltip wiring', () => {
       selectedDataBounds: { current: undefined },
       selectedDataName: { current: undefined },
       chartId: 'test-chart',
-      setHoveredAxisLabel: mockSetHoveredAxisLabel,
     } as unknown as ReturnType<typeof useChartContext>);
     mockUsePopovers.mockReturnValue([]);
     mockUseMarkOnClickDetails.mockReturnValue([]);
@@ -123,33 +98,84 @@ describe('useNewChartView - axis label tooltip wiring', () => {
     mockUseAxisLabelOnClickDetails.mockReturnValue([]);
   });
 
-  const axisLabelItem = {
-    mark: { role: 'axis-label', group: {} },
-    bounds: { x1: 0, x2: 10, y1: 0, y2: 20 },
-    datum: {},
-  };
+  test('keeps the same onNewView when legend state and child details change', () => {
+    const { result, rerender } = renderOnNewView();
+    const first = result.current;
 
-  test('hovering an axis label sets hoveredAxisLabel with the item bounds and tooltip content', () => {
-    const view = makeFakeView();
-    getOnNewView()(view);
-    const tooltipCallback = (view.tooltip as jest.Mock).mock.calls[0][0];
+    mockUseAxisLabelOnClickDetails.mockReturnValue([{ markName: 'axis0', onClick: jest.fn() }]);
+    rerender({ legend: { ...legendProps, legendHiddenSeries: ['a'], isToggleable: true, onClick: jest.fn() } });
 
-    tooltipCallback(view, { type: 'pointermove' }, axisLabelItem, 'Category A');
-
-    expect(mockSetHoveredAxisLabel).toHaveBeenCalledWith({
-      bounds: { x1: 0, x2: 10, y1: 0, y2: 20 },
-      content: 'Category A',
-    });
+    expect(result.current).toBe(first);
   });
 
-  test('hovering a non-axis-label item clears hoveredAxisLabel', () => {
+  test('legend clicks read the latest hidden series and callbacks', () => {
+    const { result, rerender } = renderOnNewView();
+    const view = makeFakeView();
+    result.current(view);
+
+    const onClick = jest.fn();
+    const setLegendHiddenSeries = jest.fn();
+    rerender({ legend: { legendHiddenSeries: ['b'], setLegendHiddenSeries, isToggleable: true, onClick } });
+    fire(view, 'click', sceneItem('legend-symbol', 'legend0_legendSymbol', { value: 'a' }));
+
+    expect(onClick).toHaveBeenCalledWith('a');
+    expect(setLegendHiddenSeries).toHaveBeenCalledWith(['b', 'a']);
+  });
+
+  test('legend hovers call the latest legend callbacks', () => {
+    const { result, rerender } = renderOnNewView();
+    const view = makeFakeView();
+    result.current(view);
+
+    const onMouseOver = jest.fn();
+    rerender({ legend: { ...legendProps, onMouseOver } });
+    fire(view, 'mouseover', sceneItem('legend-symbol', 'legend0_legendSymbol', { value: 'a' }));
+
+    expect(onMouseOver).toHaveBeenCalledWith('a');
+  });
+
+  test('axis label clicks call onClick details added after the view was created', () => {
+    const { result, rerender } = renderOnNewView();
+    const view = makeFakeView();
+    result.current(view);
+
+    const onAxisClick = jest.fn();
+    mockUseAxisLabelOnClickDetails.mockReturnValue([{ markName: 'axis0', onClick: onAxisClick }]);
+    rerender({ legend: legendProps });
+    fire(view, 'click', sceneItem('axis-label', 'axis0_labels', { value: 'Jan', index: 0 }));
+
+    expect(onAxisClick).toHaveBeenCalledWith(expect.anything(), 'Jan', 0);
+  });
+
+  test('does not call axis label onClick when there are no axis onClick details', () => {
     const view = makeFakeView();
     getOnNewView()(view);
-    const tooltipCallback = (view.tooltip as jest.Mock).mock.calls[0][0];
-    const barItem = { mark: { name: 'bar0' }, bounds: { x1: 0, x2: 0, y1: 0, y2: 0 }, datum: {} };
 
-    tooltipCallback(view, { type: 'mouseout' }, barItem, 'value');
+    expect(() => fire(view, 'click', sceneItem('axis-label', 'axis0_labels', { value: 'Jan', index: 0 }))).not.toThrow();
+  });
 
-    expect(mockSetHoveredAxisLabel).toHaveBeenCalledWith(null);
+  test('does not set a tooltip on the view, since that rebuilds the renderer', () => {
+    const view = makeFakeView();
+    getOnNewView()(view);
+    expect(view.tooltip).not.toHaveBeenCalled();
+  });
+
+  test('prevents the container context menu only while a mark handles it', () => {
+    const container = document.createElement('div');
+    container.id = 'test-chart';
+    document.body.appendChild(container);
+    const { result, rerender } = renderOnNewView();
+    result.current(makeFakeView());
+    result.current(makeFakeView());
+
+    const before = new MouseEvent('contextmenu', { cancelable: true });
+    container.dispatchEvent(before);
+    mockUseMarkOnClickDetails.mockReturnValue([{ markName: 'line0', onContextMenu: jest.fn() }]);
+    rerender({ legend: legendProps });
+    const after = new MouseEvent('contextmenu', { cancelable: true });
+    container.dispatchEvent(after);
+
+    expect({ before: before.defaultPrevented, after: after.defaultPrevented }).toEqual({ before: false, after: true });
+    container.remove();
   });
 });

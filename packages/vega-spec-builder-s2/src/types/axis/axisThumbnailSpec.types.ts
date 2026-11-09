@@ -12,7 +12,7 @@
 import { PartiallyRequired } from '../specUtil.types.js';
 
 export interface AxisThumbnailOptions {
-  /** The data field key that contains the URL of the thumbnail image. Defaults to 'thumbnail'. */
+  /** Data field that holds each category's image URL. Defaults to `thumbnail`. */
   urlKey?: string;
 }
 

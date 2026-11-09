@@ -24,6 +24,7 @@ import {
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features',
+  tags: ['alpha'],
   component: Axis,
   argTypes: verticalPositionArgType,
 };

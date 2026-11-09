@@ -17,6 +17,7 @@ import { bindStory } from '../storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Action Handlers',
+  tags: ['alpha'],
   component: Bar,
 };
 

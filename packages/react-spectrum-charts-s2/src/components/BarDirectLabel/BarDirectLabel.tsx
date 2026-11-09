@@ -15,6 +15,10 @@ import { FC } from 'react';
 
 import { BarDirectLabelProps } from '../../types/index.js';
 
+/**
+ * Adds a value label to each bar of its parent bar mark.
+ * @alpha
+ */
 const BarDirectLabel: FC<BarDirectLabelProps> = (_props: BarDirectLabelProps) => {
   return null;
 };

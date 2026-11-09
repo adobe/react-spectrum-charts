@@ -41,12 +41,13 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
-import { getLineDrawInXEncoding, getLineDrawInYEncoding } from '../marks/drawInAnimationUtils.js'
+import { getLineGeometryClip } from '../marks/drawInAnimationUtils.js';
 import {
   getColorProductionRule,
   getColorProductionRuleSignalString,
   getItemHoverArea,
   getOpacityProductionRule,
+  getSeriesFacet,
   getStrokeDashProductionRule,
   getVoronoiPath,
   getXProductionRule,
@@ -210,7 +211,6 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     scaleType,
     primarySeries,
     interpolate,
-    isDrawInAnimate,
   } = lineMarkOptions;
   const popovers = getPopovers(chartPopovers ?? [], name);
   const popoverWithDimensionHighlightExists = popovers.some(
@@ -225,7 +225,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     interactive: false,
     encode: {
       enter: {
-        ...(isDrawInAnimate ? {} : { y: getLineYEncoding(lineMarkOptions, metric) }),
+        y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getStrokeEncoding(primarySeries, otherSeriesColor, color, colorScheme),
         strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
@@ -235,8 +235,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
       },
       update: {
         // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
-        x: isDrawInAnimate ? getLineDrawInXEncoding(lineMarkOptions) : getXProductionRule(scaleType, dimension),
-        ...(isDrawInAnimate ? { y: getLineDrawInYEncoding(lineMarkOptions) } : {}),
+        x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
         strokeWidth: getLineStrokeWidth(lineMarkOptions),
@@ -264,9 +263,7 @@ export const getLineOpacityRules = ({
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
-  highlightedItem,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  if (!interactiveMarkName && highlightedItem === undefined) return [DEFAULT_OPACITY_RULE];
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
 
   if (interactiveMarkName) {
@@ -315,21 +312,39 @@ export const getLineOpacityRules = ({
 };
 
 /**
+ * Checks whether hovering highlights every series at the hovered dimension value.
+ * @param lineMarkOptions
+ * @returns boolean
+ */
+export const isLineHighlightedByDimension = ({
+  chartInspects,
+  chartPopovers,
+  dimensionHover,
+}: Pick<LineMarkOptions, 'chartInspects' | 'chartPopovers' | 'dimensionHover'>): boolean =>
+  Boolean(dimensionHover) ||
+  Boolean(chartInspects?.some(({ highlightBy }) => highlightBy === 'dimension')) ||
+  Boolean(chartPopovers?.some(({ UNSAFE_highlightBy }) => UNSAFE_highlightBy === 'dimension'));
+
+/**
  * Gets the production rules for strokeWidth
  */
 export const getLineStrokeWidth = ({
+  chartInspects,
+  chartPopovers,
+  dimensionHover,
   displayOnHover,
   comboSiblingNames,
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
-  highlightedItem,
+  seriesIds,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
-  // No interactivity -> use default (no hover)
-  if ((!interactiveMarkName || displayOnHover) && highlightedItem === undefined) return [DEFAULT_STROKE_WIDTH_RULE];
+  // Thickening emphasizes one series over others, so a single series never thickens
+  if (seriesIds && seriesIds.length <= 1) return [DEFAULT_STROKE_WIDTH_RULE];
+  const highlightsByDimension = isLineHighlightedByDimension({ chartInspects, chartPopovers, dimensionHover });
   const strokeWidthRules: ProductionRule<NumericValueRef> = [];
 
-  if (interactiveMarkName) {
+  if (interactiveMarkName && !displayOnHover && !highlightsByDimension) {
     if (isHighlightedByGroup) {
       strokeWidthRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
@@ -384,22 +399,29 @@ export const getLineStrokeWidth = ({
 export const getLineHoverMarks = (
   lineOptions: LineMarkOptions,
   dataSource: string,
-  secondaryHighlightedMetric?: string
+  secondaryHighlightedMetric?: string,
+  includeInteractiveMarks = true
 ): Mark[] => {
-  const { dimension, name, scaleType, showHoverLabel = true } = lineOptions;
+  const { dimension, interpolate, isHighlightedByGroup, name, scaleType, showHoverLabel = true } = lineOptions;
+  // highlighting by series (or other keys) emphasizes whole lines, not a single point
+  const highlightsBySeries = Boolean(isHighlightedByGroup) && !isLineHighlightedByDimension(lineOptions);
+  // a basis curve doesn't pass through the data, so points and their labels would sit off the line
+  const showsPoints = interpolate !== 'basis' && !highlightsBySeries;
   return [
     // vertical rule shown for the hovered or selected point
-    getHoverRule(dimension, name, scaleType),
+    ...(highlightsBySeries ? [] : [getHoverRule(dimension, name, scaleType)]),
     // if has popover or action bar, add selection point
-    ...(hasPopover(lineOptions) || hasActionBar(lineOptions) ? [getSelectionPoint(lineOptions)] : []),
+    ...(showsPoints && (hasPopover(lineOptions) || hasActionBar(lineOptions)) ? [getSelectionPoint(lineOptions)] : []),
     // hover or select point
-    getHighlightPoint(lineOptions),
+    ...(showsPoints ? [getHighlightPoint(lineOptions)] : []),
     // additional point that gets highlighted like the trendline or raw line point
-    ...(secondaryHighlightedMetric ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)] : []),
+    ...(showsPoints && secondaryHighlightedMetric
+      ? [getSecondaryHighlightPoint(lineOptions, secondaryHighlightedMetric)]
+      : []),
     // hover value label: background halo + foreground text — omitted when showHoverLabel is false
-    ...(showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
+    ...(showsPoints && showHoverLabel ? getHoverValueLabelMarks(lineOptions) : []),
     // get interactive marks for the line
-    ...getInteractiveMarks(dataSource, lineOptions),
+    ...(includeInteractiveMarks ? getInteractiveMarks(dataSource, lineOptions) : []),
   ];
 };
 
@@ -469,11 +491,11 @@ const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): 
   const { interactionMode = DEFAULT_INTERACTION_MODE } = lineOptions;
 
   const inspectMarks = {
-    nearest: getVoronoiMarks,
-    item: getItemHoverMarks,
+    nearest: () => getVoronoiMarks(lineOptions, dataSource),
+    item: () => getItemHoverMarks(lineOptions, dataSource),
   };
 
-  return inspectMarks[interactionMode](lineOptions, dataSource);
+  return inspectMarks[interactionMode]();
 };
 
 const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
@@ -609,13 +631,8 @@ export const getLineHighlightOverlayGroup = (
     name: `${name}_highlightOverlay_group`,
     type: 'group',
     interactive: false,
-    from: {
-      facet: {
-        name: `${name}_highlightOverlay_facet`,
-        data: facetData,
-        groupby: facetGroupby,
-      },
-    },
+    ...getLineGeometryClip(markOptions),
+    ...getSeriesFacet(`${name}_highlightOverlay_facet`, facetData, facetGroupby),
     marks: [overlayLineMark],
   };
 };

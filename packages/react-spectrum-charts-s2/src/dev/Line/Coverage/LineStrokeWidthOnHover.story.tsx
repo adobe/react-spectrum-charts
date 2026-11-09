@@ -23,6 +23,7 @@ import { workspaceTrendsData } from '../../../storyShared/data/data.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Stroke Width On Hover',
+  tags: ['alpha'],
   component: Line,
   parameters: { controls: { include: ['lineWidth', 'lineWidthOnHover'] } },
 };

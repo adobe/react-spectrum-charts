@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { Provider } from '@react-spectrum/s2';
+import { AnimationType, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
+
 import { Chart } from './Chart.js';
 import { Line } from './components/index.js';
 import usePrefersReducedMotion from './hooks/usePrefersReducedMotion.js';
@@ -33,27 +36,45 @@ describe('Chart reduced motion', () => {
     jest.clearAllMocks();
   });
 
-  test('disables animations when reduced motion is preferred', () => {
+  test('keeps fade animations and drops motion when reduced motion is preferred', () => {
     mockUsePrefersReducedMotion.mockReturnValue(true);
 
     render(
-      <Chart data={[{ x: 1, y: 1 }]} animations>
+      <Chart data={[{ x: 1, y: 1 }]} animations animationTypes={['hover', 'drawIn']}>
         <Line dimension="x" metric="y" />
       </Chart>
     );
 
-    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animations: false }));
+    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animations: true, animationTypes: ['hover'] }));
   });
 
-  test('preserves the animations prop when reduced motion is not preferred', () => {
+  test('keeps the same animation types reference across parent re-renders', () => {
+    mockUsePrefersReducedMotion.mockReturnValue(true);
+    const animationTypes: AnimationType[] = ['hover', 'drawIn'];
+    const renderChart = (title: string) => (
+      <Chart data={[{ x: 1, y: 1 }]} title={title} animationTypes={animationTypes}>
+        <Line dimension="x" metric="y" />
+      </Chart>
+    );
+
+    const { rerender } = render(renderChart('first'));
+    const mountedAnimationTypes = mockRscChart.mock.calls.at(-1)?.[0].animationTypes;
+    mockRscChart.mockClear();
+    rerender(<Provider colorScheme={DEFAULT_COLOR_SCHEME}>{renderChart('second')}</Provider>);
+
+    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ title: 'second' }));
+    expect(mockRscChart.mock.calls.at(-1)?.[0].animationTypes).toBe(mountedAnimationTypes);
+  });
+
+  test('preserves the animation props when reduced motion is not preferred', () => {
     mockUsePrefersReducedMotion.mockReturnValue(false);
 
     render(
-      <Chart data={[{ x: 1, y: 1 }]}>
+      <Chart data={[{ x: 1, y: 1 }]} animationTypes={['hover', 'drawIn']}>
         <Line dimension="x" metric="y" />
       </Chart>
     );
 
-    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animations: undefined }));
+    expect(mockRscChart).toHaveBeenCalledWith(expect.objectContaining({ animationTypes: ['hover', 'drawIn'] }));
   });
 });

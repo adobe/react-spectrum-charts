@@ -23,6 +23,7 @@ import { bindWithProps } from '../../../test-utils/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Coverage/Dual Metric Axis',
+  tags: ['alpha'],
   component: Bar,
 };
 

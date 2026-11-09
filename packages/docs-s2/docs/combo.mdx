@@ -1,0 +1,187 @@
+---
+stage: lab
+sidebar_position: 8
+title: Combo
+description: Bar and line marks that share a dimension in one chart, with an optional second axis.
+---
+
+import { PropsTable } from '@site/src/components/PropsTable';
+import { DataCode } from '@site/src/components/examples/DataCode';
+import {
+  ComboAxesPlayground,
+  ComboChildrenPlayground,
+  ComboHiddenSeriesPlayground,
+  ComboHighlightPlayground,
+  ComboInteractionPlayground,
+  ComboLegendPlayground,
+  ComboLocalePlayground,
+  ComboPlayground,
+  ComboStatesPlayground,
+} from '@site/src/playgrounds/combo';
+
+# Combo
+
+<StageBadge />
+
+Combos draw bars and a line against the same x-axis, for example daily sessions as bars with the
+conversion rate as a line. `Combo` has no styling of its own. It renders its `Bar` and `Line`
+children the way they render on their own, so see [Bar](./bar.mdx) and [Line](./line.mdx) for
+their full props.
+
+<ComboPlayground />
+
+`Combo` is a lab component. Import it from the `lab` subpath. `Bar` and `Line` come from the main
+package:
+
+```tsx
+import { Axis, Bar, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+```
+
+## Data
+
+`data` goes on `Chart` as an array of objects, one per x-axis value (or one per x-axis value and
+series). Each child reads its own `metric` from the same rows. Most examples on this page use
+`comboTrafficData`:
+
+<DataCode name="comboTrafficData" />
+
+```tsx
+<Chart data={comboTrafficData}>
+  <Axis position="left" grid />
+  <Axis position="right" name="rate" numberFormat=".1%" />
+  <Axis position="bottom" labelFormat="time" baseline ticks />
+  <Combo>
+    <Bar metric="sessions" />
+    <Line metric="conversionRate" metricAxis="rate" color={{ value: 'categorical-200' }} scaleType="point" />
+  </Combo>
+</Chart>
+```
+
+### dimension
+
+`dimension` on `Combo` names the x-axis field for every child. The default is `datetime`. A child
+that sets its own `dimension` uses that instead, but children should share a field so their marks
+line up.
+
+### Empty and loading
+
+When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to
+show a spinner while data loads.
+
+<ComboStatesPlayground />
+
+## Axes
+
+Bars always place each x value in a band, so the bottom axis shows one label per row.
+`labelFormat="time"` on that axis formats the timestamps as days, with the month as a sub-label.
+
+By default, both children plot against the left axis. That works when the metrics are in the same
+units, like sessions and orders. When they aren't, set `metricAxis` on a child and add an `Axis`
+with a matching `name`, usually on the right. That child then gets its own scale and axis.
+
+<ComboAxesPlayground />
+
+:::note
+A child with `metricAxis` still counts toward the left axis's range. If the line's values are
+larger than the bars', the left axis grows to fit them and the bars get shorter.
+:::
+
+Leave the left axis unnamed. It shows every child that doesn't set `metricAxis`.
+
+## Bar and Line children
+
+`Combo` accepts any number of `Bar` and `Line` children. Each child keeps its own
+props, including `metric`, `color`, `type`, `lineType`, `opacity`, and their own `ChartInspect` and
+`ChartPopover`. Children are named `combo0Bar0`, `combo0Line0`, and so on unless you set `name` on
+them.
+
+Set `scaleType="point"` on each `Line`. That puts each point in the center of its bar's band. The
+`Line` default, `time`, spreads points across the full width instead, so they don't line up with
+the bars.
+
+To show a series per category, set the same `color` field on both children. Bars stack by
+default; set `type="dodged"` on `Bar` to place them side by side. Lines still pass through the
+center of each band, not the center of each dodged bar.
+
+<DataCode name="comboDeviceData" />
+
+<ComboChildrenPlayground />
+
+Both children use the `categorical-100` color by default. When neither uses a `color` field, give
+the line a different static color, like `color={{ value: 'categorical-200' }}`, so it stands out
+from the bars.
+
+## Legend
+
+Add `Legend` as a sibling of `Combo` to list series. Entries come from the `color` field, so a
+legend appears only when the children use one. Bars and line share an entry when they use the same
+`color` field.
+
+- `isToggleable` lets users click an entry to hide or show that series in both the bars and the
+  line.
+- `highlight` highlights the series in both marks while its entry is hovered.
+
+<ComboLegendPlayground />
+
+### Hiding series
+
+`hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control.
+It hides the matching bars and lines.
+
+<ComboHiddenSeriesPlayground />
+
+### Highlighting
+
+`highlightedSeries` on `Chart` highlights a series from outside the chart, for example from a table
+row. The bars and line for other series fade.
+
+<ComboHighlightPlayground />
+
+:::note
+When the line has `ChartInspect` or `ChartPopover`, `highlightedSeries` and `Legend` `highlight`
+only highlight the bars. `highlightedItem` only highlights bars, and only works when both children
+have `ChartInspect` or `ChartPopover`. Otherwise the chart fails to render.
+:::
+
+## Interaction
+
+### ChartInspect and ChartPopover
+
+Add `ChartInspect` to show details on hover and `ChartPopover` to show details on click. Each goes
+inside the child it describes, so bars and line can show different content. Pass a function as
+children to render your own content. `rightClick` on `ChartPopover` opens it on right-click
+instead of click.
+
+<ComboInteractionPlayground />
+
+Hovering a bar fades the other bars.
+
+:::warning
+Give both children the same interactivity. If only one child has `ChartInspect` or `ChartPopover`,
+the chart fails to render.
+:::
+
+## Locale
+
+The chart's `locale` formats axis numbers and dates, along with `ChartInspect` and `ChartPopover`
+content. Use `numberFormat` on each `Axis` to choose the format.
+
+<ComboLocalePlayground />
+
+## Animation
+
+The chart's `animationTypes` and `animations` apply to the bars and lines in a `Combo`. By default
+they draw in together, finishing at the same time, and bars and lines ease in and out of their
+faded state on hover. See [Animation](./guides/animation.mdx).
+
+## API
+
+### Combo
+
+`name` prefixes the names of the child marks and signals in the rendered Vega spec. It defaults
+to `combo0`.
+
+<PropsTable component="Combo" />
+
+For child props, see [Bar](./bar.mdx#api) and [Line](./line.mdx#api).

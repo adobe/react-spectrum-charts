@@ -19,8 +19,9 @@ import {
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
+  DEFAULT_OPACITY_RULE,
   DIMENSION_HOVER_AREA,
-  FADE_FACTOR,
+  DRAW_IN_DONE,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -33,6 +34,8 @@ import {
   STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
   defaultBarEnterEncodings,
@@ -45,8 +48,10 @@ import {
 } from './barTestUtils.js';
 import {
   getBarAnimIdField,
+  getBarBackgroundDrawInUpdateEncodings,
   getBarDimensionAreaPositionEncodings,
   getBarDimensionHoverArea,
+  getBarDrawInUpdateEncodings,
   getBarFillEncoding,
   getBarHoverRules,
   getBarItemSelectionBackdrop,
@@ -534,7 +539,10 @@ describe('barUtils', () => {
     });
     test('returns true for an array (custom keys) popover', () => {
       expect(
-        shouldShowItemSelectionRing({ ...defaultBarOptions, chartPopovers: [{ UNSAFE_highlightBy: ['operatingSystem'] }] })
+        shouldShowItemSelectionRing({
+          ...defaultBarOptions,
+          chartPopovers: [{ UNSAFE_highlightBy: ['operatingSystem'] }],
+        })
       ).toBe(true);
     });
     test('returns false when any popover highlights by dimension', () => {
@@ -1007,14 +1015,80 @@ describe('getBarAnimIdField()', () => {
 describe('getBarOpacity()', () => {
   test('returns the animated deemphasis signal when isHoverAnimate', () => {
     const opacity = getBarOpacity({ ...defaultBarOptions, isHoverAnimate: true });
-    expect(opacity).toStrictEqual({
-      signal: expect.stringContaining(`${FADE_FACTOR} + (1 - ${FADE_FACTOR}) *`),
-    });
-    expect((opacity as { signal: string }).signal).toContain('bar0_rscBarAnimId');
+    expect(opacity).toStrictEqual({ signal: getHoverDeemphasisOpacitySignal('bar0', 'bar0_rscBarAnimId') });
   });
 
   test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {
     const opacity = getBarOpacity(defaultBarOptions);
-    expect(opacity).toStrictEqual([{ value: 1 }]);
+    expect(opacity).toStrictEqual([getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE]);
+  });
+
+  test('hides stacked segments the draw-in has not reached', () => {
+    const opacity = getBarOpacity({
+      ...defaultBarOptions,
+      type: 'stacked',
+      isDrawInAnimate: true,
+      isHoverAnimate: true,
+    });
+    expect(opacity).toStrictEqual([
+      { test: 'datum.bar0_drawInValue === datum.value0', value: 0 },
+      { signal: getHoverDeemphasisOpacitySignal('bar0', 'bar0_rscBarAnimId') },
+    ]);
+  });
+
+  test('hides unstacked bars until the draw-in grows them from zero', () => {
+    const opacity = getBarOpacity({ ...defaultBarOptions, type: 'dodged', isDrawInAnimate: true });
+    expect(opacity).toStrictEqual([
+      { test: 'datum.bar0_drawInValue === 0', value: 0 },
+      getControlledHighlightedItemOpacityRule(MARK_ID),
+      DEFAULT_OPACITY_RULE,
+    ]);
+  });
+});
+
+describe('bar draw-in encodings', () => {
+  const drawInOptions: BarSpecOptions = { ...defaultBarOptions, isDrawInAnimate: true };
+
+  test('getBaseBarEnterEncodings() leaves the metric out of enter so it can animate', () => {
+    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y');
+    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y2');
+    expect(getBaseBarEnterEncodings(defaultBarOptions)).toHaveProperty('y2');
+  });
+
+  test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for stacked bars', () => {
+    const encodings = getBarDrawInUpdateEncodings(drawInOptions);
+    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'bar0_drawInValue' });
+    expect(JSON.stringify(encodings.y)).toContain('datum.bar0_drawInValue > 0');
+  });
+
+  test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for non-stacked bars', () => {
+    expect(getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged' })).toStrictEqual({
+      y: { scale: 'yLinear', value: 0 },
+      y2: { scale: 'yLinear', field: 'bar0_drawInValue' },
+    });
+  });
+
+  test('getBarDrawInUpdateEncodings() reads the draw-in value on both dual metric axes', () => {
+    const encodings = getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged', dualMetricAxis: true });
+    expect(encodings.y2).toEqual([
+      expect.objectContaining({ scale: 'yLinearSecondary', field: 'bar0_drawInValue' }),
+      expect.objectContaining({ scale: 'yLinearPrimary', field: 'bar0_drawInValue' }),
+    ]);
+  });
+
+  test('getBarDrawInUpdateEncodings() is empty when draw-in is off', () => {
+    expect(getBarDrawInUpdateEncodings(defaultBarOptions)).toStrictEqual({});
+  });
+
+  test('getBarBackgroundDrawInUpdateEncodings() uses the final geometry and stays hidden until draw-in is done', () => {
+    const encodings = getBarBackgroundDrawInUpdateEncodings(drawInOptions);
+    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'value1' });
+    expect(encodings).toHaveProperty('opacity', { signal: `${DRAW_IN_DONE} ? 1 : 0` });
+    expect(getBarBackgroundDrawInUpdateEncodings(defaultBarOptions)).toStrictEqual({});
+  });
+
+  test('getDodgedGroupMark() facets the draw-in data when draw-in is on', () => {
+    expect(getDodgedGroupMark(drawInOptions).from).toHaveProperty('facet.data', 'bar0_drawInData');
+    expect(getDodgedGroupMark(defaultBarOptions).from).toHaveProperty('facet.data', FILTERED_TABLE);
   });
 });

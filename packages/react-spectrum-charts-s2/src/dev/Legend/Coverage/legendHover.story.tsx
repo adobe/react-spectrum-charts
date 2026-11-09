@@ -17,6 +17,7 @@ import { LegendBarStory, defaultProps } from './LegendStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Hover',
+  tags: ['alpha'],
   component: Legend,
 };
 

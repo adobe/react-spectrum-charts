@@ -15,14 +15,14 @@ export type TitlePosition = 'start' | 'middle' | 'end';
 export type TitleOrient = 'top' | 'bottom' | 'left' | 'right';
 
 export interface TitleOptions {
-  /** The title text */
+  /** Title text. */
   text: string;
-  /** The title position */
+  /** Where the title sits along its side of the chart: `'start'`, `'middle'`, or `'end'`. Defaults to `'start'`. */
   position?: TitlePosition;
-  /** The title font weight */
+  /** Font weight of the title text. Defaults to `700`. */
   fontWeight?: FontWeight;
-  /** The title font size */
+  /** Font size of the title text in pixels. Defaults to `24`. */
   fontSize?: number;
-  /** The location of the title relative to the chart */
+  /** Side of the chart the title is drawn on. Defaults to `'top'`. */
   orient?: TitleOrient;
 }

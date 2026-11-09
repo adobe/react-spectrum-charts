@@ -21,6 +21,7 @@ import { ChartBarStory, ChartLineStory, StoryWithParameters, setControlInclude }
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Size',
+  tags: ['alpha'],
   component: Chart,
 };
 

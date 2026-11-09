@@ -15,6 +15,7 @@ import { bindStory } from '../storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Features/Spacing',
+  tags: ['alpha'],
   component: Bar,
 };
 

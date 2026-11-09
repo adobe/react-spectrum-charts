@@ -17,20 +17,20 @@ import { sequentialCerulean5 } from '@spectrum-charts/core-s2/tokens';
 import { ChartColors, ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { Legend } from '../../../components/index.js';
+import { Donut, DonutSummary, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { DonutProps, DonutSummaryProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Donut/Coverage/Semicircle Variants',
+  title: 'React Spectrum Charts 2/Donut/Coverage/Semicircle Variants',
+  tags: ['alpha'],
   component: Donut,
 };
 
 type SemicircleMode = 'browser' | 'ordinal' | 'boolean';
 type SemicircleStoryProps = DonutProps &
-  Pick<DonutSummaryProps, 'hideValue' | 'numberFormat' | 'delta'> & { mode?: SemicircleMode };
+  Pick<DonutSummaryProps, 'delta' | 'hideValue' | 'numberFormat'> & { mode?: SemicircleMode };
 
 const browserData: ChartData[] = [
   { browser: 'Chrome', count: 55 },
@@ -80,7 +80,7 @@ const modeConfig: Record<
 };
 
 const SemicircleStory: StoryFn<SemicircleStoryProps> = (args): ReactElement => {
-  const { hideValue, numberFormat, delta, mode = 'ordinal', ...donutOnlyProps } = args;
+  const { delta, hideValue, numberFormat, mode = 'ordinal', ...donutOnlyProps } = args;
   const config = modeConfig[mode];
   const chartProps = useChartProps({
     data: config.data,
@@ -92,7 +92,7 @@ const SemicircleStory: StoryFn<SemicircleStoryProps> = (args): ReactElement => {
   return (
     <Chart {...chartProps}>
       <Donut variant="semicircle" {...config.donutProps} {...donutOnlyProps}>
-        <DonutSummary hideValue={hideValue} label={config.label} numberFormat={numberFormat} delta={delta} />
+        <DonutSummary delta={delta} hideValue={hideValue} label={config.label} numberFormat={numberFormat} />
       </Donut>
       <Legend title={config.legendTitle} position="right" highlight />
     </Chart>
@@ -105,4 +105,7 @@ SemicircleOrdinal.args = { mode: 'ordinal' };
 const SemicircleBoolean = bindWithProps(SemicircleStory);
 SemicircleBoolean.args = { mode: 'boolean' };
 
-export { SemicircleBoolean, SemicircleOrdinal };
+const SemicircleWithDelta = bindWithProps(SemicircleStory);
+SemicircleWithDelta.args = { mode: 'boolean', delta: 0.025 };
+
+export { SemicircleBoolean, SemicircleOrdinal, SemicircleWithDelta };

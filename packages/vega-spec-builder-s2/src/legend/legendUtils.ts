@@ -78,9 +78,19 @@ export const getColumns = (position: Position, name: string, labelLimit?: number
   if (['left', 'right'].includes(position)) return;
 
   const symbolAndSpacingWidth = DEFAULT_LEGEND_SYMBOL_WIDTH + DEFAULT_LEGEND_COLUMN_PADDING;
+  return { signal: `max(1, floor(width / (${getMaxLabelWidthExpr(name, labelLimit)} + ${symbolAndSpacingWidth})))` };
+};
+
+/**
+ * Gets an expression for the legend's widest measured label, capped at the label limit.
+ * @param name legend name
+ * @param labelLimit
+ * @returns vega expression string
+ */
+export const getMaxLabelWidthExpr = (name: string, labelLimit?: number): string => {
   const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
   const maxWidthExpr = `length(data('${name}_maxLabelWidth')) > 0 ? data('${name}_maxLabelWidth')[0].maxLabelWidth : ${effectiveLabelLimit}`;
-  return { signal: `max(1, floor(width / (min(${maxWidthExpr}, ${effectiveLabelLimit}) + ${symbolAndSpacingWidth})))` };
+  return `min(${maxWidthExpr}, ${effectiveLabelLimit})`;
 };
 
 /**
@@ -141,8 +151,13 @@ const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | un
 };
 
 const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
-  const { highlight, highlightedSeries, name, hasMouseInteraction, descriptions, chartPopovers } = options;
-  if (highlight || highlightedSeries || descriptions || chartPopovers?.length || userMeta.interactiveMarks?.length) {
+  const { highlight, name, hasMouseInteraction, descriptions, chartPopovers } = options;
+  const opacity = getLegendOpacity(options, userMeta);
+  const opacityEncodings: LegendEncode = {
+    labels: { update: { opacity } },
+    symbols: { update: { opacity } },
+  };
+  if (highlight || descriptions || chartPopovers?.length || userMeta.interactiveMarks?.length) {
     return {
       entries: {
         name: `${name}_legendEntry`,
@@ -154,16 +169,7 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
           fill: { value: 'transparent' }, // need something here to trigger the tooltip
         },
       },
-      labels: {
-        update: {
-          opacity: getLegendOpacity(options, userMeta),
-        },
-      },
-      symbols: {
-        update: {
-          opacity: getLegendOpacity(options, userMeta),
-        },
-      },
+      ...opacityEncodings,
     };
   } else if (hasMouseInteraction) {
     return {
@@ -174,13 +180,14 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
           fill: { value: 'transparent' },
         },
       },
+      ...opacityEncodings,
     };
   }
 
-  return {};
+  return opacityEncodings;
 };
 
-export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> | undefined => {
+export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> => {
   const rules: ProductionRule<NumericValueRef> = [];
 
   for (const markName of userMeta.animatedMarks || []) {
@@ -189,9 +196,8 @@ export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta)
     const fractionDataName = isGrouped ? `${markName}_hoverGroupFractionData` : `${markName}_hoverSeriesFractionData`;
     const fractionData = `data('${fractionDataName}')`;
     const lookupField = isGrouped ? `${options.name}_${GROUP_ID}` : SERIES_ID;
-    const seriesLookup = `indexof(pluck(${fractionData}, '${lookupField}'), datum.value)`;
     // default to the neutral emphasis level when a legend entry has no animation row
-    const fraction = `(${fractionData}[${seriesLookup}] || {fraction: ${FADE_FACTOR}}).fraction`;
+    const fraction = `hoverFraction(${fractionData}, '${lookupField}', datum.value, ${FADE_FACTOR})`;
     // fade deemphasized entries to FADE_FACTOR; neutral and emphasized both stay fully opaque
     const ramp = getDeemphasisRamp(fraction);
     rules.push({
@@ -221,9 +227,9 @@ const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefi
  * @returns opactiy encoding
  */
 export const getOpacityEncoding = (
-  { highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
+  { highlight, keys, chartPopovers, name: legendName }: LegendSpecOptions,
   userMeta: UserMeta
-): ProductionRule<NumericValueRef> | undefined => {
+): ProductionRule<NumericValueRef> => {
   const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : CONTROLLED_HIGHLIGHTED_SERIES;
   const selectedSignalName = keys?.length ? SELECTED_GROUP : SELECTED_SERIES;
 
@@ -241,18 +247,16 @@ export const getOpacityEncoding = (
       signal: `${legendName}_${HOVERED_SERIES} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
   }
-  if (highlightedItem) {
-    rules.push({
+  rules.push(
+    {
       test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
       signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-    });
-  }
-  if (highlightedSeries) {
-    rules.push({
+    },
+    {
       test: `isValid(${highlightSignalName})`,
       signal: `${highlightSignalName} === datum.value ? 1 : ${FADE_FACTOR}`,
-    });
-  }
+    }
+  );
   for (const { name: markName } of userMeta.interactiveMarks || []) {
     rules.push({
       test: `isValid(${markName}_${HOVERED_ITEM})`,
@@ -260,14 +264,22 @@ export const getOpacityEncoding = (
     });
   }
 
-  if (rules.length) {
-    return [...rules, DEFAULT_OPACITY_RULE];
-  }
-  return undefined;
+  return [...rules, DEFAULT_OPACITY_RULE];
+};
+
+/**
+ * Gets a Vega expression for a legend symbol's shape, defaulting to the rounded square.
+ * @param shape
+ * @returns vega expression string
+ */
+const getShapeExpression = (shape: BaseValueRef<string> | undefined): string => {
+  if (shape && 'signal' in shape) return shape.signal;
+  const value = shape && 'value' in shape ? shape.value : null;
+  return JSON.stringify(value ?? getPathFromSymbolShape('rounded-square'));
 };
 
 export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions): LegendEncode => {
-  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme, isToggleable, hiddenSeries, keys } = options;
+  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme, isToggleable, keys } = options;
   const shapeFacetRef = getSymbolFacetEncoding<string>({
     facets,
     facetType: SYMBOL_SHAPE_SCALE,
@@ -276,7 +288,6 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
   });
   const enter: SymbolEncodeEntry = {
     fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
-    shape: shapeFacetRef,
     size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
     strokeDash: getSymbolFacetEncoding<number[]>({
       facets,
@@ -296,7 +307,6 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
     value: spectrum2Colors[colorScheme]['categorical-100'],
   };
   // Hidden entries swap shape to the "eye off" icon, colored to match the legend label text (not the series color).
-  const isHidden = isToggleable || hiddenSeries.length > 0;
   const hiddenSeriesTest = keys?.length
     ? `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`
     : 'indexof(hiddenSeries, datum.value) !== -1';
@@ -304,11 +314,12 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
   const hiddenFillRule = { test: hiddenSeriesTest, value: hiddenIconColor };
   // Transparent, not zero-width: strokeWidth can't be conditional (see note above), and Vega's default 1.5px outline would bold the icon's fine linework.
   const hiddenStrokeRule = { test: hiddenSeriesTest, value: 'transparent' };
-  const hiddenShapeRule = { test: hiddenSeriesTest, value: getPathFromSymbolShape('visibility-off') };
+  const shapeExpression = getShapeExpression(shapeFacetRef);
+  // Vega doesn't re-lay out legend entries after a signal update, so both icons must share bounds.
   const update: SymbolEncodeEntry = {
-    fill: isHidden ? [hiddenFillRule, colorRef] : [colorRef],
-    stroke: isHidden ? [hiddenStrokeRule, colorRef] : [colorRef],
-    shape: isHidden ? [hiddenShapeRule, shapeFacetRef ?? { value: getPathFromSymbolShape('rounded-square') }] : undefined,
+    fill: [hiddenFillRule, colorRef],
+    stroke: [hiddenStrokeRule, colorRef],
+    shape: { signal: `legendSymbolShape(${shapeExpression}, ${hiddenSeriesTest})` },
   };
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = jsonClone({ enter, update });
   return {
@@ -364,12 +375,11 @@ const getSymbolFacetEncoding = <T>({
 };
 
 export const getHiddenSeriesColorRule = (
-  { colorScheme, hiddenSeries, isToggleable, keys, name }: LegendSpecOptions,
+  { colorScheme, keys, name }: LegendSpecOptions,
   colorValue: ColorValueV6
 ): ({
   test?: string;
 } & ColorValueRef)[] => {
-  if (!isToggleable && !hiddenSeries.length) return [];
   if (keys?.length) {
     return [
       {

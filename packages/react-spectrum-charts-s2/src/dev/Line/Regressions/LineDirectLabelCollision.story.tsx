@@ -26,6 +26,7 @@ const labelCollisionData = workspaceTrendsData.map((d) =>
 
 export default {
   title: 'React Spectrum Charts 2/Line/Regressions/Direct Label',
+  tags: ['alpha'],
   component: LineDirectLabel,
 };
 

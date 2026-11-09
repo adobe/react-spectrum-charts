@@ -19,6 +19,8 @@ import { getBarFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils.js
 import { getAnnotationMarks } from './barAnnotationUtils.js';
 import {
   getBarDimensionHoverArea,
+  getBarBackgroundDrawInUpdateEncodings,
+  getBarDrawInUpdateEncodings,
   getBarEnterEncodings,
   getBarItemSelectionBackdrop,
   getBarItemSelectionRing,
@@ -55,6 +57,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
             },
             update: {
               ...getDodgedDimensionEncodings(options),
+              ...getBarBackgroundDrawInUpdateEncodings(options),
             },
           },
         },
@@ -71,6 +74,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
             },
             update: {
               ...getDodgedDimensionEncodings(options),
+              ...getBarDrawInUpdateEncodings(options),
               ...getBarUpdateEncodings(options),
             },
           },

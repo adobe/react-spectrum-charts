@@ -12,7 +12,7 @@
 
 export * from './barAnnotation.types.js';
 export * from './barDirectLabel.types.js';
-export * from './dountSummary.types.js';
+export * from './donutSummary.types.js';
 export * from './lineForecast.types.js';
 export * from './lineDirectLabel.types.js';
 export * from './linePointAnnotation.types.js';

@@ -15,7 +15,7 @@ import { DonutSpecOptions } from '../donutSpec.types.js';
 export interface SegmentLabelOptions {
   /** Selects whether the label applies to emphasized or de-emphasized segments. */
   labelMode?: 'emphasized' | 'deemphasized';
-  /** Sets the key in the data that has the segment label. Defaults to the `color` key set on the `Donut` is undefined. */
+  /** Data field with the segment label text. Defaults to the `Donut` `color` field. */
   labelKey?: string;
   /** Shows the donut segment percentage */
   percent?: boolean;

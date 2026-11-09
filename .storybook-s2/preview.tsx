@@ -7,6 +7,7 @@ import { useDarkMode } from 'storybook-dark-mode';
 
 import { Provider } from '@react-spectrum/s2';
 
+import { StageDocsPage } from './StageDocsPage';
 import './storybook.css';
 
 const decorators: Decorator[] = [
@@ -66,6 +67,7 @@ const parameters: Parameters = {
   },
   backgrounds: { disable: true },
   docs: {
+    page: StageDocsPage,
     container: (context: any) => {
       const isDark = useDarkMode();
 

@@ -141,6 +141,22 @@ const isAnimatedOpacity = (opacity: ProductionRule<NumericValueRef> | undefined)
 };
 
 /**
+ * Inserts a rule before the fallback rule unless the rules already test the same condition.
+ * @param rules
+ * @param rule
+ * @returns production rule array
+ */
+const insertRule = (
+  rules: ProductionRule<NumericValueRef>,
+  rule: { test?: string } & NumericValueRef
+): ProductionRule<NumericValueRef> => {
+  const ruleArray = Array.isArray(rules) ? rules : [];
+  if (ruleArray.some((existing) => (existing as { test?: string }).test === rule.test)) return ruleArray;
+  ruleArray.splice(Math.max(ruleArray.length - 1, 0), 0, rule);
+  return ruleArray;
+};
+
+/**
  * Adds opacity tests for marks whose fill/stroke is driven by the color scale, and for marks
  * that are already per-series (e.g. trendlines, which facet by series regardless of their own
  * color encoding — a trendline with an overridden literal color still needs to fade on legend hover).
@@ -169,15 +185,7 @@ export const setHoverOpacityForMarks = (legendName: string, marks: Mark[], keys?
       const lastRule = Array.isArray(opacity) ? opacity.at(-1) : opacity;
       if ((lastRule as { value?: number })?.value === 0) return;
 
-      // the new production rule for highlighting
-      const highlightOpacityRule = getHighlightOpacityRule(legendName, controlled, keys);
-
-      if (!Array.isArray(update.opacity)) {
-        update.opacity = [];
-      }
-      // need to insert the new test in the second to last slot
-      const opacityRuleInsertIndex = Math.max(update.opacity.length - 1, 0);
-      update.opacity.splice(opacityRuleInsertIndex, 0, highlightOpacityRule);
+      update.opacity = insertRule(opacity, getHighlightOpacityRule(legendName, controlled, keys));
     }
   });
 };
@@ -194,13 +202,7 @@ export const setHoverStrokeWidthForMarks = (legendName: string, marks: Mark[], k
     const { update } = mark.encode;
     if (update.strokeWidth === undefined) return;
 
-    const highlightStrokeWidthRule = getHighlightStrokeWidthRule(legendName, controlled, keys);
-
-    if (!Array.isArray(update.strokeWidth)) {
-      update.strokeWidth = [];
-    }
-    const insertIndex = Math.max(update.strokeWidth.length - 1, 0);
-    update.strokeWidth.splice(insertIndex, 0, highlightStrokeWidthRule);
+    update.strokeWidth = insertRule(update.strokeWidth, getHighlightStrokeWidthRule(legendName, controlled, keys));
   });
 };
 

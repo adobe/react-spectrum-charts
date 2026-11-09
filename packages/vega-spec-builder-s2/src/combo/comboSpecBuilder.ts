@@ -11,20 +11,42 @@
  */
 import { produce } from 'immer';
 
-import { DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
+import { AnimationType, DEFAULT_COLOR_SCHEME, DEFAULT_TIME_DIMENSION } from '@spectrum-charts/core-s2/constants';
 import { combineNames, toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addBar } from '../bar/barSpecBuilder.js';
 import { addLine } from '../line/lineSpecBuilder.js';
-import { BarOptions, ColorScheme, ComboOptions, HighlightedItem, LineOptions, ScSpec } from '../types/index.js';
+import { isInteractive } from '../marks/markUtils.js';
+import {
+  AxisOptions,
+  BarOptions,
+  ColorScheme,
+  ComboOptions,
+  HighlightedItem,
+  LineOptions,
+  ScSpec,
+} from '../types/index.js';
 
 export const addCombo = produce<
   ScSpec,
-  [ComboOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  [
+    ComboOptions & {
+      animations?: boolean;
+      animationTypes?: AnimationType[];
+      axes?: AxisOptions[];
+      colorScheme?: ColorScheme;
+      highlightedItem?: HighlightedItem;
+      index?: number;
+      idKey: string;
+    },
+  ]
 >(
   (
     spec,
     {
+      animations,
+      animationTypes,
+      axes,
       colorScheme = DEFAULT_COLOR_SCHEME,
       highlightedItem,
       idKey,
@@ -59,8 +81,8 @@ export const addCombo = produce<
     spec = [...marks].reduce((acc: ScSpec, mark, markIndex) => {
       let markName: string;
 
-      // Get sibling names by excluding current mark
-      const comboSiblingNames = allMarkNames.filter((_, index) => index !== markIndex);
+      // only interactive siblings have hover signals to fade against
+      const comboSiblingNames = allMarkNames.filter((_, index) => index !== markIndex && isInteractive(marks[index]));
 
       switch (mark.markType) {
         case 'bar':
@@ -68,6 +90,8 @@ export const addCombo = produce<
           markName = allMarkNames[markIndex];
           return addBar(acc, {
             ...mark,
+            animations,
+            animationTypes,
             colorScheme,
             comboSiblingNames,
             highlightedItem,
@@ -82,6 +106,9 @@ export const addCombo = produce<
           markName = allMarkNames[markIndex];
           return addLine(acc, {
             ...mark,
+            animations,
+            animationTypes,
+            axes,
             colorScheme,
             comboSiblingNames,
             highlightedItem,

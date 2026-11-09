@@ -11,9 +11,9 @@
  */
 import { NumericValueRef, ProductionRule } from 'vega';
 
-import { FADE_FACTOR, LAST_RSC_SERIES_ID, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import { LAST_RSC_SERIES_ID, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
 import { LineMarkOptions, isDualMetricAxis } from './lineUtils.js';
 
@@ -46,9 +46,6 @@ export const getLineYEncoding = (lineMarkOptions: LineMarkOptions, metric: strin
   return [{ scale: metricAxis || 'yLinear', field: metric }];
 };
 
-export const getLineDeemphasisOpacitySignal = (name: string): ProductionRule<NumericValueRef> => {
-  const ramp = getDeemphasisRamp(getHoverFractionSignal(name));
-  return {
-    signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
-  };
-};
+export const getLineDeemphasisOpacitySignal = (name: string): ProductionRule<NumericValueRef> => ({
+  signal: getHoverDeemphasisOpacitySignal(name),
+});

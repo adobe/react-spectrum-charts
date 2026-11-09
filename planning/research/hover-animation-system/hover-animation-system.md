@@ -242,6 +242,58 @@ idle long enough to stop." What idle gating removes is the expensive part downst
 `lerp(...)` recompute across every series of every animated mark — which is where the real CPU cost scales
 with chart size. For a chart with many series/marks, that's the win; for a one-series chart it's a wash.
 
+> **Superseded for embedded charts by §3g.** The spec-level gate can't stop the ticks themselves: vega-view
+> schedules a `runAsync` for every timer event *before* the event-stream filter runs. With `autosize.resize:
+> true`, every run also triggers a re-layout (`resizeView` → `runAfter(v => v.resize())`). The result was
+> about 30 runs/s per chart, forever. §3g removes the Vega timer when the chart is embedded.
+
+### 3g. On-demand animation ticker (embed-time)
+
+The spec still carries the timer (`animationTimer`, throttle 33), so a standalone Vega consumer keeps working.
+The spec also emits an `animationActive` signal: the OR of each animation's "still moving" condition.
+- Hover: `!hoverAnimLastChangeData[0].settled || clock - lastChange < SPEED + THROTTLE`. `settled` is set
+  by `hoverIdleTicks >= 2`.
+- Draw-in: `drawInAnimT < 1`.
+
+Both are built by `addAnimationTimerSignal` (`vega-spec-builder-s2/src/marks/animationTimerUtils.ts`). It
+also ORs the same conditions into the timer event's `filter`. The filter can only use `data()`, not signals,
+so draw-in leaves the timer unfiltered. A data-backed draw-in condition was measured and dropped: it was
+slightly slower and only helps standalone Vega consumers, because the ticker strips the filter.
+
+At embed time (`react-spectrum-charts-s2/src/animation/animationTicker.ts`, framework-agnostic):
+1. `removeAnimationTimerEvents(spec)` strips the timer's `on` handler. It is not blocked through
+   `config.events.timer=false`, because that logs a "Blocked timer" warning for every chart.
+2. `attachAnimationTicker(view, container)` registers the view with one page-wide rAF loop.
+   - Each frame, every view that is awake and visible gets `view.signal('animationTimer', Date.now()).runAsync()`.
+     It must be `Date.now()` because the spec's `now()` timestamps are wall-clock.
+   - A view goes to sleep when `animationActive` is false after a run. A signal listener on
+     `animationActive` wakes it.
+   - The loop stops when no view is awake and visible.
+   - Off-screen charts are paused by a shared IntersectionObserver. Progress is wall-clock, so an
+     animation that runs off-screen shows its end state when the chart scrolls into view.
+   - `ANIMATION_MIN_FRAME_INTERVAL` (constants): `0` means native refresh rate. Set it to
+     `ANIMATION_THROTTLE` for about 30fps.
+
+Measured on a dashboard of 20 charts × 30 series:
+
+| Build | Idle script ms/s | Idle task ms/s | Idle DOM updates/s |
+|---|---|---|---|
+| 33ms timer | 25 | 116 | 38 |
+| Ticker, native rate | 2 | 18 | 0 |
+
+The idle numbers are at 4x CPU throttle. Hover animation now runs at the native refresh rate.
+
+**Frame budget.** Each frame ticks views one at a time and awaits each `runAsync`. It stops once
+`ANIMATION_FRAME_BUDGET_MS` (8ms) has been used, and it always ticks at least one view. A view that
+ticks moves to the back of the queue, so views skipped by the budget go first next frame. Under load,
+charts update less often, but frames don't stall. Progress is wall-clock, so animation duration stays
+the same.
+
+**Draw-in clock starts on the first tick (B1).** `drawInStart` is `0` until the first `animationTimer`
+tick. It then latches that tick's value with `drawInStart || animationTimer`. On a dashboard that takes
+about 1.6s to mount (4x CPU), the first painted frame used to show the draw-in 92–99% done. It now
+shows about 0%.
+
 **Coupling risk — read before wiring this in:** `hoverAnimating`'s `update` expression references
 `data('hoverAnimLastChangeData')[0]` by name. If `addHoverAnimationSignals` is called for a mark but
 `addHoverAnimLastChangeData` is never called for *any* mark on that chart, `hoverAnimLastChangeData` won't

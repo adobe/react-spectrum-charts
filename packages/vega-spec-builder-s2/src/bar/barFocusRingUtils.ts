@@ -84,7 +84,7 @@ const getDynamicFocusRingCorners = (options: BarSpecOptions): RectEncodeEntry =>
 };
 
 export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
-  const { colorScheme, dimension, name } = options;
+  const { colorScheme, dimension, isDrawInAnimate, name } = options;
   // Keyed by the series id (every series facet joined), so series that share a color but differ in another facet stay distinct.
   const dimensionKey = toNavigationKey(`datum.datum.${dimension}`);
   // A bar without a series and with an empty dimension is keyed by the separator alone, as navigation keys it.
@@ -94,7 +94,8 @@ export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
   return {
     name: `${name}_focusRing`,
     type: 'rect',
-    from: { data: name },
+    // the background keeps final geometry during draw-in, so the ring doesn't track growing bars
+    from: { data: isDrawInAnimate ? `${name}_background` : name },
     interactive: false,
     encode: {
       enter: {

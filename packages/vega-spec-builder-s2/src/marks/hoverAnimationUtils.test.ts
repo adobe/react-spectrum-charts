@@ -12,6 +12,7 @@
 import { Data, Signal, ValuesData } from 'vega';
 
 import {
+  ANIMATION_ACTIVE,
   ANIMATION_HOVER_SPEED,
   ANIMATION_THROTTLE,
   HOVER_ACTIVE_TIMER,
@@ -19,22 +20,28 @@ import {
   HOVER_ANIM_LAST_CHANGE_DATA,
   HOVER_IDLE_TICKS,
   HOVER_NEUTRAL_TARGET,
+  HOVER_ANIM_STATE_ROWS,
+  HOVER_FRACTION_ROWS,
   HOVER_TARGETS,
   ANIMATION_TIMER,
+  FADE_FACTOR,
   MARK_ID,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import {
+  HOVER_DEEMPHASIS_OPACITY,
   addHoverAnimLastChangeData,
   addHoverAnimationSignals,
   getDeemphasisRamp,
   getEmphasisRamp,
   getHoverAnimStateData,
+  getHoverDeemphasisOpacitySignal,
   getHoverFractionData,
   getHoverFractionSignal,
   getHoverSeriesFractionData,
+  getHoverAnimationActiveCondition,
   getHoverTargetData,
 } from './hoverAnimationUtils.js';
 
@@ -111,8 +118,13 @@ describe('getHoverAnimStateData()', () => {
     expect(result.on).toHaveLength(2);
     const [first, second] = result.on ?? [];
     expect(first.trigger).toEqual(`line0_${HOVER_TARGETS}`);
-    expect(first.modify).toEqual(`data('line0_hoverAnimStateData')[0]`);
-    expect(second.modify).toEqual(`data('line0_hoverAnimStateData')[1]`);
+    expect(first.modify).toEqual(`line0_${HOVER_ANIM_STATE_ROWS}[0]`);
+    expect(second.modify).toEqual(`line0_${HOVER_ANIM_STATE_ROWS}[1]`);
+  });
+
+  test('on-triggers read state through signals instead of data()', () => {
+    const { on } = getHoverAnimStateData({ name: 'line0', keys: ['a', 'b'] });
+    on?.forEach((trigger) => expect(JSON.stringify(trigger)).not.toContain('data('));
   });
 
   test('on-trigger restarts the clock (now()) and captures the current fraction as startValue when the target changes', () => {
@@ -122,9 +134,9 @@ describe('getHoverAnimStateData()', () => {
     expect(values).toContain('now()');
     expect(values).toContain(`target: line0_${HOVER_TARGETS}[0]`);
     // startValue is snapshotted from the live fraction so mid-animation reversals are smooth
-    // the outer `|| []` guards against `data(...)` itself resolving before hoverFractionData's
+    // the outer `|| []` guards against the rows signal resolving before hoverFractionData's
     // first computation, not just an out-of-range index
-    expect(values).toContain(`((data('line0_hoverFractionData') || [])[0] || {fraction: 1}).fraction`);
+    expect(values).toContain(`((line0_${HOVER_FRACTION_ROWS} || [])[0] || {fraction: 1}).fraction`);
   });
 });
 
@@ -138,13 +150,30 @@ describe('getHoverFractionData()', () => {
     });
   });
 
-  test('eases progress quadratically in and out before lerping startValue -> target', () => {
+  test('eases progress with the S2 in-out curve before lerping startValue -> target', () => {
     const result = getHoverFractionData('line0');
     expect(result.transform?.[1]).toStrictEqual({
       type: 'formula',
       as: 'fraction',
-      expr: `lerp([datum.startValue, datum.target], datum.progress < 0.5 ? 2 * pow(datum.progress, 2) : 1 - pow(-2 * datum.progress + 2, 2) / 2)`,
+      expr: 'lerp([datum.startValue, datum.target], cubicBezier(0.45, 0, 0.4, 1, datum.progress))',
     });
+  });
+});
+
+describe('getHoverFractionData() deemphasis opacity', () => {
+  const evalDeemphasisOpacity = (fraction: number): number => {
+    const formula = getHoverFractionData('line0').transform?.[2] as { as: string; expr: string };
+    expect(formula.as).toBe(HOVER_DEEMPHASIS_OPACITY);
+    const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+    // eslint-disable-next-line no-new-func
+    return new Function('clamp', 'datum', `return ${formula.expr};`)(clamp, { fraction });
+  };
+
+  test('fades to FADE_FACTOR when deemphasized and stays opaque from neutral upward', () => {
+    expect(evalDeemphasisOpacity(0)).toBeCloseTo(FADE_FACTOR);
+    expect(evalDeemphasisOpacity(HOVER_NEUTRAL_TARGET / 2)).toBeCloseTo((FADE_FACTOR + 1) / 2);
+    expect(evalDeemphasisOpacity(HOVER_NEUTRAL_TARGET)).toBe(1);
+    expect(evalDeemphasisOpacity(1)).toBe(1);
   });
 });
 
@@ -187,15 +216,29 @@ describe('getHoverSeriesFractionData()', () => {
 });
 
 describe('getHoverFractionSignal()', () => {
-  test('looks up the row for datum by series identity, defaulting to the neutral level when absent', () => {
+  test('looks up the fraction for datum by series identity, defaulting to the neutral level', () => {
     expect(getHoverFractionSignal('line0')).toEqual(
-      `(data('line0_hoverFractionData')[indexof(pluck(data('line0_hoverFractionData'), '${SERIES_ID}'), datum.${SERIES_ID})] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`
+      `hoverFraction(data('line0_hoverFractionData'), '${SERIES_ID}', datum.${SERIES_ID}, ${HOVER_NEUTRAL_TARGET})`
     );
   });
 
   test('honors a custom keyField', () => {
     expect(getHoverFractionSignal('bar0', MARK_ID)).toEqual(
-      `(data('bar0_hoverFractionData')[indexof(pluck(data('bar0_hoverFractionData'), '${MARK_ID}'), datum.${MARK_ID})] || {fraction: ${HOVER_NEUTRAL_TARGET}}).fraction`
+      `hoverFraction(data('bar0_hoverFractionData'), '${MARK_ID}', datum.${MARK_ID}, ${HOVER_NEUTRAL_TARGET})`
+    );
+  });
+});
+
+describe('getHoverDeemphasisOpacitySignal()', () => {
+  test('looks up the precomputed deemphasis opacity, defaulting to fully opaque', () => {
+    expect(getHoverDeemphasisOpacitySignal('line0')).toEqual(
+      `hoverFraction(data('line0_hoverFractionData'), '${SERIES_ID}', datum.${SERIES_ID}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`
+    );
+  });
+
+  test('honors a custom keyField', () => {
+    expect(getHoverDeemphasisOpacitySignal('bar0', MARK_ID)).toEqual(
+      `hoverFraction(data('bar0_hoverFractionData'), '${MARK_ID}', datum.${MARK_ID}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`
     );
   });
 });
@@ -240,8 +283,14 @@ describe('addHoverAnimationSignals()', () => {
       {
         name: ANIMATION_TIMER,
         value: 0,
-        on: [{ events: { type: 'timer', throttle: ANIMATION_THROTTLE }, update: 'now()' }],
+        on: [
+          {
+            events: { type: 'timer', throttle: ANIMATION_THROTTLE, filter: `(${getHoverAnimationActiveCondition('now()')})` },
+            update: 'now()',
+          },
+        ],
       },
+      { name: ANIMATION_ACTIVE, value: true, update: `(${getHoverAnimationActiveCondition(ANIMATION_TIMER)})` },
       {
         name: HOVER_ANIMATING,
         value: false,
@@ -263,6 +312,8 @@ describe('addHoverAnimationSignals()', () => {
         name: `line0_${HOVER_TARGETS}`,
         update: `pluck(data('line0_hoverTargetData'), 'target')`,
       },
+      { name: `line0_${HOVER_ANIM_STATE_ROWS}`, update: `data('line0_hoverAnimStateData')` },
+      { name: `line0_${HOVER_FRACTION_ROWS}`, update: `data('line0_hoverFractionData')` },
     ]);
   });
 
@@ -277,11 +328,16 @@ describe('addHoverAnimationSignals()', () => {
     expect(signals.filter((s) => s.name === HOVER_ACTIVE_TIMER)).toHaveLength(1);
     expect(signals.map((s) => s.name)).toEqual([
       ANIMATION_TIMER,
+      ANIMATION_ACTIVE,
       HOVER_ANIMATING,
       HOVER_IDLE_TICKS,
       HOVER_ACTIVE_TIMER,
       `line0_${HOVER_TARGETS}`,
+      `line0_${HOVER_ANIM_STATE_ROWS}`,
+      `line0_${HOVER_FRACTION_ROWS}`,
       `line1_${HOVER_TARGETS}`,
+      `line1_${HOVER_ANIM_STATE_ROWS}`,
+      `line1_${HOVER_FRACTION_ROWS}`,
     ]);
   });
 
@@ -353,6 +409,21 @@ describe('addHoverAnimationSignals()', () => {
   });
 });
 
+describe('getHoverAnimationActiveCondition()', () => {
+  const evalCondition = (row: { lastChange: number; settled: boolean }, now: number): boolean =>
+    // eslint-disable-next-line no-new-func
+    new Function('data', 'clock', `return ${getHoverAnimationActiveCondition('clock')};`)(() => [row], now);
+
+  test('stays active until the grace tick has settled the animation', () => {
+    expect(evalCondition({ lastChange: 0, settled: false }, 10000)).toBe(true);
+    expect(evalCondition({ lastChange: 0, settled: true }, 10000)).toBe(false);
+  });
+
+  test('stays active within the nominal duration of the last change even if marked settled', () => {
+    expect(evalCondition({ lastChange: 1000, settled: true }, 1000 + ANIMATION_HOVER_SPEED)).toBe(true);
+  });
+});
+
 describe('addHoverAnimLastChangeData()', () => {
   test('creates the shared tracker data source, seeded at rest, with an on-trigger for the mark', () => {
     const data: Data[] = [];
@@ -360,12 +431,17 @@ describe('addHoverAnimLastChangeData()', () => {
     expect(data).toStrictEqual([
       {
         name: HOVER_ANIM_LAST_CHANGE_DATA,
-        values: [{ lastChange: 0 }],
+        values: [{ lastChange: 0, settled: false }],
         on: [
+          {
+            trigger: HOVER_IDLE_TICKS,
+            modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
+            values: `{settled: ${HOVER_IDLE_TICKS} >= 2}`,
+          },
           {
             trigger: `line0_${HOVER_TARGETS}`,
             modify: `data('${HOVER_ANIM_LAST_CHANGE_DATA}')[0]`,
-            values: '{lastChange: now()}',
+            values: '{lastChange: now(), settled: false}',
           },
         ],
       },
@@ -378,9 +454,9 @@ describe('addHoverAnimLastChangeData()', () => {
     addHoverAnimLastChangeData(data, 'line1');
     expect(data.filter((d) => d.name === HOVER_ANIM_LAST_CHANGE_DATA)).toHaveLength(1);
     const [tracker] = data as ValuesData[];
-    expect(tracker.on).toHaveLength(2);
-    expect(tracker.on?.[0].trigger).toEqual(`line0_${HOVER_TARGETS}`);
-    expect(tracker.on?.[1].trigger).toEqual(`line1_${HOVER_TARGETS}`);
+    expect(tracker.on).toHaveLength(3);
+    expect(tracker.on?.[1].trigger).toEqual(`line0_${HOVER_TARGETS}`);
+    expect(tracker.on?.[2].trigger).toEqual(`line1_${HOVER_TARGETS}`);
   });
 
   test('initializes `on` when an existing entry was constructed without one', () => {

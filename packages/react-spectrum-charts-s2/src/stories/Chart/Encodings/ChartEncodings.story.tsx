@@ -21,6 +21,7 @@ import { ChartBarStory, StoryWithParameters, setControlInclude } from '../chartS
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Encodings',
+  tags: ['alpha'],
   component: Chart,
   argTypes: {
     colors: { control: 'object' },

@@ -15,6 +15,10 @@ import { FC } from 'react';
 
 import { LineDirectLabelProps } from '../../types/index.js';
 
+/**
+ * Adds a label at the end of each line of its parent line mark.
+ * @alpha
+ */
 const LineDirectLabel: FC<LineDirectLabelProps> = ({
   value = 'last',
   position = 'end',

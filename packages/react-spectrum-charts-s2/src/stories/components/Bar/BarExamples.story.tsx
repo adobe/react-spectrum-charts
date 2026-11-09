@@ -22,6 +22,7 @@ import { bindStory } from './storyUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Examples',
+  tags: ['alpha'],
   component: Bar,
 };
 

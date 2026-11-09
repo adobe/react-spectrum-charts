@@ -16,6 +16,7 @@ import { ChartBarInspectStory, ChartLineStory, StoryWithParameters, setControlIn
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Highlight',
+  tags: ['alpha'],
   component: Chart,
   argTypes: {
     hiddenSeries: { control: 'object' },

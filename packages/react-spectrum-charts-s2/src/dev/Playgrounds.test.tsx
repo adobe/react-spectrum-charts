@@ -11,8 +11,8 @@
  */
 import { ComponentType } from 'react';
 
-import { findChart, render } from '../test-utils/index.js';
 import '../test-utils/__mocks__/matchMedia.mock.js';
+import { findChart, render } from '../test-utils/index.js';
 import { Playground as AreaPlayground } from './Area/Playground/AreaPlayground.story.js';
 import { Playground as AxisPlayground } from './Axis/Playground/AxisPlayground.story.js';
 import { Playground as BarPlayground } from './Bar/Playground/BarPlayground.story.js';

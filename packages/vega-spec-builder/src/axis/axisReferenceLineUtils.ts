@@ -11,24 +11,39 @@
  */
 import {
   EncodeEntry,
+  GroupMark,
   GuideEncodeEntry,
+  LabelAnchor,
   Mark,
   NumericValueRef,
   ProductionRule,
   RuleMark,
   ScaleType,
   SignalRef,
+  SymbolEncodeEntry,
   SymbolMark,
   TextEncodeEntry,
-  TextMark,
 } from 'vega';
 
-import { AREA_HOVER_POINT, AREA_HOVER_RULE, DEFAULT_FONT_COLOR, DEFAULT_LABEL_FONT_WEIGHT, HOVER_RULE, SELECT_BORDER } from '@spectrum-charts/constants';
+import {
+  AREA_HOVER_POINT,
+  AREA_HOVER_RULE,
+  DEFAULT_FONT_COLOR,
+  DEFAULT_LABEL_FONT_WEIGHT,
+  HOVER_RULE,
+  SELECT_BORDER,
+} from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
 
 import { getPathFromIcon, getStrokeDashFromLineType } from '../specUtils';
 import { AxisSpecOptions, Position, ReferenceLineOptions, ReferenceLineSpecOptions } from '../types';
 import { isVerticalAxis } from './axisUtils';
+
+// distance from the line to the label for diagonal anchors (6px on each axis)
+const REFERENCE_LINE_LABEL_BADGE_OFFSET = 8.49;
+const REFERENCE_LINE_LABEL_BADGE_PADDING = 3;
+// widest the label can be and still fit beside the line (offset + badge padding)
+const REFERENCE_LINE_LABEL_LIMIT = `max(datum.x, width - datum.x) - ${6 + REFERENCE_LINE_LABEL_BADGE_PADDING}`;
 
 export const getReferenceLines = (axisOptions: AxisSpecOptions): ReferenceLineSpecOptions[] => {
   return axisOptions.referenceLines.map((referenceLine, index) =>
@@ -47,6 +62,7 @@ const applyReferenceLineOptionDefaults = (
   iconColor: options.iconColor || DEFAULT_FONT_COLOR,
   labelColor: options.labelColor || DEFAULT_FONT_COLOR,
   labelFontWeight: options.labelFontWeight ?? DEFAULT_LABEL_FONT_WEIGHT,
+  labelPosition: options.labelPosition ?? 'axis',
   layer: options.layer ?? 'front',
   name: `${axisOptions.name}ReferenceLine${index}`,
   lineType: options.lineType ?? 'solid',
@@ -233,9 +249,15 @@ export const getReferenceLineTextMark = (
   axisOptions: AxisSpecOptions,
   referenceLineOptions: ReferenceLineSpecOptions,
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
-): TextMark[] => {
-  const { label, name } = referenceLineOptions;
+): Mark[] => {
+  const { label, labelPosition, name } = referenceLineOptions;
   if (!label) return [];
+
+  if (labelPosition !== 'axis') {
+    return [
+      getReferenceLineInsideLabelMark(axisOptions, { ...referenceLineOptions, label, labelPosition }, positionEncoding),
+    ];
+  }
 
   return [
     {
@@ -250,6 +272,114 @@ export const getReferenceLineTextMark = (
 };
 
 /**
+ * Gets the label anchors for an inside label, in order of preference, based on the line orientation and label position.
+ * @param position
+ * @param labelPosition
+ * @returns LabelAnchor[]
+ */
+export const getReferenceLineInsideLabelAnchors = (
+  position: Position,
+  labelPosition: 'start' | 'end'
+): LabelAnchor[] => {
+  const isStart = labelPosition === 'start';
+  if (isVerticalAxis(position)) {
+    return isStart ? ['bottom-right', 'top-right'] : ['bottom-left', 'top-left'];
+  }
+  return isStart ? ['bottom-right', 'bottom-left'] : ['top-right', 'top-left'];
+};
+
+/**
+ * Gets a badged label placed inside the chart area at the start or end of the reference line.
+ * @param axisOptions
+ * @param referenceLineOptions
+ * @param positionEncoding
+ * @returns GroupMark
+ */
+export const getReferenceLineInsideLabelMark = (
+  { position }: AxisSpecOptions,
+  {
+    color,
+    colorScheme,
+    label,
+    labelFontWeight,
+    labelPosition,
+    name,
+  }: ReferenceLineSpecOptions & { label: string; labelPosition: 'start' | 'end' },
+  positionEncoding: ProductionRule<NumericValueRef> | SignalRef
+): GroupMark => {
+  const isStart = labelPosition === 'start';
+  const anchorPosition: SymbolEncodeEntry = isVerticalAxis(position)
+    ? { x: isStart ? { value: 0 } : { signal: 'width' }, y: positionEncoding as NumericValueRef }
+    : { x: positionEncoding as NumericValueRef, y: isStart ? { value: 0 } : { signal: 'height' } };
+  const badgeColor = getColorValue(color, colorScheme);
+  const textColors = [getColorValue('gray-50', colorScheme), getColorValue('gray-900', colorScheme)];
+  const anchors = getReferenceLineInsideLabelAnchors(position, labelPosition);
+
+  return {
+    name: `${name}_labelGroup`,
+    type: 'group',
+    interactive: false,
+    marks: [
+      {
+        name: `${name}_labelAnchor`,
+        type: 'symbol',
+        interactive: false,
+        encode: {
+          update: { ...anchorPosition, opacity: { value: 0 }, size: { value: 1 } },
+        },
+      },
+      {
+        name: `${name}_label`,
+        description: `${name}_label`,
+        type: 'text',
+        from: { data: `${name}_labelAnchor` },
+        zindex: 1,
+        interactive: false,
+        encode: {
+          enter: {
+            text: { value: label },
+            fontWeight: { value: labelFontWeight },
+            fill: [
+              { test: `contrast('${badgeColor}', '${textColors[0]}') >= 4.5`, value: textColors[0] },
+              { value: textColors[1] },
+            ],
+          },
+          update: {
+            limit: { signal: REFERENCE_LINE_LABEL_LIMIT },
+          },
+        },
+        transform: [
+          {
+            type: 'label',
+            size: { signal: '[width, height]' },
+            offset: anchors.map(() => REFERENCE_LINE_LABEL_BADGE_OFFSET),
+            anchor: anchors,
+          },
+        ],
+      },
+      {
+        name: `${name}_labelBadge`,
+        description: `${name}_labelBadge`,
+        type: 'rect',
+        from: { data: `${name}_label` },
+        interactive: false,
+        encode: {
+          update: {
+            cornerRadius: { value: 2 },
+            fill: { value: badgeColor },
+            opacity: { field: 'opacity' },
+            x: { signal: `datum.bounds.x1 - ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
+            x2: { signal: `datum.bounds.x2 + ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
+            y: { signal: `datum.bounds.y1 - ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
+            y2: { signal: `datum.bounds.y2 + ${REFERENCE_LINE_LABEL_BADGE_PADDING}` },
+          },
+        },
+      },
+    ],
+  };
+};
+
+/**
  * Calculates the vertical and horizontal offsets for reference line labels based on axis position and icon presence
  * @param position The axis position
  * @param icon Whether an icon is present
@@ -257,15 +387,18 @@ export const getReferenceLineTextMark = (
  */
 const calculateReferenceLineOffsets = (
   position: Position,
-  icon?: string
+  icon?: string,
+  ticks?: boolean
 ): { verticalOffset: number; horizontalOffset: number } => {
   const isVertical = isVerticalAxis(position);
-  let verticalOffset = isVertical ? 40 : 28;
+  // match tick label spacing: labelPadding (8), plus tickSize (8) when ticks are shown
+  const tickOffset = ticks && !icon ? 8 : 0;
+  let verticalOffset = isVertical ? 8 + tickOffset : 28;
   let horizontalOffset = isVertical ? 4 : 5;
 
   if (icon) {
     if (isVertical) {
-      verticalOffset += 25;
+      verticalOffset += 29;
     } else {
       verticalOffset += 20;
     }
@@ -288,11 +421,11 @@ const calculateReferenceLineOffsets = (
  * @returns updateEncoding
  */
 export const getReferenceLineLabelsEncoding = (
-  { position }: AxisSpecOptions,
+  { position, ticks }: AxisSpecOptions,
   { colorScheme, icon, label, labelColor, labelFontWeight }: ReferenceLineSpecOptions & { label: string },
   positionEncoding: ProductionRule<NumericValueRef> | SignalRef
 ): GuideEncodeEntry<TextEncodeEntry> => {
-  const { verticalOffset, horizontalOffset } = calculateReferenceLineOffsets(position, icon);
+  const { verticalOffset, horizontalOffset } = calculateReferenceLineOffsets(position, icon, ticks);
   const positionOptions = getAdditiveMarkPositionOptions(verticalOffset, positionEncoding, horizontalOffset);
 
   return {
@@ -329,8 +462,13 @@ export const getEncodedLabelBaselineAlign = (position: Position): EncodeEntry =>
         align: { value: 'center' },
       };
     case 'left':
+      return {
+        align: { value: 'right' },
+        baseline: { value: 'center' },
+      };
     case 'right':
       return {
+        align: { value: 'left' },
         baseline: { value: 'center' },
       };
   }

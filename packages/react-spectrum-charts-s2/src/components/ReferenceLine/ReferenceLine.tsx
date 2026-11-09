@@ -15,6 +15,10 @@ import { FC } from 'react';
 
 import { ReferenceLineProps } from '../../types/index.js';
 
+/**
+ * Draws a reference line at a value along its parent axis.
+ * @alpha
+ */
 const ReferenceLine: FC<ReferenceLineProps> = ({ value }) => {
   return null;
 };

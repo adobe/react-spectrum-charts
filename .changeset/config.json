@@ -9,6 +9,7 @@
     ],
     [
       "@spectrum-charts/core-s2",
+      "@spectrum-charts/docs-s2",
       "@spectrum-charts/react-spectrum-charts-s2",
       "@spectrum-charts/vega-spec-builder-s2"
     ]

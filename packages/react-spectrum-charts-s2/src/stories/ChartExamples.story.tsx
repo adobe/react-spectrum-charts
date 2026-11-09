@@ -31,6 +31,7 @@ import stackOverflowData from './data/stackOverflowTrends.json' with { type: 'js
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Examples',
+  tags: ['alpha'],
   component: Chart,
   parameters: { controls: { include: [] } },
 };

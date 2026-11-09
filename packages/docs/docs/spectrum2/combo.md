@@ -4,9 +4,11 @@ sidebar_position: 9
 
 # Combo (S2)
 
-:::note Pre-alpha component
-`Combo` is a [pre-alpha component](./pre-alpha) — it has no finalized Spectrum 2 design yet
-and is imported from the `pre-alpha` subpath.
+[<span className="badge badge--secondary">Lab</span>](./stages.md#lab)
+
+:::note Lab component
+`Combo` is a [lab component](./lab) — it has no finalized Spectrum 2 design yet
+and is imported from the `lab` subpath.
 :::
 
 The `Combo` component overlays a `Bar` mark and a `Line` mark in the same chart — for
@@ -16,7 +18,7 @@ logic those components use standalone, so all of their props are fully supported
 
 ```jsx
 import { Chart, Axis } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Combo } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 import { Bar, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 ```
 

@@ -19,13 +19,14 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../../Chart.js';
 import { Axis, ChartInspect, Legend } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
-import { Scatter, Trendline } from '../../../../pre-alpha/index.js';
+import { Scatter, Trendline } from '../../../../lab/index.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { ChartProps, TrendlineProps } from '../../../../types/index.js';
 import { characterData } from '../../../data/marioKartData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Trendline',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Features/Trendline',
+  tags: ['lab'],
   component: Trendline,
 };
 

@@ -16,13 +16,14 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart.js';
 import { Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Bullet } from '../../../pre-alpha/index.js';
+import { Bullet } from '../../../lab/index.js';
 import { basicBulletData } from '../../../storyShared/data/bulletData.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { BulletProps, ChartProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Bullet/Coverage/Title',
+  title: 'React Spectrum Charts 2/Lab/Bullet/Coverage/Title',
+  tags: ['lab'],
   component: Bullet,
 };
 

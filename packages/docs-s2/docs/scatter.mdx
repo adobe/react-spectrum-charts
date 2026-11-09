@@ -1,0 +1,331 @@
+---
+stage: lab
+sidebar_position: 9
+title: Scatter
+description: Scatter plots that show the relationship between two numeric values, with optional size, color, paths, labels, and trendlines.
+---
+
+import { PropsTable } from '@site/src/components/PropsTable';
+import { DataCode } from '@site/src/components/examples/DataCode';
+import {
+  ScatterAnnotationPlayground,
+  ScatterBlendPlayground,
+  ScatterClipPlayground,
+  ScatterColorPlayground,
+  ScatterContinuousLegendPlayground,
+  ScatterHiddenSeriesPlayground,
+  ScatterHighlightPlayground,
+  ScatterInteractionPlayground,
+  ScatterLegendPlayground,
+  ScatterOpacityPlayground,
+  ScatterOutlinePlayground,
+  ScatterPathPlayground,
+  ScatterPlayground,
+  ScatterSizePlayground,
+  ScatterStatesPlayground,
+  ScatterTimePlayground,
+  TrendlineAnnotationPlayground,
+  TrendlineExcludePlayground,
+  TrendlineInteractionPlayground,
+  TrendlineMovingAveragePlayground,
+  TrendlinePlayground,
+} from '@site/src/playgrounds/scatter';
+
+# Scatter
+
+<StageBadge />
+
+Scatter plots show how two numeric values relate. Each data point becomes a point positioned by
+its `dimension` (x) and `metric` (y) values. Color, size, opacity, and outline can each encode
+another field.
+
+<ScatterPlayground />
+
+`Scatter`, `ScatterAnnotation`, `ScatterPath`, `Trendline`, and `TrendlineAnnotation` are lab
+components. Import them from the `lab` subpath:
+
+```tsx
+import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter, Trendline } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+```
+
+## Data
+
+`data` goes on `Chart` as an array of objects, one per point. On `Scatter`, `dimension` names the
+field for the x position (default `x`) and `metric` names the field for the y position (default
+`value`). Most examples on this page use `scatterCampaignData`, one row per marketing campaign:
+
+<DataCode name="scatterCampaignData" />
+
+```tsx
+<Chart data={scatterCampaignData}>
+  <Axis position="left" grid title="Revenue ($K)" />
+  <Axis position="bottom" grid title="Spend ($K)" />
+  <Scatter dimension="spend" metric="revenue" color="channel" />
+  <Legend />
+</Chart>
+```
+
+Add `Axis` siblings to label the x and y scales. Both scales are linear and fit the data, so they
+don't have to start at 0. Use `range` on `Axis` to fix a scale's domain.
+
+### Time dimension
+
+To plot points over time, put timestamps (milliseconds) in the `dimension` field and set
+`dimensionScaleType="time"`. Pair it with `labelFormat="time"` and a `granularity` on the bottom
+`Axis`. With the default `linear` scale, the axis shows raw timestamps.
+
+<DataCode name="scatterSignupData" />
+
+<ScatterTimePlayground />
+
+### Empty and loading
+
+When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to
+show a spinner while data loads.
+
+<ScatterStatesPlayground />
+
+## Encodings
+
+`color`, `size`, `opacity`, `lineType`, `lineWidth`, and `stroke` each take either a field name in
+the data, which maps each value through a scale, or a static value like `{ value: 'L' }`.
+
+### Color
+
+By default every point uses one static color, `categorical-100`. Set `color` to a field name to
+color points by category; each value gets the next color in the chart's `colors` and an entry in
+the `Legend`. Use `{ value: 'gray-700' }` for a different static color.
+
+For a numeric field, set `colorScaleType="linear"` and pass a sequential scheme such as
+`sequentialViridis5` to `colors` on `Chart`. `Legend` then shows a gradient.
+
+<ScatterColorPlayground />
+
+### Size
+
+`size` sets the width of each point. It accepts `XS` (6px), `S` (8px), `M` (10px, default), `L`
+(12px), `XL` (16px), or a number of pixels.
+
+Set `size` to a numeric field to size points by value, as in a bubble chart. Sizes range linearly
+from the smallest to the largest value, between the two sizes in `symbolSizes` on `Chart` (default
+`['XS', 'XL']`). `Legend` shows a size legend for the field.
+
+<ScatterSizePlayground />
+
+### Opacity
+
+`opacity` sets point opacity from 0 to 1 (default `1`). Set it to a field name to give each value
+its own opacity. Opacities are evenly spaced unless you list them in `opacities` on `Chart`.
+
+<ScatterOpacityPlayground />
+
+### Outline
+
+Points have no outline by default (`lineWidth` is `0`). `lineWidth` takes `XS` (1px), `S` (1.5px),
+`M` (2px), `L` (3px), `XL` (4px), or a number of pixels. `lineType` sets the outline dash pattern,
+and `stroke` sets its color, which defaults to the point's `color`. A translucent fill with a solid
+outline keeps overlapping points readable.
+
+Each of these can also be a field name. A `lineWidth` field maps through `lineWidths` on `Chart`, a
+`lineType` field through `lineTypes`, and a `stroke` field through the color scale.
+
+<ScatterOutlinePlayground />
+
+:::note
+`lineWidths` defaults to `['M']`, so a `lineWidth` field gives every point the same 2px outline
+until you set `lineWidths` on `Chart`.
+:::
+
+### Blend
+
+Overlapping points blend so dense areas look darker: `multiply` in light mode and `screen` in dark
+mode. Set `blend="normal"` to turn blending off so later points cover earlier ones, or pass another
+[Vega blend mode](https://vega.github.io/vega/docs/marks/#blend).
+
+<ScatterBlendPlayground />
+
+### Clip
+
+When an `Axis` `range` is smaller than the data, points outside the range still draw past the plot
+edge. Set `clip` to hide them.
+
+<ScatterClipPlayground />
+
+## ScatterPath
+
+`ScatterPath` connects points that share the same values, in data order, to show how something
+moved over time. By default it groups points by the fields used for `color`, `size`, `opacity`, and
+`lineType`; set `groupBy` to a list of fields to group differently.
+
+Paths draw behind the points in `gray-500` at 50% opacity. A static `pathWidth` takes a line width
+from `XS` (1px) to `XL` (4px), defaulting to `M` (2px), or a number of pixels. A numeric field varies
+the width from point to point, scaled between the chart's `symbolSizes`.
+
+<DataCode name="scatterTrajectoryData" />
+
+<ScatterPathPlayground />
+
+## ScatterAnnotation
+
+`ScatterAnnotation` labels each point. `textKey` names the field to show (default: the scatter's
+`metric`).
+
+`anchor` sets where the label sits relative to its point. With a list, each position is tried in
+order until one fits inside the chart without overlapping another label or point. Labels that
+don't fit anywhere are hidden. The default tries `right`, `top`, `bottom`, then `left`.
+
+<ScatterAnnotationPlayground />
+
+## Trendline
+
+`Trendline` draws a statistical trend through the scatter's points, one per color series. Its
+`method` sets the calculation (default `linear`):
+
+- `average` and `median` draw a flat line at that value.
+- `linear`, `quadratic`, `polynomial-N` (for example `polynomial-3`), `exponential`,
+  `logarithmic`, and `power` fit a regression curve.
+- `movingAverage-N` averages each point with the N - 1 points before it.
+
+Trendlines are dashed, `M` width, and the color of their series. `lineType`, `lineWidth`,
+`opacity`, and `color` change that. `orientation="vertical"` calculates the trend of the dimension
+across the metric instead, for example a vertical line at the average x.
+
+`dimensionRange` limits the calculation to points between two dimension values; `null` leaves a
+side unbounded. `dimensionExtent` sets how far the line draws and defaults to `dimensionRange`.
+Use `'domain'` to extend the line to the edge of the axis.
+
+<TrendlinePlayground />
+
+### Moving averages
+
+Moving averages work best on evenly spaced data like a time series. Set `hidePartialWindows` to
+hide the first points, which average fewer than N values.
+
+<TrendlineMovingAveragePlayground />
+
+### Excluding points
+
+`excludeDataKeys` leaves out rows where any of the listed fields is truthy, so known outliers don't
+skew the trend. The points still draw.
+
+<DataCode name="scatterOutlierData" />
+
+<TrendlineExcludePlayground />
+
+### Trendline interaction
+
+Add `ChartInspect` as a child of `Trendline` to show its value on hover. The hovered datum has the
+trend's value in `rscTrendlineValue`. `highlightRawPoint` also highlights the data point at the
+hovered position.
+
+`displayOnHover` hides the trendline until a point in its series is hovered. It needs a
+`ChartInspect` on the `Scatter`.
+
+<TrendlineInteractionPlayground />
+
+## TrendlineAnnotation
+
+`TrendlineAnnotation` labels a trendline with its value. `dimensionValue` sets where along the
+line: `end` (default), `start`, or a dimension value. `numberFormat` takes a
+[d3-format](https://d3js.org/d3-format) specifier and follows the chart's `locale`; `prefix` adds
+text before the value. `badge` draws the label in a filled badge in the trendline's color.
+
+<TrendlineAnnotationPlayground />
+
+:::note
+`TrendlineAnnotation` only works with the `average` and `median` methods. With regression or
+moving-average methods the chart fails to render.
+:::
+
+## Legend
+
+Add `Legend` as a sibling of `Scatter` to list its series. The plot shrinks to make room for it.
+
+- `highlight` highlights a series, including its trendline and paths, while its entry is hovered.
+- `isToggleable` lets users click an entry to hide or show its series. To start with series hidden,
+  set `defaultHiddenSeries`.
+- `legendLabels` replaces the label shown for a series.
+
+When a scatter encodes several fields, such as `color` and `opacity`, one legend lists every
+combination.
+
+<ScatterLegendPlayground />
+
+### Size, gradient, and opacity legends
+
+A numeric `size` field gets a size legend, listed after any category entries, and a linear
+`color` field gets a gradient legend. When points share one color and `opacity` is a
+field, set `opacity` on `Legend` to that field so the legend symbols match.
+
+<ScatterContinuousLegendPlayground />
+
+### Hiding series
+
+`hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control.
+Their trendlines hide too.
+
+<ScatterHiddenSeriesPlayground />
+
+## Interaction
+
+### ChartInspect and ChartPopover
+
+Add `ChartInspect` to show details on hover and `ChartPopover` to show details on click. Pass a
+function as children to render content from the hovered point's datum; `Scatter` has no default
+content.
+
+Hovering highlights the nearest point and fades the rest. `highlightBy` on `ChartInspect`
+highlights more: `series` highlights the hovered point's series, `dimension` highlights points
+with the same x value, and a list of fields highlights points that share those values.
+`excludeDataKeys` skips rows where any of the listed fields is truthy.
+
+`ChartPopover` rings the clicked point. `rightClick` opens it on right-click instead.
+
+`tooltipAnchor="mark"` on `Chart` places inspect content next to the hovered point instead of
+following the cursor; `tooltipPlacement` picks the side.
+
+<ScatterInteractionPlayground />
+
+:::note
+`Scatter` doesn't support `onClick`, `onContextMenu`, `onMouseOver`, or `onMouseOut` yet.
+:::
+
+### Highlighting
+
+`highlightedSeries` on `Chart` highlights a series from outside the chart, for example from a
+table row. `highlightedItem` does the same by row ID and can take a list; set `idKey` on `Chart`
+to the field that uniquely identifies each row. `Legend` with `highlight` highlights a series when
+its entry is hovered.
+
+<ScatterHighlightPlayground />
+
+## Animation
+
+`Scatter` doesn't animate yet: `animationTypes` on `Chart` has no effect on points, paths, or
+trendlines.
+
+## API
+
+### Scatter
+
+`name` identifies the scatter's marks and signals in the rendered Vega spec. It defaults to
+`scatter0`, `scatter1`, and so on.
+
+<PropsTable component="Scatter" />
+
+### ScatterPath
+
+<PropsTable component="ScatterPath" />
+
+### ScatterAnnotation
+
+<PropsTable component="ScatterAnnotation" />
+
+### Trendline
+
+<PropsTable component="Trendline" />
+
+### TrendlineAnnotation
+
+<PropsTable component="TrendlineAnnotation" />

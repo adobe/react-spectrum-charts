@@ -1,0 +1,7 @@
+{
+  "lab": { "label": "Lab", "variant": "neutral" },
+  "alpha": { "label": "Alpha", "variant": "informative" },
+  "beta": { "label": "Beta", "variant": "informative" },
+  "rc": { "label": "RC", "variant": "positive" },
+  "stable": { "label": "Stable", "variant": null }
+}

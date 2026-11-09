@@ -13,8 +13,7 @@ import { createElement } from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { Bar, ChartPopover } from '../components/index.js';
-import { Donut } from '../pre-alpha/index.js';
+import { Bar, ChartPopover, Donut } from '../components/index.js';
 import { ChartChildElement } from '../types/index.js';
 import usePopovers from './usePopovers.js';
 

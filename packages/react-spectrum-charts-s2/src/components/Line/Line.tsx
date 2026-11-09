@@ -17,6 +17,10 @@ import { DEFAULT_INTERACTION_MODE, DEFAULT_METRIC, DEFAULT_TIME_DIMENSION } from
 
 import { LineProps } from '../../types/index.js';
 
+/**
+ * Renders a line for each series in the chart.
+ * @alpha
+ */
 const Line: FC<LineProps> = ({
   name = 'line0',
   dimension = DEFAULT_TIME_DIMENSION,

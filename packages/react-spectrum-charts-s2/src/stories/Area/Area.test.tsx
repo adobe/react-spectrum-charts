@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Area } from '../../pre-alpha/components/Area/index.js';
+import { Area } from '../../lab/components/Area/index.js';
 import { findChart, render } from '../../test-utils/index.js';
 import { Basic } from './Features/AreaFeatures.story.js';
 

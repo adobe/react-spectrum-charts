@@ -16,6 +16,10 @@ import { FC } from 'react';
 import { LinePointAnnotationProps } from '../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Adds a text annotation to points on its parent line.
+ * @alpha
+ */
 const LinePointAnnotation: FC<LinePointAnnotationProps> = ({
   anchor = ['right', 'top', 'bottom', 'left'],
   matchLineColor = false,

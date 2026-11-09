@@ -125,17 +125,12 @@ export const HOVER_ANIM_STATE_DATA = 'hoverAnimStateData';
 export const HOVER_FRACTION_DATA = 'hoverFractionData';
 /** Series-level (max) aggregate of a per-item-animated mark's hoverFractionData, for ungrouped legends that need one fraction per series */
 export const HOVER_SERIES_FRACTION_DATA = 'hoverSeriesFractionData';
-/** Draw-in animation: the already-drawn portion, the single lerping tip point, and their merge (source the line mark renders from) */
-export const DRAW_IN_PREV_DATA = 'drawInPrev'; // suffix: ${name}_drawInPrev
-export const DRAW_IN_TIP_DATA = 'drawInTip'; // suffix: ${name}_drawInTip
-export const DRAW_IN_LERP_DATA = 'drawInLerp'; // suffix: ${name}_drawInLerp
-/** Point-scale-only: derived source carrying each row's ordinal index (see DRAW_IN_POINT_INDEX_FIELD) */
-export const DRAW_IN_POINT_INDEX_DATA = 'drawInIndexed'; // suffix: ${name}_drawInIndexed
 
 // vega data field names
 export const DIMENSION_FIELD = 'rscDimensionField';
 export const GROUP_DATA = 'rscGroupData';
 export const MARK_ID = 'rscMarkId';
+export const FIRST_MARK_ID = 'rscFirstMarkId';
 export const GROUP_ID = 'rscGroupId';
 export const SERIES_ID = 'rscSeriesId';
 /** Composite per-bar hover-animation identity: dimension + series (+ trellis) values joined, since MARK_ID is runtime-assigned and not JS-computable ahead of time */
@@ -143,19 +138,6 @@ export const BAR_ANIM_ID = 'rscBarAnimId';
 export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
-/** Numeric-ms formula field added to `table` for time-scale lines so draw-in cutoff/tween math can compare raw numbers */
-export const DRAW_IN_TIME_MS_FIELD = 'rscDrawInTimeMs';
-/** Lead-window fields on filteredTable: each row's next point's dimension/metric value */
-export const DRAW_IN_NEXT_DIM_FIELD = 'drawInNextDimValue'; // suffix: ${name}_drawInNextDimValue
-export const DRAW_IN_NEXT_METRIC_FIELD = 'drawInNextMetricValue'; // suffix: ${name}_drawInNextMetricValue
-/** Point-scale-only: this row's ordinal index within the x scale's domain — a numeric sort key standing
- *  in for the (usually non-numeric) category value, since draw-in's cutoff/tween math needs raw numbers */
-export const DRAW_IN_POINT_INDEX_FIELD = 'drawInPointIndex'; // suffix: ${name}_drawInPointIndex
-/** Point-scale-only: next point's actual category value (for scale lookup), separate from
- *  DRAW_IN_NEXT_DIM_FIELD (next ordinal index, for cutoff/tween math) since the two diverge for point scales */
-export const DRAW_IN_NEXT_CATEGORY_FIELD = 'drawInNextCategoryValue'; // suffix: ${name}_drawInNextCategoryValue
-/** Flag marking the tip row within DRAW_IN_TIP_DATA/DRAW_IN_LERP_DATA */
-export const DRAW_IN_TIP_FLAG = 'isDrawInTip';
 
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
@@ -169,16 +151,20 @@ export const SELECTED_GROUP = 'selectedGroup'; // data point
 export const FIRST_RSC_SERIES_ID = 'firstRscSeriesId'; // first series for dual y-axis
 export const LAST_RSC_SERIES_ID = 'lastRscSeriesId'; // last series for dual y-axis
 export const ANIMATION_TIMER = 'animationTimer'; // main animation timer signal
+export const ANIMATION_ACTIVE = 'animationActive'; // true while any animation (or its final grace tick) still needs timer ticks
 export const HOVER_TARGETS = 'hoverTargets'; // hover animation target values
+export const HOVER_ANIM_STATE_ROWS = 'hoverAnimStateRows'; // mirrors hoverAnimStateData rows for the per-item triggers
+export const HOVER_FRACTION_ROWS = 'hoverFractionRows'; // mirrors hoverFractionData rows for the per-item triggers
 export const HOVER_ANIMATING = 'hoverAnimating'; // hover animation state signal
 export const HOVER_ACTIVE_TIMER = 'hoverActiveTimer'; // animation timer to run only when hoverAnimating is true
 export const HOVER_IDLE_TICKS = 'hoverIdleTicks'; // gates hoverActiveTimer's one-tick grace period after hoverAnimating goes false
-export const DRAW_IN_START = 'drawInStart'; // mount timestamp, captured once
+export const DRAW_IN_START = 'drawInStart'; // timestamp of the first animation timer tick, captured once
+export const DRAW_IN_DURATION = 'drawInDuration'; // ms the chart's draw-in lasts: the longest of its marks' durations
 export const DRAW_IN_ANIM_T = 'drawInAnimT'; // linear 0->1 progress, throttled timer
-export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // eased (quadratic in-out) progress
-export const DRAW_IN_DOMAIN_MIN = 'drawInDomainMin'; // draw-in animation: dimension scale domain min, captured once at mount
-export const DRAW_IN_DOMAIN_MAX = 'drawInDomainMax'; // draw-in animation: dimension scale domain max, captured once at mount
+export const DRAW_IN_ANIM_T_EASED = 'drawInAnimTEased'; // progress eased with S2_EASE_IN_OUT
 export const DRAW_IN_ANIM_CUTOFF = 'drawInAnimCutoff'; // draw-in animation: sweeping cutoff position, in domain units
+export const DRAW_IN_DONE = 'drawInDone'; // true once draw-in finishes; flips once so dependents re-encode once
+export const DRAW_IN_CLIP_X = 'drawInClipX'; // suffix: ${name}_drawInClipX — line draw-in clip edge, in pixels
 export const FOCUSED_ITEM = 'focusedItem'; // data point focused via keyboard navigation (data-navigator)
 export const FOCUSED_REGION = 'focusedRegion'; // chart region focused via keyboard navigation (data-navigator)
 export const FOCUSED_DIMENSION = 'focusedDimension'; // dimension group (e.g. a whole stack) focused via keyboard navigation
@@ -209,14 +195,18 @@ export const TRELLIS_PADDING = 0.2;
 // animation constants
 /** Individual animation systems that can be toggled on via the `animationTypes` chart prop. */
 export type AnimationType = 'hover' | 'drawIn';
-/** Default `animationTypes` value: hover animations on, draw-in animations off. */
-export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover'];
+/** Default `animationTypes` value: every animation type on. */
+export const DEFAULT_ANIMATION_TYPES: AnimationType[] = ['hover', 'drawIn'];
 
 // hover animation constants
 /** Timer signal update interval in ms. Caps timer signal update at ~30fps. */
 export const ANIMATION_THROTTLE = 33;
+/** Minimum ms between host animation ticker frames. 0 = native display rate; set to ANIMATION_THROTTLE for ~30fps. */
+export const ANIMATION_MIN_FRAME_INTERVAL = 0;
+/** Per-frame time budget (ms) for ticking animated charts; charts past the budget tick on the next frame */
+export const ANIMATION_FRAME_BUDGET_MS = 8;
 /** Time in ms it takes to animate between hover states (hovered -> unhovered etc.) */
-export const ANIMATION_HOVER_SPEED = 250;
+export const ANIMATION_HOVER_SPEED = 150;
 /**
  * The resting hover-animation target when nothing is hovered. The fraction is an "emphasis level":
  * 0 = deemphasized (something else hovered), this = neutral (nothing hovered), 1 = emphasized (this hovered).
@@ -225,15 +215,44 @@ export const ANIMATION_HOVER_SPEED = 250;
  */
 export const HOVER_NEUTRAL_TARGET = 0.5;
 
+/** Cubic-bezier control points (x1, y1, x2, y2) for an animation easing curve. */
+export type CubicBezierEasing = [number, number, number, number];
+/** Spectrum 2 ease-in-out curve. */
+export const S2_EASE_IN_OUT: CubicBezierEasing = [0.45, 0, 0.4, 1];
+/** Spectrum 2 ease-out curve. */
+export const S2_EASE_OUT: CubicBezierEasing = [0, 0, 0.4, 1];
+
 // draw-in animation constants
-/** Time in ms it takes to animate the draw-in animation */
-export const DRAW_IN_ANIMATION_DURATION_MS = 1000;
+/** Line draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_SWEEP_DURATION_MS = 850;
+/** Bar draw-in duration in ms; the growth is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_GROW_DURATION_MS = 700;
+/** Donut draw-in duration in ms; the sweep is eased with S2_EASE_IN_OUT. */
+export const DRAW_IN_DONUT_DURATION_MS = 750;
+/** Consecutive on-time frames the ticker waits for before a fresh draw-in starts, so it doesn't start during mount work. */
+export const DRAW_IN_STEADY_FRAMES = 3;
+/** Longest frame (ms) that counts as on time for DRAW_IN_STEADY_FRAMES. */
+export const DRAW_IN_STEADY_FRAME_MS = 20;
+/** Longest a fresh draw-in waits (ms) for steady frames before starting anyway. */
+export const DRAW_IN_MAX_HOLD_MS = 300;
+/** Duration (ms) of the fade-in of a chart's first paint when it draws in. */
+export const DRAW_IN_PAINT_FADE_MS = 150;
+/** Pixels the line draw-in clip extends past the plot so strokes and points at the edges aren't cut off. */
+export const DRAW_IN_CLIP_OVERFLOW = 1000;
+/** Duration of the linear fade-in for labels after their own mark finishes drawing. */
+export const DRAW_IN_LABEL_FADE_DURATION_MS = 50;
 
 // donut constants
-/** Calculation for donut radius, subtract 2 pixels to make room for the selection ring */
-export const DONUT_RADIUS = '(min(width, height) / 2 - 2)';
-/** Calculation for a semicircle donut's radius - the arc still spans the full width from center (so it's bounded by width / 2, same as a full circle), but can use the full height since only the top half sweeps, unlike the full-circle radius which halves it */
-export const DONUT_SEMICIRCLE_RADIUS = '(min(width / 2, height) - 2)';
+/** Base inset (px) around a donut without segment labels. */
+export const DONUT_BASE_PADDING = 10;
+/** Radius of a donut without segment labels. */
+export const DONUT_RADIUS = `(min(width, height) / 2 - ${DONUT_BASE_PADDING})`;
+/** Bottom inset (px) of a semicircle donut, wide enough to keep the widest slice stroke inside the plot. */
+export const DONUT_SEMICIRCLE_BOTTOM_INSET = 2;
+/** Radius of a bottom-aligned semicircle donut with top and side insets. */
+export const DONUT_SEMICIRCLE_RADIUS = `(min(width / 2, height - ${DONUT_SEMICIRCLE_BOTTOM_INSET}) - ${DONUT_BASE_PADDING})`;
+/** Base radius used when reserving space for segment labels. */
+export const DONUT_LABELED_RADIUS = '(min(width, height) / 2 - 2)';
 /** Fill color of a boolean donut's secondary segment */
 export const DONUT_BOOLEAN_SECONDARY_COLOR = 'gray-400';
 /** Min arc angle radians to display a segment label. If the arc angle is less than this, the segment label will be hidden. */
@@ -244,14 +263,14 @@ export const DONUT_SUMMARY_MIN_RADIUS = 45;
 export const DEFAULT_HOLE_RATIO = 0.85;
 /**
  * S2 donut named size-tier (XS/S/M/L/XL) minimum-diameter cutpoints (the S/M/L/XL tiers' own named
- * diameters - 120/160/200/400), keyed off the donut's outer diameter. A diameter is "sticky" at a
+ * diameters - 120/200/280/400), keyed off the donut's outer diameter. A diameter is "sticky" at a
  * tier from that tier's own minimum up to (not including) the next tier's minimum - e.g. a diameter
  * of 121px is S and stays S up to 159px, not just at values nearest 120. Shared by every donut
  * feature that scales by size tier (ring width, slice gap, donut summary, direct/advanced labels).
  */
-export const DONUT_SIZE_TIER_CUTPOINTS = [120, 160, 200, 400];
+export const DONUT_SIZE_TIER_CUTPOINTS = [120, 200, 280, 400];
 /** S2 donut fixed ring (hole) width per named size tier (XS/S/M/L/XL), used only when holeRatio is left at DEFAULT_HOLE_RATIO */
-export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 24];
+export const DONUT_RING_WIDTHS = [16, 18, 20, 22, 40];
 /** S2 donut gap between adjacent segments per named size tier (XS/S/M/L/XL), per chart.donut.size.slice-gap */
 export const DONUT_SLICE_GAPS = [1, 2, 2, 2, 2];
 /**
@@ -269,6 +288,8 @@ export const DONUT_DIRECT_LABEL_NAME_FONT_SIZES = [7.5, 9, 10.5, 12, 15];
 export const DONUT_DIRECT_LABEL_VALUE_FONT_SIZES = [10, 12, 14, 16, 20];
 /** Gap (px) between the ring's outer edge and a direct/advanced label's rendered bounding box per named size tier (XS/S/M/L/XL) */
 export const DONUT_LABEL_RING_GAPS = [5, 5, 10, 10, 15];
+/** Minimum horizontal inset (px) between segment labels and the chart edge. */
+export const DONUT_LABEL_EDGE_PADDING = 10;
 export const DONUT_LABEL_COLLISION_GAP = 4;
 /** Font weight for donut direct-label segment name text */
 export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
@@ -276,13 +297,15 @@ export const DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT = 400;
 export const DONUT_DIRECT_LABEL_VALUE_FONT_WEIGHT = 700;
 /** Minimum space reserved for segment label text on each side of an S2 donut, as a fraction of its radius (also caps a rich label's height) */
 export const DONUT_LABEL_MIN_SPACE_RATIO = 0.6;
-/** S2 labeled-donut chart size (min of width/height) where each tier starts, i.e. where the donut reaches the cutpoint with that tier's gap (206/280/344/674) */
+/** S2 labeled-donut chart size (min of width/height) where each tier starts, i.e. where the donut reaches the cutpoint with that tier's gap (206/344/472/674) */
 export const DONUT_SIZE_TIER_LABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map(
   // donut + widest labels on both sides, + the tier's label gap on both sides, + 2px padding on both sides
   (cutpoint, index) => cutpoint * (1 + DONUT_LABEL_MIN_SPACE_RATIO) + 2 * DONUT_LABEL_RING_GAPS[index + 1] + 4
 );
-/** S2 unlabeled-donut chart size where each tier starts: the cutpoint plus DONUT_RADIUS's 2px padding on each side (124/164/204/404) */
-export const DONUT_SIZE_TIER_UNLABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map((cutpoint) => cutpoint + 4);
+/** Chart size where each unlabeled donut tier starts, including the base inset on both sides. */
+export const DONUT_SIZE_TIER_UNLABELED_CHART_SIZES = DONUT_SIZE_TIER_CUTPOINTS.map(
+  (cutpoint) => cutpoint + 2 * DONUT_BASE_PADDING
+);
 /** S2 donut advanced-label segment-name font size per named size tier (XS/S/M/L/XL) */
 export const DONUT_ADVANCED_LABEL_NAME_FONT_SIZES = [8, 10, 12, 14, 16];
 /** S2 donut advanced-label value/% font size per named size tier (XS/S/M/L/XL) */

@@ -22,6 +22,7 @@ import { setArgTypes, setControls } from '../../lineStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Direct Label',
+  tags: ['alpha'],
   component: LineDirectLabel,
 };
 

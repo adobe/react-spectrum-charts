@@ -9,20 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useEffect, useMemo, useRef } from 'react';
 
-import { Config, Padding, Renderers, Spec, View, expressionFunction } from 'vega';
-import embed from 'vega-embed';
-import { Options as TooltipOptions } from 'vega-tooltip';
+import { Config, Padding, Renderers, Spec, TooltipHandler, View, expressionFunction } from 'vega';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
-import { getLocale } from '@spectrum-charts/core-s2/locales';
-import { jsonClone } from '@spectrum-charts/core-s2/utils';
-import { ChartData, UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useDebugSpec } from './hooks/useDebugSpec.js';
 import { extractValues, isVegaData } from './hooks/useSpec.js';
 import { ChartProps } from './types/index.js';
+import { ViewHost, createViewHost } from './viewHost/index.js';
 
 // Register a custom expression function that returns the full container width (including axis space).
 // `view._viewWidth` is the container width minus spec-level padding; adding padding back gives the
@@ -42,17 +39,6 @@ if (typeof window !== 'undefined') {
   });
 }
 
-/**
- * Resizes an existing Vega view without recreating it.
- */
-export const resizeView = (view: View | undefined, width: number, height: number): void => {
-  if (view && width && height) {
-    // Two passes: first updates width/height signals; second lets Vega re-settle layout
-    // after dependent changes (e.g. legend column count → legend height → plot area height).
-    view.width(width).height(height).resize().runAsync().then(() => view.runAsync());
-  }
-};
-
 export interface VegaChartProps {
   config: Config;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,7 +51,8 @@ export interface VegaChartProps {
   renderer: Renderers;
   signals?: Record<string, unknown>;
   spec: Spec;
-  tooltip: TooltipOptions;
+  /** Set at embed, before the renderer exists; changing it on a live view makes Vega rebuild the renderer */
+  tooltip: TooltipHandler;
   width: number;
 }
 
@@ -84,17 +71,13 @@ export const VegaChart: FC<VegaChartProps> = ({
   width,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const chartView = useRef<View | undefined>(undefined);
-  const hasMounted = useRef(false);
-  // AN-445759: flipped to true when dimensions become valid post-mount with no existing view,
-  // forcing the embed effect to run even though width/height are not in its deps.
-  const [needsInitEmbed, setNeedsInitEmbed] = useState(false);
-
-  const { number: numberLocale, time: timeLocale } = useMemo(() => getLocale(locale), [locale]);
+  const host = useRef<ViewHost | undefined>(undefined);
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
-    const clonedData = jsonClone(data);
+    // JSON round-trip on purpose: Dates must become strings, as before
+    // eslint-disable-next-line no-restricted-syntax
+    const clonedData = JSON.parse(JSON.stringify(data));
 
     // We received a full Vega data array with potentially multiple dataset objects
     if (isVegaData(clonedData)) {
@@ -107,72 +90,30 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   useDebugSpec(debug, spec, chartData, width, height, config);
 
-  // Handle resize without recreating the view (prevents axis image flickering).
-  // AN-445759: skip on initial mount — the embed effect handles that render. After mount, if
-  // dimensions become valid with no existing view (started at 0), trigger the embed via needsInitEmbed.
   useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
+    if (!containerRef.current) {
       return;
     }
-    if (width && height && !chartView.current) {
-      setNeedsInitEmbed(true);
-    } else {
-      resizeView(chartView.current, width, height);
-    }
-  }, [width, height]);
-
-  useEffect(() => {
-    if (width && height && containerRef.current) {
-      const specCopy = jsonClone(spec);
-      const tableData = specCopy.data?.find((d) => d.name === TABLE);
-      if (tableData && 'values' in tableData) {
-        tableData.values = chartData.table;
-      }
-      if (signals) {
-        specCopy.signals = specCopy.signals?.map((signal) => {
-          if (signal.name in signals && signals[signal.name] !== undefined && 'value' in signal) {
-            signal.value = signals[signal.name];
-          }
-          return signal;
-        });
-      }
-      const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
-      const { patches } = (specCopy.usermeta as UserMeta | undefined) ?? {};
-      const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
-
-      embed(containerRef.current, specCopy, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => {
-        chartView.current = view;
-        onNewView(view);
-        view.resize();
-        view.runAsync();
-        // One additional render to settle all resize calculations
-        setTimeout(() => view.runAsync(), 0);
-      });
-    }
+    const created = createViewHost(containerRef.current);
+    host.current = created;
     return () => {
-      // destroy the chart on unmount
-      if (chartView.current) {
-        chartView.current.finalize();
-        chartView.current = undefined;
-      }
+      created.destroy();
+      host.current = undefined;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    chartData.table,
-    config,
-    data,
-    needsInitEmbed,
-    numberLocale,
-    timeLocale,
-    onNewView,
-    padding,
-    renderer,
-    signals,
-    spec,
-    tooltip,
-    locale,
-  ]);
+  }, []);
+
+  // the host compares what changed and rebuilds the view, updates it in place, resizes it or does nothing
+  useEffect(() => {
+    host.current?.update({
+      environment: { config, locale, padding, renderer, tooltip },
+      height,
+      onNewView,
+      signals,
+      spec,
+      table: chartData.table,
+      width,
+    });
+  }, [chartData.table, config, height, locale, onNewView, padding, renderer, signals, spec, tooltip, width]);
 
   return <div ref={containerRef} className="rsc"></div>;
 };

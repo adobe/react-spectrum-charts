@@ -50,7 +50,7 @@ import {
   DIRECT_LABEL_FONT_SIZE_M,
   DIRECT_LABEL_FONT_SIZE_L,
 } from '@spectrum-charts/core-s2/constants';
-import { colorSchemes, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
+import { colorSchemes, getColorSchemeColors, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { jsonClone } from '@spectrum-charts/core-s2/utils';
 
 import { addArea } from './area/areaSpecBuilder.js';
@@ -59,10 +59,11 @@ import { addBar } from './bar/barSpecBuilder.js';
 import { addBullet } from './bullet/bulletSpecBuilder.js';
 import { addCombo } from './combo/comboSpecBuilder.js';
 import { getSeriesIdTransform } from './data/dataUtils.js';
+import { addDonutLegendLayout } from './donut/donutLegendLayoutUtils.js';
 import { addDonut } from './donut/donutSpecBuilder.js';
 import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils.js';
 import { addLegend } from './legend/legendSpecBuilder.js';
-import { addLine } from './line/lineSpecBuilder.js';
+import { addLine, getLineDomainData } from './line/lineSpecBuilder.js';
 import { getOrdinalScale } from './scale/scaleSpecBuilder.js';
 import { addScatter } from './scatter/scatterSpecBuilder.js';
 import { getGenericValueSignal } from './signal/signalSpecBuilder.js';
@@ -84,6 +85,7 @@ import {
   ColorScale,
   ColorScheme,
   Colors,
+  DonutOptions,
   LineType,
   LineTypes,
   LineWidth,
@@ -108,7 +110,7 @@ export function buildSpec({
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
   chartHeight,
   chartWidth,
-  colors = 'categorical12',
+  colors = 's2Categorical20',
   colorScheme = DEFAULT_COLOR_SCHEME,
   data,
   description,
@@ -180,13 +182,13 @@ export function buildSpec({
         return addBullet(acc, { ...mark, ...specOptions, index: bulletCount });
       case 'combo':
         comboCount++;
-        return addCombo(acc, { ...mark, ...specOptions, index: comboCount });
+        return addCombo(acc, { ...mark, ...specOptions, axes, index: comboCount });
       case 'donut':
         donutCount++;
         return addDonut(acc, { ...mark, ...specOptions, index: donutCount, data });
       case 'line':
         lineCount++;
-        return addLine(acc, { ...mark, ...specOptions, index: lineCount, data });
+        return addLine(acc, { ...mark, ...specOptions, axes, index: lineCount, data });
       case 'scatter':
         scatterCount++;
         return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
@@ -226,19 +228,31 @@ export function buildSpec({
     spec = addTitle(spec, titles[0]);
   }
 
+  const donut = marks.find((mark): mark is DonutOptions => mark.markType === 'donut');
+  spec = addDonutLegendLayout(spec, donut, legends);
+
   // copy the spec so we don't mutate the original
   spec = jsonClone(spec);
-  spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales) });
+  spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales), idKey });
 
   // sibling axes paint in array order, so move the diverging axis last or a later grid axis paints over its labels
   if (spec.usermeta?.divergingBarMarks?.length && spec.axes) {
     spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
   }
 
-  // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
-  if (highlightedSeries) {
-    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
-    setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
+  // controlled highlightedSeries rules are always present so highlighting updates through signals alone
+  setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
+  setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
+
+  // Fit Line axes to visible series, falling back to all data only when every series is hidden.
+  if (marks.length && marks.every(({ markType }) => markType === 'line')) {
+    const domainData = getLineDomainData('lineDomainTable');
+    spec.data = [...(spec.data ?? []), domainData];
+    for (const scale of spec.scales ?? []) {
+      if (scale.domain && 'data' in scale.domain && scale.domain.data === FILTERED_TABLE) {
+        scale.domain.data = domainData.name;
+      }
+    }
   }
 
   // clear out all scales that don't have any fields on the domain
@@ -464,7 +478,7 @@ function getColors(colors: Colors, colorScheme: ColorScheme): string[] {
   if (Array.isArray(colors)) {
     return colors.map((color: string) => getS2ColorValue(color, colorScheme));
   }
-  return colorSchemes[colors];
+  return getColorSchemeColors(colors, colorScheme);
 }
 
 function getStrokeDashesFromLineTypes(lineTypes: LineType[]): number[][] {
@@ -478,14 +492,14 @@ function getPathsFromSymbolShapes(symbolShapes: ChartSymbolShape[]) {
 /**
  * Adds a formula transform to the TABLE data that combines all the facets into a single key
  */
-export const addData = produce<Data[], [{ facets: string[] }]>((data, { facets }) => {
+export const addData = produce<Data[], [{ facets: string[]; idKey?: string }]>((data, { facets, idKey = MARK_ID }) => {
   data.splice(2, 0, {
     name: CONTROLLED_HIGHLIGHTED_TABLE,
     source: FILTERED_TABLE,
     transform: [
       {
         type: 'filter',
-        expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${MARK_ID}) > -1`,
+        expr: `isArray(${CONTROLLED_HIGHLIGHTED_ITEM}) && indexof(${CONTROLLED_HIGHLIGHTED_ITEM}, datum.${idKey}) > -1`,
       },
     ],
   });

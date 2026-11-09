@@ -86,6 +86,7 @@ interface BarPlaygroundArgs extends BarProps, PlaygroundInspectArgs, PlaygroundP
 
 export default {
   title: 'React Spectrum Charts 2/Bar/Playground',
+  tags: ['alpha'],
   component: Bar,
   argTypes: {
     ...chartArgTypes,

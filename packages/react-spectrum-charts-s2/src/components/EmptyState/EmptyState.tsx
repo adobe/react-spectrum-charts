@@ -20,7 +20,9 @@ import './EmptyState.css';
 const ChartBarVert = ChartBarVertIcon as unknown as (props: IconProps) => ReactNode;
 
 export interface EmptyStateProps {
+  /** Height of the empty state in pixels. */
   height?: number;
+  /** Message shown under the icon. */
   text?: string;
 }
 

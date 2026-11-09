@@ -4,9 +4,11 @@ sidebar_position: 8
 
 # Area (S2)
 
-:::note Pre-alpha component
-`Area` is a [pre-alpha component](./pre-alpha) — it has no finalized Spectrum 2 design yet
-and is imported from the `pre-alpha` subpath.
+[<span className="badge badge--secondary">Lab</span>](./stages.md#lab)
+
+:::note Lab component
+`Area` is a [lab component](./lab) — it has no finalized Spectrum 2 design yet
+and is imported from the `lab` subpath.
 :::
 
 The `Area` component displays area charts. Areas are most useful for showing how a metric
@@ -15,7 +17,7 @@ share the same dimension value.
 
 ```jsx
 import { Chart, Axis, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Area } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 ```
 
 ```jsx

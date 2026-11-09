@@ -18,7 +18,7 @@ export interface LinePointAnnotationProps {
   anchor?: LabelAnchor | LabelAnchor[];
   /** When true, the annotation text color matches the line/series color. */
   matchLineColor?: boolean;
-  /** The key in the data that has the text to display */
+  /** Data field with the annotation text. Defaults to `annotation`. */
   textKey?: string;
 }
 

@@ -4,9 +4,11 @@ sidebar_position: 8
 
 # Bullet (S2)
 
-:::note Pre-alpha component
-`Bullet` is a [pre-alpha component](./pre-alpha) — it has no finalized Spectrum 2 design yet
-and is imported from the `pre-alpha` subpath.
+[<span className="badge badge--secondary">Lab</span>](./stages.md#lab)
+
+:::note Lab component
+`Bullet` is a [lab component](./lab) — it has no finalized Spectrum 2 design yet
+and is imported from the `lab` subpath.
 :::
 
 The `Bullet` component displays bullet charts, used to show a metric's progress against a
@@ -14,7 +16,7 @@ target, optionally with threshold bands or a track for additional context.
 
 ```jsx
 import { Chart } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Bullet } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 ```
 
 ```jsx

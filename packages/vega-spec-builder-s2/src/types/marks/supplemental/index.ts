@@ -12,7 +12,7 @@
 
 export * from './barAnnotationSpec.types.js';
 export * from './barDirectLabelSpec.types.js';
-export * from './dountSummarySpec.types.js';
+export * from './donutSummarySpec.types.js';
 export * from './metricRangeSpec.types.js';
 export * from './scatterAnnotationSpec.types.js';
 export * from './scatterPathSpec.types.js';

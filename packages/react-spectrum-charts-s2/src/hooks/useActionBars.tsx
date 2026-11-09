@@ -11,7 +11,7 @@
  */
 import { createElement, useMemo } from 'react';
 
-import { ChartActionBar } from '../components/ChartActionBar/index.js';
+import { ChartActionBar } from '../lab/components/ChartActionBar/index.js';
 import { ChartActionBarElement, ChartActionBarProps, ChartChildElement } from '../types/index.js';
 import { getAllElements } from '../utils/index.js';
 import { ChartContainer } from './ChartContainer.js';

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { TrendlineAnnotation } from '../../../../../pre-alpha/components/TrendlineAnnotation/index.js';
+import { TrendlineAnnotation } from '../../../../../lab/components/TrendlineAnnotation/index.js';
 import { findAllMarksByGroupName, findChart, render } from '../../../../../test-utils/index.js';
 import { Badge, Basic } from './TrendlineAnnotation.story.js';
 

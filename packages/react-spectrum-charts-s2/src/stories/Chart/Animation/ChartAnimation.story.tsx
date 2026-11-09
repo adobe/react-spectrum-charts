@@ -16,6 +16,7 @@ import { ChartBarInspectStory, ChartLineStory, StoryWithParameters, setControlIn
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features/Animation',
+  tags: ['alpha'],
   component: Chart,
   argTypes: {
     animationTypes: { control: 'check', options: ['hover', 'drawIn'] },

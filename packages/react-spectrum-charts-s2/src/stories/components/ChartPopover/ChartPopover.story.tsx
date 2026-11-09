@@ -17,9 +17,8 @@ import { Button } from '@react-spectrum/s2';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { Axis, ChartInspect, ChartPopover, Legend, Line } from '../../../components/index.js';
+import { Axis, ChartInspect, ChartPopover, Donut, DonutSummary, Legend, Line } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary } from '../../../pre-alpha/index.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartPopoverProps } from '../../../types/dialogs/chartPopover.types.js';
@@ -34,6 +33,7 @@ import {
 
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Features',
+  tags: ['alpha'],
   component: ChartPopover,
   argTypes: {
     children: {
@@ -64,7 +64,7 @@ const dialogContentWithClose = (datum: Datum, close?: () => void) => (
   </div>
 );
 
-type ChartPopoverStoryProps = ChartPopoverProps & { animations?: ChartProps['animations'] };
+type ChartPopoverStoryProps = ChartPopoverProps & { animations?: NonNullable<ChartProps['animations']> };
 
 const LineStory: StoryFn<ChartPopoverStoryProps> = ({
   animations,

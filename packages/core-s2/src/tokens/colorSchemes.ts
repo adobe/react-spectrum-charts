@@ -17,6 +17,7 @@ import {
   s2Categorical12,
   s2Categorical16,
   s2Categorical20,
+  s2CategoricalTokens,
 } from './categoricalColorPalette.js';
 import {
   divergentOrangeYellowSeafoam5,
@@ -46,6 +47,7 @@ import {
   sequentialViridis9,
   sequentialViridis16,
 } from './sequentialColorPalette.js';
+import { spectrum2Colors } from './spectrum2Colors.js';
 
 export const colorSchemes = {
   categorical6,
@@ -79,4 +81,25 @@ export const colorSchemes = {
   sequentialForest5,
   sequentialForest9,
   sequentialForest16,
+};
+
+export type ColorSchemeName = keyof typeof colorSchemes;
+
+const s2CategoricalCounts: Partial<Record<ColorSchemeName, number>> = {
+  s2Categorical6: 6,
+  s2Categorical12: 12,
+  s2Categorical16: 16,
+  s2Categorical20: 20,
+};
+
+/**
+ * Gets a named palette's colors for a color scheme; Spectrum 2 categorical palettes switch to their dark values.
+ * @param name palette name
+ * @param colorScheme light or dark
+ * @returns list of colors
+ */
+export const getColorSchemeColors = (name: ColorSchemeName, colorScheme: 'light' | 'dark' = 'light'): string[] => {
+  const count = s2CategoricalCounts[name];
+  if (count === undefined) return colorSchemes[name];
+  return s2CategoricalTokens.slice(0, count).map((token) => spectrum2Colors[colorScheme][token]);
 };

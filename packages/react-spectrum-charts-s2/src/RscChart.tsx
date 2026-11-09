@@ -37,9 +37,9 @@ import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig
 
 import './Chart.css';
 import { VegaChart } from './VegaChart.js';
-import { DonutDialogContent, getDonutSwatchColor } from './pre-alpha/components/Donut/DonutDialogContent.js';
+import { DonutDialogContent, getDonutSwatchColor } from './components/Donut/DonutDialogContent.js';
 import { Axis } from './components/Axis/index.js';
-import { ChartActionBarDialog } from './components/ChartActionBar/ChartActionBarDialog.js';
+import { ChartActionBarDialog } from './lab/components/ChartActionBar/ChartActionBarDialog.js';
 import { ChartInspect } from './components/ChartInspect/index.js';
 import { Legend } from './components/Legend/index.js';
 import { AxisRegionOptions } from './dataNavigator/buildChartStructure.js';
@@ -158,7 +158,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, axisLabelTooltipAnchorStyle, inspectOptions, onNewView } = useChartInteractions(
+  const { signals, targetStyle, axisLabelTooltipAnchorStyle, tooltip, onNewView } = useChartInteractions(
     props,
     sanitizedChildren
   );
@@ -177,12 +177,18 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   const actionBars = useActionBars(sanitizedChildren);
   const popovers = usePopovers(sanitizedChildren);
 
+  // read from a ref so an inline onVegaViewReady doesn't rebuild the view
+  const latestOnVegaViewReady = useRef(onVegaViewReady);
+  useEffect(() => {
+    latestOnVegaViewReady.current = onVegaViewReady;
+  }, [onVegaViewReady]);
+
   const handleNewView = useCallback(
     (view: VegaView) => {
       onNewView(view);
-      onVegaViewReady?.(view);
+      latestOnVegaViewReady.current?.(view);
     },
-    [onNewView, onVegaViewReady]
+    [onNewView]
   );
 
   const navContainerRef = useRef<HTMLDivElement>(null);
@@ -369,7 +375,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
           locale={locale}
           padding={padding}
           signals={signals}
-          tooltip={inspectOptions} // legend show/hide relies on this
+          tooltip={tooltip}
           onNewView={handleNewView}
         />
         {accessibleNavigation && navChartType && (

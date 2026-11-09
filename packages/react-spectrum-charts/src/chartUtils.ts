@@ -80,9 +80,13 @@ const s2DefaultProps: Required<Pick<ChartProps, S2PropDefaults>> = {
 };
 
 export const applyChartPropsDefaults = (props: ChartProps): PartiallyRequired<ChartProps, ChartPropsWithDefaults> => {
+  // Explicit undefined values fall back to the defaults instead of overriding them.
+  const definedProps = Object.fromEntries(
+    Object.entries(props).filter(([, value]) => value !== undefined)
+  ) as ChartProps;
   return {
     ...baseDefaults,
     ...(props.s2 ? s2DefaultProps : {}),
-    ...props,
+    ...definedProps,
   };
 };

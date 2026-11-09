@@ -24,7 +24,7 @@ import {
 
 import { DonutSpecOptions, SegmentLabelSpecOptions } from '../types/index.js';
 import { defaultDonutOptions } from './donutTestUtils.js';
-import { getDonutEmptyStateTest } from './donutUtils.js';
+import { getArcMark, getDonutEmptyStateTest } from './donutUtils.js';
 import {
   getRichSegmentLabelData,
   getRichSegmentLabelMarks,
@@ -69,6 +69,33 @@ const richSegmentLabelOptions: SegmentLabelSpecOptions = {
   swatch: true,
   value: true,
 };
+
+describe('SegmentLabel interactions', () => {
+  test.each([
+    { chartInspects: [] },
+    { chartInspects: [{}] },
+    { chartInspects: [{ excludeDataKeys: ['excludeFromTooltip'] }] },
+  ])('uses the slice tooltip encoding for every label row and swatch: %o', ({ chartInspects }) => {
+    const options = { ...richDonutOptions, chartInspects };
+    const marks = [
+      ...getSegmentLabelMarks({ ...options, segmentLabels: [{ value: true }] }),
+      ...getRichSegmentLabelMarks(options),
+    ].flatMap((group) => group.marks ?? []);
+    expect(marks).toHaveLength(7);
+    marks.forEach((mark) => {
+      expect(mark.encode?.enter).toHaveProperty('tooltip', getArcMark(options).encode?.enter?.tooltip);
+    });
+  });
+
+  test('uses the pointer cursor on labels when a popover is configured', () => {
+    const options = { ...richDonutOptions, chartPopovers: [{}] };
+    const marks = [
+      ...getSegmentLabelMarks({ ...options, segmentLabels: [{ value: true }] }),
+      ...getRichSegmentLabelMarks(options),
+    ].flatMap((group) => group.marks ?? []);
+    marks.forEach((mark) => expect(mark.encode?.enter).toHaveProperty('cursor', { value: 'pointer' }));
+  });
+});
 
 const getOnlyRichLabelGroup = (options: DonutSpecOptions) => {
   const groups = getRichSegmentLabelMarks(options);
@@ -309,7 +336,7 @@ describe('rich SegmentLabel', () => {
       name: 'testName_richSegmentLabelCandidates',
       source: 'filteredTable',
     });
-    expect(candidates.transform).toHaveLength(14);
+    expect(candidates.transform).toHaveLength(18);
     expect(candidates.transform?.[1]).toHaveProperty('as', 'testName_richSegmentLabel_hemisphere');
     expect(candidates.transform?.[2]).toHaveProperty('as', 'testName_richSegmentLabel_radius');
     expect(candidates.transform?.[3]).toHaveProperty('as', 'testName_richSegmentLabel_idealY');
@@ -320,9 +347,13 @@ describe('rich SegmentLabel', () => {
     expect(candidates.transform?.[8]).toHaveProperty('as', 'testName_richSegmentLabel_labelHalfWidth');
     expect(candidates.transform?.[9]).toHaveProperty('expr', expect.stringContaining('NameFontSize / 2'));
     expect(candidates.transform?.[10]).toHaveProperty('expr', expect.stringContaining('DetailFontSize / 2'));
-    expect(candidates.transform?.[11]).toHaveProperty('as', 'testName_richSegmentLabel_leftX');
-    expect(candidates.transform?.[12]).toHaveProperty('as', 'testName_richSegmentLabel_rightX');
-    expect(candidates.transform?.[13]).toHaveProperty('as', 'testName_richSegmentLabel_collisionBoxes');
+    expect(candidates.transform?.[11]).toHaveProperty('as', 'testName_richSegmentLabel_nameWidth');
+    expect(candidates.transform?.[12]).toHaveProperty('as', 'testName_richSegmentLabel_valueWidth');
+    expect(candidates.transform?.[13]).toHaveProperty('as', 'testName_richSegmentLabel_detailValueWidth');
+    expect(candidates.transform?.[14]).toHaveProperty('as', 'testName_richSegmentLabel_detailSuffixWidth');
+    expect(candidates.transform?.[15]).toHaveProperty('as', 'testName_richSegmentLabel_leftX');
+    expect(candidates.transform?.[16]).toHaveProperty('as', 'testName_richSegmentLabel_rightX');
+    expect(candidates.transform?.[17]).toHaveProperty('as', 'testName_richSegmentLabel_collisionBoxes');
     expect(visible).toMatchObject({
       name: 'testName_richSegmentLabelData',
       source: 'testName_richSegmentLabelCandidates',
@@ -402,13 +433,13 @@ describe('rich SegmentLabel', () => {
       expect.stringContaining("cos(datum['testName_arcTheta'])")
     );
     const [candidates] = getRichSegmentLabelData(detailOnlyOptions);
-    expect(candidates?.transform?.[13]).toHaveProperty(
-      'expr',
-      expect.stringContaining('testName_richSegmentLabelDetailFontSize')
+    const collisionBoxes = candidates?.transform?.find(
+      (transform) => 'as' in transform && transform.as === 'testName_richSegmentLabel_collisionBoxes'
     );
-    expect(candidates?.transform?.[13]).not.toHaveProperty(
-      'expr',
-      expect.stringContaining('testName_richSegmentLabelValueFontSize')
+    expect(collisionBoxes).toHaveProperty('expr', expect.stringContaining('testName_richSegmentLabelDetailFontSize'));
+    expect(collisionBoxes).not.toHaveProperty('expr', expect.stringContaining('testName_richSegmentLabelValueFontSize'));
+    expect(candidates?.transform?.map((transform) => ('as' in transform ? transform.as : undefined))).not.toContain(
+      'testName_richSegmentLabel_valueWidth'
     );
   });
 
@@ -485,9 +516,26 @@ describe('label anchor x/y and dx (hemisphere offset)', () => {
   });
 
   test('should use the labelKey field for width calculations when provided', () => {
-    const mark = getSegmentLabelTextMark({ ...defaultSegmentLabelOptions, labelKey: 'region' });
+    const [candidates] = getSegmentLabelData({ ...defaultDonutOptions, segmentLabels: [{ labelKey: 'region' }] });
+    const nameWidth = candidates?.transform?.find(
+      (transform) => 'as' in transform && transform.as === 'testName_segmentLabel_nameWidth'
+    );
+    expect(nameWidth).toHaveProperty('expr', expect.stringContaining("getLabelWidth(datum['region']"));
+  });
+
+  test('should not measure text in any label mark encoding', () => {
+    const options = { ...defaultDonutOptions, segmentLabels: [{ value: true, percent: true }] };
+    const richOptions = { ...defaultDonutOptions, segmentLabels: [{ swatch: true, showValueRow: true }] };
+    const marks = [...getSegmentLabelMarks(options), ...getRichSegmentLabelMarks(richOptions)];
+    expect(marks.length).toBeGreaterThan(1);
+    expect(JSON.stringify(marks)).not.toContain('getLabelWidth');
+  });
+
+  test('should read precomputed widths in the limit instead of measuring text', () => {
+    const mark = getSegmentLabelTextMark(defaultSegmentLabelOptions);
     const limitSignal = (mark.encode?.update?.limit as { signal: string }).signal;
-    expect(limitSignal).toContain("getLabelWidth(datum['region']");
+    expect(limitSignal).toContain("datum['testName_segmentLabel_nameWidth']");
+    expect(limitSignal).not.toContain('getLabelWidth');
   });
 });
 
@@ -690,11 +738,13 @@ describe('hovered label reveal', () => {
     expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringContaining(`, ${hoveredIdExpr})`));
   });
 
-  test('non-interactive direct labels keep the plain min-angle filter and pass a null hovered id', () => {
+  test('name-only direct labels use the same hovered-label wiring', () => {
     const [candidates, visible] = getSegmentLabelData({ ...defaultDonutOptions, segmentLabels: [{ value: false }] });
-    expect(candidates.transform?.[0]).toHaveProperty('expr', minAngleExpr);
-    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringMatching(/, null\)$/));
-    expect(visible.transform?.[0]).not.toHaveProperty('expr', expect.stringContaining(HOVERED_ITEM));
+    expect(candidates.transform?.[0]).toHaveProperty(
+      'expr',
+      `${minAngleExpr} || datum.${MARK_ID} === (${hoveredIdExpr})`
+    );
+    expect(visible.transform?.[0]).toHaveProperty('expr', expect.stringContaining(`, ${hoveredIdExpr})`));
   });
 
   test('rich labels use the same hovered-label wiring', () => {

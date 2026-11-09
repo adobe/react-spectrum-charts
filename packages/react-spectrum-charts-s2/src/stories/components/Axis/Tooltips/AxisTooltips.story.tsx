@@ -15,6 +15,7 @@ import { CampaignBarStory, controls } from '../axisStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Axis/Features/Tooltips',
+  tags: ['alpha'],
   component: Axis,
 };
 

@@ -184,7 +184,7 @@ export const getPathFromIcon = (icon: Icon | (string & NonNullable<unknown>)): s
     sentimentNeutral: SENTIMENT_NEUTRAL_PATH,
     sentimentPositive: SENTIMENT_POSITIVE_PATH,
   };
-  return supportedIcons[icon] || icon;
+  return supportedIcons[icon as Icon] || icon;
 };
 
 /**
@@ -302,6 +302,21 @@ export const getD3FormatSpecifierFromNumberFormat = (numberFormat: NumberFormat)
 /** Backslashes must be escaped before quotes — otherwise a trailing backslash-quote can terminate the outer Vega expression string early. */
 export const escapeD3FormatSpecifier = (formatSpec: string): string =>
   formatSpec.replaceAll('\\', String.raw`\\`).replaceAll('"', String.raw`\"`);
+
+/**
+ * Gets a vega expression that formats a value with a named number format or d3 format specifier.
+ * @param valueExpr
+ * @param numberFormat
+ * @returns string
+ */
+export const getNumberFormatExpression = (valueExpr: string, numberFormat: NumberFormat | string): string => {
+  if (numberFormat === 'shortNumber') return `formatShortNumber(${valueExpr})`;
+  if (numberFormat === 'shortCurrency') {
+    return String.raw`abs(${valueExpr}) >= 1000 ? upper(replace(format(${valueExpr}, '$.3~s'), /(\d+)G/, '$1B')) : format(${valueExpr}, '$')`;
+  }
+  const d3Spec = escapeD3FormatSpecifier(getD3FormatSpecifierFromNumberFormat(numberFormat as NumberFormat));
+  return `format(${valueExpr}, "${d3Spec}")`;
+};
 
 /**
  * Merges the provided config with the Spectrum Vega config

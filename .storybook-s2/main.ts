@@ -35,6 +35,8 @@ const config: StorybookConfig = {
   },
 
   docs: {},
+  // highlight rescans every element's computed style on each DOM mutation, which skews animation perf
+  features: { highlight: false },
 
   typescript: {
     reactDocgen: 'react-docgen-typescript',

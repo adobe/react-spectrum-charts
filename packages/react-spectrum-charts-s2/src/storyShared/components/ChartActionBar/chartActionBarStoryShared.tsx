@@ -18,7 +18,8 @@ import { ActionButton, Text } from '@react-spectrum/s2';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Chart } from '../../../Chart.js';
-import { Axis, ChartActionBar, Legend, Line } from '../../../components/index.js';
+import { Axis, Legend, Line } from '../../../components/index.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
 import { ChartProps } from '../../../types/index.js';
 import { workspaceTrendsDataWithVisiblePoints } from '../../data/data.js';

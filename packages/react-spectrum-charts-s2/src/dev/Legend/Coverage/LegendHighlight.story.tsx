@@ -15,6 +15,7 @@ import { LegendBarHighlightedSeriesStory, LegendBarStory, defaultProps } from '.
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Highlight',
+  tags: ['alpha'],
   component: Legend,
 };
 

@@ -9,18 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { Item, View } from 'vega';
-import { Handler, Options as TooltipOptions } from 'vega-tooltip';
-
-import { TOOLTIP_DELAY } from '@spectrum-charts/core-s2/constants';
+import { ScenegraphEvent, View } from 'vega';
 
 import { Legend } from '../components/index.js';
 import { useChartContext } from '../context/RscChartContext.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import {
-  getItemBounds,
+  ActionItem,
   getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
@@ -35,166 +32,136 @@ import useMarkMouseInputDetails from './useMarkMouseInputDetails.js';
 import useMarkOnClickDetails from './useMarkOnClickDetails.js';
 import usePopovers from './usePopovers.js';
 
+/**
+ * Builds a stable onNewView that registers listeners once per view; listeners read the latest props from a ref.
+ * @param props - chart props
+ * @param sanitizedChildren - chart children
+ * @param legendProps - shared legend state and callbacks
+ * @returns onNewView
+ */
 const useNewChartView = (
   { idKey }: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  inspectOptions: TooltipOptions,
   legendProps: UseLegendProps
 ) => {
-  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId, setHoveredAxisLabel } =
-    useChartContext();
+  const { chartView, selectedData, selectedDataBounds, selectedDataName, chartId } = useChartContext();
   const actionBars = useActionBars(sanitizedChildren);
   const popovers = usePopovers(sanitizedChildren);
-  const {
-    legendHiddenSeries,
-    setLegendHiddenSeries,
-    isToggleable: legendIsToggleable,
-    onClick: onLegendClick,
-    onMouseOut: onLegendMouseOut,
-    onMouseOver: onLegendMouseOver,
-  } = legendProps;
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
   const axisLabelOnClickDetails = useAxisLabelOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
-  const legendHasPopover = useMemo(
-    () => popovers.some((p) => p.parent === Legend.displayName && !p.chartPopoverProps.rightClick),
-    [popovers]
+  const derived = useMemo(
+    () => ({
+      legendHasPopover: popovers.some((p) => p.parent === Legend.displayName && !p.chartPopoverProps.rightClick),
+      legendHasRightClickPopover: popovers.some(
+        (p) => p.parent === Legend.displayName && p.chartPopoverProps.rightClick
+      ),
+      markHasActionBar: actionBars.length > 0,
+      markHasPopover: popovers.some((p) => p.parent !== Legend.displayName),
+      hasRightClickPopover: popovers.some((p) => p.chartPopoverProps.rightClick),
+      hasMarkContextMenu: markClickDetails.some((d) => d.onContextMenu),
+      hasPopoversOrActionBars: popovers.length > 0 || actionBars.length > 0,
+    }),
+    [actionBars, markClickDetails, popovers]
   );
-  const legendHasRightClickPopover = useMemo(
-    () => popovers.some((p) => p.parent === Legend.displayName && p.chartPopoverProps.rightClick),
-    [popovers]
-  );
-  const markHasActionBar = useMemo(() => actionBars.length > 0, [actionBars]);
-  const markHasPopover = useMemo(
-    () => popovers.some((p) => p.parent !== Legend.displayName),
-    [popovers]
-  );
+
+  const latestInputs = {
+    idKey,
+    legendProps,
+    markClickDetails,
+    axisLabelOnClickDetails,
+    markMouseInputDetails,
+    ...derived,
+  };
+  const latest = useRef(latestInputs);
+  useEffect(() => {
+    latest.current = latestInputs;
+  });
+
+  // the container outlives views, so its contextmenu listener is added once
+  const contextMenuContainer = useRef<Element | null>(null);
 
   return useCallback(
     (view: View) => {
       chartView.current = view;
-      // Add a delay before displaying legend tooltips on hover.
-      let inspectTimeout: ReturnType<typeof setTimeout> | undefined;
-      view.tooltip((viewRef, event, item, value) => {
-        const inspectHandler = new Handler(inspectOptions);
-        // Cancel delayed tooltips if the mouse moves before the delay is resolved.
-        if (inspectTimeout) {
-          clearTimeout(inspectTimeout);
-          inspectTimeout = undefined;
-        }
-        // Axis labels use a real Tooltip, not vega-tooltip's popup.
-        if (item && itemIsAxisLabel(item) && value !== undefined && value !== null) {
-          setHoveredAxisLabel({ bounds: getItemBounds(item), content: String(value) });
-          return;
-        }
-        setHoveredAxisLabel(null);
-        if (event?.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
-          inspectTimeout = setTimeout(() => {
-            inspectHandler.call(viewRef, event, item, value);
-            inspectTimeout = undefined;
-          }, TOOLTIP_DELAY);
-        } else {
-          inspectHandler.call(viewRef, event, item, value);
+
+      const hasLegendOrMarkActions = () => {
+        const { hasPopoversOrActionBars, legendProps } = latest.current;
+        return hasPopoversOrActionBars || Boolean(legendProps.isToggleable) || Boolean(legendProps.onClick);
+      };
+      const getMarkClickArgs = (trigger: 'click' | 'contextmenu') => {
+        const { legendProps, legendHasPopover, legendHasRightClickPopover, markHasActionBar, markHasPopover } =
+          latest.current;
+        return {
+          chartView,
+          hiddenSeries: legendProps.legendHiddenSeries,
+          chartId,
+          selectedData,
+          selectedDataBounds,
+          selectedDataName,
+          setHiddenSeries: legendProps.setLegendHiddenSeries,
+          legendIsToggleable: legendProps.isToggleable,
+          legendHasPopover: trigger === 'click' ? legendHasPopover : legendHasRightClickPopover,
+          onLegendClick: legendProps.onClick,
+          trigger,
+          markHasActionBar: trigger === 'click' ? markHasActionBar : undefined,
+          markHasPopover,
+        };
+      };
+
+      if (hasLegendOrMarkActions()) {
+        setSelectedSignals({ idKey: latest.current.idKey, selectedData: selectedData.current, view });
+      }
+
+      const chartContainer = document.querySelector(`#${chartId}`);
+      if (chartContainer && contextMenuContainer.current !== chartContainer) {
+        contextMenuContainer.current = chartContainer;
+        chartContainer.addEventListener('contextmenu', (e) => {
+          const { hasRightClickPopover, hasMarkContextMenu } = latest.current;
+          if (hasRightClickPopover || hasMarkContextMenu) {
+            e.preventDefault();
+          }
+        });
+      }
+
+      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) => {
+        if (hasLegendOrMarkActions()) {
+          getOnMarkClickCallback(getMarkClickArgs('click'))(event, item);
         }
       });
-      if (popovers.length || actionBars.length || legendIsToggleable || onLegendClick) {
-        if (legendIsToggleable) {
-          view.signal('hiddenSeries', legendHiddenSeries);
+      view.addEventListener('contextmenu', (event: ScenegraphEvent, item: ActionItem) => {
+        if (hasLegendOrMarkActions() && latest.current.hasRightClickPopover) {
+          getOnMarkClickCallback(getMarkClickArgs('contextmenu'))(event, item);
         }
-        setSelectedSignals({
-          idKey,
-          selectedData: selectedData.current,
-          view,
-        });
-        view.addEventListener(
-          'click',
-          getOnMarkClickCallback({
-            chartView,
-            hiddenSeries: legendHiddenSeries,
-            chartId,
-            selectedData,
-            selectedDataBounds,
-            selectedDataName,
-            setHiddenSeries: setLegendHiddenSeries,
-            legendIsToggleable,
-            legendHasPopover,
-            onLegendClick,
-            trigger: 'click',
-            markHasActionBar,
-            markHasPopover,
-          })
-        );
-        if (popovers.some((p) => p.chartPopoverProps.rightClick)) {
-          const chartContainer = document.querySelector(`#${chartId}`);
-          if (chartContainer) {
-            chartContainer.addEventListener('contextmenu', (e) => e.preventDefault());
-          }
-          view.addEventListener(
-            'contextmenu',
-            getOnMarkClickCallback({
-              chartView,
-              hiddenSeries: legendHiddenSeries,
-              chartId,
-              selectedData,
-              selectedDataBounds,
-              selectedDataName,
-              setHiddenSeries: setLegendHiddenSeries,
-              legendHasPopover: legendHasRightClickPopover,
-              legendIsToggleable,
-              onLegendClick,
-              trigger: 'contextmenu',
-              markHasPopover,
-            })
-          );
+      });
+      view.addEventListener('contextmenu', (event: ScenegraphEvent, item: ActionItem) => {
+        const { hasMarkContextMenu, markClickDetails } = latest.current;
+        if (hasMarkContextMenu) {
+          getOnChartMarkContextMenuCallback(chartView, markClickDetails)(event, item);
         }
-      }
-      if (markClickDetails.some((d) => d.onContextMenu)) {
-        const chartContainer = document.querySelector(`#${chartId}`);
-        if (chartContainer) {
-          chartContainer.addEventListener('contextmenu', (e) => e.preventDefault());
-        }
-        view.addEventListener('contextmenu', getOnChartMarkContextMenuCallback(chartView, markClickDetails));
-      }
-      view.addEventListener('click', getOnChartMarkClickCallback(chartView, markClickDetails));
-      if (axisLabelOnClickDetails.length) {
-        view.addEventListener('click', getOnAxisLabelClickCallback(axisLabelOnClickDetails));
-      }
-      view.addEventListener('mouseover', getOnMouseInputCallback(onLegendMouseOver, markMouseInputDetails));
-      view.addEventListener('mouseout', getOnMouseInputCallback(onLegendMouseOut, markMouseInputDetails));
+      });
+      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
+        getOnChartMarkClickCallback(chartView, latest.current.markClickDetails)(event, item)
+      );
+      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
+        getOnAxisLabelClickCallback(latest.current.axisLabelOnClickDetails)(event, item)
+      );
+      view.addEventListener('mouseover', (event: ScenegraphEvent, item: ActionItem) =>
+        getOnMouseInputCallback(latest.current.legendProps.onMouseOver, latest.current.markMouseInputDetails)(
+          event,
+          item
+        )
+      );
+      view.addEventListener('mouseout', (event: ScenegraphEvent, item: ActionItem) =>
+        getOnMouseInputCallback(latest.current.legendProps.onMouseOut, latest.current.markMouseInputDetails)(
+          event,
+          item
+        )
+      );
     },
-    [
-      actionBars,
-      axisLabelOnClickDetails,
-      chartId,
-      chartView,
-      idKey,
-      legendHasPopover,
-      legendHasRightClickPopover,
-      legendHiddenSeries,
-      legendIsToggleable,
-      markClickDetails,
-      markHasActionBar,
-      markHasPopover,
-      markMouseInputDetails,
-      onLegendClick,
-      onLegendMouseOut,
-      onLegendMouseOver,
-      popovers,
-      selectedData,
-      selectedDataBounds,
-      selectedDataName,
-      setHoveredAxisLabel,
-      setLegendHiddenSeries,
-      inspectOptions,
-    ]
+    [chartId, chartView, selectedData, selectedDataBounds, selectedDataName]
   );
 };
 
 export default useNewChartView;
-
-const itemIsLegendItem = (item: Item<unknown>): boolean => {
-  return 'name' in item.mark && typeof item.mark.name === 'string' && item.mark.name.includes('legend');
-};
-
-const itemIsAxisLabel = (item: Item<unknown>): boolean => 'role' in item.mark && item.mark.role === 'axis-label';

@@ -17,31 +17,31 @@ import { PartiallyRequired, ScaleType } from '../specUtil.types.js';
 export interface AreaOptions {
   markType: 'area';
 
-  /** Sets the name of the component. */
+  /** Name used for the area's marks and signals in the Vega spec. Defaults to `area0`, `area1`, and so on. */
   name?: string;
-  /** Key in the data that is used as the color facet */
+  /** Data field that splits the data into series, each with its own color. Defaults to `series`. */
   color?: string;
-  /** Key in the data that is used as the metric */
+  /** Data field for each series' value; series stack from zero. Defaults to `value`. */
   metric?: string;
-  /** Data field that the metric is trended against (x-axis for horizontal orientation) */
+  /** Data field plotted along the x-axis. Defaults to `datetime`. */
   dimension?: string;
-  /** Optional field used to set the stack order of the area (higher order = stacked on top/right) */
+  /** Data field that sets the stack order; higher values stack on top. Defaults to data order. */
   order?: string;
-  /** Optional field used to set the area opacity */
+  /** Fill opacity of the areas, from 0 to 1. Defaults to `0.8`. */
   opacity?: number;
-  /** Sets the horizontal padding, this is a ratio from 0 to 1 for categorical scales (point) and a pixel value for continuous scales (time, linear) */
+  /** Space before the first and after the last x value: a ratio from 0 to 1 for `point` scales (default `0.5`), pixels for `time` and `linear` (default `0`). */
   padding?: number;
-  /** Sets the type of scale that should be used for the trend */
+  /** Scale for `dimension`: `time`, `linear`, or `point`. Defaults to `time`. */
   scaleType?: ScaleType;
 
   // define area using start/end
-  /** Data field for the start of the area */
+  /** Data field for the bottom edge of a floating area; requires `metricEnd` and replaces `metric`. */
   metricStart?: string;
-  /** Data field for the end of the area */
+  /** Data field for the top edge of a floating area; requires `metricStart` and replaces `metric`. */
   metricEnd?: string;
 
   // children
-  /** Popover that is shown when hovering over the area */
+  /** Popover that is shown when clicking the area */
   chartPopovers?: ChartPopoverOptions[];
   /** Inspect shown when hovering over the area */
   chartInspects?: ChartInspectOptions[];

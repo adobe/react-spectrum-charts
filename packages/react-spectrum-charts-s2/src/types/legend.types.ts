@@ -17,13 +17,14 @@ import { ChartPopoverElement } from './dialogs/chartPopover.types.js';
 import { Children } from './util.types.js';
 
 export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMouseInteraction'> {
-  /** callback that will be run when a legend item is selected */
+  /** Called with the entry's series name when an entry is clicked. */
   onClick?: (seriesName: string) => void;
-  /** callback that will be run when mousing out of a legend item */
+  /** Called with the entry's series name when the pointer leaves an entry. */
   onMouseOut?: (seriesName: string) => void;
-  /** callback that will be run when mousing over a legend item */
+  /** Called with the entry's series name when the pointer enters an entry. */
   onMouseOver?: (seriesName: string) => void;
 
+  /** `ChartPopover` to open when an entry is clicked. */
   children?: Children<ChartPopoverElement>;
 }
 

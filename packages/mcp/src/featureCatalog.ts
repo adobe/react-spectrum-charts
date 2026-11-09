@@ -336,8 +336,7 @@ export const CHART_FEATURE_CATALOG: ChartFeature[] = [
     description: "Shows a formatted metric total/summary in the donut's center hole.",
     relatedTokens: [],
     rscSupport: { s1: true, s2: true, s1Maturity: 'rc', s2Maturity: 'rc' },
-    // NOTE: "dountSummarySpec.types.ts" (missing "n") is the real filename in the repo — not a transcription error.
-    optionsType: { typeName: 'DonutSummaryOptions', filePath: `${S2_TYPES}/marks/supplemental/dountSummarySpec.types.ts` },
+    optionsType: { typeName: 'DonutSummaryOptions', filePath: `${S2_TYPES}/marks/supplemental/donutSummarySpec.types.ts` },
   },
   {
     id: 'segment-label',

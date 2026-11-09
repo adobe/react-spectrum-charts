@@ -16,13 +16,14 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../../Chart.js';
 import { Axis, Legend } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
-import { Scatter, ScatterPath } from '../../../../pre-alpha/index.js';
+import { Scatter, ScatterPath } from '../../../../lab/index.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
 import { ScatterPathProps } from '../../../../types/index.js';
 import { productTrajectoryData } from '../../scatterData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Scatter/Features/Scatter Path',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Features/Scatter Path',
+  tags: ['lab'],
   component: ScatterPath,
 };
 

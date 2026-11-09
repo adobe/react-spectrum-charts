@@ -19,20 +19,13 @@ import { ChartActionBarOptions, Datum } from '@spectrum-charts/vega-spec-builder
  * Renders a floating contextual toolbar near the clicked data point.
  */
 export interface ChartActionBarProps extends ChartActionBarOptions {
-  /**
-   * Render function that returns an array of action elements.
-   * The component shows up to `maxActions` inline; any extras collapse into a "⋯" overflow popover.
-   */
+  /** Function that receives the clicked datum and a `close` callback and returns the action elements to show. */
   children?: (datum: Datum, close: () => void) => ReactElement[];
-  /** Applies an accent background with white icon/text treatment, matching the RS ActionBar emphasized style. */
+  /** Gives the bar an accent background; pair it with `staticColor="white"` on the actions. Defaults to `false`. */
   isEmphasized?: boolean;
-  /**
-   * Hard cap on inline actions before overflow kicks in.
-   * Space is the primary driver — the component will also reduce visible actions when the bar
-   * would exceed 800 px or the viewport width. Defaults to 4.
-   */
+  /** Most actions shown inline before the rest move to a "More actions" menu. Defaults to `4`. */
   maxActions?: number;
-  /** Called when the action bar is dismissed. */
+  /** Called when the action bar closes and the clicked point is deselected. */
   onClearSelection?: () => void;
 }
 

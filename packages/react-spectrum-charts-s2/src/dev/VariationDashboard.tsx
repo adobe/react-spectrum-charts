@@ -9,12 +9,24 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, ReactNode, createContext, useContext, useState } from 'react';
+import { ReactElement, ReactNode, createContext, useContext, useMemo } from 'react';
+
+import { AnimationType } from '@spectrum-charts/core-s2/constants';
+
+import { VariationDashboardHeader } from './VariationDashboardHeader.js';
+import type { DashboardDefinition } from './dashboardCoverage.js';
+import { usePersistedState } from './usePersistedState.js';
 
 const DEFAULT_SIZE = 280;
 const VariationDatasetContext = createContext<string | undefined>(undefined);
 const VariationSizeContext = createContext(DEFAULT_SIZE);
-const VariationViewModeContext = createContext<string | undefined>(undefined);
+export type VariationRenderer = 'svg' | 'canvas';
+
+const VariationDisplayContext = createContext<{
+  viewMode?: string;
+  animationTypes?: AnimationType[];
+  renderer?: VariationRenderer;
+}>({});
 
 export interface VariationDataset {
   description?: string;
@@ -25,6 +37,11 @@ export interface VariationDataset {
 export interface VariationSizePreset {
   label: string;
   size: number;
+}
+
+export interface VariationSizePresetGroup {
+  label: string;
+  resolvePresetSize: (size: number, viewMode?: string) => number;
 }
 
 export interface VariationViewMode {
@@ -58,6 +75,8 @@ export interface Variation {
 interface VariationDashboardProps {
   chartType: string;
   variations: Variation[];
+  /** Prop coverage map; populates the prop filter menu. */
+  coverage?: DashboardDefinition['coverage'];
   datasets?: VariationDataset[];
   filters?: VariationFilter[];
   getSizeDescription?: (size: number, viewMode?: string) => string;
@@ -66,7 +85,11 @@ interface VariationDashboardProps {
   initialSize?: number;
   initialViewMode?: string;
   resolvePresetSize?: (size: number, viewMode?: string) => number;
+  sizeAxis?: 'width' | 'height';
+  sizePresetGroups?: VariationSizePresetGroup[];
   sizePresets?: VariationSizePreset[];
+  /** Animation types the chart supports; each gets a header switch. Hidden when omitted. */
+  animationControls?: AnimationType[];
   viewModes?: VariationViewMode[];
 }
 
@@ -86,13 +109,36 @@ const badgeStyle = {
   padding: '2px 5px',
 } as const;
 
+/**
+ * Returns the variation ids covering any selected prop, or undefined when no props are selected.
+ * @param coverage
+ * @param selectedProps
+ * @returns Set<string> | undefined
+ */
+const getPropVariationIds = (
+  coverage: DashboardDefinition['coverage'] | undefined,
+  selectedProps: Set<string>
+): Set<string> | undefined => {
+  if (!coverage || selectedProps.size === 0) return undefined;
+  const ids = [...selectedProps].flatMap((key) => {
+    const [component, prop] = key.split('.');
+    const entry = coverage[component]?.[prop];
+    return entry && !('skip' in entry) ? entry : [];
+  });
+  return new Set(ids);
+};
+
 export const useVariationSize = (): number => useContext(VariationSizeContext);
 export const useVariationDataset = (): string | undefined => useContext(VariationDatasetContext);
-export const useVariationViewMode = (): string | undefined => useContext(VariationViewModeContext);
+export const useVariationViewMode = (): string | undefined => useContext(VariationDisplayContext).viewMode;
+export const useVariationAnimationTypes = (): AnimationType[] | undefined =>
+  useContext(VariationDisplayContext).animationTypes;
+export const useVariationRenderer = (): VariationRenderer | undefined => useContext(VariationDisplayContext).renderer;
 
 export const VariationDashboard = ({
   chartType,
   variations,
+  coverage,
   datasets = [],
   filters = [],
   getSizeDescription,
@@ -101,169 +147,123 @@ export const VariationDashboard = ({
   initialSize = DEFAULT_SIZE,
   initialViewMode,
   resolvePresetSize = (size) => size,
+  sizeAxis,
+  sizePresetGroups,
   sizePresets = defaultSizePresets,
+  animationControls,
   viewModes = [],
 }: VariationDashboardProps): ReactElement => {
-  const [dataset, setDataset] = useState(initialDataset ?? datasets[0]?.value);
-  const [filter, setFilter] = useState(initialFilter ?? filters[0]?.value);
-  const [size, setSize] = useState(initialSize);
-  const [viewMode, setViewMode] = useState(initialViewMode ?? viewModes[0]?.value);
-  const presetSizes = sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
+  const storageKey = `rsc-s2-variation-dashboard:${chartType}`;
+  const isOneOf =
+    (values: string[]) =>
+    (value: unknown): boolean =>
+      typeof value === 'string' && values.includes(value);
+  const [dataset, setDataset] = usePersistedState(
+    `${storageKey}:dataset`,
+    initialDataset ?? datasets[0]?.value,
+    isOneOf(datasets.map(({ value }) => value))
+  );
+  const [animationTypes, setAnimationTypes] = usePersistedState<AnimationType[]>(
+    `${storageKey}:animationTypes`,
+    animationControls ?? [],
+    (value) => Array.isArray(value) && value.every(isOneOf(animationControls ?? []))
+  );
+  const [renderer, setRenderer] = usePersistedState<VariationRenderer>(
+    `${storageKey}:renderer`,
+    'svg',
+    isOneOf(['svg', 'canvas'])
+  );
+  const [filter, setFilter] = usePersistedState(
+    `${storageKey}:filter`,
+    initialFilter ?? filters[0]?.value,
+    isOneOf(filters.map(({ value }) => value))
+  );
+  const [size, setSize] = usePersistedState(`${storageKey}:size`, initialSize);
+  const [viewMode, setViewMode] = usePersistedState(
+    `${storageKey}:viewMode`,
+    initialViewMode ?? viewModes[0]?.value,
+    isOneOf(viewModes.map(({ value }) => value))
+  );
+  const displayContextValue = useMemo(
+    () => ({ viewMode, animationTypes: animationControls ? animationTypes : undefined, renderer }),
+    [viewMode, animationTypes, animationControls, renderer]
+  );
+  const coveredPropKeys = Object.entries(coverage ?? {}).flatMap(([component, props]) =>
+    Object.keys(props).map((prop) => `${component}.${prop}`)
+  );
+  const [selectedPropList, setSelectedPropList] = usePersistedState<string[]>(
+    `${storageKey}:selectedProps`,
+    [],
+    (value) => Array.isArray(value) && value.every(isOneOf(coveredPropKeys))
+  );
+  const selectedProps = useMemo(() => new Set(selectedPropList), [selectedPropList]);
+  const presetViewModes = viewModes.length ? viewModes.map((mode) => mode.value) : [viewMode];
+  const presetSizes = sizePresetGroups
+    ? sizePresetGroups.flatMap((group) =>
+        sizePresets.flatMap((preset) => presetViewModes.map((mode) => group.resolvePresetSize(preset.size, mode)))
+      )
+    : sizePresets.map((preset) => resolvePresetSize(preset.size, viewMode));
   const minSize = Math.min(...presetSizes, initialSize);
   const maxSize = Math.max(...presetSizes, initialSize);
-  const selectedPreset = sizePresets.find((preset) => resolvePresetSize(preset.size, viewMode) === size);
-  const minimumCardWidth = Math.max(320, size + 16);
+  const minimumCardWidth = sizeAxis === 'width' ? size + 2 : Math.max(320, size + 2);
+  const maximumCardWidth = sizeAxis === 'width' ? `${minimumCardWidth}px` : '1fr';
   const activeFilter = filters.find((option) => option.value === filter);
-  const visibleVariations = activeFilter ? variations.filter(activeFilter.matches) : variations;
+  const propVariationIds = getPropVariationIds(coverage, selectedProps);
+  const visibleVariations = variations.filter(
+    (variation) =>
+      (!activeFilter || activeFilter.matches(variation)) && (!propVariationIds || propVariationIds.has(variation.id))
+  );
 
   const updateViewMode = (nextViewMode: string): void => {
     setViewMode(nextViewMode);
-    if (selectedPreset) {
+    const selectedPreset = sizePresets.find((preset) => size === resolvePresetSize(preset.size, viewMode));
+    if (!sizePresetGroups && selectedPreset) {
       setSize(resolvePresetSize(selectedPreset.size, nextViewMode));
     }
   };
 
   return (
     <VariationSizeContext.Provider value={size}>
-      <main style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <header style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 900 }}>
-          <div>
-            <h1 style={{ margin: '0 0 8px' }}>{chartType} variation dashboard</h1>
-            <p style={{ margin: 0 }}>
-              Each card isolates a supported prop value or child configuration.
-            </p>
-          </div>
-          <div
-            style={{
-              alignItems: 'start',
-              display: 'grid',
-              gap: 8,
-              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            }}
-          >
-            {datasets.length > 0 && (
-              <label
-                style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 1, gridRow: 1 }}
-              >
-                <strong>Dataset:</strong>
-                <select
-                  aria-label={`${chartType} dataset`}
-                  onChange={(event) => setDataset(event.target.value)}
-                  style={{ padding: '4px 8px' }}
-                  value={dataset}
-                >
-                  {datasets.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                {datasets.find((option) => option.value === dataset)?.description && (
-                  <span style={{ fontSize: 13 }}>
-                    {datasets.find((option) => option.value === dataset)?.description}
-                  </span>
-                )}
-              </label>
-            )}
-            {viewModes.length > 0 && (
-              <div
-                style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 2, gridRow: 1 }}
-              >
-                <strong>View:</strong>
-                {viewModes.map((mode) => (
-                  <button
-                    key={mode.value}
-                    aria-pressed={viewMode === mode.value}
-                    onClick={() => updateViewMode(mode.value)}
-                    style={{
-                      background: viewMode === mode.value ? 'var(--spectrum-blue-900, #0265dc)' : 'transparent',
-                      border: '1px solid var(--spectrum-gray-500, #909090)',
-                      borderRadius: 4,
-                      color: viewMode === mode.value ? 'white' : 'inherit',
-                      cursor: 'pointer',
-                      padding: '4px 10px',
-                    }}
-                    type="button"
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-            )}
-            {filters.length > 0 && (
-              <div
-                style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 2, gridRow: 2 }}
-              >
-                <strong>Filter:</strong>
-                {filters.map((option) => (
-                  <button
-                    key={option.value}
-                    aria-pressed={filter === option.value}
-                    onClick={() => setFilter(option.value)}
-                    style={{
-                      background: filter === option.value ? 'var(--spectrum-blue-900, #0265dc)' : 'transparent',
-                      border: '1px solid var(--spectrum-gray-500, #909090)',
-                      borderRadius: 4,
-                      color: filter === option.value ? 'white' : 'inherit',
-                      cursor: 'pointer',
-                      padding: '4px 10px',
-                    }}
-                    type="button"
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div
-              style={{ alignItems: 'center', display: 'flex', flexWrap: 'wrap', gap: 8, gridColumn: 1, gridRow: 2 }}
-            >
-              <strong>Chart size:</strong>
-              {sizePresets.map((preset) => (
-                <button
-                  key={preset.label}
-                  aria-pressed={selectedPreset?.label === preset.label}
-                  onClick={() => setSize(resolvePresetSize(preset.size, viewMode))}
-                  style={{
-                    background:
-                      selectedPreset?.label === preset.label ? 'var(--spectrum-blue-900, #0265dc)' : 'transparent',
-                    border: '1px solid var(--spectrum-gray-500, #909090)',
-                    borderRadius: 4,
-                    color: selectedPreset?.label === preset.label ? 'white' : 'inherit',
-                    cursor: 'pointer',
-                    padding: '4px 10px',
-                  }}
-                  type="button"
-                >
-                  {preset.label} ({Math.round(resolvePresetSize(preset.size, viewMode))}px container)
-                </button>
-              ))}
-            </div>
-            <label style={{ alignItems: 'center', display: 'flex', gap: 12, gridColumn: '1 / -1' }}>
-              <span style={{ minWidth: 120 }}>Container: {size}px</span>
-              <input
-                aria-label={`${chartType} chart size`}
-                max={maxSize}
-                min={minSize}
-                onChange={(event) => setSize(Number(event.target.value))}
-                style={{ flex: 1 }}
-                type="range"
-                value={size}
-              />
-            </label>
-            {getSizeDescription && (
-              <span style={{ fontSize: 13, gridColumn: '1 / -1' }}>{getSizeDescription(size, viewMode)}</span>
-            )}
-          </div>
-        </header>
+      <main style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <VariationDashboardHeader
+          chartType={chartType}
+          visibleCount={visibleVariations.length}
+          totalCount={variations.length}
+          size={size}
+          minSize={minSize}
+          maxSize={maxSize}
+          onSizeChange={setSize}
+          sizeDescription={getSizeDescription?.(size, viewMode)}
+          sizeAxis={sizeAxis}
+          sizePresetGroups={sizePresetGroups}
+          sizePresets={sizePresets}
+          resolvePresetSize={resolvePresetSize}
+          datasets={datasets}
+          dataset={dataset}
+          onDatasetChange={setDataset}
+          viewModes={viewModes}
+          viewMode={viewMode}
+          onViewModeChange={updateViewMode}
+          filters={filters}
+          filter={filter}
+          onFilterChange={setFilter}
+          coverage={coverage}
+          selectedProps={selectedProps}
+          onSelectedPropsChange={(props) => setSelectedPropList([...props])}
+          animationControls={animationControls}
+          animationTypes={animationTypes}
+          onAnimationTypesChange={setAnimationTypes}
+          renderer={renderer}
+          onRendererChange={setRenderer}
+        />
         <VariationDatasetContext.Provider value={dataset}>
-          <VariationViewModeContext.Provider value={viewMode}>
+          <VariationDisplayContext.Provider value={displayContextValue}>
             <div
               style={{
                 alignItems: 'start',
                 display: 'grid',
                 gap: 16,
-                gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), 1fr))`,
+                gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${minimumCardWidth}px), ${maximumCardWidth}))`,
               }}
             >
               {visibleVariations.map(
@@ -283,9 +283,8 @@ export const VariationDashboard = ({
                         alignItems: 'center',
                         display: 'flex',
                         justifyContent: 'center',
-                        minHeight: size + 16,
+                        minHeight: sizeAxis === 'width' ? 0 : size,
                         overflow: 'auto',
-                        padding: 8,
                       }}
                     >
                       {render()}
@@ -316,7 +315,7 @@ export const VariationDashboard = ({
                 )
               )}
             </div>
-          </VariationViewModeContext.Provider>
+          </VariationDisplayContext.Provider>
         </VariationDatasetContext.Provider>
       </main>
     </VariationSizeContext.Provider>

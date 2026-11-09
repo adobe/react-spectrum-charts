@@ -52,6 +52,7 @@ import { BarProps } from '../../../../types/index.js';
 /** Showcases the bar hover-animation system across every interaction that can emphasize a series. */
 export default {
   title: 'React Spectrum Charts 2/Bar/Performance/Hover Animation',
+  tags: ['alpha'],
   component: Bar,
   argTypes: {
     animations: {

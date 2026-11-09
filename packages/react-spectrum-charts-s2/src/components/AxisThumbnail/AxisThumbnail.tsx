@@ -16,6 +16,10 @@ import { FC } from 'react';
 import { AxisThumbnailProps } from '../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
+/**
+ * Renders thumbnail images beside the labels of its parent axis.
+ * @alpha
+ */
 const AxisThumbnail: FC<AxisThumbnailProps> = ({ urlKey }) => {
   return null;
 };

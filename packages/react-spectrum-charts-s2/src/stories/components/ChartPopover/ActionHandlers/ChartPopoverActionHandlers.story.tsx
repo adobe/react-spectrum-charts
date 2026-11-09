@@ -17,6 +17,7 @@ import { BarPopoverStory, StoryWithParameters, dialogContent, setControlInclude 
 
 export default {
   title: 'React Spectrum Charts 2/Chart Popover/Features/Action Handlers',
+  tags: ['alpha'],
   component: ChartPopover,
 };
 

@@ -19,8 +19,10 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_SECONDARY_COLOR,
   FILTERED_TABLE,
+  MARK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
 import { defaultBarEnterEncodings, defaultBarOptions, defaultBarStrokeEncodings } from './barTestUtils.js';
 import { getDodgedAndStackedBarMark, getStackedBarMarks, getStackedDimensionEncodings } from './stackedBarUtils.js';
 
@@ -54,7 +56,7 @@ const defaultMark = {
     },
     update: {
       cursor: undefined,
-      opacity: [DEFAULT_OPACITY_RULE],
+      opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
       ...defaultStackedBarXEncondings,
       ...defaultBarStrokeEncodings,
     },

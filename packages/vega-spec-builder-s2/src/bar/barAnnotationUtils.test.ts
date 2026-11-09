@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { GroupMark } from 'vega';
+
 import { ANNOTATION_PADDING, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
 import {
@@ -22,6 +24,31 @@ import {
 import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils.js';
 
 describe('getAnnotationMarks()', () => {
+  test('fades annotations in with the draw-in', () => {
+    const [group] = getAnnotationMarks(
+      { ...defaultBarOptions, barAnnotations: [{}], isDrawInAnimate: true },
+      FILTERED_TABLE,
+      'xBand',
+      'category'
+    ) as GroupMark[];
+    expect(group.marks).toHaveLength(2);
+    group.marks?.forEach((mark) => {
+      expect(JSON.stringify(mark.encode?.update?.opacity)).toContain('drawInDuration');
+    });
+  });
+
+  test('does not fade annotations when draw-in is off', () => {
+    const [group] = getAnnotationMarks(
+      { ...defaultBarOptions, barAnnotations: [{}] },
+      FILTERED_TABLE,
+      'xBand',
+      'category'
+    ) as GroupMark[];
+    group.marks?.forEach((mark) => {
+      expect(mark.encode).not.toHaveProperty('update');
+    });
+  });
+
   test('should retrun an empty array if there is no annotation on the bar', () => {
     expect(getAnnotationMarks(defaultBarOptions, FILTERED_TABLE, 'xBand', 'category')).toStrictEqual([]);
   });

@@ -51,6 +51,22 @@ describe('comboSpecBuilder', () => {
       expect(getCallParams(addLine).dimension).toEqual('datetime');
     });
 
+    it('should forward animation options to its bar and line', () => {
+      addCombo(
+        { usermeta: {} },
+        {
+          idKey: MARK_ID,
+          animations: false,
+          animationTypes: ['hover'],
+          marks: [{ markType: 'bar' }, { markType: 'line' }],
+          markType: 'combo',
+        }
+      );
+
+      expect(getCallParams(addBar)).toMatchObject({ animations: false, animationTypes: ['hover'] });
+      expect(getCallParams(addLine)).toMatchObject({ animations: false, animationTypes: ['hover'] });
+    });
+
     it('should do nothing if no children', () => {
       addCombo({ usermeta: {} }, { idKey: MARK_ID, markType: 'combo' });
 

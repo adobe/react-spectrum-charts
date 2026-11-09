@@ -13,8 +13,7 @@ import { createElement } from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { Bar, ChartInspect } from '../components/index.js';
-import { Donut } from '../pre-alpha/index.js';
+import { Bar, ChartInspect, Donut } from '../components/index.js';
 import { ChartChildElement } from '../types/index.js';
 import useChartInspects from './useChartInspects.js';
 

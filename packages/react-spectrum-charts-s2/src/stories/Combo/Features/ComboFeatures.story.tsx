@@ -16,14 +16,15 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../Chart.js';
 import { Axis, Bar, ChartInspect, Line } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Combo } from '../../../pre-alpha/index.js';
+import { Combo } from '../../../lab/index.js';
 import { peopleAdoptionComboData, peopleTotalComboData } from '../../../storyShared/data/data.js';
 import { formatTimestamp } from '../../../storyShared/storyUtils.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps, ComboProps } from '../../../types/index.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Pre-Alpha/Combo/Features',
+  title: 'React Spectrum Charts 2/Lab/Combo/Features',
+  tags: ['lab'],
   component: Combo,
 };
 

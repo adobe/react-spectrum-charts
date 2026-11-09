@@ -15,6 +15,7 @@ import { LegendBarStory } from './LegendStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Align',
+  tags: ['alpha'],
   component: Legend,
 };
 

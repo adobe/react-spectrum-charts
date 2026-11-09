@@ -4,17 +4,13 @@ sidebar_position: 10
 
 # Donut (S2)
 
-:::note Pre-alpha component
-`Donut` is a [pre-alpha component](./pre-alpha) — it has no finalized Spectrum 2 design yet
-and is imported from the `pre-alpha` subpath.
-:::
+[<span className="badge badge--primary">Alpha</span>](./stages.md)
 
 The `Donut` component displays a donut (or pie, via `holeRatio={0}`) chart. Each data point
 becomes a segment sized by `metric` and colored by `color`.
 
 ```jsx
-import { Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Donut, DonutSummary, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2/pre-alpha';
+import { Chart, Donut, DonutSummary, Legend, SegmentLabel } from '@spectrum-charts/react-spectrum-charts-s2';
 ```
 
 ```jsx
@@ -55,6 +51,33 @@ replaces the default content.
   </ChartPopover>
 </Donut>
 ```
+
+---
+
+## Draw-in animation
+
+Donuts draw in by default, sweeping the segments clockwise over 750ms
+with the Spectrum 2 ease-in-out curve. Full-circle donuts and pies start at the top;
+semicircle donuts start at the left. Direct and advanced labels start a 50ms linear fade
+as soon as their own slice finishes drawing. All text rows and swatches fade together;
+the final label finishes about 50ms after the donut.
+Hover dimming and existing small-segment and collision rules still apply. The center
+summary stays visible throughout.
+
+```jsx
+<Chart data={data}>
+  <Donut metric="count" color="browser">
+    <SegmentLabel value />
+  </Donut>
+</Chart>
+```
+
+Draw-in is on by default and plays once per chart mount; re-renders and updates do not
+replay it. Set `animationTypes={['hover']}` to turn off draw-in only, or
+`animations={false}` to turn off all animations. Empty-state rings remain static.
+When the user prefers reduced motion, draw-in is skipped and hover fades still run.
+The chart fades in over 150ms on first paint, and draw-in waits until the page is rendering frames on time
+(at most 300ms) so it doesn't start while other content is still loading.
 
 ---
 
@@ -235,8 +258,7 @@ Circle donuts start at 12 o'clock. These start positions are fixed.
 ```
 
 :::note Segment labels unsupported
-`SegmentLabel` children are not supported for `variant="semicircle"` and are silently
-omitted.
+`SegmentLabel` children are not supported for `variant="semicircle"` and are omitted.
 :::
 
 ---
@@ -305,7 +327,7 @@ omitted.
             <td>sortOrder</td>
             <td>'valueDescending' | 'data'</td>
             <td>'valueDescending'</td>
-            <td>Controls semicircle segment ordering. <code>'data'</code> preserves source order for ordinal categories.</td>
+            <td>Sorts categorical segments largest-first in both variants. <code>'data'</code> preserves source order. Boolean donuts always preserve source order.</td>
         </tr>
         <tr>
             <td>variant</td>

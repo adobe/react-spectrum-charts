@@ -7,6 +7,14 @@ mark-agnostic (see §7) so other marks can adopt it later. Companion to
 animated hover/highlight engine this feature shares an opt-in gate with (`isHoverAnimate`) but is
 otherwise fully independent from.
 
+> **Superseded implementation.** Line draw-in now uses a clip path instead of the per-frame data filters
+> described in §1–§5. Each frame updates one `${name}_drawInClipX` signal (the eased pixel x of the
+> leading edge), and the line group and highlight overlay clip to the plot area left of it
+> (`getLineDrawInClip`). Static points fade in as the edge reaches them (`getLineDrawInRevealExpr`).
+> Line data and encodings are unchanged by draw-in, which removes the per-vertex expression work that
+> made the filter approach slow under the CSP-safe interpreter (about 3× higher per-chart fps on the
+> 20-chart dashboard at 4× CPU throttle). The gating rules (§2) and clock signals are unchanged.
+
 ---
 
 ## 1. What it does

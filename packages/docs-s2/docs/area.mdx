@@ -1,0 +1,235 @@
+---
+stage: lab
+sidebar_position: 6
+title: Area
+description: Stacked and floating area charts that show how series add up over time or fill a range between two values.
+---
+
+import { PropsTable } from '@site/src/components/PropsTable';
+import { DataCode } from '@site/src/components/examples/DataCode';
+import {
+  AreaAxisPlayground,
+  AreaBandLinePlayground,
+  AreaFloatingPlayground,
+  AreaGapPlayground,
+  AreaHiddenSeriesPlayground,
+  AreaHighlightPlayground,
+  AreaHighlightedItemPlayground,
+  AreaInteractionPlayground,
+  AreaLegendPlayground,
+  AreaOrderPlayground,
+  AreaPaddingPlayground,
+  AreaPlayground,
+  AreaScaleTypePlayground,
+  AreaStatesPlayground,
+} from '@site/src/playgrounds/area';
+
+# Area
+
+<StageBadge />
+
+Areas show how a value changes across a continuous dimension, usually time. With one `metric`,
+each series is stacked on the series below it, so the top edge shows the total. With
+`metricStart` and `metricEnd`, each series fills the range between two values instead.
+
+<AreaPlayground />
+
+`Area` is a lab component. Import it from the `lab` subpath:
+
+```tsx
+import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Area } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+```
+
+## Data
+
+`data` goes on `Chart` as an array of objects, one per point. On `Area`:
+
+- `dimension` names the field for the x position (default `datetime`).
+- `metric` names the numeric field for the y position (default `value`).
+- `color` names the field that splits the data into series (default `series`). Each series gets
+  its own color and legend entry.
+
+Most examples on this page use `channelSessionsData`, three channels over eight weeks:
+
+<DataCode name="channelSessionsData" />
+
+```tsx
+<Chart data={channelSessionsData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" labelFormat="time" granularity="week" baseline />
+  <Area metric="sessions" color="channel" />
+  <Legend />
+</Chart>
+```
+
+The default time scale reads the dimension as a date, so it can be a timestamp or a date string.
+Every series should have a point at every dimension value. Missing points aren't filled in, so
+series with different dimension values don't stack cleanly.
+
+### Missing values
+
+A stacked area treats a missing `metric` value as 0 and drops to the baseline. A floating area
+leaves a gap instead, so missing data isn't mistaken for a value.
+
+<DataCode name="temperatureGapData" />
+
+<AreaGapPlayground />
+
+### Empty and loading
+
+When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to
+show a spinner while data loads.
+
+<AreaStatesPlayground />
+
+## Stacking
+
+With `metric`, series stack in data order: the first series sits on the baseline and each
+following series sits on top of the one before. The y axis always starts at 0. Negative values
+stack downward from 0, separately from positive values.
+
+### order
+
+To stack in a different order, set `order` to a numeric field. Series with higher values stack on
+top. In `channelSessionsData`, `stackOrder` puts Organic search on top and Email on the baseline.
+
+<AreaOrderPlayground />
+
+### opacity
+
+`opacity` sets the fill opacity, from 0 to 1. The default is `0.8`. Stacked series don't overlap,
+so lower opacity only lightens them; it matters most for floating areas.
+
+## Floating areas
+
+Set `metricStart` and `metricEnd` instead of `metric` to fill between two fields, such as a daily
+low and high. Each series starts at its own `metricStart` value, so floating areas don't stack and
+can overlap. Use a lower `opacity` so overlapping series stay visible.
+
+<DataCode name="temperatureData" />
+
+<AreaFloatingPlayground />
+
+`metricStart` and `metricEnd` must be set together. If only one is set, `Area` logs an error and
+falls back to `metric`.
+
+### With a line
+
+A floating area behind a [`Line`](./line.mdx) shows a range around a value, like a forecast with
+its confidence band. Put `Area` before `Line` so the line draws on top.
+
+<DataCode name="forecastData" />
+
+<AreaBandLinePlayground />
+
+## Scale types
+
+`scaleType` sets how `dimension` values map to the x axis:
+
+- `time` (default): dates and timestamps, spaced by time. Use `labelFormat="time"` on the bottom
+  `Axis`.
+- `linear`: numbers, spaced by value.
+- `point`: categories, spaced evenly in data order.
+
+<DataCode name="installsData" />
+
+<DataCode name="weekdayVisitsData" />
+
+<AreaScaleTypePlayground />
+
+:::note
+`scaleType="band"` isn't supported for areas yet and draws a broken chart. Use `point` for
+categories.
+:::
+
+### padding
+
+`padding` adds space between the plot edges and the first and last points. Its unit depends on
+`scaleType`:
+
+- `point`: a ratio of the step between points, from 0 to 1. The default is `0.5`.
+- `time` and `linear`: pixels. The default is `0`, so the area touches both edges.
+
+<AreaPaddingPlayground />
+
+## Axis
+
+Add an `Axis` for each edge that needs labels. Use `labelFormat="time"` and `granularity` on the
+bottom axis for time data; `granularity` sets the tick interval and label format. On the left
+axis, `numberFormat` formats values and `grid` adds horizontal grid lines. Add a `ReferenceLine`
+as a child of `Axis` to mark a value, like a goal.
+
+Axis labels follow the chart's `locale`.
+
+<AreaAxisPlayground />
+
+## Legend
+
+Add `Legend` as a sibling of `Area` to list the series.
+
+- `isToggleable` lets users click an entry to hide or show its series. The remaining series
+  restack to close the gap.
+- `highlight` highlights a series while its entry is hovered.
+
+<AreaLegendPlayground />
+
+### Hiding series
+
+`hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter
+control. The remaining series restack from the baseline. To start with series hidden but let
+users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
+
+<AreaHiddenSeriesPlayground />
+
+## Interaction
+
+### ChartInspect and ChartPopover
+
+Add `ChartInspect` as a child of `Area` to show details on hover and `ChartPopover` to show
+details on click. Both take a function as children that receives the hovered point and returns
+the content. Without children, they highlight the area but show no content.
+
+Hovering follows the nearest dimension value: it adds a point on the top edge of the hovered
+series, draws a vertical rule, and fades the other series. `highlightBy` on `ChartInspect`
+changes what stays highlighted:
+
+- `item` (default): the hovered point, with a rule.
+- `series`: the whole hovered series, without a rule.
+- `dimension`: a point on every series at the hovered x value, with a rule.
+- A list of data keys: every series that matches the hovered point on those keys.
+
+Clicking a series with `ChartPopover` outlines it and fades the others. `rightClick` opens the
+popover on right-click instead.
+
+<AreaInteractionPlayground />
+
+`excludeDataKeys` on `ChartInspect` turns off hover details for rows with a truthy value in any of
+the listed fields. See [Interaction](./interaction.mdx) for more about `ChartInspect` and
+`ChartPopover`.
+
+### Highlighting
+
+`highlightedSeries` on `Chart` highlights a series from outside the chart, for example from a
+table row, by fading the others. `Legend` with `highlight` does the same when its entry is
+hovered.
+
+<AreaHighlightPlayground />
+
+`highlightedItem` highlights a single point by row ID. Set `idKey` on `Chart` to the field that
+uniquely identifies each row. Hovering the chart replaces the controlled highlight.
+
+<AreaHighlightedItemPlayground />
+
+## Animation
+
+Areas don't animate yet. `animationTypes` and `animations` on `Chart` have no effect on `Area`.
+
+## API
+
+### Area
+
+`name` identifies the area's marks and signals in the rendered Vega spec. It defaults to `area0`,
+`area1`, and so on.
+
+<PropsTable component="Area" />

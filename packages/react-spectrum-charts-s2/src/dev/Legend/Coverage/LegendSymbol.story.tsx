@@ -24,6 +24,7 @@ import { defaultProps } from './LegendStoryUtils.js';
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Symbol',
+  tags: ['alpha'],
   component: Legend,
 };
 

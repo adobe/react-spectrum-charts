@@ -27,6 +27,7 @@ import {
 
 export default {
   title: 'React Spectrum Charts 2/Chart/Features',
+  tags: ['alpha'],
   component: Chart,
 };
 

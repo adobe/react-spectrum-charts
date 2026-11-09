@@ -13,9 +13,12 @@ import '../.storybook-s2/manager';
 
 import { addons } from 'storybook/manager-api';
 
+import { renderStageLabel } from '../.storybook-s2/stageBadge';
+
 addons.setConfig({
   brandTitle: 'React Spectrum Charts 2 Dev',
   sidebar: {
+    renderLabel: renderStageLabel,
     filters: {
       patterns: (item) => !item.tags?.includes('hidden'),
     },

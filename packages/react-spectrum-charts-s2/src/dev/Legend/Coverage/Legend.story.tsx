@@ -81,6 +81,7 @@ const makeResizableLegendLineStory = (data: Record<string, unknown>[]): StoryFn<
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Legend',
+  tags: ['alpha'],
   component: Legend,
 };
 

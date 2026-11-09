@@ -1,0 +1,100 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/* eslint-disable react/prop-types -- story args are typed via StoryFn generics */
+import { ComponentProps, ReactElement } from 'react';
+
+import { StoryFn } from '@storybook/react';
+
+import { Chart } from '../../../../Chart.js';
+import { ChartInspect, ChartPopover, Donut, DonutSummary, Legend, SegmentLabel } from '../../../../components/index.js';
+import useChartProps from '../../../../hooks/useChartProps.js';
+import { basicDonutData, booleanDonutData } from '../../../../storyShared/Donut/data.js';
+import { bindWithProps } from '../../../../test-utils/index.js';
+import { ChartProps } from '../../../../types/index.js';
+
+type DrawInAnimationArgs = ComponentProps<typeof Donut> & {
+  data?: ChartProps['data'];
+  labelStyle?: 'none' | 'direct' | 'advanced';
+};
+
+export default {
+  title: 'React Spectrum Charts 2/Donut/Features/DrawInAnimation',
+  tags: ['alpha'],
+  component: Donut,
+  argTypes: {
+    data: { control: false },
+    labelStyle: {
+      control: 'select',
+      description: 'Labels fade in linearly over 50ms once their own slice finishes drawing.',
+      options: ['none', 'direct', 'advanced'],
+    },
+  },
+};
+
+const defaultChartProps = { data: basicDonutData, width: 500, height: 500 };
+const defaultArgs = { color: 'browser', metric: 'count' };
+
+const DrawInStory: StoryFn<DrawInAnimationArgs> = ({ data, labelStyle = 'none', ...args }): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    data: data ?? (args.isBoolean ? booleanDonutData : basicDonutData),
+  });
+  const isAdvancedLabel = labelStyle === 'advanced';
+  return (
+    <Chart {...chartProps}>
+      <Donut {...args}>
+        <DonutSummary label="Visitors" />
+        {labelStyle !== 'none' && (
+          <SegmentLabel value={!isAdvancedLabel} percent swatch={isAdvancedLabel} showValueRow={isAdvancedLabel} />
+        )}
+      </Donut>
+    </Chart>
+  );
+};
+
+const WithHoverStory: StoryFn<DrawInAnimationArgs> = ({ data, labelStyle = 'direct', ...args }): ReactElement => {
+  const chartProps = useChartProps({
+    ...defaultChartProps,
+    width: 600,
+    data: data ?? (args.isBoolean ? booleanDonutData : basicDonutData),
+  });
+  const isAdvancedLabel = labelStyle === 'advanced';
+  return (
+    <Chart {...chartProps}>
+      <Donut {...args}>
+        {labelStyle !== 'none' && (
+          <SegmentLabel
+            value={!isAdvancedLabel}
+            percent={isAdvancedLabel}
+            swatch={isAdvancedLabel}
+            showValueRow={isAdvancedLabel}
+          />
+        )}
+        <ChartInspect />
+        <ChartPopover width="auto" />
+      </Donut>
+      <Legend highlight isToggleable />
+    </Chart>
+  );
+};
+
+const Semicircle = bindWithProps(DrawInStory);
+Semicircle.args = { ...defaultArgs, variant: 'semicircle' };
+
+const AdvancedLabels = bindWithProps(DrawInStory);
+AdvancedLabels.args = { ...defaultArgs, labelStyle: 'advanced' };
+
+const WithHover = bindWithProps(WithHoverStory);
+WithHover.args = { ...defaultArgs };
+
+export { AdvancedLabels, Semicircle, WithHover };

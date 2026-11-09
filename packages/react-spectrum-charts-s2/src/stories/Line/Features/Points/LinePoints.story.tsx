@@ -16,6 +16,7 @@ import { VisitsStory, visitsProps } from '../lineStoryTemplates.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Features/Points',
+  tags: ['alpha'],
   component: Line,
 };
 

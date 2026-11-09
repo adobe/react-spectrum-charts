@@ -12,27 +12,27 @@
 import { PartiallyRequired } from '../specUtil.types.js';
 
 export interface ChartPopoverOptions {
-  /** Width of the popover */
+  /** Width of the popover in pixels, or `'auto'`; fits its content when unset. */
   width?: number | 'auto';
-  /** Minimum width of the popover */
+  /** Minimum width of the popover in pixels. Defaults to `0`. */
   minWidth?: number;
-  /** Maximum width of the popover */
+  /** Maximum width of the popover in pixels. */
   maxWidth?: number;
-  /** Height of the popover */
+  /** Height of the popover in pixels, or `'auto'`; fits its content when unset. */
   height?: number | 'auto';
-  /** Minimum height of the popover */
+  /** Minimum height of the popover in pixels. */
   minHeight?: number;
-  /** Maximum height of the popover */
+  /** Maximum height of the popover in pixels. */
   maxHeight?: number;
-  /** handler that is called when the popover's open state changes */
+  /** Called with `true` when the popover opens and `false` when it closes. */
   onOpenChange?: (isOpen: boolean) => void;
-  /** The placement padding that should be applied between the popover and its surrounding container */
+  /** Minimum space in pixels between the popover and the edge of the window. Defaults to `12`. */
   containerPadding?: number;
-  /** Whether the popover should be shown on right click */
+  /** Opens the popover on right-click instead of click. Defaults to `false`. */
   rightClick?: boolean;
-  /** Sets which marks should be highlighted when a popover is visible.  This feature is incomplete. */
+  /** What stays highlighted while the popover is open, like `highlightBy` on ChartInspect; incomplete. Defaults to `'item'`. */
   UNSAFE_highlightBy?: 'series' | 'dimension' | 'item' | string[];
-  /** The margin that should be applied between the popover and its surrounding container */
+  /** Space in pixels between the popover's edge and its content. Defaults to `12`. */
   contentMargin?: number;
 }
 

@@ -24,6 +24,7 @@ import { ChartProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Direct Label',
+  tags: ['alpha'],
   component: LineDirectLabel,
 };
 

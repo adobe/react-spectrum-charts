@@ -15,6 +15,7 @@ import { RevenueStory, TrafficStory, controls } from './legendStoryTemplates.js'
 
 export default {
   title: 'React Spectrum Charts 2/Legend/Features',
+  tags: ['alpha'],
   component: Legend,
   argTypes: {
     align: { control: 'inline-radio', options: ['start', 'middle', 'end'] },

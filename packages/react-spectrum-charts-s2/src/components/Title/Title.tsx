@@ -17,6 +17,10 @@ import { DEFAULT_TITLE_FONT_WEIGHT } from '@spectrum-charts/core-s2/constants';
 
 import { TitleProps } from '../../types/index.js';
 
+/**
+ * Adds a title to the chart.
+ * @alpha
+ */
 const Title: FC<TitleProps> = ({
   text,
   fontWeight = DEFAULT_TITLE_FONT_WEIGHT,

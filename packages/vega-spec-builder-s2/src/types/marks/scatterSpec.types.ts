@@ -36,42 +36,21 @@ export interface ScatterOptions {
   metric?: string;
   /** Restricts scatter plot contents to the plot boundaries.*/
   clip?: boolean;
-  /**
-   * point fill color (and stroke color if `stroke` is not provided)
-   * uses a key in the data that will map to the color scale or a static color value
-   */
+  /** Point fill color: a data key mapped to the color scale, or a static color. Defaults to `{ value: 'categorical-100' }`. */
   color?: ColorFacet;
-  /**
-   * type of color scale that should be used for the points
-   * use ordinal if the key used for `color` maps to string values ('UT', 'CA', 'NY', etc.)
-   * use linear if the key used for `color` maps to numeric values (0, 1, 2, etc.)
-   */
+  /** Color scale type: `ordinal` for category keys, `linear` for numeric keys. Defaults to `ordinal`. */
   colorScaleType?: 'linear' | 'ordinal';
-  /** data key for the x-axis */
+  /** Data key for the x position. Defaults to `x`. */
   dimension?: string;
-  /** scale type of the x-axis
-   * see https://vega.github.io/vega/docs/scales/#types for more information
-   */
+  /** Scale type for the x position; use `time` for timestamps. Defaults to `linear`. */
   dimensionScaleType?: ScaleType;
-  /**
-   * line type of the point border
-   * uses a key in the data that will map to the line type scale or a static line type value
-   */
+  /** Outline dash pattern: a data key mapped to the chart's `lineTypes`, or a static line type. Defaults to `{ value: 'solid' }`. */
   lineType?: LineTypeFacet;
-  /**
-   * line width of the point border
-   * uses a key in the data that will map to the line width scale or a static line width value
-   */
+  /** Outline width: a data key mapped to the chart's `lineWidths`, or a static width. Defaults to `{ value: 0 }`. */
   lineWidth?: LineWidthFacet;
-  /**
-   * point fill and stroke opacity
-   * uses a key in the data that will map to the opacity scale or a opacity value
-   */
+  /** Point opacity: a data key mapped to the chart's `opacities`, or a static value. Defaults to `{ value: 1 }`. */
   opacity?: OpacityFacet;
-  /**
-   * point size
-   * uses a key in the data that will map to the size scale (linear) or a static size value
-   */
+  /** Point width: a numeric data key scaled between the chart's `symbolSizes`, or a static size. Defaults to `{ value: 'M' }`. */
   size?: SymbolSizeFacet;
 
   //children
@@ -80,19 +59,9 @@ export interface ScatterOptions {
   scatterAnnotations?: ScatterAnnotationOptions[];
   scatterPaths?: ScatterPathOptions[];
   trendlines?: TrendlineOptions[];
-  /**
-   * point border/stroke color
-   * uses a key in the data that will map to the color scale or a static color value
-   * defaults to `color` if not provided
-   */
+  /** Outline color: a data key mapped to the color scale, or a static color. Defaults to `color`. */
   stroke?: ColorFacet;
-  /**
-   * CSS blend mode for overlapping points
-   * - 'normal': disables blending (points fully cover each other)
-   * - other values: applies the specified blend mode
-   * - undefined: uses default behavior (multiply in light mode, screen in dark mode)
-   * @see https://vega.github.io/vega/docs/marks/symbol/
-   */
+  /** CSS blend mode where points overlap. `normal` turns blending off. Defaults to `multiply` in light mode and `screen` in dark mode. */
   blend?: 'normal' | Blend;
 }
 

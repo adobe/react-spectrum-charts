@@ -20,7 +20,8 @@ import {
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getDeemphasisRamp, getHoverFractionSignal } from '../marks/hoverAnimationUtils.js';
+import { applyDrawInReveal, getLineDrawInRevealExpr } from '../marks/drawInAnimationUtils.js';
+import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import {
   getHighlightBackgroundPoint,
   getHighlightPoint,
@@ -191,6 +192,13 @@ describe('getLineStaticPoint()', () => {
     expect(mark.from).toEqual({ data: 'line0_staticPointData' });
   });
 
+  test('should reveal the point when the draw-in clip edge reaches it', () => {
+    const reveal = getLineDrawInRevealExpr('line0', 'time', 'datetime');
+    const opacity = getLineStaticPoint(defaultLineOptions).encode?.update?.opacity;
+    const mark = getLineStaticPoint({ ...defaultLineOptions, isDrawInAnimate: true });
+    expect(mark.encode?.update?.opacity).toStrictEqual(applyDrawInReveal(opacity ?? [], reveal));
+  });
+
   test('should use solid fill with series color (not BACKGROUND_COLOR)', () => {
     const mark = getLineStaticPoint(defaultLineOptions);
     expect(mark.encode?.enter?.fill).toEqual({ field: DEFAULT_COLOR, scale: COLOR_SCALE });
@@ -240,9 +248,8 @@ describe('getLineStaticPoint()', () => {
   describe('when isHoverAnimate is true', () => {
     test('returns the animated deemphasis-ramp signal instead of the instant production rules', () => {
       const mark = getLineStaticPoint({ ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true });
-      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
       expect(mark.encode?.update?.opacity).toStrictEqual({
-        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+        signal: getHoverDeemphasisOpacitySignal('line0'),
       });
     });
 
@@ -253,9 +260,8 @@ describe('getLineStaticPoint()', () => {
         isHighlightedByGroup: true,
         isHoverAnimate: true,
       });
-      const ramp = getDeemphasisRamp(getHoverFractionSignal('line0'));
       expect(mark.encode?.update?.opacity).toStrictEqual({
-        signal: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${ramp}`,
+        signal: getHoverDeemphasisOpacitySignal('line0'),
       });
     });
   });
@@ -305,6 +311,14 @@ describe('getLineStaticPointBackground()', () => {
   test('should use staticPointData as data source', () => {
     const mark = getLineStaticPointBackground(defaultLineOptions);
     expect(mark.from).toEqual({ data: 'line0_staticPointData' });
+  });
+
+  test('should reveal the background with its point during draw-in', () => {
+    expect(getLineStaticPointBackground(defaultLineOptions).encode?.update).not.toHaveProperty('opacity');
+    const mark = getLineStaticPointBackground({ ...defaultLineOptions, isDrawInAnimate: true });
+    expect(mark.encode?.update).toHaveProperty('opacity', {
+      signal: getLineDrawInRevealExpr('line0', 'time', 'datetime'),
+    });
   });
 
   test('should not be interactive', () => {

@@ -16,7 +16,7 @@ import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getCascadeTransforms, MIN_LABEL_GAP } from '../line/directLabelUtils.js';
 
-import { getPrimarySeriesOtherExpr } from '../line/lineDataUtils.js';
+import { getInPlotMetricFilter, getPrimarySeriesOtherExpr } from '../line/lineDataUtils.js';
 import { getLineOpacity } from '../line/lineMarkUtils.js';
 import { getEffectiveMetricField } from '../lineForecast/index.js';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils.js';
@@ -85,6 +85,7 @@ export const getLineDirectLabelData = (
 					},
 				]
 			: []),
+		...(lineOptions.hasFixedMetricAxis ? [getInPlotMetricFilter(lineOptions, metric)] : []),
 		...getCascadeTransforms(yScaleName, metric, ''),
 	];
 

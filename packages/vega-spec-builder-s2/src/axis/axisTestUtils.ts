@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Mark } from 'vega';
+import { Clip, Mark } from 'vega';
 
 import {
   DEFAULT_COLOR_SCHEME,
@@ -26,6 +26,7 @@ export const defaultXBaselineMark: Mark = {
   description: 'xBaseline',
   type: 'rule',
   interactive: false,
+  clip: { signal: "!inrange(0, domain('yLinear'))" } as unknown as Clip,
   encode: {
     update: {
       x: { value: 0 },
@@ -40,6 +41,7 @@ export const defaultYBaselineMark: Mark = {
   description: 'yBaseline',
   type: 'rule',
   interactive: false,
+  clip: { signal: "!inrange(0, domain('xLinear'))" } as unknown as Clip,
   encode: {
     update: {
       y: { value: 0 },

@@ -13,7 +13,7 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartActionBar } from '../components/ChartActionBar/index.js';
+import { ChartActionBar } from '../lab/components/ChartActionBar/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
 import { ChartPopover } from '../components/ChartPopover/index.js';
 import { LineForecast } from '../components/LineForecast/index.js';
