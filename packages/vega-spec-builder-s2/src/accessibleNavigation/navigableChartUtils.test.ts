@@ -12,7 +12,7 @@
 import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC } from '@spectrum-charts/core-s2/constants';
 
 import { AxisOptions, MarkOptions } from '../types/index.js';
-import { getBarSeriesFields, getNavigableChart } from './navigableChartUtils.js';
+import { getBarSeriesFields, getNavigableChart, getUnsupportedNavigationReason } from './navigableChartUtils.js';
 
 describe('getBarSeriesFields()', () => {
   test('a single color field is the only series field', () => {
@@ -50,6 +50,22 @@ describe('getBarSeriesFields()', () => {
   });
 });
 
+describe('getUnsupportedNavigationReason()', () => {
+  test('supports a single bar', () => {
+    expect(getUnsupportedNavigationReason([{ markType: 'bar', color: 'os', type: 'dodged' }])).toBeUndefined();
+  });
+
+  test.each<[string, MarkOptions[]]>([
+    ['no marks', []],
+    ['a non-bar mark', [{ markType: 'line' }]],
+    ['two bars', [{ markType: 'bar' }, { markType: 'bar', name: 'bar1' }]],
+    ['a bar with another mark', [{ markType: 'bar' }, { markType: 'line' }]],
+    ['a trellised bar', [{ markType: 'bar', trellis: 'region' }]],
+  ])('rejects %s', (_, marks) => {
+    expect(getUnsupportedNavigationReason(marks)).toEqual(expect.any(String));
+  });
+});
+
 describe('getNavigableChart()', () => {
   const bottomAxis: AxisOptions = { position: 'bottom', title: 'Browser' };
   const leftAxis: AxisOptions = { position: 'left', title: 'Users' };
@@ -76,13 +92,12 @@ describe('getNavigableChart()', () => {
     expect(getNavigableChart({ marks: [{ markType: 'bar', name: 'Revenue Bars' }] })?.markName).toBe('revenueBars');
   });
 
-  test('uses the first bar', () => {
+  test('is undefined for a chart navigation does not support', () => {
     const marks: MarkOptions[] = [
       { markType: 'line', name: 'trend' },
       { markType: 'bar', name: 'first' },
-      { markType: 'bar', name: 'second' },
     ];
-    expect(getNavigableChart({ marks })?.markName).toBe('first');
+    expect(getNavigableChart({ marks })).toBeUndefined();
   });
 
   test('labels fields with the axis and legend titles in reading order', () => {

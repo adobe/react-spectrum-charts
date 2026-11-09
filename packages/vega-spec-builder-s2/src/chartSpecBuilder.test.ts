@@ -65,7 +65,7 @@ import {
 import { getExpressionFunctions } from './expressionFunctions/expressionFunctions.js';
 import { defaultSignals } from './specTestUtils.js';
 import { baseData } from './specUtils.js';
-import { BarOptions, ChartOptions, ChartSpecOptions, LineType } from './types/index.js';
+import { BarOptions, ChartOptions, ChartSpecOptions, LineType, MarkOptions } from './types/index.js';
 
 const defaultData: Data[] = [{ name: TABLE, values: [], transform: [{ type: 'identifier', as: MARK_ID }] }];
 
@@ -599,11 +599,11 @@ describe('Chart spec builder', () => {
     const countNamed = (items: { name?: string }[] | undefined, name: string) =>
       items?.filter((item) => item.name === name).length;
 
-    test('adds the focus signals and chart ring once for a chart with navigable marks', () => {
+    test('adds the focus signals and chart ring once for a navigable chart', () => {
       const spec = buildSpec({
         ...defaultSpecOptions,
         accessibleNavigation: true,
-        marks: [defaultBarOptions, { ...defaultBarOptions, name: 'bar1' }],
+        marks: [defaultBarOptions],
       });
       expect(countNamed(spec.signals, FOCUSED_ITEM)).toBe(1);
       expect(countNamed(spec.signals, FOCUSED_REGION)).toBe(1);
@@ -623,17 +623,26 @@ describe('Chart spec builder', () => {
       expect(buildSpec({ ...defaultSpecOptions, marks: [defaultBarOptions] }).usermeta?.navigation).toBeUndefined();
     });
 
-    test('adds nothing when disabled or no mark is navigable', () => {
-      const disabled = buildSpec({ ...defaultSpecOptions, marks: [defaultBarOptions] });
-      const unsupported = buildSpec({
-        ...defaultSpecOptions,
-        accessibleNavigation: true,
-        marks: [{ markType: 'scatter' }],
-      });
-      for (const spec of [disabled, unsupported]) {
-        expect(countNamed(spec.signals, FOCUSED_ITEM)).toBe(0);
-        expect(countNamed(spec.marks, 'chartFocusRing')).toBe(0);
-      }
+    test('adds nothing when disabled', () => {
+      const spec = buildSpec({ ...defaultSpecOptions, marks: [defaultBarOptions] });
+      expect(countNamed(spec.signals, FOCUSED_ITEM)).toBe(0);
+      expect(countNamed(spec.marks, 'chartFocusRing')).toBe(0);
+    });
+
+    test.each<[string, MarkOptions[]]>([
+      ['a scatter', [{ markType: 'scatter' }]],
+      ['a bar with a line', [defaultBarOptions, { markType: 'line' }]],
+      ['a trellised bar', [{ ...defaultBarOptions, trellis: 'region' }]],
+    ])('warns and adds nothing for %s', (_, marks) => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const spec = buildSpec({ ...defaultSpecOptions, accessibleNavigation: true, marks, legends: [{}] });
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('accessibleNavigation is off'));
+      expect(countNamed(spec.signals, FOCUSED_ITEM)).toBe(0);
+      expect(countNamed(spec.marks, 'chartFocusRing')).toBe(0);
+      expect(JSON.stringify(spec.marks)).not.toContain('FocusRing');
+      expect(spec.usermeta?.navigation).toBeUndefined();
+      expect(spec.usermeta?.legends).toBeUndefined();
+      warn.mockRestore();
     });
   });
 

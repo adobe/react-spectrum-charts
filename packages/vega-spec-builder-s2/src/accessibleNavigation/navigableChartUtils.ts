@@ -111,7 +111,18 @@ const getFieldLabels = ({
 };
 
 /**
- * Gets the keyboard navigation configuration for the chart's first navigable mark.
+ * Gets why keyboard navigation doesn't support the chart's marks, or undefined when it does.
+ * @param marks
+ * @returns string | undefined
+ */
+export const getUnsupportedNavigationReason = (marks: MarkOptions[]): string | undefined => {
+  if (marks.length !== 1 || marks[0].markType !== 'bar') return 'keyboard navigation supports charts with a single Bar';
+  if (marks[0].trellis) return 'keyboard navigation does not support trellised bars yet';
+  return undefined;
+};
+
+/**
+ * Gets the keyboard navigation configuration for the chart's bar, or undefined when navigation doesn't support the chart.
  * @param options
  * @returns NavigableChart | undefined
  */
@@ -124,8 +135,8 @@ export const getNavigableChart = ({
   axes?: AxisOptions[];
   legends?: LegendOptions[];
 }): NavigableChart | undefined => {
-  const bar = marks.find((mark): mark is BarMarkOptions => mark.markType === 'bar');
-  if (!bar) return undefined;
+  if (getUnsupportedNavigationReason(marks)) return undefined;
+  const bar = marks[0] as BarMarkOptions;
   const {
     dimension = DEFAULT_CATEGORICAL_DIMENSION,
     metric = DEFAULT_METRIC,

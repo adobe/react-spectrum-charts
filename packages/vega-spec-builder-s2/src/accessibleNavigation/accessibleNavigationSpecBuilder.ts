@@ -17,18 +17,20 @@ import { FOCUSED_DIMENSION, FOCUSED_ITEM, FOCUSED_REGION } from '@spectrum-chart
 import { getGenericValueSignal } from '../signal/signalSpecBuilder.js';
 import { AxisOptions, ColorScheme, LegendOptions, MarkOptions, ScSpec } from '../types/index.js';
 import { FOCUS_RING_ROUNDED_RADIUS, getFocusRingStroke } from './focusRingUtils.js';
-import { getNavigableChart } from './navigableChartUtils.js';
-
-/** Mark types keyboard navigation supports */
-const NAVIGABLE_MARK_TYPES = new Set<MarkOptions['markType']>(['bar']);
+import { getNavigableChart, getUnsupportedNavigationReason } from './navigableChartUtils.js';
 
 /**
- * Whether any of the chart's marks supports keyboard navigation.
+ * Whether keyboard navigation supports the chart, warning why not when it was requested for an unsupported one.
+ * @param accessibleNavigation
  * @param marks
  * @returns boolean
  */
-export const hasNavigableMark = (marks: MarkOptions[]): boolean =>
-  marks.some((mark) => NAVIGABLE_MARK_TYPES.has(mark.markType));
+export const isNavigationEnabled = (accessibleNavigation: boolean, marks: MarkOptions[]): boolean => {
+  if (!accessibleNavigation) return false;
+  const reason = getUnsupportedNavigationReason(marks);
+  if (reason) console.warn(`accessibleNavigation is off: ${reason}.`);
+  return !reason;
+};
 
 /**
  * Gets the signals keyboard navigation writes the focused item, dimension and region to.

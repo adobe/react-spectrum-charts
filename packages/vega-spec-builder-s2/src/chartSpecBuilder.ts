@@ -53,7 +53,10 @@ import {
 import { colorSchemes, getColorSchemeColors, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { jsonClone } from '@spectrum-charts/core-s2/utils';
 
-import { addAccessibleNavigation, hasNavigableMark } from './accessibleNavigation/accessibleNavigationSpecBuilder.js';
+import {
+  addAccessibleNavigation,
+  isNavigationEnabled,
+} from './accessibleNavigation/accessibleNavigationSpecBuilder.js';
 import { addArea } from './area/areaSpecBuilder.js';
 import { addAxis } from './axis/axisSpecBuilder.js';
 import { addBar } from './bar/barSpecBuilder.js';
@@ -168,10 +171,12 @@ export function buildSpec({
   let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const legendHighlightSignals = getLegendHighlightSignals(legends);
+  // Bars, legends and the navigation config all read this one gate, so an unsupported chart gets none of them.
+  const hasNavigation = isNavigationEnabled(accessibleNavigation, marks);
   const specOptions = {
     animations,
     animationTypes,
-    accessibleNavigation,
+    accessibleNavigation: hasNavigation,
     backgroundColor,
     colorScheme,
     idKey,
@@ -215,7 +220,7 @@ export function buildSpec({
     }
   }, spec);
 
-  if (accessibleNavigation && hasNavigableMark(marks)) {
+  if (hasNavigation) {
     spec = addAccessibleNavigation(spec, { colorScheme, marks, axes, legends });
   }
 
