@@ -137,7 +137,7 @@ export type NumberFormat =
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 export type ScaleType = 'linear' | 'point' | 'time' | 'band';
-export type ChartSymbolShape = 'rounded-square' | SymbolShape | (string & NonNullable<unknown>);
+export type ChartSymbolShape = 'rounded-square' | SymbolShape | (string & NonNullable<unknown>); // NOSONAR typescript:S6571 - intersection keeps literal autocomplete while accepting any string
 
 /**
  * Stroke dasharray for the line.
