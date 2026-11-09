@@ -9,9 +9,9 @@ Accessibility in data visualizations isn't fully supported yet and is a work in 
 page covers what charts expose to assistive technology today and what's still missing.
 
 :::caution
-Charts don't support keyboard navigation, data tables, or screen reader access to individual data
-points yet. Experimental keyboard navigation for basic bar charts is available behind the
-`accessibleNavigation` prop on `Chart`; it may change or be removed.
+Charts don't support data tables yet, and screen reader access to individual data points is
+limited to experimental keyboard navigation for bar charts. See
+[Keyboard navigation](#keyboard-navigation).
 :::
 
 ## Describe the chart
@@ -46,11 +46,35 @@ the chart's `description` is exposed, so use `svg` when accessibility matters.
 A visible title and `description` do different jobs: the title names the chart for everyone, and
 `description` summarizes it for people who can't see it. Use both.
 
+## Keyboard navigation
+
+Set `accessibleNavigation` on `Chart` to let keyboard users explore a bar chart. It's experimental
+and may change or be removed.
+
+```tsx
+<Chart data={data} accessibleNavigation>
+  <Axis position="left" grid title="Downloads" />
+  <Axis position="bottom" baseline title="Browser" />
+  <Bar dimension="browser" color="operatingSystem" />
+  <Legend title="Operating system" />
+</Chart>
+```
+
+`Tab` reaches the chart, `Enter` enters it, and the arrow keys move between bars, stacks, and
+segments. The bottom axis labels and the legend are regions of their own, reached with the arrow
+keys. `Escape` steps back out. Plain, stacked, dodged, and dual-metric-axis `Bar` charts are
+supported; other marks aren't yet.
+
+Each focused bar, stack, axis label, and legend entry has an accessible name built from its axis and
+legend titles, so title your axes and legend. Keyboard focus drives the same hover state the mouse
+does: a focused bar shows its `ChartInspect` tooltip, `Space` opens its `ChartPopover`, and
+`Shift+F10` opens its `rightClick` popover.
+
 ## Hover-only content
 
-`ChartInspect` content, `ChartPopover` content, and legend
+Without `accessibleNavigation`, `ChartInspect` content, `ChartPopover` content, and legend
 [`descriptions`](../legend.mdx#descriptions) appear only on pointer hover or click, so keyboard and
-screen reader users can't reach them yet.
+screen reader users can't reach them.
 
 ## Reduced motion
 
