@@ -27,6 +27,7 @@ import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 import { getItemBounds, triggerPopover } from '../utils/markClickUtils.js';
 import { segmentId } from './buildBarStructure.js';
 import { NavigableChartType } from './buildChartStructure.js';
+import { isDevelopment } from './navigationReconciliation.js';
 import { NavigationSession, NavigationSessionOptions, Ref, mountNavigationSession } from './navigationSession.js';
 
 jest.mock('../utils/markClickUtils', () => ({
@@ -35,6 +36,12 @@ jest.mock('../utils/markClickUtils', () => ({
   // per-test with mockReturnValueOnce(false) to simulate no popover being configured.
   triggerPopover: jest.fn(() => true),
   getItemBounds: jest.fn(() => ({ x1: 1, y1: 2, x2: 3, y2: 4 })),
+}));
+
+// The fake scenegraph has no bars unless a test adds them, so the rendered-chart check is off by default.
+jest.mock('./navigationReconciliation', () => ({
+  ...jest.requireActual('./navigationReconciliation'),
+  isDevelopment: jest.fn(() => false),
 }));
 
 const data = [
@@ -751,6 +758,44 @@ describe('mountNavigationSession()', () => {
       fireEvent.keyDown(focused(), { key: 'Escape', code: 'Escape' }); // now drill out
 
       expect(signaledWith(FOCUSED_REGION, 'chart')).toBe(true);
+    });
+  });
+
+  describe('checking the navigation against the rendered chart in development', () => {
+    let warn: jest.SpyInstance;
+    beforeEach(() => {
+      (isDevelopment as jest.Mock).mockReturnValue(true);
+      warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+    afterEach(() => {
+      (isDevelopment as jest.Mock).mockReturnValue(false);
+      warn.mockRestore();
+    });
+
+    const attachWithBars = (rendered: typeof data) => {
+      barItems.push(...rendered.map((datum) => ({ datum })), { datum: { browser: 'Opera', value: 0 } });
+      return mountSession({
+        container,
+        chartType: 'bar',
+        data,
+        dimension: 'browser',
+        markName: 'bar0',
+        chartId: 'c',
+        view,
+      });
+    };
+
+    test('stays quiet when every bar has a node', () => {
+      attachWithBars(data);
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    test('warns about nodes with no rendered bar', () => {
+      attachWithBars(data.slice(0, 2));
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('does not match'), {
+        missing: ['Safari'],
+        unreachable: [],
+      });
     });
   });
 

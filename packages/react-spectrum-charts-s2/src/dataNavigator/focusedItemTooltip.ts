@@ -41,7 +41,7 @@ export interface SceneNode {
 }
 
 /** Every rendered instance of a named mark, wherever it's nested in the scenegraph. */
-const findSceneItems = (view: View, marktype: string, name: string): SceneNode[] => {
+export const findSceneItems = (view: View, marktype: string, name: string): SceneNode[] => {
   const results: SceneNode[] = [];
   const walk = (node: SceneNode | undefined): void => {
     if (!node || typeof node !== 'object') return;

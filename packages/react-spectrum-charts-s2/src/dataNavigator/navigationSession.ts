@@ -12,7 +12,7 @@
 import dataNavigator, { NodeObject } from 'data-navigator';
 import { SignalListenerHandler, View } from 'vega';
 
-import { LAST_RSC_SERIES_ID, SERIES_ID, TABLE } from '@spectrum-charts/core-s2/constants';
+import { DEFAULT_METRIC, LAST_RSC_SERIES_ID, SERIES_ID, TABLE } from '@spectrum-charts/core-s2/constants';
 import { NavigableLegend, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { getVisibleAxisLabelColumns, positionOverlayAtBounds } from './axisLabelGeometry.js';
@@ -27,6 +27,12 @@ import './dataNavigator.css';
 import { hideFocusedItemTooltip } from './focusedItemTooltip.js';
 import { getLegendEntries } from './legendGeometry.js';
 import { LEGEND_REGION, createLegendRegion } from './legendRegion.js';
+import {
+  getContentLeafIds,
+  getRenderedItemIds,
+  isDevelopment,
+  reconcileNavigation,
+} from './navigationReconciliation.js';
 import {
   CLEARED_FOCUS,
   ClickedItem,
@@ -240,6 +246,22 @@ const getLegendSeries = (
 };
 
 /**
+ * In development, warns when the navigation's leaves and the chart's rendered items don't map one-to-one.
+ * @param nodes
+ * @param view
+ * @param options
+ */
+const warnOnMismatch = (
+  nodes: Record<string, NodeObject>,
+  view: View | undefined,
+  { markName, ...options }: Omit<Parameters<typeof getRenderedItemIds>[1], 'markName'> & { markName?: string }
+): void => {
+  if (!view || !markName || !isDevelopment()) return;
+  const mismatch = reconcileNavigation(getContentLeafIds(nodes), getRenderedItemIds(view, { ...options, markName }));
+  if (mismatch) console.warn('accessibleNavigation does not match the rendered chart:', mismatch);
+};
+
+/**
  * Builds the navigation structure and mounts data-navigator's rendering +
  * input modules for one view. The visible focus indicator is drawn on the Vega canvas (focus-ring marks); the
  * elements created here are invisible overlays used only for keyboard focus and assistive tech.
@@ -315,6 +337,13 @@ export const mountNavigationSession = ({
   });
   if (!built) return undefined;
   const { structure, entryPoint } = built;
+  warnOnMismatch(structure.nodes, view, {
+    chartType,
+    markName,
+    dimension,
+    metric: metric ?? DEFAULT_METRIC,
+    seriesField,
+  });
 
   if (!container.id) {
     container.id = `dn-root-${chartId}`;
