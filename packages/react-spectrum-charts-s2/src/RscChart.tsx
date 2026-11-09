@@ -368,7 +368,6 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
             color={navColor}
             type={navFields?.type}
             colorOverride={navColorOverride}
-            locale={typeof locale === 'string' ? locale : undefined}
             metric={navFields?.metric}
             order={navFields?.order}
             orientation={navOrientation}

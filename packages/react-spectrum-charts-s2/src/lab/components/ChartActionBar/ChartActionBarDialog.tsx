@@ -26,6 +26,7 @@ import { COMPONENT_NAME } from '@spectrum-charts/core-s2/constants';
 import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../../../context/RscChartContext.js';
+import { useFormatMessage } from '../../../intl/index.js';
 import type { ActionBarDetail } from '../../../hooks/useActionBars.js';
 import { clearHoverSignals, setSelectedSignals } from '../../../utils/index.js';
 
@@ -61,6 +62,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
   targetElement,
 }) => {
   const { chartView, selectedData, selectedDataName } = useChartContext();
+  const formatMessage = useFormatMessage();
   const [isOpen, setIsOpen] = useState(false);
   const [renderDatum, setRenderDatum] = useState<Datum | null>(null);
   const [overflowOpen, setOverflowOpen] = useState(false);
@@ -242,7 +244,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
         <dialog
           ref={containerRef}
           open
-          aria-label="Action bar"
+          aria-label={formatMessage('actionBar.label')}
           data-testid="rsc-action-bar"
           className={`rsc-popover rsc-action-bar${isEmphasized ? ' rsc-action-bar--emphasized' : ''}`}
           style={{ position: 'fixed', zIndex: 10000 }}
@@ -252,7 +254,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
               type="button"
               className="rsc-action-bar-drag-handle"
               data-testid="rsc-action-bar-drag-handle"
-              aria-label="Drag to reposition action bar. Use arrow keys to move."
+              aria-label={formatMessage('actionBar.dragHandle')}
               onPointerDown={handleDragStart}
               onPointerMove={handleDragMove}
               onPointerUp={handleDragEnd}
@@ -263,7 +265,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
               <div ref={overflowAnchorRef} style={{ position: 'relative' }}>
                 <ActionButton
                   isQuiet
-                  aria-label="More actions"
+                  aria-label={formatMessage('actionBar.moreActions')}
                   aria-haspopup="true"
                   aria-expanded={overflowOpen}
                   onPress={() => setOverflowOpen((open) => !open)}

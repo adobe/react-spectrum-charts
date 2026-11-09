@@ -34,6 +34,7 @@ module.exports = {
     'packages/docs/**',
     'packages/docs-s2/**',
     '**/test-utils/**',
+    '**/src/intl/compiled.ts',
     '*.js',
     '*.cjs',
   ],
