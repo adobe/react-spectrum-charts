@@ -98,7 +98,7 @@ describe('barUtils', () => {
     describe('horizontal orientation', () => {
       test('defaultBarOptions should return encodings on x axis', () => {
         const domainEncodings = getMetricEncodings({ ...defaultBarOptions, orientation: 'horizontal' });
-        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y as unknown[]).length;
+        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y2 as unknown[]).length;
 
         expect(domainEncodings.x).toHaveLength(defaultStackedEncodingStartLength);
         expect(domainEncodings.x2).toEqual({ scale: 'xLinear', field: `${DEFAULT_METRIC}1` });
@@ -119,7 +119,7 @@ describe('barUtils', () => {
           type: 'dodged',
           orientation: 'horizontal',
         });
-        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y as unknown[]).length;
+        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y2 as unknown[]).length;
 
         expect(domainEncodings.x).toHaveLength(defaultStackedEncodingStartLength);
         expect(domainEncodings.x2).toEqual({ scale: 'xLinear', field: `${DEFAULT_METRIC}1` });
@@ -132,36 +132,36 @@ describe('barUtils', () => {
     const endValue = `datum.${DEFAULT_METRIC}1`;
 
     describe('vertical orientation', () => {
-      test('defaultBarOptions, should return with keys "y" and "y2"', () => {
+      test('defaultBarOptions, should put the gap-adjusted start on "y2" and the end on "y"', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(Object.keys(encodings)).toEqual(['y', 'y2']);
+        expect(Object.keys(encodings)).toEqual(['y2', 'y']);
       });
 
       test('first should test for starting at 0', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y?.[0]?.test).toEqual(`${startValue} === 0`);
-        expect(encodings.y?.[0]?.signal).toEqual(`scale('yLinear', ${startValue})`);
+        expect(encodings.y2?.[0]?.test).toEqual(`${startValue} === 0`);
+        expect(encodings.y2?.[0]?.signal).toEqual(`scale('yLinear', ${startValue})`);
       });
 
       test('should second test for ending positive value', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y?.[1]?.test).toEqual(`${endValue} > 0`);
-        expect(encodings.y?.[1]?.signal).toEqual(
+        expect(encodings.y2?.[1]?.test).toEqual(`${endValue} > 0`);
+        expect(encodings.y2?.[1]?.signal).toEqual(
           `max(scale('yLinear', ${startValue}) - 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
         );
       });
 
       test('should third assume ending negative value', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y?.[2]?.test).toBeUndefined();
-        expect(encodings.y?.[2]?.signal).toEqual(
+        expect(encodings.y2?.[2]?.test).toBeUndefined();
+        expect(encodings.y2?.[2]?.signal).toEqual(
           `min(scale('yLinear', ${startValue}) + 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
         );
       });
 
       test('should end on datum.metric1', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y2).toEqual({ scale: 'yLinear', field: `${DEFAULT_METRIC}1` });
+        expect(encodings.y).toEqual({ scale: 'yLinear', field: `${DEFAULT_METRIC}1` });
       });
     });
 
@@ -974,20 +974,20 @@ describe('bar draw-in encodings', () => {
 
   test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for stacked bars', () => {
     const encodings = getBarDrawInUpdateEncodings(drawInOptions);
-    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'bar0_drawInValue' });
-    expect(JSON.stringify(encodings.y)).toContain('datum.bar0_drawInValue > 0');
+    expect(encodings).toHaveProperty('y', { scale: 'yLinear', field: 'bar0_drawInValue' });
+    expect(JSON.stringify(encodings.y2)).toContain('datum.bar0_drawInValue > 0');
   });
 
   test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for non-stacked bars', () => {
     expect(getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged' })).toStrictEqual({
-      y: { scale: 'yLinear', value: 0 },
-      y2: { scale: 'yLinear', field: 'bar0_drawInValue' },
+      y: { scale: 'yLinear', field: 'bar0_drawInValue' },
+      y2: { scale: 'yLinear', value: 0 },
     });
   });
 
   test('getBarDrawInUpdateEncodings() reads the draw-in value on both dual metric axes', () => {
     const encodings = getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged', dualMetricAxis: true });
-    expect(encodings.y2).toEqual([
+    expect(encodings.y).toEqual([
       expect.objectContaining({ scale: 'yLinearSecondary', field: 'bar0_drawInValue' }),
       expect.objectContaining({ scale: 'yLinearPrimary', field: 'bar0_drawInValue' }),
     ]);
@@ -999,7 +999,7 @@ describe('bar draw-in encodings', () => {
 
   test('getBarBackgroundDrawInUpdateEncodings() uses the final geometry and stays hidden until draw-in is done', () => {
     const encodings = getBarBackgroundDrawInUpdateEncodings(drawInOptions);
-    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'value1' });
+    expect(encodings).toHaveProperty('y', { scale: 'yLinear', field: 'value1' });
     expect(encodings).toHaveProperty('opacity', { signal: `${DRAW_IN_DONE} ? 1 : 0` });
     expect(getBarBackgroundDrawInUpdateEncodings(defaultBarOptions)).toStrictEqual({});
   });

@@ -176,6 +176,14 @@ export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEnc
 };
 
 /**
+ * Gets the channels for a bar's metric start (baseline side) and end, ordered so positive bars never need Vega's y/y2 swap.
+ * @param orientation
+ * @returns [startKey, endKey]
+ */
+const getMetricStartEndKeys = (orientation: Orientation): [string, string] =>
+  orientation === 'vertical' ? ['y2', 'y'] : ['x', 'x2'];
+
+/**
  * Gets the metric-axis encodings for a bar.
  * @param options
  * @param drawIn - read the animated draw-in value instead of the final metric
@@ -183,11 +191,8 @@ export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEnc
  */
 export const getMetricEncodings = (options: BarSpecOptions, drawIn = false): RectEncodeEntry => {
   const { metric, name, type } = options;
-  const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
-    options.orientation,
-    options.metricAxis
-  );
-  const endKey = `${startKey}2`;
+  const { metricScaleKey: scaleKey } = getOrientationProperties(options.orientation, options.metricAxis);
+  const [startKey, endKey] = getMetricStartEndKeys(options.orientation);
 
   if (type === 'stacked' || isDodgedAndStacked(options)) {
     return getStackedMetricEncodings(options, drawIn);
@@ -235,11 +240,8 @@ export const getMetricEncodings = (options: BarSpecOptions, drawIn = false): Rec
  */
 export const getStackedMetricEncodings = (options: BarSpecOptions, drawIn = false): RectEncodeEntry => {
   const { metric, name, orientation } = options;
-  const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
-    options.orientation,
-    options.metricAxis
-  );
-  const endKey = `${startKey}2`;
+  const { metricScaleKey: scaleKey } = getOrientationProperties(options.orientation, options.metricAxis);
+  const [startKey, endKey] = getMetricStartEndKeys(orientation);
 
   const startValue = `datum.${metric}0`;
   const endField = drawIn ? getBarDrawInValueField(name) : `${metric}1`;
@@ -600,9 +602,10 @@ const getSelectionRingUpdateEncodings = (
   const { metricAxis, dimensionAxis, dimensionSizeSignal } = getOrientationProperties(orientation);
   const metricEndKey = `${metricAxis}2`;
 
+  const [startKey, endKey] = getMetricStartEndKeys(orientation);
   const metricEncodings = getMetricEncodings(options);
-  const metricStartExpr = productionRuleToExpr(metricEncodings[metricAxis] as ProductionRule<NumericValueRef>);
-  const metricEndExpr = productionRuleToExpr(metricEncodings[metricEndKey] as ProductionRule<NumericValueRef>);
+  const metricStartExpr = productionRuleToExpr(metricEncodings[startKey] as ProductionRule<NumericValueRef>);
+  const metricEndExpr = productionRuleToExpr(metricEncodings[endKey] as ProductionRule<NumericValueRef>);
 
   const dimensionPosExpr = productionRuleToExpr(dimensionEncodings[dimensionAxis] as ProductionRule<NumericValueRef>);
   const dimensionSizeExpr = productionRuleToExpr(

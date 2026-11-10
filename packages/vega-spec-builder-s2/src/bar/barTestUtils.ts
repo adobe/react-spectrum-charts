@@ -62,7 +62,7 @@ export const defaultBarOptionsWithSecondayColor: BarSpecOptions = {
 };
 
 export const defaultStackedYEncodings: RectEncodeEntry = {
-  y: [
+  y2: [
     { test: `datum.${DEFAULT_METRIC}0 === 0`, signal: `scale('yLinear', datum.${DEFAULT_METRIC}0)` },
     {
       test: `datum.${DEFAULT_METRIC}1 > 0`,
@@ -70,12 +70,12 @@ export const defaultStackedYEncodings: RectEncodeEntry = {
     },
     { signal: `min(scale('yLinear', datum.${DEFAULT_METRIC}0) + 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))` },
   ],
-  y2: { scale: 'yLinear', field: `${DEFAULT_METRIC}1` },
+  y: { scale: 'yLinear', field: `${DEFAULT_METRIC}1` },
 };
 
 export const defaultDodgedYEncodings: RectEncodeEntry = {
-  y: { scale: 'yLinear', value: 0 },
-  y2: { scale: 'yLinear', field: `${DEFAULT_METRIC}` },
+  y: { scale: 'yLinear', field: `${DEFAULT_METRIC}` },
+  y2: { scale: 'yLinear', value: 0 },
 };
 
 export const defaultCornerRadiusEncodings: RectEncodeEntry = {

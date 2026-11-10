@@ -55,7 +55,7 @@ const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {
 };
 
 const defaultDodgedStackedUpdateEncodings: RectEncodeEntry = {
-  y: [
+  y2: [
     { test: `datum.${DEFAULT_METRIC}0 === 0`, signal: `scale('yLinear', datum.${DEFAULT_METRIC}0)` },
     {
       test: `datum.${DEFAULT_METRIC}1 > 0`,
@@ -63,7 +63,7 @@ const defaultDodgedStackedUpdateEncodings: RectEncodeEntry = {
     },
     { signal: `min(scale('yLinear', datum.${DEFAULT_METRIC}0) + 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))` },
   ],
-  y2: { scale: 'yLinear', field: `${DEFAULT_METRIC}1` },
+  y: { scale: 'yLinear', field: `${DEFAULT_METRIC}1` },
   ...defaultCornerRadiusEncodings,
 };
 
