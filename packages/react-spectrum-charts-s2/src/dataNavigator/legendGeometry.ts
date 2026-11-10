@@ -114,7 +114,7 @@ export const getLegendBounds = (view: View, container: HTMLElement, legendName?:
   if (legendBounds) return toPageBounds(view, container, legendBounds);
   const entries = getLegendEntries(view, container, legendName);
   const [first, ...rest] = entries.map((entry) => entry.bounds);
-  return first && rest.reduce(unionBounds, first);
+  return first && rest.reduce((union, bounds) => unionBounds(union, bounds), first);
 };
 
 /** Assigns each value a cluster index, grouping values within `ALIGN_TOLERANCE` of each other. */

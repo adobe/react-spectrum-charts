@@ -309,7 +309,7 @@ export const escapeD3FormatSpecifier = (formatSpec: string): string =>
  * @param numberFormat
  * @returns string
  */
-export const getNumberFormatExpression = (valueExpr: string, numberFormat: NumberFormat | string): string => {
+export const getNumberFormatExpression = (valueExpr: string, numberFormat: NumberFormat): string => {
   if (numberFormat === 'shortNumber') return `formatShortNumber(${valueExpr})`;
   if (numberFormat === 'shortCurrency') {
     return String.raw`abs(${valueExpr}) >= 1000 ? upper(replace(format(${valueExpr}, '$.3~s'), /(\d+)G/, '$1B')) : format(${valueExpr}, '$')`;
