@@ -27,6 +27,7 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../../../context/RscChartContext.js';
 import type { ActionBarDetail } from '../../../hooks/useActionBars.js';
+import { useCloseOnInteractionReset } from '../../../hooks/useInteractionReset.js';
 import { clearHoverSignals, setSelectedSignals } from '../../../utils/index.js';
 
 interface ChartActionBarDialogProps {
@@ -89,6 +90,7 @@ const ChartActionBarDialog: FC<ChartActionBarDialogProps> = ({
       chartView.current.run();
     }
   }, [chartView, idKey, onClearSelection, selectedData, selectedDataName, setIsPopoverOpen, specSignalNames]);
+  useCloseOnInteractionReset(isOpen, closeActionBar);
 
   const allActions = renderDatum?.[COMPONENT_NAME] === name ? (children?.(renderDatum, closeActionBar) ?? []) : [];
   const visibleActions = allActions.slice(0, visibleCount);

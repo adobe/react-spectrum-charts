@@ -49,6 +49,7 @@ import { getNavigableChartType } from './dataNavigator/navigableMarks.js';
 import { useChartContext } from './context/RscChartContext.js';
 import useActionBars from './hooks/useActionBars.js';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle.js';
+import { useCloseOnInteractionReset } from './hooks/useInteractionReset.js';
 import { useChartInteractions } from './hooks/useChartInteractions.js';
 import useMarkOnClickDetails from './hooks/useMarkOnClickDetails.js';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers.js';
@@ -148,10 +149,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 
   useSpecProps(spec);
 
-  const { signals, targetStyle, axisLabelTooltipAnchorStyle, tooltip, onNewView } = useChartInteractions(
-    props,
-    sanitizedChildren
-  );
+  const { signals, targetStyle, axisLabelTooltipAnchorStyle, tooltip, onNewView, onInteractionReset } =
+    useChartInteractions(props, sanitizedChildren, spec);
   const chartConfig = useMemo(() => getChartConfig(config, colorScheme), [config, colorScheme]);
   const specSignalNames = useMemo(() => new Set(spec.signals?.map((s) => s.name) ?? []), [spec.signals]);
 
@@ -359,6 +358,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
           signals={signals}
           tooltip={tooltip}
           onNewView={handleNewView}
+          onInteractionReset={onInteractionReset}
         />
         {accessibleNavigation && navChartType && (
           <Navigator
@@ -500,6 +500,7 @@ const ChartDialog = ({
   );
 
   const close = useCallback(() => handleOpenChange(false), [handleOpenChange]);
+  useCloseOnInteractionReset(isOpen, close);
   const activeDatum = renderDatum?.[COMPONENT_NAME] === name ? renderDatum : null;
   const { defaultDonutContent } = popover;
   const content =

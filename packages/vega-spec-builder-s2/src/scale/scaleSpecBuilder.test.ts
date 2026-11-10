@@ -9,9 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { OrdinalScale, Scale } from 'vega';
+import { Data, OrdinalScale, Scale } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_COLOR, LINEAR_PADDING } from '@spectrum-charts/core-s2/constants';
+import {
+  COLOR_SCALE,
+  DEFAULT_COLOR,
+  FILTERED_TABLE,
+  LINEAR_PADDING,
+  MARK_ID,
+  TABLE,
+} from '@spectrum-charts/core-s2/constants';
 
 import {
   addContinuousDimensionScale,
@@ -19,6 +26,7 @@ import {
   addFieldToFacetScaleDomain,
   getPadding,
   getScaleName,
+  sortDiscreteDomainsByFirstAppearance,
 } from './scaleSpecBuilder.js';
 
 const defaultColorScale: OrdinalScale = {
@@ -104,5 +112,51 @@ describe('getScaleName()', () => {
   test('should return correct scale name', () => {
     expect(getScaleName('x', 'linear')).toBe('xLinear');
     expect(getScaleName('y', 'band')).toBe('yBand');
+  });
+});
+
+describe('sortDiscreteDomainsByFirstAppearance()', () => {
+  const firstAppearance = { op: 'min', field: MARK_ID };
+  const getDomains = (scales: Scale[], data: Data[] = [{ name: TABLE }, { name: FILTERED_TABLE, source: TABLE }]) =>
+    sortDiscreteDomainsByFirstAppearance({ data, scales, usermeta: {} }).scales?.map((scale) => scale.domain);
+
+  test('should sort single-field discrete domains from data that carries the row id', () => {
+    const domains = getDomains([
+      { name: COLOR_SCALE, type: 'ordinal', domain: { data: FILTERED_TABLE, fields: [DEFAULT_COLOR] } },
+      { name: 'xBand', type: 'band', domain: { data: TABLE, field: 'category' } },
+    ]);
+    expect(domains).toEqual([
+      { data: FILTERED_TABLE, fields: [DEFAULT_COLOR], sort: firstAppearance },
+      { data: TABLE, field: 'category', sort: firstAppearance },
+    ]);
+  });
+
+  test('should only sort aggregated data that outputs the row id', () => {
+    const domains = getDomains(
+      [
+        { name: 'kept', type: 'ordinal', domain: { data: 'withId', field: 'key' } },
+        { name: 'skipped', type: 'ordinal', domain: { data: 'withoutId', field: 'key' } },
+      ],
+      [
+        { name: TABLE },
+        {
+          name: 'withId',
+          source: TABLE,
+          transform: [{ type: 'aggregate', groupby: ['key'], fields: [MARK_ID], ops: ['min'], as: [MARK_ID] }],
+        },
+        { name: 'withoutId', source: TABLE, transform: [{ type: 'aggregate', groupby: ['key'] }] },
+      ]
+    );
+    expect(domains?.[0]).toHaveProperty('sort', firstAppearance);
+    expect(domains?.[1]).not.toHaveProperty('sort');
+  });
+
+  test('should leave continuous, multi-field and already sorted domains unchanged', () => {
+    const scales: Scale[] = [
+      { name: 'xLinear', type: 'linear', domain: { data: TABLE, fields: ['value'] } },
+      { name: COLOR_SCALE, type: 'ordinal', domain: { data: TABLE, fields: ['a', 'b'] } },
+      { name: 'xBand', type: 'band', domain: { data: TABLE, field: 'category', sort: true } },
+    ];
+    expect(getDomains(scales)).toEqual(scales.map((scale) => scale.domain));
   });
 });

@@ -63,7 +63,7 @@ import { addDonut } from './donut/donutSpecBuilder.js';
 import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils.js';
 import { addLegend } from './legend/legendSpecBuilder.js';
 import { addLine, getLineDomainData } from './line/lineSpecBuilder.js';
-import { getOrdinalScale } from './scale/scaleSpecBuilder.js';
+import { getOrdinalScale, sortDiscreteDomainsByFirstAppearance } from './scale/scaleSpecBuilder.js';
 import { addScatter } from './scatter/scatterSpecBuilder.js';
 import { getGenericValueSignal } from './signal/signalSpecBuilder.js';
 import {
@@ -233,6 +233,7 @@ export function buildSpec({
   spec = addDonutLegendLayout(spec, donut, legends);
 
   // copy the spec so we don't mutate the original
+  // eslint-disable-next-line no-restricted-syntax
   spec = JSON.parse(JSON.stringify(spec));
   spec.data = addData(spec.data ?? [], { facets: getFacetsFromScales(spec.scales), idKey });
 
@@ -261,6 +262,7 @@ export function buildSpec({
 
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
+  spec = sortDiscreteDomainsByFirstAppearance(spec);
 
   return safeClone(spec);
 }
@@ -548,5 +550,6 @@ const safeClone = <T>(obj: T): T => {
   if (typeof structuredClone === 'function') {
     return structuredClone(obj);
   }
+  // eslint-disable-next-line no-restricted-syntax
   return JSON.parse(JSON.stringify(obj));
 };

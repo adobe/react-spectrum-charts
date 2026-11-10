@@ -27,6 +27,8 @@ export interface ViewHostInputs {
   height: number;
   /** Called once per new view; a new function rebuilds the view */
   onNewView: (view: View) => void;
+  /** Called after a data update or rebuild resets selection and hover; a new function doesn't rebuild */
+  onInteractionReset?: (view: View) => void;
   /** Values that override the spec's signal initial values */
   signals?: Record<string, unknown>;
   spec: Spec;
@@ -142,6 +144,18 @@ const needsRebuild = (
   (Boolean(adapter.animation?.hasDrawIn(active.spec)) && active.hasRows !== Boolean(split.table?.length));
 
 /**
+ * Gets the interaction signals a data update restores to their initial values.
+ * @param adapter - view adapter
+ * @param split - next spec, split
+ * @param signals - changed signals already being applied
+ * @returns [name, initial value] pairs
+ */
+const getResetSignals = (adapter: ViewHostAdapter, split: SplitSpec, signals: [string, unknown][]): [string, unknown][] =>
+  [...split.signalValues].filter(
+    ([name]) => adapter.isInteractionSignal(name) && !signals.some(([changed]) => changed === name)
+  );
+
+/**
  * Creates the host that owns the view rendered into a container.
  * @param container - element the view renders into
  * @param adapter - creates and updates the views
@@ -156,6 +170,8 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
   let drawInStart: number | undefined;
   // a draw-in that hasn't started yet keeps one hold deadline and one paint fade across rebuilds
   let pendingDrawIn: PendingDrawIn | undefined;
+  // a retired view may have had interaction state, which the next created view resets
+  let resetOnNextView = false;
 
   const retire = (): void => {
     const retired = active;
@@ -171,6 +187,7 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
       pendingDrawIn = undefined;
     }
     if (retired.view) {
+      resetOnNextView = true;
       adapter.destroyView(retired.view);
     }
   };
@@ -227,6 +244,10 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
           next.detachTicker = animation.attachTicker(view, container, pending?.holdUntil);
         }
         inputs.onNewView(view);
+        if (resetOnNextView) {
+          resetOnNextView = false;
+          inputs.onInteractionReset?.(view);
+        }
         adapter.startView(view);
         // inputs that arrived while the view was being created
         if (latest && latest !== inputs) {
@@ -250,10 +271,13 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
       return 'noop';
     }
     adapter.updateView(view, {
-      signals,
+      signals: tableChanged ? [...signals, ...getResetSignals(adapter, split, signals)] : signals,
       table: tableChanged ? split.table ?? [] : undefined,
       size: resized ? { width: inputs.width, height: inputs.height } : undefined,
     });
+    if (tableChanged) {
+      inputs.onInteractionReset?.(view);
+    }
     return 'incremental';
   };
 
