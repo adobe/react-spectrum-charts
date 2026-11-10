@@ -18,7 +18,7 @@ import { Donut, DonutSummary, Legend, Title } from '../../../components/index.js
 import useChartProps from '../../../hooks/useChartProps.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
-import { DonutProps, LegendProps, TitleProps } from '../../../types/index.js';
+import { ChartProps, DonutProps, LegendProps, TitleProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Donut/Regressions/Side Legend',
@@ -35,7 +35,7 @@ type SideLegendArgs = DonutProps & {
   legendTitle?: string;
   chartTitle?: string;
   titlePosition?: NonNullable<TitleProps['position']>;
-  width: number | string;
+  width: ChartProps['width'];
 };
 
 // the chart is much wider than tall, so the donut and legend should stay together in the middle

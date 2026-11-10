@@ -49,6 +49,50 @@ export type DivergingBarMark = {
   metric: string;
 };
 
+/** A categorical legend's configuration for keyboard navigation; written only with `accessibleNavigation`. */
+export type NavigableLegend = {
+  name: string;
+  /** Fields each entry joins with " | ", in order */
+  entryFields: string[];
+  /** The field the legend's own `color` facets by, when it doesn't use the marks' color */
+  colorField?: string;
+  position: Position;
+  highlight: boolean;
+  title?: string;
+  /** Series value → its displayed label */
+  labels?: Record<string, string>;
+  /** Series value → its description and optional title */
+  descriptions?: Record<string, { description: string; title?: string }>;
+};
+
+/** The navigable mark's configuration for keyboard navigation; written only with `accessibleNavigation`. */
+export type NavigableChart = {
+  chartType: 'bar';
+  /** The mark's name in the spec, which its hover signals and data sets are prefixed with */
+  markName: string;
+  dimension: string;
+  metric: string;
+  /** The field read as the series' name in labels */
+  color?: string;
+  /** Every field dividing the mark into series, in the order the series id joins them */
+  seriesFields: string[];
+  /** For a dodged-and-stacked bar, the fields splitting each category into side-by-side stacks */
+  dodgeFields?: string[];
+  /** For a dodged-and-stacked bar, the fields that tell a stack's segments apart */
+  stackFields?: string[];
+  type: 'dodged' | 'stacked';
+  colorOverride?: string;
+  order?: string;
+  orientation: Orientation;
+  /** Data field → its axis or legend title, in reading order (dimension, series, metric) */
+  fieldLabels: Record<string, string>;
+  /** The metric axis titles of a dual-metric-axis bar; the secondary one belongs to the last series */
+  metricAxisTitles?: { primary?: string; secondary?: string };
+  hasChartInspect: boolean;
+  /** The categorical axis below the plot, when there is one */
+  xAxis?: { field: string; title?: string };
+};
+
 export type UserMeta = {
   animatedMarks?: string[];
   interactiveMarks?: InteractiveMark[];
@@ -56,6 +100,8 @@ export type UserMeta = {
   chartOrientation?: Orientation;
   metricAxisCount?: number;
   patches?: Partial<Config>[];
+  legends?: NavigableLegend[];
+  navigation?: NavigableChart;
 };
 
 export interface MarkBounds {
@@ -81,11 +127,17 @@ export type Datum = object & {
   [key: string]: any;
 };
 
-export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | string;
+export type NumberFormat =
+  | 'currency'
+  | 'shortCurrency'
+  | 'shortNumber'
+  | 'standardNumber'
+  | 'percentage'
+  | (string & NonNullable<unknown>);
 export type Orientation = 'vertical' | 'horizontal';
 export type Position = 'left' | 'right' | 'top' | 'bottom';
 export type ScaleType = 'linear' | 'point' | 'time' | 'band';
-export type ChartSymbolShape = 'rounded-square' | SymbolShape | string;
+export type ChartSymbolShape = 'rounded-square' | SymbolShape | (string & NonNullable<unknown>); // NOSONAR typescript:S6571 - intersection keeps literal autocomplete while accepting any string
 
 /**
  * Stroke dasharray for the line.
@@ -138,7 +190,7 @@ export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
 export type StaticValue<T> = { value: T };
 export type FacetRef<T> = string | StaticValue<T>;
 
-export type ColorFacet = FacetRef<SpectrumVizColor | string>;
+export type ColorFacet = FacetRef<SpectrumVizColor | (string & NonNullable<unknown>)>;
 export type LineTypeFacet = FacetRef<LineType>;
 export type LineWidthFacet = FacetRef<LineWidth>;
 export type OpacityFacet = FacetRef<number>;

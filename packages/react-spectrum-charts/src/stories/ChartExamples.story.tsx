@@ -334,9 +334,10 @@ const ReleaseImpactBarStory: StoryFn<typeof Chart> = (args): ReactElement => {
     useState();
 
   function onLegendClick(series: string) {
+    // prettier-ignore
     if (!hiddenSeries) {
       setHiddenSeries([series]);
-    } else if (hiddenSeries.find((s) => s === series)) {
+    } else if (hiddenSeries.find((s) => s === series)) { // NOSONAR typescript:S7754 - S1 is in maintenance mode; no functional changes for Sonar findings
       setHiddenSeries(hiddenSeries.filter((s) => s !== series));
     } else if (hiddenSeries.length < 2) {
       setHiddenSeries([...hiddenSeries, series]);

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { combineNames, toCamelCase } from './utils.js';
+import { combineNames, jsonClone, toCamelCase } from './utils.js';
 
 describe('combineElementNames()', () => {
   test('should return child name if parent name is null', () => {
@@ -56,5 +56,20 @@ describe('toCamelCase()', () => {
   });
   test('no alpha numeric characters should return original string', () => {
     expect(toCamelCase('&()*')).toStrictEqual('&()*');
+  });
+});
+
+describe('jsonClone()', () => {
+  test('should deep copy plain values', () => {
+    const value = { a: { b: [1, 2] } };
+    const copy = jsonClone(value);
+    expect(copy).toStrictEqual(value);
+    expect(copy.a).not.toBe(value.a);
+  });
+  test('should drop undefined keys', () => {
+    expect(jsonClone({ a: 1, b: undefined })).toStrictEqual({ a: 1 });
+  });
+  test('should serialize dates to ISO strings', () => {
+    expect(jsonClone({ d: new Date('2024-01-01T00:00:00Z') })).toStrictEqual({ d: '2024-01-01T00:00:00.000Z' });
   });
 });

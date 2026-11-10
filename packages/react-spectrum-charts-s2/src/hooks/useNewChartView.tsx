@@ -11,13 +11,12 @@
  */
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { ScenegraphEvent, View } from 'vega';
+import { View } from 'vega';
 
 import { Legend } from '../components/index.js';
 import { useChartContext } from '../context/RscChartContext.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import {
-  ActionItem,
   getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
@@ -25,6 +24,7 @@ import {
   getOnMouseInputCallback,
   setSelectedSignals,
 } from '../utils/index.js';
+import { addViewEventListener } from '../utils/viewEvents.js';
 import useActionBars from './useActionBars.js';
 import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails.js';
 import { UseLegendProps } from './useLegend.js';
@@ -125,35 +125,35 @@ const useNewChartView = (
         });
       }
 
-      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) => {
+      addViewEventListener(view, 'click', (event, item) => {
         if (hasLegendOrMarkActions()) {
           getOnMarkClickCallback(getMarkClickArgs('click'))(event, item);
         }
       });
-      view.addEventListener('contextmenu', (event: ScenegraphEvent, item: ActionItem) => {
+      addViewEventListener(view, 'contextmenu', (event, item) => {
         if (hasLegendOrMarkActions() && latest.current.hasRightClickPopover) {
           getOnMarkClickCallback(getMarkClickArgs('contextmenu'))(event, item);
         }
       });
-      view.addEventListener('contextmenu', (event: ScenegraphEvent, item: ActionItem) => {
+      addViewEventListener(view, 'contextmenu', (event, item) => {
         const { hasMarkContextMenu, markClickDetails } = latest.current;
         if (hasMarkContextMenu) {
           getOnChartMarkContextMenuCallback(chartView, markClickDetails)(event, item);
         }
       });
-      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
+      addViewEventListener(view, 'click', (event, item) =>
         getOnChartMarkClickCallback(chartView, latest.current.markClickDetails)(event, item)
       );
-      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
+      addViewEventListener(view, 'click', (event, item) =>
         getOnAxisLabelClickCallback(latest.current.axisLabelOnClickDetails)(event, item)
       );
-      view.addEventListener('mouseover', (event: ScenegraphEvent, item: ActionItem) =>
+      addViewEventListener(view, 'mouseover', (event, item) =>
         getOnMouseInputCallback(latest.current.legendProps.onMouseOver, latest.current.markMouseInputDetails)(
           event,
           item
         )
       );
-      view.addEventListener('mouseout', (event: ScenegraphEvent, item: ActionItem) =>
+      addViewEventListener(view, 'mouseout', (event, item) =>
         getOnMouseInputCallback(latest.current.legendProps.onMouseOut, latest.current.markMouseInputDetails)(
           event,
           item

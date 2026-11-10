@@ -430,6 +430,36 @@ describe('addLegend()', () => {
   });
 });
 
+describe('accessibleNavigation', () => {
+  test('records the legend for keyboard navigation', () => {
+    const spec = addLegend(defaultSpec, {
+      accessibleNavigation: true,
+      color: DEFAULT_SECONDARY_COLOR,
+      highlight: true,
+      position: 'right',
+      title: 'Browser',
+      legendLabels: [{ seriesName: 1, label: 'One' }],
+      descriptions: [{ seriesName: 'Chrome', description: 'Most used', title: 'Google Chrome' }],
+    });
+    expect(spec.usermeta.legends).toStrictEqual([
+      {
+        name: 'legend0',
+        entryFields: [DEFAULT_COLOR],
+        colorField: DEFAULT_SECONDARY_COLOR,
+        position: 'right',
+        highlight: true,
+        title: 'Browser',
+        labels: { 1: 'One' },
+        descriptions: { Chrome: { description: 'Most used', title: 'Google Chrome' } },
+      },
+    ]);
+  });
+
+  test('does not record the legend without accessibleNavigation', () => {
+    expect(addLegend(defaultSpec, {}).usermeta.legends).toBeUndefined();
+  });
+});
+
 describe('addData()', () => {
   test('should add legend0Aggregate data', () => {
     expect(addData([], { ...defaultLegendOptions, facets: [DEFAULT_COLOR] })).toStrictEqual(defaultLegendData);

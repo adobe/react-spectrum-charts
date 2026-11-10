@@ -95,7 +95,7 @@ export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
   ].reduce((acc, cur) => {
     const scale = scales.find((scale) => scale.name === cur);
     if (scale?.domain && 'fields' in scale.domain && scale.domain.fields.length) {
-      return [...acc, scale.domain.fields[0].toString()];
+      return [...acc, scale.domain.fields[0].toString()]; // NOSONAR typescript:S6551 - S1 is in maintenance mode; no functional changes for Sonar findings
     }
     return acc;
   }, [] as string[]);
@@ -244,7 +244,7 @@ export const initializeSpec = (spec: Spec | null = {}, chartOptions: Partial<Cha
     background: backgroundColor ? getColorValue(backgroundColor, colorScheme) : undefined,
   };
 
-  return { ...baseSpec, ...(spec || {}) };
+  return { ...baseSpec, ...(spec || {}) }; // NOSONAR typescript:S7744 - S1 is in maintenance mode; no functional changes for Sonar findings
 };
 
 /**

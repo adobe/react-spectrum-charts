@@ -12,14 +12,15 @@
 import { Structure } from 'data-navigator';
 
 import { DEFAULT_CATEGORICAL_DIMENSION } from '@spectrum-charts/core-s2/constants';
-import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
+import { NavigableChart, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { AxisFieldType, buildAxisStructure } from './buildAxisStructure.js';
-import { buildBarStructure, segmentId } from './buildBarStructure.js';
-import { composeRegions, NamedRegion } from './composeRegions.js';
+import { barId, buildBarStructure, segmentId, toDimensionKey } from './buildBarStructure.js';
+import { LegendSeriesDescription, buildLegendStructure } from './buildLegendStructure.js';
+import { NamedRegion, RegionLink, composeRegions } from './composeRegions.js';
 import { getBaseNavigationRules } from './navigationRules.js';
 
-export type NavigableChartType = 'bar';
+export type NavigableChartType = NavigableChart['chartType'];
 
 export interface AxisRegionOptions {
   /** The field this axis represents — the dimension for a categorical x-axis. */
@@ -32,6 +33,21 @@ export interface AxisRegionOptions {
   visibleValues?: string[];
 }
 
+export interface LegendRegionOptions {
+  /** The legend's rendered entry values, in layout order. */
+  series: string[];
+  /** Optional legend title for the region's accessible name. */
+  title?: string;
+  /** Series value → the label the legend displays for it. */
+  labels?: Record<string, string>;
+  /** Series value → its legend description and optional tooltip title. */
+  descriptions?: Record<string, LegendSeriesDescription>;
+  /** The fields each entry value joins (with " | "). Defaults to the series field. */
+  entryFields?: string[];
+  /** Where the legend sits relative to the plot; the arrow pointing that way from the chart moves to it. Defaults to bottom. */
+  position?: 'top' | 'bottom' | 'left' | 'right';
+}
+
 export interface ChartStructureOptions {
   /** The chart type to build a navigation structure for. */
   chartType: NavigableChartType;
@@ -39,8 +55,14 @@ export interface ChartStructureOptions {
   data: SimpleData[];
   /** Primary categorical / x-axis field (e.g. bar category). */
   dimension?: string;
-  /** Series / color field. When set on a bar, the chart is stacked. */
+  /** Series / color field, read as the series' name in labels. */
   color?: string;
+  /** The field identifying each row's series (the series id when several facets divide the series). Defaults to `color`; when set on a bar, the chart is multi-series. */
+  seriesField?: string;
+  /** For a dodged-and-stacked bar, the fields splitting each category into side-by-side stacks. */
+  dodgeFields?: string[];
+  /** For a dodged-and-stacked bar, the fields that tell a stack's segments apart. */
+  stackFields?: string[];
   /** Bar layout type. */
   type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
@@ -57,10 +79,16 @@ export interface ChartStructureOptions {
   title?: string;
   /** Maps a data field to its axis/legend title, so a focused leaf's accessible name reads as the chart's titles. */
   fieldLabels?: Record<string, string>;
+  /** The original value of each dimension value the chart parsed (keyed by `String(parsed)`), read in labels instead of the parsed value. */
+  dimensionLabels?: Map<string, unknown>;
   /** Per-series metric-axis titles for dual-metric-axis bars. */
   metricTitleBySeries?: Record<string, string>;
-  /** When provided, adds a sibling-navigable x-axis region alongside chart content (Left/Right moves between them). */
+  /** When provided, adds an x-axis region below chart content (Down moves to it, Up comes back). */
   xAxis?: AxisRegionOptions;
+  /** When provided (and the chart has a series), adds a legend region at its position: series, then that series' items. */
+  legend?: LegendRegionOptions;
+  /** Series toggled off via the legend; excluded from chart content and not drillable from the legend. */
+  hiddenSeries?: string[];
 }
 
 export interface ChartStructure {
@@ -80,16 +108,33 @@ const contentStructureBuilders: Record<NavigableChartType, (options: ChartStruct
 export const getNodeIdForDatum = (
   chartType: NavigableChartType,
   datum: SimpleData,
-  { dimension = DEFAULT_CATEGORICAL_DIMENSION, color }: { dimension?: string; color?: string }
+  { dimension = DEFAULT_CATEGORICAL_DIMENSION, seriesField }: { dimension?: string; seriesField?: string }
 ): string | undefined => {
   if (chartType !== 'bar') return undefined;
-  const dimensionValue = datum[dimension];
-  if (dimensionValue == null) return undefined;
+  const dimensionKey = toDimensionKey(datum[dimension]);
+  if (dimensionKey === undefined) return undefined;
   // Stacked leaves are keyed by dimension+series; a padding-area datum has no series, so it won't match.
-  if (color !== undefined) {
-    return datum[color] == null ? undefined : segmentId(dimensionValue, datum[color]);
+  if (seriesField !== undefined) {
+    return datum[seriesField] == null ? undefined : segmentId(dimensionKey, datum[seriesField]);
   }
-  return String(dimensionValue);
+  return barId(dimensionKey);
+};
+
+const LEGEND_KEYS = { top: 'ArrowUp', bottom: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' } as const;
+
+/** Spatial moves between region roots: the x-axis below the chart, the legend on its own side (below the x-axis when bottom). */
+const getRegionLinks = (
+  regions: NamedRegion[],
+  legendPosition: LegendRegionOptions['position'] = 'bottom'
+): RegionLink[] => {
+  const hasRegion = (name: string) => regions.some((region) => region.name === name);
+  const links: RegionLink[] = [];
+  if (hasRegion('xAxis')) links.push({ from: 'content', to: 'xAxis', key: 'ArrowDown' });
+  if (hasRegion('legend')) {
+    const from = legendPosition === 'bottom' && hasRegion('xAxis') ? 'xAxis' : 'content';
+    links.push({ from, to: 'legend', key: LEGEND_KEYS[legendPosition] });
+  }
+  return links;
 };
 
 export const buildChartStructure = (options: ChartStructureOptions): ChartStructure | undefined => {
@@ -97,18 +142,37 @@ export const buildChartStructure = (options: ChartStructureOptions): ChartStruct
   if (!buildContent) return undefined;
   const content = buildContent(options);
 
-  if (!options.xAxis) return content;
+  const regions: NamedRegion[] = [];
+  // Every series hidden leaves no bars; the legend stays reachable so they can be shown again.
+  if (content.entryPoint) {
+    regions.push({ name: 'content', structure: content.structure, entryPoint: content.entryPoint, namespace: false });
+  }
+  if (options.xAxis) {
+    const xAxis = buildAxisStructure({ data: options.data, locale: options.locale, ...options.xAxis });
+    // No navigable ticks (e.g. none painted, or a mismatched axis): skip the region rather than letting composeRegions throw.
+    if (xAxis.entryPoint) regions.push({ name: 'xAxis', structure: xAxis.structure, entryPoint: xAxis.entryPoint });
+  }
+  const seriesField = options.seriesField ?? options.color;
+  if (options.legend && seriesField) {
+    const { series, title, labels, descriptions, entryFields } = options.legend;
+    const legend = buildLegendStructure({
+      ...options,
+      content: content.structure,
+      seriesField,
+      series,
+      title,
+      labels,
+      descriptions,
+      entryFields,
+    });
+    if (legend.entryPoint) regions.push({ name: 'legend', structure: legend.structure, entryPoint: legend.entryPoint });
+  }
 
-  const xAxis = buildAxisStructure({ data: options.data, locale: options.locale, ...options.xAxis });
-  // No navigable ticks (e.g. none of the axis's values are currently painted, or the region was wired
-  // to a mismatched axis): skip the axis region rather than letting composeRegions throw on it.
-  if (!xAxis.entryPoint) return content;
-  const regions: NamedRegion[] = [
-    { name: 'content', structure: content.structure, entryPoint: content.entryPoint, namespace: false },
-    { name: 'xAxis', structure: xAxis.structure, entryPoint: xAxis.entryPoint },
-  ];
-  const composed = composeRegions(regions);
-  // composeRegions defaults to the vertical rules; carry the chart's actual orientation onto the result.
-  composed.structure.navigationRules = getBaseNavigationRules(options.orientation);
-  return composed;
+  if (regions.length === 0) return content;
+  if (regions.length === 1 && regions[0].name === 'content') return content;
+  return composeRegions(
+    regions,
+    getRegionLinks(regions, options.legend?.position),
+    getBaseNavigationRules(options.orientation)
+  );
 };

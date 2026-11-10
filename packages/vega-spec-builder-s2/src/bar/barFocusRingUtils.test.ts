@@ -9,10 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
+import {
+  FOCUSED_DIMENSION,
+  NAVIGATION_ID_SEPARATOR,
+  SELECTED_ITEM,
+  SERIES_ID,
+} from '@spectrum-charts/core-s2/constants';
 
+import { getBarFocusRing, getDodgedGroupFocusRing, getStackFocusRing } from './barFocusRingUtils.js';
 import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils.js';
-import { getBarFocusRing, getChartFocusRing, getDodgedGroupFocusRing, getStackFocusRing } from './barFocusRingUtils.js';
 
 const { dimension, metric } = defaultBarOptions;
 
@@ -29,16 +34,18 @@ describe('getBarFocusRing()', () => {
     expect(ring.from).toEqual({ data: 'bar0_background' });
   });
 
-  test('keys a single-color (string) bar on the dimension + series composite', () => {
-    // defaultBarOptions.color is a string series field → composite leaf id
+  test('keys a series bar on the dimension + series id composite', () => {
     const opacity = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.update?.opacity);
     expect(opacity).toContain(NAVIGATION_ID_SEPARATOR);
+    expect(opacity).toContain(`datum.datum.${SERIES_ID}`);
   });
 
-  test('keys a multi-color (array) bar on the dimension value only', () => {
+  test('keys a bar without a series id on the dimension value only, as a string', () => {
     const opacity = JSON.stringify(getBarFocusRing(defaultBarOptionsWithSecondayColor).encode?.update?.opacity);
-    expect(opacity).not.toContain(NAVIGATION_ID_SEPARATOR);
-    expect(opacity).toContain(`datum.datum.${dimension}`);
+    expect(opacity).toContain(`isValid(datum.datum.${SERIES_ID}) ?`);
+    expect(opacity).toContain(
+      JSON.stringify(`: (("" + datum.datum.${dimension}) || "${NAVIGATION_ID_SEPARATOR}")`).slice(1, -1)
+    );
   });
 
   test('uses metric-sign corner tests for dodged (non-stacked) bars', () => {
@@ -63,26 +70,13 @@ describe('getBarFocusRing()', () => {
   });
 });
 
-describe('getChartFocusRing()', () => {
-  test('covers the full plot area and keys opacity on the chart region', () => {
-    const ring = getChartFocusRing(defaultBarOptions);
-    expect(ring).toHaveProperty('name', 'chartFocusRing');
-    expect(ring.encode?.update?.x).toEqual({ value: 0 });
-    expect(ring.encode?.update?.x2).toEqual({ signal: 'width' });
-    expect(ring.encode?.update?.opacity).toEqual([
-      { test: `${FOCUSED_REGION} === 'chart'`, value: 1 },
-      { value: 0 },
-    ]);
-  });
-});
-
 describe('getStackFocusRing()', () => {
   test('sources from the per-stack data and keys opacity on the focused dimension', () => {
     const ring = getStackFocusRing(defaultBarOptions);
     expect(ring).toHaveProperty('name', 'bar0_stackFocusRing');
     expect(ring.from).toEqual({ data: 'bar0_stacks' });
     expect(ring.encode?.update?.opacity).toEqual([
-      { test: `${FOCUSED_DIMENSION} === datum.${dimension}`, value: 1 },
+      { test: `${FOCUSED_DIMENSION} === ("" + datum.${dimension})`, value: 1 },
       { value: 0 },
     ]);
   });
@@ -100,7 +94,9 @@ describe('getStackFocusRing()', () => {
 
   test('rounds the metric-end corners unless square corners are requested', () => {
     expect(getStackFocusRing(defaultBarOptions).encode?.enter?.cornerRadiusTopLeft).toEqual({ value: 6 });
-    expect(getStackFocusRing({ ...defaultBarOptions, hasSquareCorners: true }).encode?.enter?.cornerRadiusTopLeft).toEqual({
+    expect(
+      getStackFocusRing({ ...defaultBarOptions, hasSquareCorners: true }).encode?.enter?.cornerRadiusTopLeft
+    ).toEqual({
       value: 2,
     });
   });
@@ -117,7 +113,7 @@ describe('getDodgedGroupFocusRing()', () => {
     expect(ring).toHaveProperty('name', 'bar0_stackFocusRing');
     expect(ring.from).toEqual({ data: 'bar0_groups' });
     expect(ring.encode?.update?.opacity).toEqual([
-      { test: `${FOCUSED_DIMENSION} === datum.${dimension}`, value: 1 },
+      { test: `${FOCUSED_DIMENSION} === ("" + datum.${dimension})`, value: 1 },
       { value: 0 },
     ]);
   });
@@ -132,6 +128,12 @@ describe('getDodgedGroupFocusRing()', () => {
     const ring = getDodgedGroupFocusRing({ ...defaultBarOptions, orientation: 'horizontal' });
     expect(JSON.stringify(ring.encode?.update?.x)).toContain(`scale('xLinear', datum.min_${metric})`);
     expect(JSON.stringify(ring.encode?.update?.x2)).toContain(`scale('xLinear', datum.max_${metric})`);
+  });
+
+  test("positions a dodged-and-stacked group ring on its stacks' end values", () => {
+    const ring = getDodgedGroupFocusRing(defaultBarOptionsWithSecondayColor);
+    expect(JSON.stringify(ring.encode?.update?.y)).toContain(`scale('yLinear', datum.min_${metric}1)`);
+    expect(JSON.stringify(ring.encode?.update?.y2)).toContain(`scale('yLinear', datum.max_${metric}1)`);
   });
 
   test('rounds the metric-end corners unless square corners are requested', () => {

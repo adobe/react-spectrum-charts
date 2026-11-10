@@ -44,13 +44,18 @@ import {
   UserMeta,
 } from '../types/index.js';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils.js';
-import { injectLegendHoverIntoData, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils.js';
+import {
+  injectLegendHoverIntoData,
+  setHoverOpacityForMarks,
+  setHoverStrokeWidthForMarks,
+} from './legendHighlightUtils.js';
 import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils.js';
 
 export const addLegend = produce<
   ScSpec,
   [
     LegendOptions & {
+      accessibleNavigation?: boolean;
       colorScheme?: ColorScheme;
       index?: number;
       hiddenSeries?: string[];
@@ -62,6 +67,7 @@ export const addLegend = produce<
   (
     spec,
     {
+      accessibleNavigation = false,
       align,
       color,
       hasMouseInteraction = false,
@@ -144,6 +150,9 @@ export const addLegend = produce<
 
       // add the legend
       legends.push(getCategoricalLegend(ordinalFacets, legendOptions, spec.usermeta));
+      if (accessibleNavigation) {
+        spec.usermeta = addUserMetaNavigableLegend(spec.usermeta, legendOptions, uniqueFacetFields);
+      }
     }
 
     // continuous legends cannot be combined with any other legends
@@ -231,6 +240,40 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
   return legend;
 };
+
+/**
+ * Records a categorical legend's configuration for keyboard navigation.
+ * @param usermeta
+ * @param options
+ * @param entryFields fields each entry joins
+ * @returns UserMeta
+ */
+export const addUserMetaNavigableLegend = (
+  usermeta: UserMeta | undefined,
+  { name, color, position, highlight, title, legendLabels, descriptions }: LegendSpecOptions,
+  entryFields: string[]
+): UserMeta => ({
+  ...usermeta,
+  legends: [
+    ...(usermeta?.legends ?? []),
+    {
+      name,
+      entryFields,
+      colorField: typeof color === 'string' ? color : undefined,
+      position,
+      highlight,
+      title,
+      labels: legendLabels?.length
+        ? Object.fromEntries(legendLabels.map(({ seriesName, label }) => [String(seriesName), label]))
+        : undefined,
+      descriptions: descriptions?.length
+        ? Object.fromEntries(
+            descriptions.map(({ seriesName, description, title }) => [seriesName, { description, title }])
+          )
+        : undefined,
+    },
+  ],
+});
 
 /**
  * gets the legend for a continuous facet
@@ -349,7 +392,10 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
     }
 
     // add legend hovered series to the trendline and metric range highlighted data
-    const highlightedDataSets = data.filter((data) => /.*(Trendline|MetricRange).*highlightedData$/.test(data.name));
+    const highlightedDataSets = data.filter(
+      (data) =>
+        (data.name.includes('Trendline') || data.name.includes('MetricRange')) && data.name.endsWith('highlightedData')
+    );
     for (const data of highlightedDataSets) {
       if (data.transform?.[0] && 'expr' in data.transform[0]) {
         data.transform[0].expr += ` || datum.${SERIES_ID} === ${name}_${HOVERED_SERIES}`;

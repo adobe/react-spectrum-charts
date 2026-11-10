@@ -11,18 +11,33 @@
  */
 import { NodeObject, Structure } from 'data-navigator';
 
-import { buildBarStructure, buildNodeLabel, segmentId } from './buildBarStructure.js';
+import { SERIES_ID } from '@spectrum-charts/core-s2/constants';
+
+import { withViewKeys } from './barSeries.js';
+import {
+  buildBarStructure,
+  buildNodeLabel,
+  getMetricTitleBySeries,
+  segmentId,
+  toDimensionKey,
+} from './buildBarStructure.js';
 
 const hasEdgeBetween = (structure: Structure, a: string, b: string): boolean =>
-  Object.values(structure.edges).some((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));
+  Object.values(structure.edges).some(
+    (edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a)
+  );
 
 const edgeBetween = (structure: Structure, a: string, b: string) =>
-  Object.values(structure.edges).find((edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a));
+  Object.values(structure.edges).find(
+    (edge) => (edge.source === a && edge.target === b) || (edge.source === b && edge.target === a)
+  );
 
 /** The segment Enter reaches first from a division (stack) node — the edge where the division is the source, not the target. */
 const firstSegmentOf = (structure: Structure, divisionId: string): string | undefined => {
   const division = structure.nodes[divisionId];
-  const edgeId = division.edges.find((id) => structure.edges[id].source === divisionId && structure.edges[id].navigationRules.includes('child'));
+  const edgeId = division.edges.find(
+    (id) => structure.edges[id].source === divisionId && structure.edges[id].navigationRules.includes('child')
+  );
   return edgeId ? (structure.edges[edgeId].target as string) : undefined;
 };
 
@@ -84,8 +99,15 @@ describe('buildBarStructure()', () => {
   });
 
   test('counts groups instead of bars, and names the series field, when a color series is present', () => {
-    const { structure, entryPoint } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', metric: 'downloads' });
-    expect(structure.nodes[entryPoint as string].semantics?.label).toBe('downloads by browser chart, grouped by os. 2 groups.');
+    const { structure, entryPoint } = buildBarStructure({
+      data: stackedData,
+      dimension: 'browser',
+      color: 'os',
+      metric: 'downloads',
+    });
+    expect(structure.nodes[entryPoint as string].semantics?.label).toBe(
+      'downloads by browser chart, grouped by os. 2 groups.'
+    );
   });
 
   test('ensures every node has a semantics label', () => {
@@ -111,7 +133,12 @@ describe('buildBarStructure()', () => {
 
     test('excludes a zero-value segment from a stack, keeping its non-zero siblings', () => {
       const zeroSegmentData = [...stackedData, { browser: 'Chrome', os: 'Edge', downloads: 0 }];
-      const { structure } = buildBarStructure({ data: zeroSegmentData, dimension: 'browser', color: 'os', metric: 'downloads' });
+      const { structure } = buildBarStructure({
+        data: zeroSegmentData,
+        dimension: 'browser',
+        color: 'os',
+        metric: 'downloads',
+      });
       expect(structure.nodes[segmentId('Chrome', 'Edge')]).toBeUndefined();
       expect(structure.nodes[segmentId('Chrome', 'Windows')]).toBeDefined();
     });
@@ -122,10 +149,29 @@ describe('buildBarStructure()', () => {
         { browser: 'Safari', os: 'Mac', downloads: 0 },
         { browser: 'Safari', os: 'Windows', downloads: 0 },
       ];
-      const { structure } = buildBarStructure({ data: allZeroData, dimension: 'browser', color: 'os', metric: 'downloads' });
+      const { structure } = buildBarStructure({
+        data: allZeroData,
+        dimension: 'browser',
+        color: 'os',
+        metric: 'downloads',
+      });
       const divisions = Object.values(structure.nodes).filter((node) => node.dimensionLevel === 2);
       expect(divisions.map((node) => node.id)).not.toContain('Safari');
       expect(structure.nodes[segmentId('Safari', 'Mac')]).toBeUndefined();
+    });
+  });
+
+  describe('hidden series (toggled off via the legend, so not rendered)', () => {
+    test("excludes the hidden series' segments, keeping the rest", () => {
+      const { structure } = buildBarStructure({
+        data: stackedData,
+        dimension: 'browser',
+        color: 'os',
+        metric: 'downloads',
+        hiddenSeries: ['Mac'],
+      });
+      expect(structure.nodes[segmentId('Chrome', 'Mac')]).toBeUndefined();
+      expect(structure.nodes[segmentId('Chrome', 'Windows')]).toBeDefined();
     });
   });
 
@@ -144,7 +190,7 @@ describe('buildBarStructure()', () => {
       expect(divisions).toHaveLength(2); // Chrome, Firefox
     });
 
-    describe('segment order (matches Vega\'s real stack, not raw data-array order)', () => {
+    describe("segment order (matches Vega's real stack, not raw data-array order)", () => {
       // Vega's stack transform accumulates bottom-up, so without an explicit sort, the LAST row in the
       // array ends up visually on top (verified against the real transform) — Enter should reach that one.
       test('reaches the last-listed segment first when no order field is given', () => {
@@ -158,7 +204,12 @@ describe('buildBarStructure()', () => {
           { browser: 'Chrome', os: 'Windows', downloads: 18000, order: 2 },
           { browser: 'Chrome', os: 'Mac', downloads: 9000, order: 1 },
         ];
-        const { structure } = buildBarStructure({ data: orderedData, dimension: 'browser', color: 'os', order: 'order' });
+        const { structure } = buildBarStructure({
+          data: orderedData,
+          dimension: 'browser',
+          color: 'os',
+          order: 'order',
+        });
         const chrome = divisionIdFor(structure, 'browser', 'Chrome');
         expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Windows'));
       });
@@ -168,7 +219,12 @@ describe('buildBarStructure()', () => {
           { browser: 'Chrome', os: 'Windows', downloads: 18000, order: 1 },
           { browser: 'Chrome', os: 'Mac', downloads: 9000, order: 2 },
         ];
-        const { structure } = buildBarStructure({ data: orderedData, dimension: 'browser', color: 'os', order: 'order' });
+        const { structure } = buildBarStructure({
+          data: orderedData,
+          dimension: 'browser',
+          color: 'os',
+          order: 'order',
+        });
         const chrome = divisionIdFor(structure, 'browser', 'Chrome');
         expect(firstSegmentOf(structure, chrome)).toBe(segmentId('Chrome', 'Mac'));
       });
@@ -183,35 +239,73 @@ describe('buildBarStructure()', () => {
 
     describe('dodged group navigation', () => {
       test('links a segment to the same-series segment one stack over', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(true);
       });
 
       test('never links segments of different series across stacks', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(true);
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
-        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Windows'))).toBe(false);
+        expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Mac'))).toBe(false);
       });
 
       test('the corresponding bar in the adjacent group navigates on Up/Down', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
         const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
         expect(edge?.navigationRules).toEqual(['up', 'down']);
       });
 
       test('bars within a group navigate on Left/Right', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
         const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
         expect(edge).toBeDefined();
         expect(edge?.navigationRules).toContain('left');
         expect(edge?.navigationRules).toContain('right');
       });
 
+      test('bars within a group follow the series order in the data, as Vega lays them out', () => {
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+          order: 'downloads',
+        });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
+        // Windows (first in the data) is the source, so Right moves Windows -> Mac regardless of `order`.
+        expect(edge?.source).toBe(segmentId('Chrome', 'Windows'));
+      });
+
       test('the last bar in a group advances to the first bar in the next group', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
-        const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Mac'));
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
+        const edge = edgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Windows'));
         expect(edge?.navigationRules).toEqual(['left', 'right']);
       });
 
@@ -220,13 +314,23 @@ describe('buildBarStructure()', () => {
           { browser: 'Chrome', os: 'Windows', downloads: 18000 },
           { browser: 'Firefox', os: 'Windows', downloads: 12000 },
         ];
-        const { structure } = buildBarStructure({ data: singleSeriesData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const { structure } = buildBarStructure({
+          data: singleSeriesData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
         const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'));
         expect(edge?.navigationRules).toEqual(['up', 'down']);
       });
 
       test('does not wrap the last stack back to the first', () => {
-        const { structure } = buildBarStructure({ data: threeStackData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const { structure } = buildBarStructure({
+          data: threeStackData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
         expect(hasEdgeBetween(structure, segmentId('Safari', 'Windows'), segmentId('Chrome', 'Windows'))).toBe(false);
       });
 
@@ -237,7 +341,13 @@ describe('buildBarStructure()', () => {
           { browser: 'Firefox', os: 'Windows', downloads: 5000 },
           { browser: 'Firefox', os: 'Mac', downloads: 0 },
         ];
-        const { structure } = buildBarStructure({ data: sparseData, dimension: 'browser', color: 'os', type: 'dodged', metric: 'downloads' });
+        const { structure } = buildBarStructure({
+          data: sparseData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+          metric: 'downloads',
+        });
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Firefox', 'Windows'))).toBe(true);
         expect(structure.nodes[segmentId('Firefox', 'Mac')]).toBeUndefined();
         expect(hasEdgeBetween(structure, segmentId('Chrome', 'Mac'), segmentId('Firefox', 'Mac'))).toBe(false);
@@ -246,13 +356,23 @@ describe('buildBarStructure()', () => {
 
     describe('orientation', () => {
       test('vertical (default) keys the stack axis on Left/Right and the segment axis on Up/Down', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' });
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        });
         expect(structure.navigationRules?.left?.key).toBe('ArrowLeft');
         expect(structure.navigationRules?.up?.key).toBe('ArrowUp');
       });
 
       test('horizontal rotates the key mapping onto the same graph (stack axis on Up/Down, segment axis on Left/Right)', () => {
-        const vertical = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'dodged' }).structure;
+        const vertical = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'dodged',
+        }).structure;
         const horizontal = buildBarStructure({
           data: stackedData,
           dimension: 'browser',
@@ -299,7 +419,12 @@ describe('buildBarStructure()', () => {
       });
 
       test('preserves stacked navigation when the bar type is stacked', () => {
-        const { structure } = buildBarStructure({ data: stackedData, dimension: 'browser', color: 'os', type: 'stacked' });
+        const { structure } = buildBarStructure({
+          data: stackedData,
+          dimension: 'browser',
+          color: 'os',
+          type: 'stacked',
+        });
         const edge = edgeBetween(structure, segmentId('Chrome', 'Windows'), segmentId('Chrome', 'Mac'));
         expect(edge?.navigationRules).toContain('up');
         expect(edge?.navigationRules).toContain('down');
@@ -408,12 +533,21 @@ describe('buildNodeLabel()', () => {
   });
 
   test('falls back to the node id for a division (stack) node when no dimension/data is supplied', () => {
-    const node = { id: 'Chrome', dimensionLevel: 2, data: { values: { x: {}, y: {}, z: {} } } } as unknown as NodeObject;
+    const node = {
+      id: 'Chrome',
+      dimensionLevel: 2,
+      data: { values: { x: {}, y: {}, z: {} } },
+    } as unknown as NodeObject;
     expect(buildNodeLabel(node)).toBe('Chrome');
   });
 
   test('describes a division (stack/group) node by its dimension value plus an itemized summary of its own segments', () => {
-    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Chrome' } } as unknown as NodeObject;
+    const node = {
+      id: 'dn-1',
+      dimensionLevel: 2,
+      derivedNode: 'browser',
+      data: { browser: 'Chrome' },
+    } as unknown as NodeObject;
     const label = buildNodeLabel(node, {
       dimension: 'browser',
       data: [
@@ -429,8 +563,13 @@ describe('buildNodeLabel()', () => {
     );
   });
 
-  test('uses the metric title mapped to each segment\'s own series in a division (stack/group) summary', () => {
-    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Chrome' } } as unknown as NodeObject;
+  test("uses the metric title mapped to each segment's own series in a division (stack/group) summary", () => {
+    const node = {
+      id: 'dn-1',
+      dimensionLevel: 2,
+      derivedNode: 'browser',
+      data: { browser: 'Chrome' },
+    } as unknown as NodeObject;
     const label = buildNodeLabel(node, {
       dimension: 'browser',
       data: [
@@ -444,11 +583,18 @@ describe('buildNodeLabel()', () => {
         titleBySeries: { Windows: 'Windows Downloads', Mac: 'Mac Downloads' },
       },
     });
-    expect(label).toBe('Browser: Chrome. Operating system: Windows, Windows Downloads: 5. Operating system: Mac, Mac Downloads: 3.');
+    expect(label).toBe(
+      'Browser: Chrome. Operating system: Windows, Windows Downloads: 5. Operating system: Mac, Mac Downloads: 3.'
+    );
   });
 
   test('falls back to the node id for a division node whose dimension value matches no rows', () => {
-    const node = { id: 'Safari', dimensionLevel: 2, derivedNode: 'browser', data: { browser: 'Safari' } } as unknown as NodeObject;
+    const node = {
+      id: 'Safari',
+      dimensionLevel: 2,
+      derivedNode: 'browser',
+      data: { browser: 'Safari' },
+    } as unknown as NodeObject;
     const label = buildNodeLabel(node, {
       dimension: 'browser',
       data: [{ browser: 'Chrome', downloads: 5 }],
@@ -458,7 +604,10 @@ describe('buildNodeLabel()', () => {
   });
 
   test('describes a leaf node by its own scalar fields (consumer-owned field names, not translatable prose)', () => {
-    const node = { id: 'Chrome', data: { browser: 'Chrome', downloads: 27000, _dnId: 'skip-me' } } as unknown as NodeObject;
+    const node = {
+      id: 'Chrome',
+      data: { browser: 'Chrome', downloads: 27000, _dnId: 'skip-me' },
+    } as unknown as NodeObject;
     const label = buildNodeLabel(node);
     expect(label).toContain('browser: Chrome');
     expect(label).toContain('downloads: 27000');
@@ -526,11 +675,135 @@ describe('buildBarStructure() fieldLabels', () => {
       { browser: 'Chrome', operatingSystem: 'Windows', downloads: 5, order: 2 },
       { browser: 'Chrome', operatingSystem: 'Mac', downloads: 3, order: 1 },
     ];
-    const expectedLabel = 'Browser: Chrome. Operating system: Windows, Downloads: 5. Operating system: Mac, Downloads: 3.';
+    const expectedLabel =
+      'Browser: Chrome. Operating system: Windows, Downloads: 5. Operating system: Mac, Downloads: 3.';
     const fieldLabels = { browser: 'Browser', operatingSystem: 'Operating system', downloads: 'Downloads' };
 
-    const { structure } = buildBarStructure({ data: groupData, dimension: 'browser', color: 'operatingSystem', order: 'order', fieldLabels });
+    const { structure } = buildBarStructure({
+      data: groupData,
+      dimension: 'browser',
+      color: 'operatingSystem',
+      order: 'order',
+      fieldLabels,
+    });
     const chromeDivisionId = divisionIdFor(structure, 'browser', 'Chrome');
     expect(structure.nodes[chromeDivisionId].semantics?.label).toBe(expectedLabel);
+  });
+});
+
+describe('toDimensionKey()', () => {
+  test('returns strings as-is and stringifies numbers, booleans, and dates', () => {
+    const date = new Date('2024-01-01T00:00:00Z');
+    expect(toDimensionKey('Chrome')).toBe('Chrome');
+    expect(toDimensionKey(3)).toBe('3');
+    expect(toDimensionKey(false)).toBe('false');
+    expect(toDimensionKey(date)).toBe(String(date));
+  });
+
+  test('returns undefined for values that cannot be a key', () => {
+    expect(toDimensionKey(undefined)).toBeUndefined();
+    expect(toDimensionKey(null)).toBeUndefined();
+    expect(toDimensionKey({ a: 1 })).toBeUndefined();
+    expect(toDimensionKey(['a'])).toBeUndefined();
+  });
+});
+
+describe('buildNodeLabel() division keys', () => {
+  test('describes a division whose dimension value is a Date', () => {
+    const date = new Date('2024-01-01T00:00:00Z');
+    const node = { id: 'dn-1', dimensionLevel: 2, derivedNode: 'day', data: { day: date } } as unknown as NodeObject;
+    const label = buildNodeLabel(node, {
+      dimension: 'day',
+      data: [{ day: new Date(date), downloads: 5 }],
+      fieldLabels: { day: 'Day', downloads: 'Downloads' },
+    });
+    expect(label).toBe(`Day: ${String(date)}. Downloads: 5.`);
+  });
+
+  test('falls back to the node id when the dimension value is a plain object', () => {
+    const node = {
+      id: 'dn-1',
+      dimensionLevel: 2,
+      derivedNode: 'day',
+      data: { day: { a: 1 } },
+    } as unknown as NodeObject;
+    expect(buildNodeLabel(node, { dimension: 'day', data: [{ day: { a: 1 }, downloads: 5 }] })).toBe('dn-1');
+  });
+});
+
+describe('buildBarStructure() dodged-and-stacked', () => {
+  // Dodged by series into side-by-side stacks, each stacked by outcome.
+  const rows = withViewKeys(
+    ['Launch', 'Signup'].flatMap((step) =>
+      ['All', 'US'].flatMap((series) => ['kept', 'lost'].map((outcome) => ({ step, series, outcome, users: 10 })))
+    ),
+    undefined,
+    { seriesFields: ['series', 'outcome'] }
+  ).data;
+  const { structure } = buildBarStructure({
+    data: rows,
+    dimension: 'step',
+    metric: 'users',
+    color: 'series',
+    seriesField: SERIES_ID,
+    dodgeFields: ['series'],
+    stackFields: ['outcome'],
+    type: 'dodged',
+  });
+  const id = (step: string, series: string, outcome: string) => segmentId(step, `${series} | ${outcome}`);
+
+  test('keys each bar by its full series, so every segment is distinct', () => {
+    expect(structure.nodes[id('Launch', 'All', 'kept')]).toBeDefined();
+    expect(structure.nodes[id('Launch', 'All', 'lost')]).toBeDefined();
+    expect(structure.nodes[id('Launch', 'US', 'kept')]).toBeDefined();
+  });
+
+  test('moves up and down within a stack', () => {
+    expect(edgeBetween(structure, id('Launch', 'All', 'kept'), id('Launch', 'All', 'lost'))?.navigationRules).toEqual([
+      'up',
+      'down',
+    ]);
+    expect(hasEdgeBetween(structure, id('Launch', 'All', 'kept'), id('Launch', 'US', 'lost'))).toBe(false);
+  });
+
+  test('moves left and right to the same segment of the neighboring stack, across categories too', () => {
+    expect(edgeBetween(structure, id('Launch', 'All', 'lost'), id('Launch', 'US', 'lost'))?.navigationRules).toEqual([
+      'left',
+      'right',
+    ]);
+    expect(edgeBetween(structure, id('Launch', 'US', 'kept'), id('Signup', 'All', 'kept'))?.navigationRules).toEqual([
+      'left',
+      'right',
+    ]);
+  });
+});
+
+describe('buildBarStructure() dimensionLabels', () => {
+  test('reads a parsed dimension as the value the consumer supplied', () => {
+    const day = Date.parse('2024-01-01');
+    const { structure } = buildBarStructure({
+      data: [{ day, downloads: 5 }],
+      dimension: 'day',
+      metric: 'downloads',
+      dimensionLabels: new Map([[String(day), '2024-01-01']]),
+    });
+    expect(structure.nodes[String(day)].semantics?.label).toBe('day: 2024-01-01. downloads: 5.');
+  });
+});
+
+describe('getMetricTitleBySeries()', () => {
+  const rows = [{ series: 'Users' }, { series: 'Revenue' }, { series: 'Users' }];
+  const titles = { primary: 'Count', secondary: 'Dollars' };
+
+  test('gives the secondary title to the series the chart puts on the secondary axis', () => {
+    expect(getMetricTitleBySeries(rows, 'series', titles, 'Users')).toEqual({ Users: 'Dollars', Revenue: 'Count' });
+  });
+
+  test('falls back to the last series in data order', () => {
+    expect(getMetricTitleBySeries(rows, 'series', titles)).toEqual({ Users: 'Count', Revenue: 'Dollars' });
+  });
+
+  test('is undefined when neither axis has a title', () => {
+    expect(getMetricTitleBySeries(rows, 'series', {})).toBeUndefined();
   });
 });

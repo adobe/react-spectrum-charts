@@ -33,7 +33,7 @@ export type TrendlineMethod = AggregateMethod | RegressionMethod | WindowMethod;
 
 export interface TrendlineOptions {
   /** Trendline color. Defaults to the color of its series. */
-  color?: SpectrumColor | string;
+  color?: SpectrumColor | (string & NonNullable<unknown>);
   /** Range of `dimension` to draw the trendline over. `domain` extends it to the edge of the chart; `null` stops at the first or last row. Defaults to `dimensionRange`. */
   dimensionExtent?: [number | 'domain' | null, number | 'domain' | null];
   /** Range of `dimension` the trendline is calculated from; `null` leaves that end unbounded. Defaults to `[null, null]`. */

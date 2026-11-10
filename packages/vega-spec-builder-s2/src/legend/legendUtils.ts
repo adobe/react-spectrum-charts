@@ -48,6 +48,7 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { jsonClone } from '@spectrum-charts/core-s2/utils';
 
 import { getPathFromSymbolShape } from '../specUtils.js';
 import {
@@ -320,8 +321,7 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
     stroke: [hiddenStrokeRule, colorRef],
     shape: { signal: `legendSymbolShape(${shapeExpression}, ${hiddenSeriesTest})` },
   };
-  // Remove undefined values
-  const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
+  const symbols: GuideEncodeEntry<SymbolEncodeEntry> = jsonClone({ enter, update });
   return {
     entries: {
       name: `${name}_legendEntry`,

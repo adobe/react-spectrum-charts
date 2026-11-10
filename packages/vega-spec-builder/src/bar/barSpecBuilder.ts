@@ -206,7 +206,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
       as: [`${metric}0`, `${metric}1`],
     });
 
-    data[index].transform?.push(getStackIdTransform(options));
+    data[index].transform?.push(getStackIdTransform(options)); // NOSONAR typescript:S7778 - S1 is in maintenance mode; no functional changes for Sonar findings
     data.push(getStackAggregateData(options));
   }
   if (type === 'dodged' || isDodgedAndStacked(options)) {

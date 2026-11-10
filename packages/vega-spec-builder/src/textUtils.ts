@@ -35,7 +35,7 @@ export const getTextNumberFormat = (
     return [
       {
         test: `${test} && abs(datum['${datumProperty}']) >= 1000`,
-        signal: `upper(replace(format(datum['${datumProperty}'], '$.3~s'), /(\\d+)G/, '$1B'))`,
+        signal: `upper(replace(format(datum['${datumProperty}'], '$.3~s'), /(\\d+)G/, '$1B'))`, // NOSONAR typescript:S7780 - S1 is in maintenance mode; no functional changes for Sonar findings
       },
       {
         test,

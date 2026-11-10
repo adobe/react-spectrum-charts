@@ -26,6 +26,10 @@ export type MessageKey =
   | 'navigation.colorLabel'
   | 'navigation.enter'
   | 'navigation.exit'
+  | 'navigation.legendDescription'
+  | 'navigation.legendDescriptionWithHidden'
+  | 'navigation.legendSeriesHidden'
+  | 'navigation.legendSeriesShown'
   | 'navigation.region'
   | 'navigation.stackedBarDescription';
 
@@ -41,6 +45,10 @@ export const messages: Record<string, Record<MessageKey, LocalizedString>> = {
   "navigation.colorLabel": `Color`,
   "navigation.enter": `Enter navigation area`,
   "navigation.exit": `End of data structure.`,
+  "navigation.legendDescription": (args, formatter) => `${args.title} legend. ${formatter.plural(args.count, {one: () => `${formatter.number(args.count)} series`, other: () => `${formatter.number(args.count)} series`})}.`,
+  "navigation.legendDescriptionWithHidden": (args, formatter) => `${args.title} legend. ${formatter.plural(args.count, {one: () => `${formatter.number(args.count)} series`, other: () => `${formatter.number(args.count)} series`})}, ${args.hidden} hidden.`,
+  "navigation.legendSeriesHidden": `Hidden.`,
+  "navigation.legendSeriesShown": `Shown.`,
   "navigation.region": `Accessible chart navigation`,
   "navigation.stackedBarDescription": (args, formatter) => `${args.metricLabel} by ${args.dimension} chart, grouped by ${args.color}. ${formatter.plural(args.count, {one: () => `${formatter.number(args.count)} group`, other: () => `${formatter.number(args.count)} groups`})}.`,
 },

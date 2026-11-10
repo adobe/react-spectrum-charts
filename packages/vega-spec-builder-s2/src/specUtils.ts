@@ -96,6 +96,7 @@ export const getFacetsFromScales = (scales: Scale[] = []): string[] => {
     'secondaryOpacity',
   ].reduce((acc, cur) => {
     const scale = scales.find((scale) => scale.name === cur);
+    // A domain field can be a signal reference instead of a plain field name; only the latter is a usable facet.
     const field = scale?.domain && 'fields' in scale.domain ? scale.domain.fields[0] : undefined;
     if (typeof field === 'string') {
       return [...acc, field];
@@ -176,7 +177,7 @@ export const getPathFromSymbolShape = (symbolShape: ChartSymbolShape): string =>
  * @param icon
  * @returns strokeDash array
  */
-export const getPathFromIcon = (icon: string): string => {
+export const getPathFromIcon = (icon: Icon | (string & NonNullable<unknown>)): string => {
   const supportedIcons: { [key in Icon]: string } = {
     date: DATE_PATH,
     sentimentNegative: SENTIMENT_NEGATIVE_PATH,
@@ -308,7 +309,7 @@ export const escapeD3FormatSpecifier = (formatSpec: string): string =>
  * @param numberFormat
  * @returns string
  */
-export const getNumberFormatExpression = (valueExpr: string, numberFormat: NumberFormat | string): string => {
+export const getNumberFormatExpression = (valueExpr: string, numberFormat: NumberFormat): string => {
   if (numberFormat === 'shortNumber') return `formatShortNumber(${valueExpr})`;
   if (numberFormat === 'shortCurrency') {
     return String.raw`abs(${valueExpr}) >= 1000 ? upper(replace(format(${valueExpr}, '$.3~s'), /(\d+)G/, '$1B')) : format(${valueExpr}, '$')`;

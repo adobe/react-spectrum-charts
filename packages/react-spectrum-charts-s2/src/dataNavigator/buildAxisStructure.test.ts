@@ -38,6 +38,12 @@ describe('buildAxisStructure()', () => {
       expect(leaves).toHaveLength(2);
     });
 
+    test('skips an empty-string value, which renders no label', () => {
+      const { structure } = buildAxisStructure({ data: [{ browser: '' }, { browser: 'Chrome' }], field: 'browser', type: 'categorical' });
+      const leaves = Object.values(structure.nodes).filter((node) => node.dimensionLevel == null);
+      expect(leaves.map((node) => node.id)).toEqual(['Chrome']);
+    });
+
     test('returns the dimension root as the entry point', () => {
       const { structure, entryPoint } = buildAxisStructure({ data, field: 'browser', type: 'categorical' });
       expect(entryPoint).toBeDefined();

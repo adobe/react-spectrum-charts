@@ -21,9 +21,6 @@ import {
   DIMENSION_HOVER_AREA,
   DRAW_IN_GROW_DURATION_MS,
   FILTERED_TABLE,
-  FOCUSED_DIMENSION,
-  FOCUSED_ITEM,
-  FOCUSED_REGION,
   LAST_RSC_SERIES_ID,
   LINE_TYPE_SCALE,
   OPACITY_SCALE,
@@ -90,7 +87,7 @@ import {
 } from '../specUtils.js';
 import { addTrendlineData, getTrendlineMarks, setTrendlineSignals } from '../trendline/index.js';
 import { BarOptions, BarSpecOptions, ChartData, ColorScheme, HighlightedItem, ScSpec } from '../types/index.js';
-import { getChartFocusRing } from './barFocusRingUtils.js';
+import { getDodgedGroupFocusRing } from './barFocusRingUtils.js';
 import {
   getBarAnimIdField,
   getBarHoverRules,
@@ -270,14 +267,6 @@ export const addSignals = produce<Signal[], [BarSpecOptions]>((signals, options)
   // We use this value to calculate ReferenceLine positions.
   const { paddingInner } = getBarPadding(paddingRatio, barPaddingOuter);
   signals.push(getGenericValueSignal('paddingInner', paddingInner));
-
-  if (options.accessibleNavigation) {
-    signals.push(
-      getGenericValueSignal(FOCUSED_ITEM),
-      getGenericValueSignal(FOCUSED_REGION),
-      getGenericValueSignal(FOCUSED_DIMENSION)
-    );
-  }
 
   if (isDualMetricAxis(options)) {
     signals.push(getFirstRscSeriesIdSignal(), getLastRscSeriesIdSignal());
@@ -466,6 +455,8 @@ const getStackFields = ({ trellis, color, dimension, lineType, opacity, type }: 
 export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
   const { dimension, metric, name } = options;
   const dualMetricAxis = isDualMetricAxis(options);
+  // Keep in sync with getDodgedGroupFocusRing: a dodged-and-stacked group spans its stacks' end values.
+  const extentField = isDodgedAndStacked(options) ? `${metric}1` : metric;
   // A dual-metric-axis bar's last series renders against a secondary scale with its own domain (see
   // getMetricEncodings), so its metric can't be aggregated together with the rest — null out whichever
   // side a row doesn't belong to and aggregate both fields, so getDodgedGroupFocusRing can resolve each
@@ -494,7 +485,7 @@ export const getDodgedGroupAggregateData = (options: BarSpecOptions): Data => {
         groupby: [dimension],
         fields: dualMetricAxis
           ? [`${metric}_primary`, `${metric}_primary`, `${metric}_secondary`, `${metric}_secondary`]
-          : [metric, metric],
+          : [extentField, extentField],
         ops: dualMetricAxis ? ['min', 'max', 'min', 'max'] : ['min', 'max'],
       },
     ],
@@ -613,6 +604,7 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   const barMarks: Mark[] = [];
   if (isDodgedAndStacked(options)) {
     barMarks.push(getDodgedAndStackedBarMark(options));
+    if (options.accessibleNavigation) barMarks.push(getDodgedGroupFocusRing(options));
   } else if (type === 'stacked') {
     barMarks.push(...getStackedBarMarks(options));
   } else {
@@ -635,10 +627,6 @@ export const addMarks = produce<Mark[], [BarSpecOptions]>((marks, options) => {
   }
 
   marks.push(...getTrendlineMarks(options));
-
-  if (options.accessibleNavigation) {
-    marks.push(getChartFocusRing(options));
-  }
 });
 
 export const getRepeatedScale = (options: BarSpecOptions): Scale => {

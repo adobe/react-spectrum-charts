@@ -15,7 +15,7 @@ export default function useChartWidth(
   containerWidth: number,
   maxWidth: number,
   minWidth: number,
-  width: number | 'auto' | string
+  width: number | 'auto' | string // NOSONAR typescript:S6571 - S1 is in maintenance mode; no functional changes for Sonar findings
 ) {
   return useMemo(() => {
     let targetWidth = minWidth;

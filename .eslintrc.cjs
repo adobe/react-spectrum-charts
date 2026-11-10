@@ -49,7 +49,7 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   plugins: ['prettier', '@typescript-eslint', 'jest', 'jsdoc', 'react', 'header'],
-  ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/'],
+  ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/', '**/intl/compiled/'],
   rules: {
     'react/jsx-uses-vars': 'error',
     'react/jsx-uses-react': 'error',
@@ -151,6 +151,26 @@ module.exports = {
               {
                 group: ['react', 'react-dom', 'react/*', 'react-dom/*'],
                 message: 'viewHost must not depend on React.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      // Keyboard navigation is framework-agnostic; React wiring lives in hooks/useDataNavigator.ts.
+      files: ['packages/react-spectrum-charts-s2/src/dataNavigator/**/*.ts'],
+      excludedFiles: ['**/*.test.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            ...s2RestrictedImports,
+            patterns: [
+              ...s2RestrictedImports.patterns,
+              {
+                group: ['react', 'react-dom', 'react/*', 'react-dom/*'],
+                message: 'dataNavigator must not depend on React.',
               },
             ],
           },

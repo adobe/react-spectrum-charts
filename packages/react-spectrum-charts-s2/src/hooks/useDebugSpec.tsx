@@ -27,7 +27,7 @@ export const useDebugSpec = (
 ): void => {
   useEffect(() => {
     if (debug) {
-      const data = JSON.parse(JSON.stringify(spec.data));
+      const data = structuredClone(spec.data);
 
       // Merge raw values into the Vega datasets array for a combined view of the data
       const combinedData = mergeValuesIntoData(data, chartData);

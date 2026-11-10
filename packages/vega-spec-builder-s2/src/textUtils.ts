@@ -20,7 +20,7 @@ import { NumberFormat } from './types/index.js';
  * @returns
  */
 export const getTextNumberFormat = (
-  numberFormat: NumberFormat | string,
+  numberFormat: NumberFormat,
   datumProperty: string = 'value',
   currencyLocale?: string,
   currencyCode?: string
@@ -35,7 +35,7 @@ export const getTextNumberFormat = (
     return [
       {
         test: `${test} && abs(datum['${datumProperty}']) >= 1000`,
-        signal: `upper(replace(format(datum['${datumProperty}'], '$.3~s'), /(\\d+)G/, '$1B'))`,
+        signal: String.raw`upper(replace(format(datum['${datumProperty}'], '$.3~s'), /(\d+)G/, '$1B'))`,
       },
       {
         test,

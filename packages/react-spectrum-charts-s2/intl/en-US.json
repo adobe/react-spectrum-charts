@@ -10,6 +10,10 @@
   "navigation.colorLabel": "Color",
   "navigation.enter": "Enter navigation area",
   "navigation.exit": "End of data structure.",
+  "navigation.legendDescription": "{title} legend. {count, plural, one {# series} other {# series}}.",
+  "navigation.legendDescriptionWithHidden": "{title} legend. {count, plural, one {# series} other {# series}}, {hidden} hidden.",
+  "navigation.legendSeriesHidden": "Hidden.",
+  "navigation.legendSeriesShown": "Shown.",
   "navigation.region": "Accessible chart navigation",
   "navigation.stackedBarDescription": "{metricLabel} by {dimension} chart, grouped by {color}. {count, plural, one {# group} other {# groups}}."
 }
