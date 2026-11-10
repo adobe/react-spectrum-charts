@@ -21,7 +21,6 @@ describe('applyChartPropsDefaults', () => {
     expect(props.colors).toBe('s2Categorical20'); // S2 package always uses S2 colors
     expect(props.colorScheme).toBeDefined();
     expect(props.debug).toBeDefined();
-    expect(props.emptyStateText).toBeDefined();
     expect(props.height).toBeDefined();
     expect(props.hiddenSeries).toBeDefined();
     expect(props.idKey).toBeDefined();
