@@ -164,6 +164,10 @@ For S2 props, add or adjust a variation in the mark's dashboard and map the prop
 
 Then update the component's `packages/docs-s2` page: add the prop to a playground or section, and make sure its TSDoc states what it does and its default (see `writing-s2-docs-pages`, Step 9).
 
+### Step 11: Update Classes (S2)
+
+Classify the S2 prop in the mark's `*_UPDATE_CLASSES` table (`vega-spec-builder-s2/src/updateClasses/`) and, if it's React-only, its `*_PROP_UPDATE_CLASSES` table (`react-spectrum-charts-s2/src/updateClasses/`). `tsc` fails until you do. Add a case to `<mark>.updateClasses.test.tsx`, and run `yarn docs:update-behavior` to regenerate the docs page. See `architecture/rendering-and-signals.md`.
+
 ---
 
 ## Checklist by Prop Type
@@ -177,6 +181,7 @@ Then update the component's `packages/docs-s2` page: add the prop to a playgroun
 - [ ] Story
 - [ ] S2 parity
 - [ ] S2 variation dashboard variation + coverage entry
+- [ ] S2 update class entry + update class test case
 - [ ] S2 docs page — prop covered in a playground or section
 
 **Plain value prop without default (optional behavior):**
