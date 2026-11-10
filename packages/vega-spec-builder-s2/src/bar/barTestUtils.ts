@@ -79,34 +79,10 @@ export const defaultDodgedYEncodings: RectEncodeEntry = {
 };
 
 export const defaultCornerRadiusEncodings: RectEncodeEntry = {
-  cornerRadiusTopLeft: [
-    {
-      test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
-      value: 4,
-    },
-    { value: 0 },
-  ],
-  cornerRadiusTopRight: [
-    {
-      test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
-      value: 4,
-    },
-    { value: 0 },
-  ],
-  cornerRadiusBottomLeft: [
-    {
-      test: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1`,
-      value: 4,
-    },
-    { value: 0 },
-  ],
-  cornerRadiusBottomRight: [
-    {
-      test: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1`,
-      value: 4,
-    },
-    { value: 0 },
-  ],
+  cornerRadiusTopLeft: { field: 'bar0_topCornerRadius' },
+  cornerRadiusTopRight: { field: 'bar0_topCornerRadius' },
+  cornerRadiusBottomLeft: { field: 'bar0_bottomCornerRadius' },
+  cornerRadiusBottomRight: { field: 'bar0_bottomCornerRadius' },
 };
 
 export const defaultDodgedCornerRadiusEncodings: RectEncodeEntry = {

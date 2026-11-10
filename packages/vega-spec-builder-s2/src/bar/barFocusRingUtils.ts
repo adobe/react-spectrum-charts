@@ -20,11 +20,11 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getBarStackTotalFields } from '../marks/drawInAnimationUtils.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
   getOrientationProperties,
+  getStackedCornerRadiusFields,
   isDodgedAndStacked,
   isDualMetricAxis,
   rotateRectClockwiseIfNeeded,
@@ -57,24 +57,28 @@ const getStaticFocusRingCorners = ({ hasSquareCorners, orientation }: BarSpecOpt
 /** Handle square corners for the inner stacked bar segments. */
 const getDynamicFocusRingCorners = (options: BarSpecOptions): RectEncodeEntry => {
   const { hasSquareCorners, metric, name, type } = options;
-  const rounded = hasSquareCorners ? FOCUS_RING_FLAT_RADIUS : FOCUS_RING_ROUNDED_RADIUS;
   const flat = FOCUS_RING_FLAT_RADIUS;
-  let topTest: string;
-  let bottomTest: string;
+  let rect: RectEncodeEntry;
   if (type === 'dodged' && !isDodgedAndStacked(options)) {
-    topTest = `datum.datum.${metric} > 0`;
-    bottomTest = `datum.datum.${metric} < 0`;
+    const rounded = hasSquareCorners ? FOCUS_RING_FLAT_RADIUS : FOCUS_RING_ROUNDED_RADIUS;
+    const topTest = `datum.datum.${metric} > 0`;
+    const bottomTest = `datum.datum.${metric} < 0`;
+    rect = {
+      cornerRadiusTopLeft: [{ test: topTest, value: rounded }, { value: flat }],
+      cornerRadiusTopRight: [{ test: topTest, value: rounded }, { value: flat }],
+      cornerRadiusBottomLeft: [{ test: bottomTest, value: rounded }, { value: flat }],
+      cornerRadiusBottomRight: [{ test: bottomTest, value: rounded }, { value: flat }],
+    };
   } else {
-    const [stackMax, stackMin] = getBarStackTotalFields(name);
-    topTest = `datum.datum.${metric}1 > 0 && datum.datum.${stackMax} === datum.datum.${metric}1`;
-    bottomTest = `datum.datum.${metric}1 < 0 && datum.datum.${stackMin} === datum.datum.${metric}1`;
+    // the segment's precomputed bar radius (4 or 0) offset by the flat radius gives the ring's 6 or 2
+    const [topField, bottomField] = getStackedCornerRadiusFields(name).map((field) => `datum.${field}`);
+    rect = {
+      cornerRadiusTopLeft: { field: topField, offset: flat },
+      cornerRadiusTopRight: { field: topField, offset: flat },
+      cornerRadiusBottomLeft: { field: bottomField, offset: flat },
+      cornerRadiusBottomRight: { field: bottomField, offset: flat },
+    };
   }
-  const rect: RectEncodeEntry = {
-    cornerRadiusTopLeft: [{ test: topTest, value: rounded }, { value: flat }],
-    cornerRadiusTopRight: [{ test: topTest, value: rounded }, { value: flat }],
-    cornerRadiusBottomLeft: [{ test: bottomTest, value: rounded }, { value: flat }],
-    cornerRadiusBottomRight: [{ test: bottomTest, value: rounded }, { value: flat }],
-  };
   return rotateRectClockwiseIfNeeded(rect, options);
 };
 

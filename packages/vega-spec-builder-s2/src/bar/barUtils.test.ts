@@ -66,6 +66,7 @@ import {
   getMetricEncodings,
   getOrientationProperties,
   getStackedCornerRadiusEncodings,
+  getStackedCornerRadiusTransforms,
   getStackedMetricEncodings,
   getStroke,
   getStrokeDash,
@@ -232,39 +233,6 @@ describe('barUtils', () => {
       expect(horizontal?.cornerRadiusBottomRight).toEqual(vertical?.cornerRadiusTopRight);
       expect(horizontal?.cornerRadiusBottomLeft).toEqual(vertical?.cornerRadiusBottomRight);
     });
-    test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
-      const squareRadius = getCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
-
-      // Square radius should have values of 0
-      expect(squareRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-        })
-      );
-
-      const roundRadius = getCornerRadiusEncodings({ ...defaultBarOptions });
-
-      // S2 always uses 4
-      expect(roundRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
-    });
-
-    test('corner radius should be 4 for stacked bars', () => {
-      const radius = getCornerRadiusEncodings({ ...defaultBarOptions });
-
-      expect(radius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
-    });
-
     test('corner radius should be 4 for dodged bars', () => {
       const radius = getCornerRadiusEncodings({ ...defaultBarOptions, type: 'dodged' });
 
@@ -276,8 +244,8 @@ describe('barUtils', () => {
       );
     });
 
-    test('corner radius should be 0 when hasSquareCorners is true', () => {
-      const squareRadius = getCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
+    test('dodged corner radius should be 0 when hasSquareCorners is true', () => {
+      const squareRadius = getCornerRadiusEncodings({ ...defaultBarOptions, type: 'dodged', hasSquareCorners: true });
 
       expect(squareRadius).toEqual(
         expect.objectContaining({
@@ -288,77 +256,31 @@ describe('barUtils', () => {
     });
   });
 
-  describe('getStackedCorderRadiusEncodings()', () => {
-    test('defaultBarOptions, should return default encodings', () => {
+  describe('getStackedCornerRadiusEncodings()', () => {
+    test('defaultBarOptions, should read the precomputed corner radius fields', () => {
       expect(getStackedCornerRadiusEncodings(defaultBarOptions)).toStrictEqual(defaultCornerRadiusEncodings);
     });
-    test('defaultBarOptions with secondary color, should include secondaryColor in singal path', () => {
-      expect(getStackedCornerRadiusEncodings(defaultBarOptionsWithSecondayColor).cornerRadiusTopLeft).toStrictEqual([
+  });
+
+  describe('getStackedCornerRadiusTransforms()', () => {
+    test('rounds the positive top and negative bottom of each stack', () => {
+      expect(getStackedCornerRadiusTransforms(defaultBarOptions)).toStrictEqual([
         {
-          test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
-          value: 4,
+          type: 'formula',
+          as: 'bar0_topCornerRadius',
+          expr: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
         },
-        { value: 0 },
-      ]);
-    });
-    test('dodged with secondary color, should include secondaryColor in singal path', () => {
-      expect(
-        getStackedCornerRadiusEncodings({
-          ...defaultBarOptionsWithSecondayColor,
-          type: 'dodged',
-        }).cornerRadiusTopLeft
-      ).toStrictEqual([
         {
-          test: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1`,
-          value: 4,
+          type: 'formula',
+          as: 'bar0_bottomCornerRadius',
+          expr: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
         },
-        { value: 0 },
       ]);
-    });
-
-    test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
-      const squareRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
-
-      // Square radius should have values of 0
-      expect(squareRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-        })
-      );
-
-      const roundRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions });
-
-      expect(roundRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
-    });
-
-    test('corner radius should be 4 for stacked bars', () => {
-      const radius = getStackedCornerRadiusEncodings({ ...defaultBarOptions });
-
-      expect(radius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusBottomLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusBottomRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
     });
 
     test('corner radius should be 0 when hasSquareCorners is true', () => {
-      const squareRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
-
-      expect(squareRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-        })
-      );
+      const transforms = getStackedCornerRadiusTransforms({ ...defaultBarOptions, hasSquareCorners: true });
+      transforms.forEach(({ expr }) => expect(expr).toMatch(/\? 0 : 0$/));
     });
   });
 
@@ -685,13 +607,9 @@ describe('barUtils', () => {
       const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
       const update = ring.encode?.update as RectEncodeEntry;
 
-      // the ring reuses the bar's stacked corner-radius production rules (including the
-      // data('..._stacks') test strings), each branch's value widened by the 2px gap
-      const barCorners = getStackedCornerRadiusEncodings(options);
-      const widenBranches = (rule: RectEncodeEntry['cornerRadiusTopLeft']) =>
-        (rule as { test?: string; value: number }[]).map((branch) => ({ ...branch, value: branch.value + 2 }));
-      expect(update.cornerRadiusTopLeft).toStrictEqual(widenBranches(barCorners.cornerRadiusTopLeft));
-      expect(update.cornerRadiusBottomRight).toStrictEqual(widenBranches(barCorners.cornerRadiusBottomRight));
+      // the ring reads the bar's precomputed stacked corner radius fields, offset by the 2px gap
+      expect(update.cornerRadiusTopLeft).toStrictEqual({ field: 'bar0_topCornerRadius', offset: 2 });
+      expect(update.cornerRadiusBottomRight).toStrictEqual({ field: 'bar0_bottomCornerRadius', offset: 2 });
     });
 
     test('backdrop and outline ring share identical position and corner-radius encodings', () => {

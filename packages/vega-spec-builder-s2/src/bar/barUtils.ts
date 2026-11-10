@@ -13,6 +13,7 @@ import {
   ArrayValueRef,
   ColorValueRef,
   EncodeEntry,
+  FormulaTransform,
   GroupMark,
   NumericValueRef,
   ProductionRule,
@@ -304,22 +305,51 @@ export const getCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEnt
   return rotateRectClockwiseIfNeeded(rectEncodeEntry, options);
 };
 
-export const getStackedCornerRadiusEncodings = ({
+/**
+ * Gets the data fields holding each stacked segment's top (positive end) and bottom (negative end) corner radius.
+ * @param name
+ * @returns [topField, bottomField]
+ */
+export const getStackedCornerRadiusFields = (name: string): [string, string] => [
+  `${name}_topCornerRadius`,
+  `${name}_bottomCornerRadius`,
+];
+
+/**
+ * Gets the formulas that precompute each stacked segment's corner radii, so encoding them is a field read.
+ * @param options
+ * @returns FormulaTransform[]
+ */
+export const getStackedCornerRadiusTransforms = ({
   name,
   metric,
   hasSquareCorners,
-}: BarSpecOptions): RectEncodeEntry => {
+}: BarSpecOptions): FormulaTransform[] => {
   const [stackMax, stackMin] = getBarStackTotalFields(name);
-  const topTestString = `datum.${metric}1 > 0 && datum.${stackMax} === datum.${metric}1`;
-  const bottomTestString = `datum.${metric}1 < 0 && datum.${stackMin} === datum.${metric}1`;
+  const [topField, bottomField] = getStackedCornerRadiusFields(name);
   // S2 always uses 4px corner radius (or 0 if square corners requested)
   const cornerRadius = hasSquareCorners ? 0 : 4;
+  return [
+    {
+      type: 'formula',
+      as: topField,
+      expr: `datum.${metric}1 > 0 && datum.${stackMax} === datum.${metric}1 ? ${cornerRadius} : 0`,
+    },
+    {
+      type: 'formula',
+      as: bottomField,
+      expr: `datum.${metric}1 < 0 && datum.${stackMin} === datum.${metric}1 ? ${cornerRadius} : 0`,
+    },
+  ];
+};
 
+export const getStackedCornerRadiusEncodings = ({ name }: BarSpecOptions): RectEncodeEntry => {
+  const [topField, bottomField] = getStackedCornerRadiusFields(name);
   return {
-    cornerRadiusTopLeft: [{ test: topTestString, value: cornerRadius }, { value: 0 }],
-    cornerRadiusTopRight: [{ test: topTestString, value: cornerRadius }, { value: 0 }],
-    cornerRadiusBottomLeft: [{ test: bottomTestString, value: cornerRadius }, { value: 0 }],
-    cornerRadiusBottomRight: [{ test: bottomTestString, value: cornerRadius }, { value: 0 }],
+    cornerRadiusTopLeft: { field: topField },
+    cornerRadiusTopRight: { field: topField },
+    cornerRadiusBottomLeft: { field: bottomField },
+    cornerRadiusBottomRight: { field: bottomField },
   };
 };
 
@@ -506,13 +536,14 @@ const SELECTION_RING_PADDING = SELECTION_RING_GAP + SELECTION_RING_STROKE_WIDTH 
  */
 const getSelectionRingCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEntry => {
   const barCornerRadius = getCornerRadiusEncodings(options);
-  // every corner from getCornerRadiusEncodings is a conditional array of plain-numeric branches;
-  // widen each branch's value by the gap so the ring's corners stay concentric with the bar's
+  // bar corners are either a field read (stacked) or a conditional array of plain-numeric branches (dodged)
   const widen = (rule: ProductionRule<NumericValueRef>): ProductionRule<NumericValueRef> =>
-    (rule as ({ test?: string; value: number } & NumericValueRef)[]).map((branch) => ({
-      ...branch,
-      value: branch.value + SELECTION_RING_GAP,
-    })) as ProductionRule<NumericValueRef>;
+    Array.isArray(rule)
+      ? ((rule as ({ test?: string; value: number } & NumericValueRef)[]).map((branch) => ({
+          ...branch,
+          value: branch.value + SELECTION_RING_GAP,
+        })) as ProductionRule<NumericValueRef>)
+      : { ...rule, offset: SELECTION_RING_GAP };
   return {
     cornerRadiusTopLeft: widen(barCornerRadius.cornerRadiusTopLeft as ProductionRule<NumericValueRef>),
     cornerRadiusTopRight: widen(barCornerRadius.cornerRadiusTopRight as ProductionRule<NumericValueRef>),

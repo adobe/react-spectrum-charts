@@ -156,6 +156,19 @@ const defaultStacksData: Data = {
   transform: defaultStacksTransforms,
 };
 
+const defaultStackedCornerRadiusTransforms: Transforms[] = [
+  {
+    type: 'formula',
+    as: 'bar0_topCornerRadius',
+    expr: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
+  },
+  {
+    type: 'formula',
+    as: 'bar0_bottomCornerRadius',
+    expr: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
+  },
+];
+
 const defaultStackedTransforms: Transforms[] = [
   {
     type: 'stack',
@@ -176,6 +189,7 @@ const defaultStackedTransforms: Transforms[] = [
     ops: ['max', 'min'],
     as: ['bar0_stackMax', 'bar0_stackMin'],
   },
+  ...defaultStackedCornerRadiusTransforms,
 ];
 
 const timeTransform: Transforms[] = [
@@ -1333,6 +1347,8 @@ describe('barSpecBuilder', () => {
               },
               { ...defaultStackedTransforms[1], expr: 'datum.browser' },
               { ...defaultStackedTransforms[2], groupby: ['browser'], fields: ['views1', 'views1'] },
+              { ...defaultStackedCornerRadiusTransforms[0], expr: 'datum.views1 > 0 && datum.bar0_stackMax === datum.views1 ? 4 : 0' },
+              { ...defaultStackedCornerRadiusTransforms[1], expr: 'datum.views1 < 0 && datum.bar0_stackMin === datum.views1 ? 4 : 0' },
             ],
           },
           {
@@ -1359,6 +1375,8 @@ describe('barSpecBuilder', () => {
               },
               { ...defaultStackedTransforms[1], expr: 'datum.browser' },
               { ...defaultStackedTransforms[2], groupby: ['browser'], fields: ['views1', 'views1'] },
+              { ...defaultStackedCornerRadiusTransforms[0], expr: 'datum.views1 > 0 && datum.bar0_stackMax === datum.views1 ? 4 : 0' },
+              { ...defaultStackedCornerRadiusTransforms[1], expr: 'datum.views1 < 0 && datum.bar0_stackMin === datum.views1 ? 4 : 0' },
             ],
           },
           {
@@ -1483,6 +1501,7 @@ describe('barSpecBuilder', () => {
               ops: ['max', 'min'],
               as: ['bar0_stackMax', 'bar0_stackMin'],
             },
+            ...defaultStackedCornerRadiusTransforms,
             { as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
           ],
         },
@@ -1545,6 +1564,7 @@ describe('barSpecBuilder', () => {
               ops: ['max', 'min'],
               as: ['bar0_stackMax', 'bar0_stackMin'],
             },
+            ...defaultStackedCornerRadiusTransforms,
             { as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_SECONDARY_COLOR}`, type: 'formula' },
           ],
         },

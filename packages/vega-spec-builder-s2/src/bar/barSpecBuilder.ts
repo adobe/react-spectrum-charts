@@ -101,6 +101,7 @@ import {
   getDimensionSelectionRing,
   getOrientationProperties,
   getScaleValues,
+  getStackedCornerRadiusTransforms,
   isBarStacked,
   isDodgedAndStacked,
   isDualMetricAxis,
@@ -339,7 +340,7 @@ export const addData = produce<Data[], [BarSpecOptions]>((data, options) => {
     });
 
     data[index].transform?.push(getStackIdTransform(options));
-    data[index].transform?.push(getStackTotalsTransform(options));
+    data[index].transform?.push(getStackTotalsTransform(options), ...getStackedCornerRadiusTransforms(options));
     data.push(getStackAggregateData(options));
   }
   if (type === 'dodged' || isDodgedAndStacked(options)) {

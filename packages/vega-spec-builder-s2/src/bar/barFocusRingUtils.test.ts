@@ -51,13 +51,14 @@ describe('getBarFocusRing()', () => {
     expect(corners).toContain(`datum.datum.${metric} > 0`);
   });
 
-  test('uses stack-extent corner tests for stacked bars', () => {
-    const corners = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.update);
-    expect(corners).toContain('datum.datum.bar0_stackMax');
+  test('offsets the precomputed stacked corner radii for stacked bars', () => {
+    const update = getBarFocusRing(defaultBarOptions).encode?.update;
+    expect(update?.cornerRadiusTopLeft).toEqual({ field: 'datum.bar0_topCornerRadius', offset: 2 });
+    expect(update?.cornerRadiusBottomLeft).toEqual({ field: 'datum.bar0_bottomCornerRadius', offset: 2 });
   });
 
   test('flattens the rounded corner radius when square corners are requested', () => {
-    const ring = getBarFocusRing({ ...defaultBarOptions, hasSquareCorners: true });
+    const ring = getBarFocusRing({ ...defaultBarOptions, type: 'dodged', hasSquareCorners: true });
     // the "rounded" arm of each corner rule collapses to the flat radius (2)
     expect(ring.encode?.update?.cornerRadiusTopLeft).toEqual([{ test: expect.any(String), value: 2 }, { value: 2 }]);
   });
