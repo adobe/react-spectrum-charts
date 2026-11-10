@@ -505,7 +505,7 @@ const ref = useRef<ChartHandle>(null);
 | `dataTestId` — Value for the chart container's `data-testid` attribute. | `string` | – |
 | `debug` — Logs the generated Vega spec and inspected rows to the console. | `boolean` | `false` |
 | `description` — Accessible name for the chart, read by screen readers. Describe what the chart shows. | `string` | – |
-| `emptyStateText` — Text to display when the data set is empty and loading is complete. | `string` | `'No data found'` |
+| `emptyStateText` — Text to display when the data set is empty and loading is complete. Defaults to `No data found`, translated to the chart's `locale`. | `string` | – |
 | `height` — Chart height in pixels, or a percentage of the container height. | `Height` | `300` |
 | `hiddenSeries` — Names of series to hide. | `string[]` | `[]` |
 | `highlightedItem` — ID or IDs of rows to highlight. Set `idKey` to a field with a unique value for each row. | `HighlightedItem` | – |
