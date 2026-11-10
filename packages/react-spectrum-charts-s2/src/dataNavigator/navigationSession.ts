@@ -12,9 +12,10 @@
 import dataNavigator, { NodeObject } from 'data-navigator';
 import { SignalListenerHandler, View } from 'vega';
 
-import { DEFAULT_METRIC, LAST_RSC_SERIES_ID, SERIES_ID, TABLE } from '@spectrum-charts/core-s2/constants';
+import { DEFAULT_LOCALE, DEFAULT_METRIC, LAST_RSC_SERIES_ID, SERIES_ID, TABLE } from '@spectrum-charts/core-s2/constants';
 import { NavigableLegend, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { formatMessage } from '../intl/index.js';
 import { getVisibleAxisLabelColumns, positionOverlayAtBounds } from './axisLabelGeometry.js';
 import { createAxisRegion } from './axisRegion.js';
 import { Row } from './barHoverParity.js';
@@ -262,6 +263,20 @@ const warnOnMismatch = (
 };
 
 /**
+ * Replaces the English text data-navigator hardcodes on its entry button and exit note.
+ * @param rendering
+ * @param locale
+ */
+const localizeRendering = (rendering: DataNavigatorRenderer, locale: string): void => {
+  if (rendering.entryButton) rendering.entryButton.innerText = formatMessage(locale, 'navigation.enter');
+  if (rendering.exitElement) {
+    const exitText = formatMessage(locale, 'navigation.exit');
+    rendering.exitElement.innerText = exitText;
+    rendering.exitElement.setAttribute('aria-label', exitText);
+  }
+};
+
+/**
  * Builds the navigation structure and mounts data-navigator's rendering +
  * input modules for one view. The visible focus indicator is drawn on the Vega canvas (focus-ring marks); the
  * elements created here are invisible overlays used only for keyboard focus and assistive tech.
@@ -366,6 +381,7 @@ export const mountNavigationSession = ({
   const width = container.clientWidth || 400;
   const height = container.clientHeight || 300;
 
+  const messageLocale = locale ?? DEFAULT_LOCALE;
   const rendering: DataNavigatorRenderer = dataNavigator.rendering({
     elementData: structure.nodes,
     defaults: {
@@ -375,7 +391,7 @@ export const mountNavigationSession = ({
     suffixId: chartId,
     root: {
       id: container.id,
-      description: 'Accessible chart navigation',
+      description: formatMessage(messageLocale, 'navigation.region'),
       width: '100%',
       // A falsy height here is a no-op in the library's own `root.height && (...)` check, so this
       // must stay a truthy value or .dn-wrapper (and every .dn-node under it) collapses to 0px tall.
@@ -386,6 +402,7 @@ export const mountNavigationSession = ({
   });
 
   rendering.initialize();
+  localizeRendering(rendering, messageLocale);
 
   const chartRegion = createChartRegion({
     view,

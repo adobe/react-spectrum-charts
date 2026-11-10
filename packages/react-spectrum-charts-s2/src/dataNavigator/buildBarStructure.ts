@@ -14,14 +14,15 @@ import { parseColor } from 'react-stately';
 
 import {
   DEFAULT_CATEGORICAL_DIMENSION,
+  DEFAULT_LOCALE,
   DEFAULT_METRIC,
   NAVIGATION_ID_SEPARATOR,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { formatMessage } from '../intl/index.js';
 import { getSeriesKey } from './barSeries.js';
-import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl.js';
 import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules.js';
 
 export interface BuildBarStructureOptions {
@@ -354,7 +355,7 @@ export const buildBarStructure = ({
   title,
   fieldLabels = {},
   dimensionLabels,
-  locale = 'en-US',
+  locale = DEFAULT_LOCALE,
   metricTitleBySeries,
   hiddenSeries = [],
 }: BuildBarStructureOptions): BarStructure => {
@@ -485,7 +486,7 @@ export const buildFieldValueParts = (
     colorOverride,
     order,
     metricSeriesLabel,
-    locale = 'en-US',
+    locale = DEFAULT_LOCALE,
   }: NodeLabelOptions,
   excludeFields: string[] = []
 ): string[] => {
@@ -509,7 +510,10 @@ export const buildFieldValueParts = (
   return entries
     .filter(([key]) => key !== order)
     .map(([key, value]) => {
-      if (key === colorOverride) return `${fieldLabels[key] ?? 'Color'}: ${getAccessibleColorName(value, locale)}`;
+      if (key === colorOverride) {
+        const colorLabel = fieldLabels[key] ?? formatMessage(locale, 'navigation.colorLabel');
+        return `${colorLabel}: ${getAccessibleColorName(value, locale)}`;
+      }
       if (key === metricSeriesLabel?.metric) {
         const seriesTitle = metricSeriesLabel.titleBySeries[String(data[metricSeriesLabel.color])];
         if (seriesTitle) return `${seriesTitle}: ${value}`;
@@ -524,17 +528,18 @@ export const getDimensionLabel = (value: unknown, dimensionLabels?: Map<string, 
 
 /** Fallback label for the whole-chart root: a "metric by dimension" summary. */
 const buildRootLabel = (node: NodeObject, options: NodeLabelOptions): string => {
-  const { dimension, metric, color, data: rows, fieldLabels = {}, locale = DEFAULT_DATA_NAVIGATOR_LOCALE } = options;
+  const { dimension, metric, color, data: rows, fieldLabels = {}, locale = DEFAULT_LOCALE } = options;
   if (!dimension || !metric) return String(node.id);
-  const { formatMessage } = getDataNavigatorIntl(locale);
   const count = rows ? new Set(rows.map((row) => row[dimension])).size : 0;
   const variables = {
     dimension: fieldLabels[dimension] ?? dimension,
     count,
     metricLabel: fieldLabels[metric] ?? metric,
   };
-  if (color) return formatMessage('bar.stackedDescription', { ...variables, color: fieldLabels[color] ?? color });
-  return formatMessage('bar.description', variables);
+  if (color) {
+    return formatMessage(locale, 'navigation.stackedBarDescription', { ...variables, color: fieldLabels[color] ?? color });
+  }
+  return formatMessage(locale, count ? 'navigation.barDescription' : 'navigation.barDescriptionWithoutCount', variables);
 };
 
 /** Fallback label for a division (stack/group): its dimension value plus an itemized summary of its own segments. */

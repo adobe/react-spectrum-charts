@@ -11,11 +11,11 @@
  */
 import { NodeObject, Structure } from 'data-navigator';
 
-import { DEFAULT_CATEGORICAL_DIMENSION, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/core-s2/constants';
+import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_LOCALE, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/core-s2/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { formatMessage } from '../intl/index.js';
 import { NodeLabelOptions, buildFieldValueParts, buildNodeLabel } from './buildBarStructure.js';
-import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl.js';
 import { getBaseNavigationRules } from './navigationRules.js';
 
 export interface LegendSeriesDescription {
@@ -108,8 +108,6 @@ const groupBy = <T>(items: T[], keyOf: (item: T) => string): Map<string, T[]> =>
 const getContentLeaves = (content: Structure): NodeObject[] =>
   Object.values(content.nodes).filter((node) => node.dimensionLevel == null && node.data != null);
 
-type FormatMessage = ReturnType<typeof getDataNavigatorIntl>['formatMessage'];
-
 /** A series' legend description, title first, as sentences. */
 const getSeriesDescription = (seriesDescription: { description: string; title?: string } | undefined): string =>
   seriesDescription
@@ -129,13 +127,13 @@ interface SeriesNodeOptions {
   header: string;
   description: string;
   itemLabelOptions: NodeLabelOptions;
-  formatMessage: FormatMessage;
+  locale: string;
 }
 
 /** Adds a series node and its items, which mirror its content leaves and link left/right in content order. */
 const addSeriesNode = (
   structure: Structure,
-  { value, isHidden, leaves, entryFields, header, description, itemLabelOptions, formatMessage }: SeriesNodeOptions
+  { value, isHidden, leaves, entryFields, header, description, itemLabelOptions, locale }: SeriesNodeOptions
 ) => {
   const itemIds: string[] = [];
   const itemDetails: string[] = [];
@@ -151,12 +149,12 @@ const addSeriesNode = (
   }
 
   const details = itemDetails.join(' ');
-  const state = isHidden ? formatMessage('legend.seriesHidden') : '';
+  const state = isHidden ? formatMessage(locale, 'navigation.legendSeriesHidden') : '';
   const label = [header, state, description, details].filter(Boolean).join(' ');
   // Read instead of `label` when focus is restored right after this series was toggled, so the change is announced once.
   const toggledLabel = isHidden
     ? label
-    : [header, formatMessage('legend.seriesShown'), description, details].filter(Boolean).join(' ');
+    : [header, formatMessage(locale, 'navigation.legendSeriesShown'), description, details].filter(Boolean).join(' ');
   const seriesId = legendSeriesId(value);
   const entryValues = entryFields.length > 1 ? value.split(' | ') : [value];
   structure.nodes[seriesId] = {
@@ -219,9 +217,8 @@ export const buildLegendStructure = ({
   const {
     dimension = DEFAULT_CATEGORICAL_DIMENSION,
     fieldLabels = {},
-    locale = DEFAULT_DATA_NAVIGATOR_LOCALE,
+    locale = DEFAULT_LOCALE,
   } = labelOptions;
-  const { formatMessage } = getDataNavigatorIntl(locale);
   const entryFields = entryFieldsOption?.length ? entryFieldsOption : [seriesField];
   const entryOf = (row: Record<string, unknown>) => getEntryValue(row, entryFields);
   const leaves = getContentLeaves(content).filter((leaf) =>
@@ -251,11 +248,11 @@ export const buildLegendStructure = ({
     dimensionLevel: 1,
     legendLevel: 'root',
     semantics: {
-      label: formatMessage('legend.description', {
-        title: seriesFieldName,
-        count: series.length,
-        hidden: hiddenEntries.size,
-      }),
+      label: formatMessage(
+        locale,
+        hiddenEntries.size ? 'navigation.legendDescriptionWithHidden' : 'navigation.legendDescription',
+        { title: seriesFieldName, count: series.length, hidden: hiddenEntries.size }
+      ),
     },
   };
 
@@ -269,7 +266,7 @@ export const buildLegendStructure = ({
       header: `${seriesFieldName}: ${labels[value] ?? value}.`,
       description: getSeriesDescription(descriptions[value]),
       itemLabelOptions,
-      formatMessage,
+      locale,
     });
   }
   addParentEdges(structure, LEGEND_ROOT_ID, series.map(legendSeriesId));

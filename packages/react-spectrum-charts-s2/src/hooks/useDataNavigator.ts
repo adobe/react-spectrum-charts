@@ -21,6 +21,7 @@ import {
   NavigationInputs,
   createNavigationController,
 } from '../dataNavigator/navigationController.js';
+import { useChartLocale } from '../intl/index.js';
 import { ChartChildElement } from '../types/index.js';
 import useMarkOnClickDetails from './useMarkOnClickDetails.js';
 import { PopoverDetail } from './usePopovers.js';
@@ -31,7 +32,6 @@ interface UseDataNavigatorOptions {
   /** Sanitized chart children */
   children: ChartChildElement[];
   data: ChartData[];
-  locale?: unknown;
   title?: string;
   popovers: PopoverDetail[];
   chartId: string;
@@ -49,19 +49,6 @@ interface DataNavigator {
 }
 
 /**
- * Gets the locale code navigation reads color names in from the chart's `locale` prop.
- * @param locale
- * @returns string | undefined
- */
-export const getNavigationLocale = (locale: unknown): string | undefined => {
-  if (typeof locale === 'string') return locale;
-  if (typeof locale !== 'object' || locale === null) return undefined;
-  const { number, time } = locale as { number?: unknown; time?: unknown };
-  if (typeof number === 'string') return number;
-  return typeof time === 'string' ? time : undefined;
-};
-
-/**
  * Keeps keyboard navigation for the spec's navigable mark mounted for the current view.
  * @param options
  * @returns DataNavigator
@@ -70,7 +57,6 @@ export const useDataNavigator = ({
   enabled,
   children,
   data,
-  locale,
   title,
   popovers,
   chartId,
@@ -94,7 +80,7 @@ export const useDataNavigator = ({
 
   // A click that focuses a node also opens the mark's popover, so the navigator keeps focus through it.
   const hasChartPopover = popovers.some((popover) => popover.name === markName);
-  const navLocale = getNavigationLocale(locale);
+  const locale = useChartLocale();
 
   const inputs: NavigationInputs | undefined = useMemo(
     () =>
@@ -103,7 +89,7 @@ export const useDataNavigator = ({
             ...navigation,
             xAxis: navigation.xAxis && { ...navigation.xAxis, type: 'categorical' },
             data: data as SimpleData[],
-            locale: navLocale,
+            locale,
             title,
             legends,
             selectedData,
@@ -118,7 +104,7 @@ export const useDataNavigator = ({
       enabled,
       navigation,
       data,
-      navLocale,
+      locale,
       title,
       legends,
       selectedData,

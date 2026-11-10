@@ -411,6 +411,10 @@ When fixing a bug or refactoring behavior in an s1 package file, always check wh
 
 The S2 packages (`core-s2`, `schemas`, `vega-spec-builder-s2`, `react-spectrum-charts-s2`) are ESM-only (`"type": "module"`), so relative imports must be fully specified: `./foo.js` for `foo.ts`/`foo.tsx`, `./dir/index.js` for a directory, and `with { type: 'json' }` on JSON imports. TypeScript (NodeNext) and ESLint enforce this; run `node scripts/addRelativeImportExtensions.mjs <package dir>...` to fix files in bulk (for example after merging main). Run `yarn check:packages` after `yarn build:s2` to validate the published exports and types. S2 packages must not import S1 packages (`@spectrum-charts/constants`, `themes`, `utils`, `locales`, `vega-spec-builder`, `@adobe/react-spectrum-charts`); use `@spectrum-charts/core-s2/{constants,tokens,utils,locales}`. ESLint enforces this.
 
+### S2 Localized Strings
+
+Never hardcode user-facing or screen-reader text in S2 packages. Each S2 package that owns strings keeps its source catalog at `packages/<pkg>/intl/en-US.json` (flat key → ICU MessageFormat string); translations are added beside it as `intl/<locale>.json` (e.g. `fr-FR.json`) and missing keys fall back to English. After editing any `intl/*.json`, run `yarn intl:compile` to regenerate `src/intl/compiled.ts` (`yarn verify` fails if it is stale). `Chart` sets the locale once on its Spectrum `<Provider>`, so the whole chart shares one language; React components call `useFormatMessage()`, and non-React builders receive the locale from their React entry point (`useChartLocale()`) and call `formatMessage(locale, key, variables)`. Don't thread `locale` through component props. Avoid empty plural branches (`=0 {}`); use a separate key instead.
+
 ---
 
 ## Before Implementing Any Feature or Bug Fix

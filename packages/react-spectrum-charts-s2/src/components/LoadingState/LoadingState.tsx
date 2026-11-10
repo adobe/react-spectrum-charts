@@ -13,15 +13,18 @@ import React, { FC } from 'react';
 
 import { ProgressCircle } from '@react-spectrum/s2';
 
+import { useFormatMessage } from '../../intl/index.js';
+
 interface LoadingStateProps {
   /** Height of the loading state in pixels. */
   height?: number;
 }
 
 const LoadingState: FC<LoadingStateProps> = ({ height }) => {
+  const formatMessage = useFormatMessage();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height }}>
-      <ProgressCircle isIndeterminate size="L" aria-label="Loading" />
+      <ProgressCircle isIndeterminate size="L" aria-label={formatMessage('chart.loading')} />
     </div>
   );
 };

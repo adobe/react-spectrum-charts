@@ -148,7 +148,7 @@ export const buildChartStructure = (options: ChartStructureOptions): ChartStruct
     regions.push({ name: 'content', structure: content.structure, entryPoint: content.entryPoint, namespace: false });
   }
   if (options.xAxis) {
-    const xAxis = buildAxisStructure({ data: options.data, ...options.xAxis });
+    const xAxis = buildAxisStructure({ data: options.data, locale: options.locale, ...options.xAxis });
     // No navigable ticks (e.g. none painted, or a mismatched axis): skip the region rather than letting composeRegions throw.
     if (xAxis.entryPoint) regions.push({ name: 'xAxis', structure: xAxis.structure, entryPoint: xAxis.entryPoint });
   }

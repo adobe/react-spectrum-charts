@@ -12,8 +12,10 @@
 import { ticks } from 'd3-array';
 import dataNavigator, { NodeObject, Structure, StructureOptions } from 'data-navigator';
 
+import { DEFAULT_LOCALE } from '@spectrum-charts/core-s2/constants';
 import { SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { formatMessage } from '../intl/index.js';
 import { addSiblingKeySynonyms, baseNavigationRules } from './navigationRules.js';
 
 /** Approximate tick count for a numerical axis; the live Vega scale may render a different count. */
@@ -43,6 +45,8 @@ export interface BuildAxisStructureOptions {
    * navigation only visits labels that are on screen. When omitted/empty, all values are navigable.
    */
   visibleValues?: string[];
+  /** Locale used for generated labels. Defaults to `en-US`. */
+  locale?: string;
 }
 
 export interface AxisStructure {
@@ -97,12 +101,10 @@ const prepareAxisNodeSemantics = (structure: Structure, field: string, title?: s
   }
 };
 
-export const buildAxisDescription = (tickCount: number, field: string, title?: string): string => {
-  const axisName = title || field;
-  return `${axisName} axis. Contains ${tickCount} tick value${tickCount === 1 ? '' : 's'}. Use the left and right arrow keys to browse.`;
-};
+export const buildAxisDescription = (tickCount: number, field: string, title?: string, locale = DEFAULT_LOCALE): string =>
+  formatMessage(locale, 'navigation.axisDescription', { axisName: title || field, count: tickCount });
 
-export const buildAxisStructure = ({ data, field, type, title, visibleValues }: BuildAxisStructureOptions): AxisStructure => {
+export const buildAxisStructure = ({ data, field, type, title, visibleValues, locale }: BuildAxisStructureOptions): AxisStructure => {
   const allValues = type === 'categorical' ? uniqueCategoricalValues(data, field) : approximateNumericalTicks(data, field);
   // Restrict to the labels actually painted (overlap-hidden ones are excluded), preserving axis order.
   const values = visibleValues?.length ? allValues.filter((value) => visibleValues.includes(String(value))) : allValues;
@@ -140,7 +142,7 @@ export const buildAxisStructure = ({ data, field, type, title, visibleValues }: 
     entryPoint = rootNodeId;
     const rootNode = rootNodeId ? structure.nodes[rootNodeId] : undefined;
     if (rootNode) {
-      rootNode.semantics = { label: buildAxisDescription(values.length, field, title) };
+      rootNode.semantics = { label: buildAxisDescription(values.length, field, title, locale) };
     }
   }
 

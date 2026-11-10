@@ -155,7 +155,6 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     enabled: Boolean(accessibleNavigation),
     children: sanitizedChildren,
     data,
-    locale,
     title,
     popovers,
     chartId,
