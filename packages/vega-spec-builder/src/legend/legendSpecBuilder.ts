@@ -16,7 +16,6 @@ import { Data, Legend, Mark, Scale, Signal } from 'vega';
 
 import { COLOR_SCALE, DEFAULT_COLOR_SCHEME, GROUP_ID, HOVERED_SERIES, LINEAR_COLOR_SCALE, LINE_TYPE_SCALE, OPACITY_SCALE, SERIES_ID, SYMBOL_SHAPE_SCALE, SYMBOL_SIZE_SCALE } from '@spectrum-charts/constants';
 import { getColorValue } from '@spectrum-charts/themes';
-import { toCamelCase } from '@spectrum-charts/utils';
 
 
 
@@ -70,7 +69,7 @@ export const addLegend = produce<
       colorScheme
     );
 
-    const name = toCamelCase(options.name || `legend${index}`);
+    const name = `legend${index}`;
 
     // put options back together now that all defaults are set
     const legendOptions: LegendSpecOptions = {
@@ -85,11 +84,11 @@ export const addLegend = produce<
       isToggleable,
       lineType: formattedLineType,
       lineWidth: formattedLineWidth,
+      name,
       position,
       symbolShape: formattedSymbolShape,
       colorScheme,
       ...options,
-      name,
     };
 
     if (align !== undefined) {

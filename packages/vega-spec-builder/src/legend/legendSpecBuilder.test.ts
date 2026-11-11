@@ -157,17 +157,6 @@ describe('addLegend()', () => {
       });
     });
 
-    test('name, should use the camelCased name for the entries scale and aggregate data', () => {
-      const spec = addLegend(defaultSpec, { name: 'My Legend' });
-      expect(spec.scales).toContainEqual({
-        name: 'myLegendEntries',
-        type: 'ordinal',
-        domain: { data: 'myLegendAggregate', field: 'myLegendEntries' },
-      });
-      expect(spec.data?.map((d) => d.name)).toContain('myLegendAggregate');
-      expect(JSON.stringify(spec)).not.toContain('legend0');
-    });
-
     test('descriptions, should add encoding', () => {
       expect(addLegend(defaultSpec, { descriptions: [{ seriesName: 'test', description: 'test' }] })).toStrictEqual({
         ...defaultSpec,
