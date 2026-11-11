@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
+import { ColorValueRef, FormulaTransform, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
 import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
@@ -208,9 +208,25 @@ export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSp
         offset: [6, 6, 6, 6, 8.49, 8.49, 8.49, 8.49],
         anchor: ['top', 'bottom', 'right', 'left', 'top-right', 'top-left', 'bottom-right', 'bottom-left'],
       },
+      ...getUnplacedLabelTransforms(),
     ],
   };
 };
+
+/**
+ * Keeps unplaced (hidden) labels inside the plot so their bounds don't resize the chart.
+ * @returns FormulaTransform[]
+ */
+export const getUnplacedLabelTransforms = (): FormulaTransform[] => [
+  { type: 'formula', as: 'x', expr: 'datum.opacity > 0 ? datum.x : datum.datum.x' },
+  { type: 'formula', as: 'y', expr: 'datum.opacity > 0 ? datum.y : datum.datum.y' },
+  { type: 'formula', as: 'align', expr: "datum.opacity > 0 ? datum.align : datum.datum.x > width / 2 ? 'right' : 'left'" },
+  {
+    type: 'formula',
+    as: 'baseline',
+    expr: "datum.opacity > 0 ? datum.baseline : datum.datum.y > height / 2 ? 'bottom' : 'top'",
+  },
+];
 
 /**
  * Get's the encoding for the annotation text fill.
