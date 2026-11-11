@@ -9,9 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { act } from '@testing-library/react';
+import { View } from 'vega';
+
+import { Chart } from '../../../../../Chart.js';
+import { Scatter, Trendline } from '../../../../../lab/index.js';
 import { TrendlineAnnotation } from '../../../../../lab/components/TrendlineAnnotation/index.js';
 import { findAllMarksByGroupName, findChart, render } from '../../../../../test-utils/index.js';
 import { Badge, Basic } from './TrendlineAnnotation.story.js';
+
+type SceneItem = { opacity: number; bounds: { y1: number }; items?: SceneMark[] };
+type SceneMark = { name?: string; items: SceneItem[] };
 
 describe('TrendlineAnnotation', () => {
   // TrendlineAnnotation is not a real React component. This is test just provides test coverage for sonarqube
@@ -37,5 +45,40 @@ describe('TrendlineAnnotation', () => {
     const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
     expect(labels.length).toBeGreaterThan(0);
     expect(chart.querySelector('.scatter0Trendline0Annotation0_badge')).not.toBeInTheDocument();
+  });
+
+  test('a label that cannot be placed stays inside the plot, so the layout is stable', async () => {
+    // both series share a median, so one of the two labels has nowhere to go
+    const data = [1, 2, 3, 4].flatMap((x) => [
+      { x, value: 4, series: 'a' },
+      { x, value: 4, series: 'b' },
+    ]);
+    let view: View | undefined;
+    render(
+      <Chart data={data} width={400} height={300} animations={false} onVegaViewReady={(v) => (view = v)}>
+        <Scatter dimension="x" metric="value" color="series">
+          <Trendline method="median">
+            <TrendlineAnnotation prefix="Trend" />
+          </Trendline>
+        </Scatter>
+      </Chart>
+    );
+    await findChart();
+
+    const getLabels = async () => {
+      await act(async () => {
+        await view?.runAsync();
+      });
+      const { root } = view?.scenegraph() as unknown as { root: SceneMark };
+      const group = root.items[0].items?.find(({ name }) => name === 'scatter0Trendline0Annotation0_group');
+      const labels = group?.items[0].items?.find(({ name }) => name === 'scatter0Trendline0Annotation0');
+      return labels?.items ?? [];
+    };
+
+    const first = await getLabels();
+    expect(first.some(({ opacity }) => opacity === 0)).toBe(true);
+    expect(first.every(({ bounds }) => bounds.y1 >= 0)).toBe(true);
+    const snapshot = JSON.stringify(first.map(({ opacity, bounds }) => ({ opacity, bounds })));
+    expect(JSON.stringify((await getLabels()).map(({ opacity, bounds }) => ({ opacity, bounds })))).toBe(snapshot);
   });
 });

@@ -154,8 +154,8 @@ describe('getTrendlineAnnotationTextMark()', () => {
     const textMark = getTrendlineAnnotationTextMark(defaultAnnotationOptions);
     expect(textMark).toHaveProperty('type', 'text');
     expect(textMark).toHaveProperty('name', 'line0Trendline0Annotation0');
-    expect(textMark.transform).toHaveLength(1);
     expect(textMark.transform?.[0]).toHaveProperty('type', 'label');
+    expect(textMark.transform?.slice(1).map((t) => 'as' in t && t.as)).toEqual(['x', 'y', 'align', 'baseline']);
   });
   test('should add the prefix if it is a valid string', () => {
     const prefix = 'Median times';
