@@ -15,7 +15,7 @@ import { LegendDescription } from '@spectrum-charts/vega-spec-builder';
 
 import { Legend } from '../components/Legend';
 import { ChartChildElement, LegendElement } from '../types';
-import { getElement } from '../utils';
+import { getComponentName, getElement } from '../utils';
 
 const ChartContainer = ({ children }: { children: React.ReactNode }) => {
   return <div>{children}</div>;
@@ -26,6 +26,7 @@ interface UseLegendProps {
   legendHiddenSeries: string[];
   setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
   descriptions?: LegendDescription[];
+  name?: string;
   isToggleable?: boolean;
   onClick?: (seriesName: string) => void;
   onMouseOut?: (seriesName: string) => void;
@@ -40,5 +41,14 @@ export default function useLegend(children: ChartChildElement[]): UseLegendProps
 
   if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
   const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
-  return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
+  return {
+    legendHiddenSeries,
+    setLegendHiddenSeries,
+    descriptions,
+    name: getComponentName(legend, 'legend0'),
+    isToggleable,
+    onClick,
+    onMouseOut,
+    onMouseOver,
+  };
 }

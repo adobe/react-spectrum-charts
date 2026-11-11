@@ -48,6 +48,7 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getPathFromSymbolShape } from '../specUtils.js';
 import {
@@ -56,6 +57,7 @@ import {
   FacetType,
   LegendDescription,
   LegendLabel,
+  LegendOptions,
   LegendSpecOptions,
   Position,
   SecondaryFacetType,
@@ -86,6 +88,15 @@ export const getColumns = (position: Position, name: string, labelLimit?: number
  * @param labelLimit
  * @returns vega expression string
  */
+/**
+ * Gets the name used for a legend's scales, data, signals and marks.
+ * @param legend
+ * @param index
+ * @returns string
+ */
+export const getLegendName = ({ name }: Pick<LegendOptions, 'name'>, index: number): string =>
+  toCamelCase(name || `legend${index}`);
+
 export const getMaxLabelWidthExpr = (name: string, labelLimit?: number): string => {
   const effectiveLabelLimit = labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT;
   const maxWidthExpr = `length(data('${name}_maxLabelWidth')) > 0 ? data('${name}_maxLabelWidth')[0].maxLabelWidth : ${effectiveLabelLimit}`;

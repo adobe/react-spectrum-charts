@@ -23,10 +23,11 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { LegendOptions } from '../types/index.js';
+import { getLegendName } from './legendUtils.js';
 
 export const getLegendHighlightSignals = (legends: LegendOptions[]): string[] =>
   legends
-    .map((legend, index) => ({ ...legend, name: legend.name ?? `legend${index}` }))
+    .map((legend, index) => ({ ...legend, name: getLegendName(legend, index) }))
     .filter((legend) => legend.highlight)
     .map((legend) => `${legend.name}_${HOVERED_SERIES}`);
 

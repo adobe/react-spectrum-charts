@@ -237,3 +237,34 @@ describe('useChartInspectInteractions - dimension area', () => {
     expect(mockData).not.toHaveBeenCalled();
   });
 });
+
+describe('useChartInspectInteractions - legend descriptions', () => {
+  const descriptions = [{ seriesName: 'b', description: 'Bravo series' }];
+  const mockScale = jest.fn(() => ({ domain: () => ['a', 'b'] }));
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseChartInspects.mockReturnValue([]);
+    const context = makeContext();
+    mockUseChartContext.mockReturnValue({
+      ...context,
+      chartView: { current: { ...context.chartView.current, scale: mockScale } },
+    } as unknown as ReturnType<typeof useChartContext>);
+  });
+
+  const formatLegendTooltip = (value: Record<string, unknown>, legendName?: string) => {
+    const { result } = renderHook(() => useChartInspectInteractions(baseProps, [], descriptions, legendName));
+    return result.current.inspectOptions.formatTooltip?.(value, String, 0, '');
+  };
+
+  test('reads the entries scale of a named legend', () => {
+    const html = formatLegendTooltip({ [COMPONENT_NAME]: 'myLegend', index: 1 }, 'myLegend') ?? '';
+    expect(mockScale).toHaveBeenCalledWith('myLegendEntries');
+    expect(html).toContain('Bravo series');
+  });
+
+  test('ignores items from a component other than the legend', () => {
+    formatLegendTooltip({ [COMPONENT_NAME]: 'legend0', index: 1 }, 'myLegend');
+    expect(mockScale).not.toHaveBeenCalled();
+  });
+});
