@@ -13,7 +13,7 @@ import { Spec, View } from 'vega';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { prepareSpec, splitSpec, vegaViewAdapter } from './vegaViewAdapter.js';
+import { VegaEnvironment, prepareSpec, splitSpec, vegaViewAdapter } from './vegaViewAdapter.js';
 
 const spec: Spec = {
   data: [
@@ -110,5 +110,32 @@ describe('updateView()', () => {
     vegaViewAdapter.updateView(view as unknown as View, { signals: [], table: [{ x: 1 }] });
 
     expect(view.runAsync).toHaveBeenCalledWith(undefined);
+  });
+});
+
+describe('table rows', () => {
+  test('should not let Vega write transform fields into the rows it is given', async () => {
+    const formulaSpec: Spec = {
+      data: [{ name: TABLE, values: [], transform: [{ type: 'formula', as: 'derived', expr: 'datum.x * 2' }] }],
+    };
+    const environment = { config: {}, locale: 'en-US', padding: 0, renderer: 'svg', tooltip: jest.fn() };
+    const rows = [{ x: 1 }];
+    const view = await vegaViewAdapter.createView(
+      document.createElement('div'),
+      prepareSpec(formulaSpec, rows),
+      environment as unknown as VegaEnvironment,
+      { width: 100, height: 100 }
+    );
+    await view.runAsync();
+    expect(view.data(TABLE)).toMatchObject([{ x: 1, derived: 2 }]);
+
+    const nextRows = [{ x: 3 }];
+    vegaViewAdapter.updateView(view, { signals: [], table: nextRows });
+    await view.runAsync();
+    expect(view.data(TABLE)).toMatchObject([{ x: 3, derived: 6 }]);
+
+    expect(rows).toEqual([{ x: 1 }]);
+    expect(nextRows).toEqual([{ x: 3 }]);
+    view.finalize();
   });
 });
