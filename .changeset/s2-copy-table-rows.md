@@ -3,4 +3,4 @@
 '@spectrum-charts/vega-spec-builder-s2': patch
 ---
 
-Charts no longer write internal fields into the `data` rows you pass in, so changing props like `colorScaleType` can't leave stale series ids behind.
+Rebuilding a chart after a prop change, like `colorScaleType`, no longer leaves stale internal fields on its data.

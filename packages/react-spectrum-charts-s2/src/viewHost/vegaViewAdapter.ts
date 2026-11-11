@@ -111,6 +111,14 @@ const serializeEnvironment = ({ config, locale, padding, renderer }: VegaEnviron
   JSON.stringify({ config, locale, padding, renderer });
 
 /**
+ * Shallow-copies table rows so fields Vega writes in one view don't carry over into the next.
+ * @param rows - table rows
+ * @returns copied rows
+ */
+export const copyRows = (rows: unknown[]): object[] =>
+  rows.map((row) => (row !== null && typeof row === 'object' ? { ...row } : row) as object);
+
+/**
  * Embeds a Vega view for a spec.
  * @param container - element the view renders into
  * @param spec - prepared spec
@@ -118,14 +126,6 @@ const serializeEnvironment = ({ config, locale, padding, renderer }: VegaEnviron
  * @param size - view size
  * @returns the embedded view
  */
-/**
- * Shallow-copies table rows so Vega's transforms don't write fields into the consumer's data.
- * @param rows - table rows
- * @returns copied rows
- */
-export const copyRows = (rows: unknown[]): object[] =>
-  rows.map((row) => (row !== null && typeof row === 'object' ? { ...row } : row) as object);
-
 const createView = (
   container: HTMLElement,
   spec: Spec,

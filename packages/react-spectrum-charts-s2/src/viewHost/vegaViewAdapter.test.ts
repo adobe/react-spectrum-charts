@@ -114,7 +114,7 @@ describe('updateView()', () => {
 });
 
 describe('table rows', () => {
-  test('should not let Vega write transform fields into the consumer rows', async () => {
+  test('should not let Vega write transform fields into the rows it is given', async () => {
     const formulaSpec: Spec = {
       data: [{ name: TABLE, values: [], transform: [{ type: 'formula', as: 'derived', expr: 'datum.x * 2' }] }],
     };
