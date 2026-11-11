@@ -118,6 +118,14 @@ const serializeEnvironment = ({ config, locale, padding, renderer }: VegaEnviron
  * @param size - view size
  * @returns the embedded view
  */
+/**
+ * Shallow-copies table rows so Vega's transforms don't write fields into the consumer's data.
+ * @param rows - table rows
+ * @returns copied rows
+ */
+export const copyRows = (rows: unknown[]): object[] =>
+  rows.map((row) => (row !== null && typeof row === 'object' ? { ...row } : row) as object);
+
 const createView = (
   container: HTMLElement,
   spec: Spec,
@@ -127,6 +135,10 @@ const createView = (
   const embedOptions = getVegaEmbedOptions({ locale, height, width, padding, renderer, config });
   const { patches } = (spec.usermeta as UserMeta | undefined) ?? {};
   const finalConfig = applyUserMetaConfigPatches(patches, embedOptions.config);
+  const tableData = spec.data?.find((d) => d.name === TABLE);
+  if (tableData && 'values' in tableData && Array.isArray(tableData.values)) {
+    tableData.values = copyRows(tableData.values);
+  }
   return embed(container, spec, { ...embedOptions, config: finalConfig, tooltip }).then(({ view }) => view);
 };
 
@@ -168,7 +180,7 @@ export const vegaViewAdapter: ViewAdapter<Spec, View, VegaEnvironment> = {
         TABLE,
         changeset()
           .remove(() => true)
-          .insert(table)
+          .insert(copyRows(table))
       );
     }
     if (size) {
