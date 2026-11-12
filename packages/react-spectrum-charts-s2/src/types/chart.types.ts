@@ -73,6 +73,8 @@ export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' 
   onVegaViewReady?: (view: View) => void;
   /** Draws the chart as `svg` or `canvas`. `canvas` is faster for large data sets but exposes less to screen readers. Defaults to `svg`. */
   renderer?: 'svg' | 'canvas';
+  /** Experimental: renders with the `vega` engine or the in-development `d3` engine. Defaults to `vega`. */
+  engine?: 'vega' | 'd3';
   /** Whether `ChartInspect` content follows the cursor or anchors to the hovered mark. Defaults to `cursor`. */
   tooltipAnchor?: TooltipAnchor;
   /** Where `ChartInspect` content sits relative to the mark when `tooltipAnchor` is `mark`. Defaults to `top`. */

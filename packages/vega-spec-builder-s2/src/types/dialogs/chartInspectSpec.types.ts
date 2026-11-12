@@ -9,16 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ChartInspectOptions } from '@spectrum-charts/core-s2/options';
+
 import { PartiallyRequired } from '../specUtil.types.js';
 
-export interface ChartInspectOptions {
-  /** Data keys that turn off the inspect for rows with a truthy value in any of them. */
-  excludeDataKeys?: string[];
-  /** What stays highlighted while the inspect is visible: the item, its series, its dimension value, or rows matching a list of keys. Defaults to `'item'`. */
-  highlightBy?: 'series' | 'dimension' | 'item' | string[];
-  /** What shows the inspect on stacked or dodged bars: single bars (`'item'`) and/or whole columns (`'dimensionArea'`). Defaults to `['item']`. */
-  targets?: ('dimensionArea' | 'item')[];
-}
+export type { ChartInspectOptions } from '@spectrum-charts/core-s2/options';
 
 type ChartInspectOptionsWithDefaults = 'highlightBy' | 'targets';
 

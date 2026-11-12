@@ -125,7 +125,7 @@ module.exports = {
     },
     {
       // ESM packages: Node requires fully specified relative imports. Fix with scripts/addRelativeImportExtensions.mjs.
-      files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}'],
+      files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2,chart-d3}/**/*.{ts,tsx}'],
       rules: {
         'no-restricted-syntax': [
           'error',
@@ -158,6 +158,25 @@ module.exports = {
       },
     },
     {
+      // chart-d3 is a framework-agnostic engine parallel to Vega; it must not depend on React or Vega.
+      files: ['packages/chart-d3/**/*.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            ...s2RestrictedImports,
+            patterns: [
+              ...s2RestrictedImports.patterns,
+              {
+                group: ['react', 'react-dom', 'react/*', 'react-dom/*', 'vega', 'vega-*', 'vega/*', '@spectrum-charts/vega-spec-builder-s2'],
+                message: 'chart-d3 must not depend on React or Vega.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
       // The adapter contract is shared by every rendering library, so it can't depend on one.
       files: ['packages/react-spectrum-charts-s2/src/viewHost/viewAdapter.ts'],
       rules: {
@@ -178,7 +197,7 @@ module.exports = {
     },
     {
       // S2 publish closure: circular imports are not allowed. Type-definition folders hold recursive types.
-      files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2}/**/*.{ts,tsx}'],
+      files: ['packages/{core-s2,schemas,react-spectrum-charts-s2,vega-spec-builder-s2,chart-d3}/**/*.{ts,tsx}'],
       excludedFiles: ['**/src/types/**'],
       plugins: ['import'],
       settings: {

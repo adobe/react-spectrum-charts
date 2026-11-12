@@ -9,20 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ColorScheme } from '../../chartSpec.types.js';
-import { PartiallyRequired, PathWidthFacet, ScaleType } from '../../specUtil.types.js';
-import { SpectrumColor } from '../../spectrumVizColor.types.js';
+import { ScatterPathOptions } from '@spectrum-charts/core-s2/options';
 
-export interface ScatterPathOptions {
-  /** The color of the links.*/
-  color?: SpectrumColor | string;
-  /** The width on the links. Link width can vary by point. */
-  pathWidth?: PathWidthFacet;
-  /** Data fields that group points; each group's points are connected by a path. */
-  groupBy?: string[];
-  /** The opacity of the links. */
-  opacity?: number;
-}
+import { ColorScheme } from '../../chartSpec.types.js';
+import { PartiallyRequired, ScaleType } from '../../specUtil.types.js';
+
+export type { ScatterPathOptions } from '@spectrum-charts/core-s2/options';
 
 type ScatterPathOptionsWithDefaults = 'color' | 'groupBy' | 'pathWidth' | 'opacity';
 

@@ -25,7 +25,7 @@ module.exports = {
   moduleNameMapper: {
     // ESM packages use fully specified relative imports (`./foo.js`) that point at TypeScript sources.
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^@spectrum-charts/(schemas|vega-spec-builder-s2)$': '<rootDir>/packages/$1/index.ts',
+    '^@spectrum-charts/(schemas|vega-spec-builder-s2|chart-d3)$': '<rootDir>/packages/$1/index.ts',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/__mocks__/fileMock.ts',
     '\\.(css)$': 'identity-obj-proxy',
@@ -37,7 +37,7 @@ module.exports = {
     ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact)/)',
+    'node_modules/(?!(vega|vega-.*|d3-.*|internmap|delaunator|robust-predicates|json-stringify-pretty-compact)/)',
   ],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
   setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock', '<rootDir>/jest.setup.js'],

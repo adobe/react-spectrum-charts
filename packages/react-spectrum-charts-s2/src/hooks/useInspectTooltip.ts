@@ -52,7 +52,13 @@ const useInspectTooltip = (inspectOptions: TooltipOptions): TooltipHandler => {
       return;
     }
     setHoveredAxisLabel(null);
-    if (event?.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
+    // Vega delivers pointermove; the D3 engine delivers mousemove
+    if (
+      (event?.type === 'pointermove' || event?.type === 'mousemove') &&
+      item &&
+      itemIsLegendItem(item) &&
+      'tooltip' in item
+    ) {
       inspectTimeout.current = setTimeout(() => {
         inspectHandler.call(view, event, item, value);
         inspectTimeout.current = undefined;
