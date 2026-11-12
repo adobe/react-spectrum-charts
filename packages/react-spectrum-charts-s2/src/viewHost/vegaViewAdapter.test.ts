@@ -13,7 +13,7 @@ import { Spec, View } from 'vega';
 
 import { TABLE } from '@spectrum-charts/core-s2/constants';
 
-import { prepareSpec, splitSpec, vegaViewAdapter } from './vegaViewAdapter.js';
+import { isInteractionSignal, prepareSpec, splitSpec, vegaViewAdapter } from './vegaViewAdapter.js';
 
 const spec: Spec = {
   data: [
@@ -88,6 +88,18 @@ describe('splitSpec()', () => {
   });
 });
 
+describe('isInteractionSignal()', () => {
+  test.each(['selectedItem', 'selectedSeries', 'selectedGroup', 'highlightedGroup', 'line0_hoveredItem', 'legend0_hoveredSeries', 'bar0_dimensionHoverArea_hoveredItem'])(
+    'should be true for %s',
+    (name) => expect(isInteractionSignal(name)).toBe(true)
+  );
+
+  test.each(['hiddenSeries', 'controlledHighlightedSeries', 'controlledHighlightedItem', 'hoveredItem'])(
+    'should be false for %s',
+    (name) => expect(isInteractionSignal(name)).toBe(false)
+  );
+});
+
 describe('updateView()', () => {
   const getView = () => {
     const view = {
@@ -108,4 +120,5 @@ describe('updateView()', () => {
     expect(view.signal).toHaveBeenCalledWith('hiddenSeries', ['a']);
     expect(view.runAsync).toHaveBeenCalledWith();
   });
+
 });

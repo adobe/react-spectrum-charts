@@ -10,13 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
+import { Data, OrdinalScale, Scale, ScaleData, ScaleMultiFieldsRef, SignalRef } from 'vega';
 
-import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, PADDING_RATIO, TABLE } from '@spectrum-charts/core-s2/constants';
+import { DISCRETE_PADDING, FILTERED_TABLE, LINEAR_PADDING, MARK_ID, PADDING_RATIO, TABLE } from '@spectrum-charts/core-s2/constants';
 import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { getDimensionField } from '../specUtils.js';
-import { DualFacet, FacetRef, FacetType, Orientation } from '../types/index.js';
+import { DualFacet, FacetRef, FacetType, Orientation, ScSpec } from '../types/index.js';
 
 type AxisType = 'x' | 'y';
 type SupportedScaleType = 'linear' | 'point' | 'band' | 'time' | 'ordinal';
@@ -244,3 +244,38 @@ const isScaleMultiFieldsRef = (
 ): domain is ScaleMultiFieldsRef => {
   return Boolean(domain && !Array.isArray(domain) && 'data' in domain && 'fields' in domain);
 };
+
+const FIELD_DROPPING_TRANSFORMS = new Set(['aggregate', 'pivot', 'project', 'density', 'kde', 'regression', 'loess']);
+
+const outputsMarkId = (transform: { type: string; as?: unknown }) =>
+  Array.isArray(transform.as) && transform.as.includes(MARK_ID);
+
+/** Gets the names of the datasets whose rows carry the table's row id. */
+export const getDataWithMarkId = (data: Data[]): Set<string> => {
+  const names = new Set([TABLE]);
+  for (const datum of data) {
+    if (!('source' in datum) || typeof datum.source !== 'string' || !names.has(datum.source)) continue;
+    const transforms = datum.transform ?? [];
+    if (transforms.every((t) => !FIELD_DROPPING_TRANSFORMS.has(t.type) || outputsMarkId(t))) {
+      names.add(datum.name);
+    }
+  }
+  return names;
+};
+
+/**
+ * Sorts unsorted discrete domains by first appearance in the data so a data update orders them like a fresh mount.
+ * @param spec
+ */
+export const sortDiscreteDomainsByFirstAppearance = produce<ScSpec>((spec) => {
+  const dataWithMarkId = getDataWithMarkId(spec.data ?? []);
+  for (const scale of spec.scales ?? []) {
+    if (!['ordinal', 'band', 'point'].includes(scale.type ?? '')) continue;
+    const domain = scale.domain;
+    if (!domain || typeof domain !== 'object' || !('data' in domain) || 'sort' in domain) continue;
+    if (!dataWithMarkId.has(domain.data)) continue;
+    const fields = 'fields' in domain ? domain.fields : [domain.field];
+    if (fields.length !== 1 || typeof fields[0] !== 'string') continue;
+    (domain as ScaleData & { sort: unknown }).sort = { op: 'min', field: MARK_ID };
+  }
+});

@@ -12,7 +12,15 @@
 import { Config, Padding, Renderers, Spec, TooltipHandler, View, changeset } from 'vega';
 import embed from 'vega-embed';
 
-import { TABLE } from '@spectrum-charts/core-s2/constants';
+import {
+  HIGHLIGHTED_GROUP,
+  HOVERED_ITEM,
+  HOVERED_SERIES,
+  SELECTED_GROUP,
+  SELECTED_ITEM,
+  SELECTED_SERIES,
+  TABLE,
+} from '@spectrum-charts/core-s2/constants';
 import { UserMeta, applyUserMetaConfigPatches, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { attachAnimationTicker, isAnimatedSpec, removeAnimationTimerEvents } from '../animation/animationTicker.js';
@@ -83,6 +91,16 @@ export const splitSpec = (spec: Spec): SplitSpec => {
   return { program, signalValues, table };
 };
 
+const INTERACTION_SIGNALS = new Set([SELECTED_ITEM, SELECTED_SERIES, SELECTED_GROUP, HIGHLIGHTED_GROUP]);
+
+/**
+ * Checks whether a signal holds selection or hover state.
+ * @param name - signal name
+ * @returns boolean
+ */
+export const isInteractionSignal = (name: string): boolean =>
+  INTERACTION_SIGNALS.has(name) || name.endsWith(`_${HOVERED_ITEM}`) || name.endsWith(`_${HOVERED_SERIES}`);
+
 /**
  * Resizes an existing Vega view without recreating it.
  * @param view - vega view, if one exists
@@ -149,6 +167,7 @@ export const vegaViewAdapter: ViewAdapter<Spec, View, VegaEnvironment> = {
   animation: vegaViewAnimation,
   prepareSpec,
   splitSpec,
+  isInteractionSignal,
   isSameEnvironment: (previous, next) =>
     previous === next ||
     (previous.tooltip === next.tooltip && serializeEnvironment(previous) === serializeEnvironment(next)),

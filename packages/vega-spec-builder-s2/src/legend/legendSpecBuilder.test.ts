@@ -24,6 +24,7 @@ import {
   GROUP_ID,
   HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
+  MARK_ID,
   ROUNDED_SQUARE_PATH,
   SERIES_ID,
   TABLE,
@@ -145,10 +146,8 @@ const defaultLegendAggregateData: Data = {
   name: 'legend0Aggregate',
   source: TABLE,
   transform: [
-    {
-      type: 'aggregate',
-      groupby: [DEFAULT_COLOR],
-    },
+    { type: 'aggregate', groupby: [DEFAULT_COLOR], fields: [MARK_ID], ops: ['min'], as: [MARK_ID] },
+    { type: 'collect', sort: { field: MARK_ID } },
     {
       type: 'formula',
       as: 'legend0Entries',
@@ -439,7 +438,14 @@ describe('addData()', () => {
         name: 'legend0Aggregate',
         source: 'table',
         transform: [
-          { groupby: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR], type: 'aggregate' },
+          {
+            groupby: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
+            type: 'aggregate',
+            fields: [MARK_ID],
+            ops: ['min'],
+            as: [MARK_ID],
+          },
+          { type: 'collect', sort: { field: MARK_ID } },
           {
             as: 'legend0Entries',
             expr: `datum.${DEFAULT_COLOR} + " | " + datum.${DEFAULT_SECONDARY_COLOR}`,

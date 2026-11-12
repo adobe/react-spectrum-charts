@@ -9,18 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { SELECTED_ITEM, SELECTED_SERIES } from '@spectrum-charts/core-s2/constants';
+import { HOVER_ANIMATING, SELECTED_ITEM, SELECTED_SERIES } from '@spectrum-charts/core-s2/constants';
 
 import { Chart } from './Chart.js';
-import { Axis, ChartPopover, Legend, Line } from './components/index.js';
+import { Axis, ChartInspect, ChartPopover, Legend, Line } from './components/index.js';
+import usePrefersReducedMotion from './hooks/usePrefersReducedMotion.js';
 import {
   clickNthElement,
+  enableDrawIn,
   findAllMarksByGroupName,
   findChart,
   getAllLegendEntries,
   getScene,
+  hoverNthElement,
   screen,
   setupChartHarness,
+  waitFor,
 } from './test-utils/index.js';
 import { ChartProps } from './types/index.js';
 
@@ -40,6 +44,7 @@ const withoutA = data.filter((row) => row.series !== 'a');
 // one change of each update class in the RFC's state retention table, split by whether selection is kept
 const keepingUpdates: [string, Props][] = [
   ['a no-op', {}],
+  ['equal data in a new array', { data: data.map((row) => ({ ...row })) }],
   ['a signal update', { highlightedSeries: 'b' }],
 ];
 const clearingUpdates: [string, Props][] = [
@@ -85,8 +90,7 @@ describe('svg renderer', () => {
       expect(updated).toEqual(fresh);
     });
 
-    // Known failure: a series that disappears stays in the hidden list.
-    test.failing('shows again after its data is removed and restored', async () => {
+    test('shows again after its data is removed and restored', async () => {
       const mounted = await harness.mount(chart());
       await hideSeriesA();
 
@@ -116,8 +120,7 @@ describe('svg renderer', () => {
       mounted.unmount();
     });
 
-    // Known failure: data updates and rebuilds keep the selection and leave the popover open.
-    test.failing.each([...clearingUpdates, ['its series is removed', { data: withoutA }] as [string, Props]])(
+    test.each([...clearingUpdates, ['its series is removed', { data: withoutA }] as [string, Props]])(
       'closes after %s',
       async (_, props) => {
         const mounted = await harness.mount(chart());
@@ -131,5 +134,73 @@ describe('svg renderer', () => {
         mounted.unmount();
       }
     );
+  });
+
+  describe('hover and inspect tooltip', () => {
+    const inspectChart = (props: Props = {}) => (
+      <Chart
+        data={data}
+        width={400}
+        height={300}
+        animations={false}
+        onVegaViewReady={harness.onVegaViewReady}
+        {...props}
+      >
+        <Line dimension="datetime" metric="value" color="series" scaleType="linear">
+          <ChartInspect>{(datum) => <div>Inspect {String(datum.series)}</div>}</ChartInspect>
+        </Line>
+      </Chart>
+    );
+    const isTooltipVisible = () => Boolean(document.querySelector('.vg-tooltip.visible'));
+
+    const hoverSeriesA = async () => {
+      await hoverNthElement(await findAllMarksByGroupName(await findChart(), 'line0_voronoi'), 1);
+      await waitFor(() => expect(isTooltipVisible()).toBe(true));
+      await harness.settle();
+    };
+
+    afterEach(() => document.querySelectorAll('.vg-tooltip').forEach((node) => node.remove()));
+
+    test.each(keepingUpdates)('stays after %s', async (_, props) => {
+      const mounted = await harness.mount(inspectChart());
+      await hoverSeriesA();
+
+      await harness.update(mounted, inspectChart(props));
+
+      expect(harness.latestView().signal('line0_hoveredItem')).not.toBeNull();
+      expect(isTooltipVisible()).toBe(true);
+      mounted.unmount();
+    });
+
+    describe('with animations', () => {
+      beforeEach(enableDrawIn);
+      afterEach(() => jest.mocked(usePrefersReducedMotion).mockReturnValue(true));
+
+      test('settles the hover fade after a data update', async () => {
+        const animated = (props: Props) => inspectChart({ ...props, animations: true });
+        const { updated, fresh, updatedView } = await harness.compareUpdateToMount(
+          animated,
+          {},
+          clearingUpdates[0][1],
+          {
+            interact: hoverSeriesA,
+          }
+        );
+
+        expect(updatedView.signal(HOVER_ANIMATING)).toBeFalsy();
+        expect(updated).toEqual(fresh);
+      });
+    });
+
+    test.each(clearingUpdates)('resets after %s', async (_, props) => {
+      const mounted = await harness.mount(inspectChart());
+      await hoverSeriesA();
+
+      await harness.update(mounted, inspectChart(props));
+
+      expect(harness.latestView().signal('line0_hoveredItem')).toBeNull();
+      expect(isTooltipVisible()).toBe(false);
+      mounted.unmount();
+    });
   });
 });

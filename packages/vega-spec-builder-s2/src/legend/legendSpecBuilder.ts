@@ -19,6 +19,7 @@ import {
   HOVERED_SERIES,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
+  MARK_ID,
   OPACITY_SCALE,
   SERIES_ID,
   SYMBOL_SHAPE_SCALE,
@@ -298,10 +299,9 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
       name: `${name}Aggregate`,
       source: 'table',
       transform: [
-        {
-          type: 'aggregate',
-          groupby: facets,
-        },
+        { type: 'aggregate', groupby: facets, fields: [MARK_ID], ops: ['min'], as: [MARK_ID] },
+        // entries are looked up by domain index, so keep rows in the same first-appearance order
+        { type: 'collect', sort: { field: MARK_ID } },
         {
           type: 'formula',
           as: `${name}Entries`,
