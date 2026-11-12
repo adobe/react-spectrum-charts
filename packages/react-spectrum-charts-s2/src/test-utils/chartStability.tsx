@@ -18,6 +18,9 @@ import * as vegaEmbed from 'vega-embed';
 import { Provider } from '@react-spectrum/s2';
 import { ANIMATION_ACTIVE, DEFAULT_COLOR_SCHEME, FIRST_MARK_ID, MARK_ID } from '@spectrum-charts/core-s2/constants';
 
+import { UpdateClass } from '@spectrum-charts/vega-spec-builder-s2';
+
+import { UpdateChannel, ViewChanges, vegaViewAdapter } from '../viewHost/index.js';
 import { render } from './spectrumRender.js';
 
 /** Builds a chart element that passes the harness's `onVegaViewReady` to its `Chart`. */
@@ -27,6 +30,29 @@ export type ChartFactory<P> = (props: P) => ReactElement;
 export type SceneNode = { [key: string]: unknown };
 
 type Mounted = ReturnType<typeof render>;
+
+/** How the chart applied an update: a new view, or the parts of the live view it changed. */
+export interface AppliedUpdate {
+  views: number;
+  channels: UpdateChannel[];
+}
+
+/**
+ * Gets the update class an applied update corresponds to; several channels join with `+`.
+ * @param applied
+ * @returns update class, e.g. `rebuild` or `signal+data`
+ */
+export const getAppliedClass = ({ views, channels }: AppliedUpdate): UpdateClass | string => {
+  if (views) {
+    return 'rebuild';
+  }
+  return channels.length ? channels.join('+') : 'noop';
+};
+
+const CHANNELS: UpdateChannel[] = ['signal', 'data', 'size'];
+
+const getChannels = ({ signals, table, size }: ViewChanges): UpdateChannel[] =>
+  CHANNELS.filter((channel) => ({ signal: signals.length > 0, data: Boolean(table), size: Boolean(size) })[channel]);
 
 // called with one argument renderModule is a getter, which vega-typings doesn't declare
 const getRenderModule = renderModule as unknown as (name: string) => RenderModule;
@@ -51,6 +77,7 @@ export const setupChartHarness = () => {
   const views: View[] = [];
   let renderSpy: jest.SpyInstance | undefined;
   let embedSpy: jest.SpyInstance | undefined;
+  let updateViewSpy: jest.SpyInstance | undefined;
   let pendingEmbeds = 0;
 
   beforeEach(() => {
@@ -64,13 +91,16 @@ export const setupChartHarness = () => {
       result.then(done, done);
       return result;
     });
+    updateViewSpy = jest.spyOn(vegaViewAdapter, 'updateView');
   });
 
   afterEach(() => {
     renderSpy?.mockRestore();
     embedSpy?.mockRestore();
+    updateViewSpy?.mockRestore();
     renderSpy = undefined;
     embedSpy = undefined;
+    updateViewSpy = undefined;
   });
 
   const onVegaViewReady = (view: View) => {
@@ -87,6 +117,13 @@ export const setupChartHarness = () => {
 
   const renderCount = () => renderSpy?.mock.calls.length ?? 0;
 
+  const appliedChannels = (): UpdateChannel[] => {
+    const applied = new Set(
+      (updateViewSpy?.mock.calls ?? []).flatMap(([, changes]: [unknown, ViewChanges]) => getChannels(changes))
+    );
+    return CHANNELS.filter((channel) => applied.has(channel));
+  };
+
   /** Waits until every pending embed, dataflow run, render and animation has finished. */
   const settle = async () => {
     const deadline = Date.now() + SETTLE_TIMEOUT_MS;
@@ -102,7 +139,9 @@ export const setupChartHarness = () => {
         }
       });
       const view = views.at(-1);
-      const snapshot = `${views.length}:${renderCount()}`;
+      // compares scenes rather than render counts: vega re-renders some marks (e.g. axis titles) on every run
+      const scene = view ? JSON.stringify(getScene(view)) : '';
+      const snapshot = `${views.length}:${scene}`;
       const busy = pendingEmbeds > 0 || (view !== undefined && isAnimating(view));
       stableChecks = snapshot === previous && !busy ? stableChecks + 1 : 0;
       if (stableChecks === 2) {
@@ -150,7 +189,7 @@ export const setupChartHarness = () => {
    * @param a initial props
    * @param b updated props
    * @param options `interact` runs on the settled mount of `a`; `expected` replaces `b` for the fresh mount
-   * @returns the normalized updated and freshly mounted scenes, and the updated view
+   * @returns the normalized updated and freshly mounted scenes, the updated view, and how the update was applied
    */
   const compareUpdateToMount = async <P,>(
     chart: ChartFactory<P>,
@@ -163,7 +202,10 @@ export const setupChartHarness = () => {
       await interact();
       await settle();
     }
+    const viewsBefore = views.length;
+    updateViewSpy?.mockClear();
     await update(mounted, chart(b));
+    const applied: AppliedUpdate = { views: views.length - viewsBefore, channels: appliedChannels() };
     const updatedView = latestView();
     const updated = getScene(updatedView);
     mounted.unmount();
@@ -172,7 +214,7 @@ export const setupChartHarness = () => {
     const freshScene = getScene(latestView());
     fresh.unmount();
 
-    return { updated, fresh: freshScene, updatedView };
+    return { updated, fresh: freshScene, updatedView, applied };
   };
 
   return { views, onVegaViewReady, latestView, renderCount, settle, mount, update, countUpdates, compareUpdateToMount };

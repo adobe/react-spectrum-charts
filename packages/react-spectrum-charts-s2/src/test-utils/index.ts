@@ -15,3 +15,5 @@ export * from './utils.js';
 export * from './spectrumRender.js';
 export * from './bindWithProps.js';
 export * from './chartStability.js';
+export * from './updateClassTests.js';
+export * from './updateCaseData.js';

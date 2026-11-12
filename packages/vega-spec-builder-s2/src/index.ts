@@ -15,5 +15,6 @@
 export * from './chartSpecBuilder.js';
 export * from './specUtils.js';
 export * from './types/index.js';
+export * from './updateClasses/index.js';
 export * from './expressionFunctions/index.js';
 export * from './vegaEmbedUtils.js';
