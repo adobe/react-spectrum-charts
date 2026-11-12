@@ -9,24 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReferenceLineSize } from '@spectrum-charts/core-s2/constants';
+import { ReferenceLineOptions } from '@spectrum-charts/core-s2/options';
 
 import { ColorScheme } from '../chartSpec.types.js';
 
-export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimentPositive';
-
-export interface ReferenceLineOptions {
-  /** The value on the axis where the reference line should be drawn. */
-  value: number | string;
-  /** Places the line on a category's center, or before or after it; only for band scales. Defaults to `center`. */
-  position?: 'before' | 'after' | 'center';
-  /** Label shown below the line at the right edge. */
-  label?: string;
-  /** Stroke and caret size; when omitted, the size follows the chart width. */
-  size?: ReferenceLineSize;
-  /** Draws the line without carets, in a lighter color at `XS` size. Defaults to `false`. */
-  secondary?: boolean;
-}
+export type { Icon, ReferenceLineOptions } from '@spectrum-charts/core-s2/options';
 
 export interface ReferenceLineSpecOptions extends ReferenceLineOptions {
   colorScheme: ColorScheme;

@@ -1,0 +1,27 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+import { ReferenceLineSize } from '../../constants/index.js';
+
+export type Icon = 'date' | 'sentimentNegative' | 'sentimentNeutral' | 'sentimentPositive';
+
+export interface ReferenceLineOptions {
+  /** The value on the axis where the reference line should be drawn. */
+  value: number | string;
+  /** Places the line on a category's center, or before or after it; only for band scales. Defaults to `center`. */
+  position?: 'before' | 'after' | 'center';
+  /** Label shown below the line at the right edge. */
+  label?: string;
+  /** Stroke and caret size; when omitted, the size follows the chart width. */
+  size?: ReferenceLineSize;
+  /** Draws the line without carets, in a lighter color at `XS` size. Defaults to `false`. */
+  secondary?: boolean;
+}

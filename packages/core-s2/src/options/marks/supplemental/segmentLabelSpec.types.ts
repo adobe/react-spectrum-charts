@@ -1,0 +1,43 @@
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+export interface SegmentLabelOptions {
+  /** Selects whether the label applies to emphasized or de-emphasized segments. */
+  labelMode?: 'emphasized' | 'deemphasized';
+  /** Data field with the segment label text. Defaults to the `Donut` `color` field. */
+  labelKey?: string;
+  /** Shows the donut segment percentage */
+  percent?: boolean;
+  /** Shows a color swatch before the segment label */
+  swatch?: boolean;
+  /** d3 format specifier for the percentage value displayed when `percent` is true.
+   *
+   * @default '.0%'
+   *
+   * see {@link https://d3js.org/d3-format#locale_format}
+   */
+  percentFormat?: string;
+  /** Shows the donut segment metric value */
+  value?: boolean;
+  /** d3 number format specifier.
+   * Sets the number format for the segment metric value.
+   *
+   * @default 'standardNumber'
+   *
+   * see {@link https://d3js.org/d3-format#locale_format}
+   */
+  valueFormat?: string;
+  /** Shows an additional segment value row below the label */
+  showValueRow?: boolean;
+  /** Appends the total value to the segment value row */
+  showTotal?: boolean;
+}

@@ -9,37 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { LabelPosition, LineDirectLabelOptions } from '@spectrum-charts/core-s2/options';
+
 import { ColorScheme } from '../../chartSpec.types.js';
 import { ColorFacet, PartiallyRequired, ScaleType } from '../../specUtil.types.js';
 
-export type LabelValue = 'last' | 'average' | 'series';
-export type LabelPosition = 'start' | 'end';
-
-export interface LineDirectLabelOptions {
-  /**
-   * Value to display.
-   * - 'last': value at last data point
-   * - 'average': average of all values in the line
-   * - 'series': series key/name
-   * @default 'last'
-   */
-  value?: LabelValue;
-  /**
-   * Where to place the label along the line.
-   * - 'end': right side of the chart, y-positioned at the last data point
-   * - 'start': left side of the chart, y-positioned at the first data point
-   * @default 'end'
-   */
-  position?: LabelPosition;
-  /** d3 number format for the value. Defaults to `',.2~f'`. */
-  format?: string;
-  /** Text prepended to the value, separated by a space. */
-  prefix?: string;
-  /** Series values to exclude from labeling. */
-  excludeSeries?: string[];
-  /** Label font size override */
-  fontSize?: number;
-}
+export type { LabelPosition, LabelValue, LineDirectLabelOptions } from '@spectrum-charts/core-s2/options';
 
 type LineDirectLabelOptionsWithDefaults = 'value' | 'position' | 'excludeSeries';
 

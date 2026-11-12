@@ -9,12 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { AxisThumbnailOptions } from '@spectrum-charts/core-s2/options';
+
 import { PartiallyRequired } from '../specUtil.types.js';
 
-export interface AxisThumbnailOptions {
-  /** Data field that holds each category's image URL. Defaults to `thumbnail`. */
-  urlKey?: string;
-}
+export type { AxisThumbnailOptions } from '@spectrum-charts/core-s2/options';
 
 export interface AxisThumbnailSpecOptions extends PartiallyRequired<AxisThumbnailOptions, 'urlKey'> {
   name: string;

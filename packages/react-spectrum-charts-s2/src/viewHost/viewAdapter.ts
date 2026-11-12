@@ -69,6 +69,8 @@ export interface ViewAdapter<TSpec, TView, TEnvironment> {
   startView: (view: TView) => void;
   /** Applies changes to a live view, then runs it once */
   updateView: (view: TView, changes: ViewChanges) => void;
+  /** Applies a changed program to a live view; returns false when the view has to be rebuilt instead */
+  updateProgram?: (view: TView, spec: TSpec, changes: ViewChanges) => boolean;
   /** Releases a view */
   destroyView: (view: TView) => void;
 }

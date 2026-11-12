@@ -9,22 +9,5 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Orientation } from '../specUtil.types.js';
-import { LineOptions } from './lineSpec.types.js';
 
-export type BigNumberNumberType = 'linear' | 'percentage';
-export type BigNumberMethod = 'sum' | 'avg' | 'last';
-
-export interface BigNumberOptions {
-  markType: 'bigNumber';
-
-  orientation: Orientation;
-  label: string;
-  dataKey: string;
-  numberFormat?: string;
-  numberType?: BigNumberNumberType;
-  method?: BigNumberMethod;
-
-  //children
-  lines?: LineOptions[];
-}
+export type { BigNumberMethod, BigNumberNumberType, BigNumberOptions } from '@spectrum-charts/core-s2/options';

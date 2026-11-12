@@ -9,21 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { BarAnnotationOptions } from '@spectrum-charts/core-s2/options';
+
 import { PartiallyRequired } from '../../specUtil.types.js';
 import { BarSpecOptions } from '../barSpec.types.js';
 
-export interface BarAnnotationStyleOptions {
-  width?: number;
-}
-
-export interface BarAnnotationOptions {
-  /** Padding around annotation text. A small amount of padding is always applied based on content */
-  padding?: number;
-  /** The key in the data that has the text to display */
-  textKey?: string;
-  /** @deprecated */
-  style?: BarAnnotationStyleOptions;
-}
+export type { BarAnnotationOptions, BarAnnotationStyleOptions } from '@spectrum-charts/core-s2/options';
 
 type BarAnnotationOptionsWithDefaults = 'textKey' | 'padding';
 
