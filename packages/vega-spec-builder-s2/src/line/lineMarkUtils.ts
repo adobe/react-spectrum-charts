@@ -106,13 +106,11 @@ export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource
     from: { data: dataSource },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         y: getLineYEncoding(lineMarkOptions, metric),
         y2: { signal: 'height' },
         defined: { signal: `isValid(datum["${metric}"])` },
         ...getGradientFillEncoding(lineMarkOptions),
-      },
-      update: {
         x: getXProductionRule(scaleType, dimension),
         opacity: [
           {
@@ -225,16 +223,15 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
     interactive: false,
     encode: {
       enter: {
+        strokeCap: { value: lineCap },
+      },
+      update: {
         y: getLineYEncoding(lineMarkOptions, metric),
         stroke: getStrokeEncoding(primarySeries, otherSeriesColor, color, colorScheme),
-        strokeCap: { value: lineCap },
         strokeDash: alternateSegmentKey
           ? getAlternateSegmentStrokeDash(name, lineType, alternateSegmentLineType)
           : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
-      },
-      update: {
-        // x and strokeWidth must be in update: x changes on resize, strokeWidth changes on hover
         x: getXProductionRule(scaleType, dimension),
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
@@ -476,10 +473,10 @@ const getHoverRule = (dimension: string, name: string, scaleType: ScaleType): Ru
     encode: {
       enter: {
         y: { value: 0 },
-        y2: { signal: 'height' },
         strokeWidth: { value: 1 },
       },
       update: {
+        y2: { signal: 'height' },
         x: getXProductionRule(scaleType, dimension),
         opacity: { signal: `length(data('${name}_selectedData')) > 0 ? 0 : 1` },
       },
@@ -526,14 +523,14 @@ const getLinePointsForVoronoi = (lineOptions: LineMarkOptions, dataSource: strin
     interactive: false,
     encode: {
       enter: {
-        y: getLineYEncoding(lineOptions, metric),
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
+      },
+      update: {
+        y: getLineYEncoding(lineOptions, metric),
         // matches the highlight point's extent so hovering doesn't change the autosize bounds
         size: getPointSizeEncoding(pointSize),
         strokeWidth: { signal: CHART_SIZE_HOVER_STROKE_WIDTH },
-      },
-      update: {
         x: getXProductionRule(scaleType, dimension),
       },
     },

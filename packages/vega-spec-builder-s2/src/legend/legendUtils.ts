@@ -25,7 +25,6 @@ import {
 
 import {
   COLOR_SCALE,
-  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_LEGEND_COLUMN_PADDING,
@@ -49,6 +48,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils.js';
 import { getPathFromSymbolShape } from '../specUtils.js';
 import {
   ColorValueV6,
@@ -61,7 +61,6 @@ import {
   SecondaryFacetType,
   UserMeta,
 } from '../types/index.js';
-import { getDeemphasisRamp } from '../marks/hoverAnimationUtils.js';
 
 export interface Facet {
   facetType: FacetType | SecondaryFacetType;
@@ -161,11 +160,9 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
       entries: {
         name: `${name}_legendEntry`,
         interactive: true,
-        enter: {
-          tooltip: getLegendDescriptionEncoding(descriptions, name), // only add tooltip if descriptions exist
-        },
         update: {
           fill: { value: 'transparent' }, // need something here to trigger the tooltip
+          tooltip: getLegendDescriptionEncoding(descriptions, name), // only add tooltip if descriptions exist
         },
       },
       ...opacityEncodings,
@@ -211,11 +208,11 @@ export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta)
 
   // Fall back to old rules if no animated marks are present (not using hover animation system)
   return getOpacityEncoding(options, userMeta);
-}
+};
 
 const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefined, name: string) => {
   if (descriptions?.length) {
-    return { signal: `merge(datum, {'${COMPONENT_NAME}': '${name}'})` };
+    return { signal: `inspectDatum(datum, '${name}')` };
   }
   return undefined;
 };
@@ -285,7 +282,7 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
     customValue: symbolShape,
     name,
   });
-  const enter: SymbolEncodeEntry = {
+  const facetEncodings: SymbolEncodeEntry = {
     fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
     size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
     strokeDash: getSymbolFacetEncoding<number[]>({
@@ -314,14 +311,22 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
   // Transparent, not zero-width: strokeWidth can't be conditional (see note above), and Vega's default 1.5px outline would bold the icon's fine linework.
   const hiddenStrokeRule = { test: hiddenSeriesTest, value: 'transparent' };
   const shapeExpression = getShapeExpression(shapeFacetRef);
+  const enter: SymbolEncodeEntry = {};
   // Vega doesn't re-lay out legend entries after a signal update, so both icons must share bounds.
   const update: SymbolEncodeEntry = {
     fill: [hiddenFillRule, colorRef],
     stroke: [hiddenStrokeRule, colorRef],
     shape: { signal: `legendSymbolShape(${shapeExpression}, ${hiddenSeriesTest})` },
   };
-  // Remove undefined values
+  // constant facets stay in enter; scale/signal-driven ones must re-run on update
+  for (const [key, ref] of Object.entries(facetEncodings)) {
+    if (ref === undefined) continue;
+    const isConstant =
+      typeof ref === 'object' && !Array.isArray(ref) && Object.keys(ref).length === 1 && 'value' in ref;
+    Object.assign(isConstant ? enter : update, { [key]: ref });
+  }
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
+  if (!Object.keys(enter).length) delete symbols.enter;
   return {
     entries: {
       name: `${name}_legendEntry`,

@@ -15,7 +15,7 @@ import { vennSolution } from 'venn-helper';
 import { DEFAULT_VENN_COLOR, DEFAULT_VENN_METRIC, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getColorProductionRule, getCursor, getMarkOpacity, getInspectEncoding } from '../marks/markUtils.js';
+import { getColorProductionRule, getCursor, getInspectEncoding, getMarkOpacity } from '../marks/markUtils.js';
 import { VennDegreeOptions, VennSpecOptions } from '../types/index.js';
 
 type VennHelperProps = {
@@ -87,16 +87,16 @@ export const getCircleMark = (options: VennSpecOptions): SymbolMark => {
     from: { data: 'circles' },
     encode: {
       enter: {
+        shape: { value: 'circle' },
+        strokeWidth: { value: 2 },
+      },
+      update: {
         x: { field: 'x' },
         y: { field: 'y' },
         tooltip: getInspectEncoding(chartInspects, name),
         size: { field: 'size' },
-        shape: { value: 'circle' },
         fill: getColorProductionRule('set_id', colorScheme),
         stroke: { signal: 'chartBackgroundColor' },
-        strokeWidth: { value: 2 },
-      },
-      update: {
         opacity: getMarkOpacity(options),
         cursor: getCursor(chartPopovers),
       },
@@ -113,13 +113,13 @@ export const getTextMark = (options: VennSpecOptions, dataSource: 'circles' | 'i
     interactive: false,
     encode: {
       enter: {
-        x: { field: 'textX' },
-        y: { field: 'textY' },
-        text: { field: `table_data.${label}` },
         align: { value: 'center' },
         baseline: { value: 'middle' },
       },
       update: {
+        x: { field: 'textX' },
+        y: { field: 'textY' },
+        text: { field: `table_data.${label}` },
         opacity: getMarkOpacity(options),
       },
     },
@@ -136,13 +136,13 @@ export const getIntersectionStrokeMark = (options: VennSpecOptions): PathMark =>
     interactive: false,
     encode: {
       enter: {
-        path: { field: 'path' },
         strokeWidth: { value: 6 },
         strokeCap: { value: 'round' },
         stroke: { value: getS2ColorValue('static-blue', colorScheme) },
       },
 
       update: {
+        path: { field: 'path' },
         strokeOpacity: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 1 }, { value: 0 }],
       },
     },
@@ -158,15 +158,15 @@ export const getInterserctionMark = (options: VennSpecOptions): PathMark => {
     name: `${name}_intersections`,
     encode: {
       enter: {
-        path: { field: 'path' },
-        fill: getColorProductionRule('set_id', colorScheme),
         strokeWidth: { value: 2 },
-        stroke: { signal: 'chartBackgroundColor' },
         strokeCap: { value: 'square' },
-        tooltip: getInspectEncoding(chartInspects, `${name}`),
       },
 
       update: {
+        path: { field: 'path' },
+        fill: getColorProductionRule('set_id', colorScheme),
+        stroke: { signal: 'chartBackgroundColor' },
+        tooltip: getInspectEncoding(chartInspects, `${name}`),
         opacity: getMarkOpacity(options),
         cursor: getCursor(chartPopovers),
       },
@@ -183,14 +183,14 @@ export const getCircleStrokeMark = (options: VennSpecOptions): SymbolMark => {
     interactive: false,
     encode: {
       enter: {
-        x: { field: 'x' },
-        y: { field: 'y' },
-        size: { field: 'size' },
         shape: { value: 'circle' },
         stroke: { value: getS2ColorValue('static-blue', colorScheme) },
         strokeWidth: { value: 6 },
       },
       update: {
+        x: { field: 'x' },
+        y: { field: 'y' },
+        size: { field: 'size' },
         strokeOpacity: [{ test: `${SELECTED_ITEM} === datum.${idKey}`, value: 1 }, { value: 0 }],
       },
     },

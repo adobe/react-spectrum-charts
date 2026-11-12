@@ -15,7 +15,11 @@ import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
 import { spectrumColors } from '@spectrum-charts/core-s2/tokens';
 
-import { addHoveredItemOpacityRules, getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import {
+  addHoveredItemOpacityRules,
+  getControlledHighlightedItemOpacityRule,
+} from '../chartInspect/chartInspectUtils.js';
+import { getRowKeyField } from '../data/rowKeyUtils.js';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -102,19 +106,20 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     from: {
       data: FILTERED_TABLE,
     },
+    key: getRowKeyField(options),
     encode: {
       enter: {
         ...(blendEncoding && { blend: blendEncoding }),
+        shape: { value: 'circle' },
+        strokeCap: { value: 'round' },
+      },
+      update: {
         fill: getColorProductionRule(color, colorScheme, colorScaleType),
         fillOpacity: getOpacityProductionRule(opacity),
-        shape: { value: 'circle' },
         size: getSymbolSizeProductionRule(size),
-        strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeWidth: getLineWidthProductionRule(lineWidth),
         stroke: getColorProductionRule(stroke ?? color, colorScheme, colorScaleType),
-      },
-      update: {
         opacity: getOpacity(options),
         x: getXProductionRule(dimensionScaleType, dimension),
         y: { scale: 'yLinear', field: metric },
@@ -179,11 +184,11 @@ const getScatterSelectMarks = (scatterOptions: ScatterSpecOptions): SymbolMark[]
         enter: {
           fill: { value: 'transparent' },
           shape: { value: 'circle' },
-          size: getSelectRingSize(size),
           strokeWidth: { value: 2 },
           stroke: { value: spectrumColors.light['static-blue'] },
         },
         update: {
+          size: getSelectRingSize(size),
           x: getXProductionRule(dimensionScaleType, dimension),
           y: { scale: 'yLinear', field: metric },
         },

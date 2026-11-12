@@ -9,10 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FOCUSED_DIMENSION, FOCUSED_REGION, NAVIGATION_ID_SEPARATOR, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
+import {
+  FOCUSED_DIMENSION,
+  FOCUSED_REGION,
+  NAVIGATION_ID_SEPARATOR,
+  SELECTED_ITEM,
+} from '@spectrum-charts/core-s2/constants';
 
-import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils.js';
 import { getBarFocusRing, getChartFocusRing, getDodgedGroupFocusRing, getStackFocusRing } from './barFocusRingUtils.js';
+import { defaultBarOptions, defaultBarOptionsWithSecondayColor } from './barTestUtils.js';
 
 const { dimension, metric } = defaultBarOptions;
 
@@ -42,19 +47,20 @@ describe('getBarFocusRing()', () => {
   });
 
   test('uses metric-sign corner tests for dodged (non-stacked) bars', () => {
-    const corners = JSON.stringify(getBarFocusRing({ ...defaultBarOptions, type: 'dodged' }).encode?.enter);
+    const corners = JSON.stringify(getBarFocusRing({ ...defaultBarOptions, type: 'dodged' }).encode?.update);
     expect(corners).toContain(`datum.datum.${metric} > 0`);
   });
 
-  test('uses stack-extent corner tests for stacked bars', () => {
-    const corners = JSON.stringify(getBarFocusRing(defaultBarOptions).encode?.enter);
-    expect(corners).toContain('_stacks');
+  test('offsets the precomputed stacked corner radii for stacked bars', () => {
+    const update = getBarFocusRing(defaultBarOptions).encode?.update;
+    expect(update?.cornerRadiusTopLeft).toEqual({ field: 'datum.bar0_topCornerRadius', offset: 2 });
+    expect(update?.cornerRadiusBottomLeft).toEqual({ field: 'datum.bar0_bottomCornerRadius', offset: 2 });
   });
 
   test('flattens the rounded corner radius when square corners are requested', () => {
-    const ring = getBarFocusRing({ ...defaultBarOptions, hasSquareCorners: true });
+    const ring = getBarFocusRing({ ...defaultBarOptions, type: 'dodged', hasSquareCorners: true });
     // the "rounded" arm of each corner rule collapses to the flat radius (2)
-    expect(ring.encode?.enter?.cornerRadiusTopLeft).toEqual([{ test: expect.any(String), value: 2 }, { value: 2 }]);
+    expect(ring.encode?.update?.cornerRadiusTopLeft).toEqual([{ test: expect.any(String), value: 2 }, { value: 2 }]);
   });
 
   test('suppresses opacity whenever any item is selected/popover-open', () => {
@@ -69,10 +75,7 @@ describe('getChartFocusRing()', () => {
     expect(ring).toHaveProperty('name', 'chartFocusRing');
     expect(ring.encode?.update?.x).toEqual({ value: 0 });
     expect(ring.encode?.update?.x2).toEqual({ signal: 'width' });
-    expect(ring.encode?.update?.opacity).toEqual([
-      { test: `${FOCUSED_REGION} === 'chart'`, value: 1 },
-      { value: 0 },
-    ]);
+    expect(ring.encode?.update?.opacity).toEqual([{ test: `${FOCUSED_REGION} === 'chart'`, value: 1 }, { value: 0 }]);
   });
 });
 
@@ -100,7 +103,9 @@ describe('getStackFocusRing()', () => {
 
   test('rounds the metric-end corners unless square corners are requested', () => {
     expect(getStackFocusRing(defaultBarOptions).encode?.enter?.cornerRadiusTopLeft).toEqual({ value: 6 });
-    expect(getStackFocusRing({ ...defaultBarOptions, hasSquareCorners: true }).encode?.enter?.cornerRadiusTopLeft).toEqual({
+    expect(
+      getStackFocusRing({ ...defaultBarOptions, hasSquareCorners: true }).encode?.enter?.cornerRadiusTopLeft
+    ).toEqual({
       value: 2,
     });
   });

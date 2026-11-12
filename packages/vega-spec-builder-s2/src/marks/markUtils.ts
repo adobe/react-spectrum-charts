@@ -29,7 +29,6 @@ import {
   BACKGROUND_COLOR,
   CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
-  COMPONENT_NAME,
   DEFAULT_ANIMATION_TYPES,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
@@ -49,7 +48,10 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { addHoveredItemOpacityRules, getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import {
+  addHoveredItemOpacityRules,
+  getControlledHighlightedItemOpacityRule,
+} from '../chartInspect/chartInspectUtils.js';
 import { LineMarkOptions } from '../line/lineUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import {
@@ -133,10 +135,9 @@ export function getInspectEncoding(
   // skip annotations
   if (chartInspects.length) {
     const datumRef = nestedDatum ? 'datum.datum' : 'datum';
-    const componentInfo = `{'${COMPONENT_NAME}': '${name}'}`;
     const metaDataPart = metaData ? `, ${JSON.stringify(metaData)}` : '';
     const defaultInspectSignal = {
-      signal: `merge(${datumRef}, ${componentInfo}${metaDataPart})`,
+      signal: `inspectDatum(${datumRef}, '${name}'${metaDataPart})`,
     };
     // if the inspect has an excludeDataKey option, then disable the inspect where that key is present
     const excludeDataKeys = chartInspects[0].excludeDataKeys;
@@ -392,11 +393,11 @@ export const getPointsForVoronoi = (
     interactive: false,
     encode: {
       enter: {
-        y: getYProductionRule(metricAxis, metric),
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
       },
       update: {
+        y: getYProductionRule(metricAxis, metric),
         x: getXProductionRule(scaleType, dimension),
       },
     },
@@ -423,9 +424,9 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
         isVoronoi: { value: true },
-        tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
       },
       update: {
+        tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
         cursor: getCursor(chartPopovers ?? [], hasOnClick, chartActionBars),
       },
     },
@@ -472,13 +473,13 @@ export const getItemHoverArea = (
       encode: {
         enter: {
           shape: { value: HOVER_SHAPE },
-          y: yEncoding,
           fill: { value: 'transparent' },
           stroke: { value: 'transparent' },
-          tooltip: getInspectEncoding(chartInspects, name, false),
-          size: getHoverSizeSignal(size),
         },
         update: {
+          y: yEncoding,
+          tooltip: getInspectEncoding(chartInspects, name, false),
+          size: getHoverSizeSignal(size),
           x: getXProductionRule(scaleType, dimension),
         },
       },

@@ -13,7 +13,6 @@ import { Data, Legend, LegendEncode, Scale, SymbolEncodeEntry } from 'vega';
 
 import {
   COLOR_SCALE,
-  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
@@ -101,23 +100,23 @@ const defaultDescriptionLegendEncoding: LegendEncode = {
   entries: {
     name: 'legend0_legendEntry',
     interactive: true,
-    enter: { tooltip: { signal: `merge(datum, {'${COMPONENT_NAME}': 'legend0'})` } },
-    update: { fill: { value: 'transparent' } },
+    update: {
+      fill: { value: 'transparent' },
+      tooltip: { signal: "inspectDatum(datum, 'legend0')" },
+    },
   },
   labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: defaultOpacityEncoding } },
-  symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
+  symbols: { update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
 };
 
 const defaultHighlightLegendEncoding: LegendEncode = {
   entries: {
     name: 'legend0_legendEntry',
     interactive: true,
-    enter: { tooltip: undefined },
-    update: { fill: { value: 'transparent' } },
+    update: { fill: { value: 'transparent' }, tooltip: undefined },
   },
   labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: highlightOpacityEncoding } },
   symbols: {
-    enter: {},
     update: {
       ...defaultSymbolUpdateEncodings,
       opacity: highlightOpacityEncoding,
@@ -130,7 +129,7 @@ const defaultLegend: Legend = {
   encode: {
     entries: { name: 'legend0_legendEntry' },
     labels: { update: { ...hiddenSeriesLabelUpdateEncoding, opacity: defaultOpacityEncoding } },
-    symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
+    symbols: { update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
   },
   fill: 'legend0Entries',
   labelLimit: undefined,
@@ -286,7 +285,7 @@ describe('addLegend()', () => {
             ],
           },
         },
-        symbols: { enter: {}, update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
+        symbols: { update: { ...defaultSymbolUpdateEncodings, opacity: defaultOpacityEncoding } },
       });
     });
 

@@ -24,6 +24,7 @@ import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils.js';
 import { getFilteredInspectData } from '../data/dataUtils.js';
+import { addRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { getInteractiveMarkName, isInteractive } from '../marks/markUtils.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
 import { addUserMetaInteractiveMark } from '../specUtils.js';
@@ -198,6 +199,7 @@ function getBulletGroupHeightExpression(options: BulletSpecOptions): string {
 export const addData = produce<Data[], [BulletSpecOptions]>((data, options) => {
   const tableData = getBulletTableData(data);
   tableData.transform = getBulletTransforms(options);
+  addRowKeyTransforms(data, { name: options.name, idKey: options.idKey, fields: [options.dimension] });
 
   if (isInteractive(options)) {
     data.push(getFilteredInspectData(options.chartInspects));

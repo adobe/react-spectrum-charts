@@ -12,7 +12,14 @@
 import { formatLocale } from 'd3-format';
 import { FontWeight, Locale, NumberLocale, TimeLocale } from 'vega';
 
-import { DONUT_LABEL_COLLISION_GAP } from '@spectrum-charts/core-s2/constants';
+import {
+  ANIMATION_HOVER_SPEED,
+  COMPONENT_NAME,
+  DONUT_LABEL_COLLISION_GAP,
+  FADE_FACTOR,
+  HOVER_NEUTRAL_TARGET,
+  S2_EASE_IN_OUT,
+} from '@spectrum-charts/core-s2/constants';
 import {
   LocaleCode,
   NumberLocaleCode,
@@ -49,7 +56,10 @@ export const getExpressionFunctions = (
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
+    hoverAnimFraction,
+    hoverDeemphasisOpacity,
     hoverFraction,
+    inspectDatum,
     isDonutLabelVisible,
     legendSymbolShape,
     truncateText,
@@ -344,20 +354,18 @@ type HoverFractionRow = Record<string, unknown> & { fraction?: number };
 const hoverFractionIndexes = new WeakMap<HoverFractionRow[], Map<unknown, HoverFractionRow>>();
 
 /**
- * Returns a hover animation value (the fraction by default) for `key`, indexing the rows once per data array.
+ * Returns the hover animation fraction for `key`, indexing the rows once per data array.
  * @param rows - the hoverFractionData values
  * @param keyField - the identity field the rows are keyed by
  * @param key - the identity of the item being encoded
  * @param fallback - the value to use when no row matches
- * @param field - the row field to read
  * @returns number
  */
 export const hoverFraction = (
   rows: HoverFractionRow[] | undefined,
   keyField: string,
   key: unknown,
-  fallback: number,
-  field = 'fraction'
+  fallback: number
 ): number => {
   if (!rows) return fallback;
   let index = hoverFractionIndexes.get(rows);
@@ -368,7 +376,37 @@ export const hoverFraction = (
     }
     hoverFractionIndexes.set(rows, index);
   }
-  return (index.get(key)?.[field] as number | undefined) ?? fallback;
+  return index.get(key)?.fraction ?? fallback;
+};
+
+/**
+ * Gets an item's eased hover animation fraction at `timer`, matching Vega's `clamp` and `lerp`.
+ * @param startValue - the fraction the animation started from
+ * @param target - the fraction the animation is heading to
+ * @param startTime - when the animation started
+ * @param timer - the current animation time
+ * @returns number
+ */
+export const hoverAnimFraction = (startValue: number, target: number, startTime: number, timer: number): number => {
+  const progress =
+    target === startValue
+      ? 1
+      : Math.max(0, Math.min(1, (timer - startTime) / (ANIMATION_HOVER_SPEED * Math.abs(target - startValue))));
+  const eased = cubicBezier(...S2_EASE_IN_OUT, progress);
+  if (!eased) return startValue;
+  return eased === 1 ? target : startValue + eased * (target - startValue);
+};
+
+/**
+ * Gets the animated deemphasis opacity for `key` from its hover animation fraction.
+ * @param rows - the hoverFractionData values
+ * @param keyField - the identity field the rows are keyed by
+ * @param key - the identity of the item being encoded
+ * @returns number
+ */
+export const hoverDeemphasisOpacity = (rows: HoverFractionRow[] | undefined, keyField: string, key: unknown): number => {
+  const fraction = hoverFraction(rows, keyField, key, HOVER_NEUTRAL_TARGET);
+  return FADE_FACTOR + (1 - FADE_FACTOR) * Math.max(0, Math.min(1, fraction / HOVER_NEUTRAL_TARGET));
 };
 
 const DONUT_MIN_VISIBLE_SLICE_WIDTH = 1;
@@ -450,8 +488,58 @@ export const expressionFunctions = {
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,
+  hoverAnimFraction,
+  hoverDeemphasisOpacity,
   hoverFraction,
   isDonutLabelVisible,
   legendSymbolShape,
   truncateText,
+};
+
+const inspectDatums = new WeakMap<object, Map<string, object>>();
+const inspectDatumParts = new WeakMap<object, { datum: object; fields: Record<string, unknown> }>();
+
+const getInspectDatumHandler = (fields: Record<string, unknown>): ProxyHandler<object> => ({
+  get: (datum, property, receiver) => (Object.hasOwn(fields, property) ? fields[property as string] : Reflect.get(datum, property, receiver)),
+  has: (datum, property) => Object.hasOwn(fields, property) || Reflect.has(datum, property),
+  ownKeys: (datum) => [...new Set([...Reflect.ownKeys(datum), ...Reflect.ownKeys(fields)])],
+  getOwnPropertyDescriptor: (datum, property) =>
+    Object.hasOwn(fields, property)
+      ? { value: fields[property as string], writable: true, enumerable: true, configurable: true }
+      : Reflect.getOwnPropertyDescriptor(datum, property),
+});
+
+/**
+ * Gets a cached read-only view of `datum` plus the component fields, so re-encoding returns the same object.
+ * @param datum - the row the inspect describes
+ * @param componentName - the component that owns the inspect
+ * @param metaData - extra fields that are constant for the component
+ * @returns a proxy that reads the row's current fields and the component fields
+ */
+export const inspectDatum = (datum: unknown, componentName: string, metaData?: Record<string, unknown>): object => {
+  const fields = { [COMPONENT_NAME]: componentName, ...metaData };
+  if (typeof datum !== 'object' || datum === null) return fields;
+  const key = metaData ? `${componentName}${JSON.stringify(metaData)}` : componentName;
+  let byKey = inspectDatums.get(datum);
+  if (!byKey) {
+    byKey = new Map();
+    inspectDatums.set(datum, byKey);
+  }
+  let value = byKey.get(key);
+  if (!value) {
+    value = new Proxy(datum, getInspectDatumHandler(fields));
+    inspectDatumParts.set(value, { datum, fields });
+    byKey.set(key, value);
+  }
+  return value;
+};
+
+/**
+ * Copies an `inspectDatum` value into a plain object with the row's current fields.
+ * @param value - a tooltip value
+ * @returns plain object, or `value` unchanged if it isn't an `inspectDatum` value
+ */
+export const toPlainInspectDatum = <T>(value: T): T => {
+  const parts = typeof value === 'object' && value !== null ? inspectDatumParts.get(value) : undefined;
+  return parts ? ({ ...parts.datum, ...parts.fields } as T) : value;
 };

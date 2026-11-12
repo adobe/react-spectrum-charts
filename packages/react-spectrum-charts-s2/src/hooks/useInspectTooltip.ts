@@ -15,6 +15,7 @@ import { Item, TooltipHandler } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import { TOOLTIP_DELAY } from '@spectrum-charts/core-s2/constants';
+import { toPlainInspectDatum } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { useChartContext } from '../context/RscChartContext.js';
 import { getItemBounds } from '../utils/index.js';
@@ -37,8 +38,9 @@ const useInspectTooltip = (inspectOptions: TooltipOptions): TooltipHandler => {
 
   useEffect(() => () => clearTimeout(inspectTimeout.current), []);
 
-  return useCallback((view, event, item, value) => {
+  return useCallback((view, event, item, inspectValue) => {
     const { inspectHandler, setHoveredAxisLabel } = latest.current;
+    const value = toPlainInspectDatum(inspectValue);
     // Cancel delayed tooltips if the mouse moves before the delay is resolved.
     if (inspectTimeout.current) {
       clearTimeout(inspectTimeout.current);

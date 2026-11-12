@@ -61,10 +61,7 @@ export const scaleTypeSupportsReferenceLines = (scaleType: ScaleType | undefined
 /**
  * S2 reference lines are horizontal only — only emits marks for vertical axes (left/right).
  */
-export const getReferenceLineMarks = (
-  axisOptions: AxisSpecOptions,
-  scaleName: string
-): Mark[] => {
+export const getReferenceLineMarks = (axisOptions: AxisSpecOptions, scaleName: string): Mark[] => {
   if (!isVerticalAxis(axisOptions.position)) {
     return [];
   }
@@ -145,11 +142,11 @@ export const getReferenceLineRuleMark = (
     encode: {
       enter: {
         stroke,
-        strokeWidth,
         strokeCap: { value: 'round' },
         strokeJoin: { value: 'round' },
       },
       update: {
+        strokeWidth,
         x: xStart,
         x2,
         y: positionEncoding as NumericValueRef,
@@ -187,15 +184,17 @@ export const getReferenceLineStartCapMark = (
     }));
   }
 
-  return [{
-    name: `${name}_startCap`,
-    type: 'path',
-    interactive: false,
-    encode: {
-      enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[size] }, fill },
-      update: sharedUpdate,
+  return [
+    {
+      name: `${name}_startCap`,
+      type: 'path',
+      interactive: false,
+      encode: {
+        enter: { path: { value: REFERENCE_LINE_START_CAP_PATHS[size] }, fill },
+        update: sharedUpdate,
+      },
     },
-  }];
+  ];
 };
 
 /**
@@ -226,18 +225,20 @@ export const getReferenceLineEndCapMark = (
     }));
   }
 
-  return [{
-    name: `${name}_endCap`,
-    type: 'path',
-    interactive: false,
-    encode: {
-      enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[size] }, fill },
-      update: {
-        x: { signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET[size]}` },
-        y: positionEncoding as NumericValueRef,
+  return [
+    {
+      name: `${name}_endCap`,
+      type: 'path',
+      interactive: false,
+      encode: {
+        enter: { path: { value: REFERENCE_LINE_END_CAP_PATHS[size] }, fill },
+        update: {
+          x: { signal: `width - ${REFERENCE_LINE_END_CAP_ANCHOR_OFFSET[size]}` },
+          y: positionEncoding as NumericValueRef,
+        },
       },
     },
-  }];
+  ];
 };
 
 /**
@@ -252,14 +253,14 @@ export const getReferenceLineTextMark = (
 
   const sharedEnter = {
     text: { value: label },
-    x: { signal: 'width' },
-    y: positionEncoding as NumericValueRef,
     dy: { value: REFERENCE_LINE_LABEL_OFFSET_FROM_LINE },
     baseline: { value: 'top' as const },
     align: { value: 'right' as const },
   };
 
   const sharedUpdate = {
+    x: { signal: 'width' },
+    y: positionEncoding as NumericValueRef,
     fontWeight: { value: REFERENCE_LINE_LABEL_FONT_WEIGHT },
     fontSize: { signal: CHART_SIZE_FONT_SIZE },
   };
@@ -273,10 +274,12 @@ export const getReferenceLineTextMark = (
         enter: {
           ...sharedEnter,
           fill: { value: 'transparent' },
-          stroke: { signal: REFERENCE_LINE_LABEL_BACKGROUND_STROKE },
           strokeWidth: { value: REFERENCE_LINE_LABEL_BACKGROUND_STROKE_WIDTH },
         },
-        update: sharedUpdate,
+        update: {
+          ...sharedUpdate,
+          stroke: { signal: REFERENCE_LINE_LABEL_BACKGROUND_STROKE },
+        },
       },
     },
     {
@@ -286,7 +289,11 @@ export const getReferenceLineTextMark = (
       encode: {
         enter: {
           ...sharedEnter,
-          fill: { value: secondary ? getSecondaryStrokeColor(size, colorScheme) : getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme) },
+          fill: {
+            value: secondary
+              ? getSecondaryStrokeColor(size, colorScheme)
+              : getS2ColorValue(DEFAULT_FONT_COLOR, colorScheme),
+          },
         },
         update: sharedUpdate,
       },

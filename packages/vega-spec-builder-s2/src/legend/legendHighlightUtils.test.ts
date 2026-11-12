@@ -312,6 +312,17 @@ describe('setHoverOpacityForMarks()', () => {
     });
   });
 
+  test('should leave a data-driven opacity untouched', () => {
+    const badgeMark: Mark = {
+      name: 'scatter0Trendline0Annotation0_badge',
+      type: 'rect',
+      encode: { update: { fill: { scale: 'color', field: 'series' }, opacity: { field: 'opacity' } } },
+    };
+    const marks = structuredClone([badgeMark]);
+    setHoverOpacityForMarks('legend0', marks);
+    expect(marks[0].encode?.update?.opacity).toEqual({ field: 'opacity' });
+  });
+
   describe('trendline hover-support mark sharing the trendline name prefix', () => {
     // Named like `<parent>Trendline_hoverRule` — shares the "Trendline" prefix with the
     // trendline's own line mark, but isn't the trendline mark itself. Its non-array opacity

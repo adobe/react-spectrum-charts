@@ -118,9 +118,9 @@ describe('donut hover animations', () => {
     expect(spec.usermeta?.animatedMarks).toHaveLength(1);
   });
 
-  test('looks up each slice hover fraction with the indexed hoverFraction function', () => {
+  test('looks up each slice deemphasis opacity with the indexed hoverDeemphasisOpacity function', () => {
     const [opacity] = getDonutOpacity({ ...defaultDonutOptions, isHoverAnimate: true });
-    expect(opacity).toHaveProperty('signal', expect.stringContaining("hoverFraction(data('testName_hoverFractionData')"));
+    expect(opacity).toHaveProperty('signal', expect.stringContaining("hoverDeemphasisOpacity(data('testName_hoverFractionData')"));
     expect(opacity).toHaveProperty('signal', expect.not.stringContaining('indexof(pluck('));
   });
 

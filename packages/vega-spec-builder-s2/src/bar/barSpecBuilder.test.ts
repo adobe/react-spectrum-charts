@@ -51,6 +51,7 @@ import {
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import { getRowKeyField, getRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { baseData, initializeSpec } from '../specUtils.js';
 import { ChartInspectOptions } from '../types/dialogs/chartInspectSpec.types.js';
@@ -123,6 +124,16 @@ const defaultTableData: ValuesData = {
 };
 const defaultFilteredTableData: SourceData = { name: FILTERED_TABLE, source: TABLE };
 
+const getTableDataWithRowKey = (fields: string[], transforms: Transforms[] = []): ValuesData => ({
+  ...defaultTableData,
+  transform: [
+    ...(defaultTableData.transform ?? []),
+    ...transforms,
+    ...getRowKeyTransforms({ name: 'bar0', idKey: MARK_ID, fields }),
+  ],
+});
+const defaultTableDataWithRowKey = getTableDataWithRowKey([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR]);
+
 const defaultData: Data[] = [defaultTableData, defaultFilteredTableData];
 
 const defaultStacksTransforms: Transforms[] = [
@@ -145,6 +156,19 @@ const defaultStacksData: Data = {
   transform: defaultStacksTransforms,
 };
 
+const defaultStackedCornerRadiusTransforms: Transforms[] = [
+  {
+    type: 'formula',
+    as: 'bar0_topCornerRadius',
+    expr: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
+  },
+  {
+    type: 'formula',
+    as: 'bar0_bottomCornerRadius',
+    expr: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
+  },
+];
+
 const defaultStackedTransforms: Transforms[] = [
   {
     type: 'stack',
@@ -158,6 +182,14 @@ const defaultStackedTransforms: Transforms[] = [
     as: STACK_ID,
     expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION}`,
   },
+  {
+    type: 'joinaggregate',
+    groupby: [DEFAULT_CATEGORICAL_DIMENSION],
+    fields: [`${DEFAULT_METRIC}1`, `${DEFAULT_METRIC}1`],
+    ops: ['max', 'min'],
+    as: ['bar0_stackMax', 'bar0_stackMin'],
+  },
+  ...defaultStackedCornerRadiusTransforms,
 ];
 
 const timeTransform: Transforms[] = [
@@ -187,14 +219,13 @@ const defaultBackgroundStackedMark: Mark = {
   description: 'bar0_background',
   type: 'rect',
   from: { data: FILTERED_TABLE },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...defaultStackedYEncodings,
       ...defaultCornerRadiusEncodings,
       fill: { signal: BACKGROUND_COLOR },
-    },
-    update: {
       x: { scale: 'xBand', field: DEFAULT_CATEGORICAL_DIMENSION },
       width: { scale: 'xBand', band: 1 },
     },
@@ -205,16 +236,15 @@ const defaultStackedMark: Mark = {
   description: 'bar0',
   type: 'rect',
   from: { data: FILTERED_TABLE },
+  key: getRowKeyField(defaultBarOptions),
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...defaultStackedYEncodings,
       ...defaultCornerRadiusEncodings,
       fill: { scale: COLOR_SCALE, field: DEFAULT_COLOR },
       fillOpacity: DEFAULT_OPACITY_RULE,
       tooltip: undefined,
-    },
-    update: {
       ...defaultBarStrokeEncodings,
       cursor: undefined,
       opacity: [getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE],
@@ -233,7 +263,10 @@ const defaultSpec: ScSpec = {
   data: [
     {
       name: TABLE,
-      transform: [{ type: 'identifier', as: MARK_ID }],
+      transform: [
+        { type: 'identifier', as: MARK_ID },
+        ...getRowKeyTransforms({ name: 'bar0', idKey: MARK_ID, fields: [DEFAULT_CATEGORICAL_DIMENSION] }),
+      ],
       values: [],
     },
     {
@@ -251,12 +284,9 @@ const defaultSpec: ScSpec = {
       ...defaultStackedMark,
       encode: {
         ...defaultStackedMark.encode,
-        enter: {
-          ...defaultStackedMark.encode?.enter,
-          fill: { value: spectrum2Colors.light['categorical-100'] },
-        },
         update: {
           ...defaultStackedMark.encode?.update,
+          fill: { value: spectrum2Colors.light['categorical-100'] },
           stroke: [{ value: spectrum2Colors.light['categorical-100'] }],
         },
       },
@@ -396,11 +426,11 @@ describe('barSpecBuilder', () => {
         expect(findMark(spec.marks, 'bar0_background')?.from).toStrictEqual({ data: FILTERED_TABLE });
       });
 
-      test("stacked bars get each stack's totals so segments can fill in order", () => {
+      test("stacked bars get each stack's totals for corner radii and the sequential fill", () => {
         const spec = addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['drawIn'] });
         const filteredTable = spec.data?.find((d) => d.name === FILTERED_TABLE) as SourceData;
         expect(filteredTable.transform).toContainEqual(
-          expect.objectContaining({ type: 'joinaggregate', as: ['bar0_drawInStackMax', 'bar0_drawInStackMin'] })
+          expect.objectContaining({ type: 'joinaggregate', as: ['bar0_stackMax', 'bar0_stackMin'] })
         );
       });
 
@@ -1305,10 +1335,7 @@ describe('barSpecBuilder', () => {
             dimension: 'browser',
           })
         ).toStrictEqual([
-          {
-            ...defaultTableData,
-            transform: [...(defaultTableData.transform ? defaultTableData.transform : []), ...timeTransform],
-          },
+          getTableDataWithRowKey(['browser', DEFAULT_COLOR], timeTransform),
           {
             ...defaultFilteredTableData,
             transform: [
@@ -1319,6 +1346,9 @@ describe('barSpecBuilder', () => {
                 as: ['views0', 'views1'],
               },
               { ...defaultStackedTransforms[1], expr: 'datum.browser' },
+              { ...defaultStackedTransforms[2], groupby: ['browser'], fields: ['views1', 'views1'] },
+              { ...defaultStackedCornerRadiusTransforms[0], expr: 'datum.views1 > 0 && datum.bar0_stackMax === datum.views1 ? 4 : 0' },
+              { ...defaultStackedCornerRadiusTransforms[1], expr: 'datum.views1 < 0 && datum.bar0_stackMin === datum.views1 ? 4 : 0' },
             ],
           },
           {
@@ -1333,7 +1363,7 @@ describe('barSpecBuilder', () => {
 
       test('new transform should be added to the data table', () => {
         expect(addData(defaultData, { ...defaultBarOptions, metric: 'views', dimension: 'browser' })).toStrictEqual([
-          defaultTableData,
+          getTableDataWithRowKey(['browser', DEFAULT_COLOR]),
           {
             ...defaultFilteredTableData,
             transform: [
@@ -1344,6 +1374,9 @@ describe('barSpecBuilder', () => {
                 as: ['views0', 'views1'],
               },
               { ...defaultStackedTransforms[1], expr: 'datum.browser' },
+              { ...defaultStackedTransforms[2], groupby: ['browser'], fields: ['views1', 'views1'] },
+              { ...defaultStackedCornerRadiusTransforms[0], expr: 'datum.views1 > 0 && datum.bar0_stackMax === datum.views1 ? 4 : 0' },
+              { ...defaultStackedCornerRadiusTransforms[1], expr: 'datum.views1 < 0 && datum.bar0_stackMin === datum.views1 ? 4 : 0' },
             ],
           },
           {
@@ -1358,7 +1391,7 @@ describe('barSpecBuilder', () => {
 
       test('no options, transform should use default values', () => {
         expect(addData(defaultData, defaultBarOptions)).toStrictEqual([
-          defaultTableData,
+          defaultTableDataWithRowKey,
           {
             ...defaultFilteredTableData,
             transform: defaultStackedTransforms,
@@ -1369,7 +1402,7 @@ describe('barSpecBuilder', () => {
 
       test('order supplied, transform should include sort by order', () => {
         expect(addData(defaultData, { ...defaultBarOptions, order: 'order' })).toStrictEqual([
-          defaultTableData,
+          defaultTableDataWithRowKey,
           {
             ...defaultFilteredTableData,
             transform: [
@@ -1379,7 +1412,7 @@ describe('barSpecBuilder', () => {
                   field: 'order',
                 },
               },
-              defaultStackedTransforms[1],
+              ...defaultStackedTransforms.slice(1),
             ],
           },
           defaultStacksData,
@@ -1402,6 +1435,14 @@ describe('barSpecBuilder', () => {
       });
     });
 
+    test('custom idKey, should key bars by idKey without adding row key transforms', () => {
+      const options = { ...defaultBarOptions, idKey: 'id' };
+      expect(addData(defaultData, options)[0]).toStrictEqual(defaultTableData);
+      expect(addMarks([], options)).toEqual(
+        defaultStackedBarMarks.map((mark) => expect.objectContaining({ name: mark.name, key: 'id' }))
+      );
+    });
+
     describe('transform already exists', () => {
       test('no options, new transform should be pushed onto the end with default values', () => {
         expect(
@@ -1410,7 +1451,7 @@ describe('barSpecBuilder', () => {
             defaultBarOptions
           )
         ).toStrictEqual([
-          defaultTableData,
+          defaultTableDataWithRowKey,
           {
             ...defaultFilteredTableData,
             transform: [...defaultStackedTransforms, ...defaultStackedTransforms],
@@ -1437,7 +1478,7 @@ describe('barSpecBuilder', () => {
           color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR],
         })
       ).toStrictEqual([
-        defaultTableData,
+        getTableDataWithRowKey([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR]),
         {
           ...defaultFilteredTableData,
           transform: [
@@ -1453,6 +1494,14 @@ describe('barSpecBuilder', () => {
               expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_COLOR}`,
               type: 'formula',
             },
+            {
+              type: 'joinaggregate',
+              groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR],
+              fields: [`${DEFAULT_METRIC}1`, `${DEFAULT_METRIC}1`],
+              ops: ['max', 'min'],
+              as: ['bar0_stackMax', 'bar0_stackMin'],
+            },
+            ...defaultStackedCornerRadiusTransforms,
             { as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_COLOR}`, type: 'formula' },
           ],
         },
@@ -1492,7 +1541,7 @@ describe('barSpecBuilder', () => {
       expect(
         addData(defaultData, { ...defaultBarOptions, color: [DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR] })
       ).toStrictEqual([
-        defaultTableData,
+        getTableDataWithRowKey([DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_COLOR, DEFAULT_SECONDARY_COLOR]),
         {
           ...defaultFilteredTableData,
           transform: [
@@ -1508,6 +1557,14 @@ describe('barSpecBuilder', () => {
               expr: `datum.${DEFAULT_CATEGORICAL_DIMENSION} + "," + datum.${DEFAULT_SECONDARY_COLOR}`,
               type: 'formula',
             },
+            {
+              type: 'joinaggregate',
+              groupby: [DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_SECONDARY_COLOR],
+              fields: [`${DEFAULT_METRIC}1`, `${DEFAULT_METRIC}1`],
+              ops: ['max', 'min'],
+              as: ['bar0_stackMax', 'bar0_stackMin'],
+            },
+            ...defaultStackedCornerRadiusTransforms,
             { as: 'bar0_dodgeGroup', expr: `datum.${DEFAULT_SECONDARY_COLOR}`, type: 'formula' },
           ],
         },

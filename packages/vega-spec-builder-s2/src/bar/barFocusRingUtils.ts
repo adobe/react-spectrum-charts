@@ -9,7 +9,6 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { RectEncodeEntry, RectMark } from 'vega';
 
 import {
@@ -18,13 +17,18 @@ import {
   FOCUSED_REGION,
   NAVIGATION_ID_SEPARATOR,
   SELECTED_ITEM,
-  STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { BarSpecOptions } from '../types/index.js';
 import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
-import { getOrientationProperties, isDodgedAndStacked, isDualMetricAxis, rotateRectClockwiseIfNeeded } from './barUtils.js';
+import { BarSpecOptions } from '../types/index.js';
+import {
+  getOrientationProperties,
+  getStackedCornerRadiusFields,
+  isDodgedAndStacked,
+  isDualMetricAxis,
+  rotateRectClockwiseIfNeeded,
+} from './barUtils.js';
 
 const FOCUS_RING_STROKE_WIDTH = 2;
 const FOCUS_RING_ROUNDED_RADIUS = 6;
@@ -53,25 +57,28 @@ const getStaticFocusRingCorners = ({ hasSquareCorners, orientation }: BarSpecOpt
 /** Handle square corners for the inner stacked bar segments. */
 const getDynamicFocusRingCorners = (options: BarSpecOptions): RectEncodeEntry => {
   const { hasSquareCorners, metric, name, type } = options;
-  const rounded = hasSquareCorners ? FOCUS_RING_FLAT_RADIUS : FOCUS_RING_ROUNDED_RADIUS;
   const flat = FOCUS_RING_FLAT_RADIUS;
-  let topTest: string;
-  let bottomTest: string;
+  let rect: RectEncodeEntry;
   if (type === 'dodged' && !isDodgedAndStacked(options)) {
-    topTest = `datum.datum.${metric} > 0`;
-    bottomTest = `datum.datum.${metric} < 0`;
+    const rounded = hasSquareCorners ? FOCUS_RING_FLAT_RADIUS : FOCUS_RING_ROUNDED_RADIUS;
+    const topTest = `datum.datum.${metric} > 0`;
+    const bottomTest = `datum.datum.${metric} < 0`;
+    rect = {
+      cornerRadiusTopLeft: [{ test: topTest, value: rounded }, { value: flat }],
+      cornerRadiusTopRight: [{ test: topTest, value: rounded }, { value: flat }],
+      cornerRadiusBottomLeft: [{ test: bottomTest, value: rounded }, { value: flat }],
+      cornerRadiusBottomRight: [{ test: bottomTest, value: rounded }, { value: flat }],
+    };
   } else {
-    const stacks = `data('${name}_stacks')`;
-    const stackIndex = `indexof(pluck(${stacks}, '${STACK_ID}'), datum.datum.${STACK_ID})`;
-    topTest = `datum.datum.${metric}1 > 0 && ${stacks}[${stackIndex}].max_${metric}1 === datum.datum.${metric}1`;
-    bottomTest = `datum.datum.${metric}1 < 0 && ${stacks}[${stackIndex}].min_${metric}1 === datum.datum.${metric}1`;
+    // the segment's precomputed bar radius (4 or 0) offset by the flat radius gives the ring's 6 or 2
+    const [topField, bottomField] = getStackedCornerRadiusFields(name).map((field) => `datum.${field}`);
+    rect = {
+      cornerRadiusTopLeft: { field: topField, offset: flat },
+      cornerRadiusTopRight: { field: topField, offset: flat },
+      cornerRadiusBottomLeft: { field: bottomField, offset: flat },
+      cornerRadiusBottomRight: { field: bottomField, offset: flat },
+    };
   }
-  const rect: RectEncodeEntry = {
-    cornerRadiusTopLeft: [{ test: topTest, value: rounded }, { value: flat }],
-    cornerRadiusTopRight: [{ test: topTest, value: rounded }, { value: flat }],
-    cornerRadiusBottomLeft: [{ test: bottomTest, value: rounded }, { value: flat }],
-    cornerRadiusBottomRight: [{ test: bottomTest, value: rounded }, { value: flat }],
-  };
   return rotateRectClockwiseIfNeeded(rect, options);
 };
 
@@ -94,10 +101,10 @@ export const getBarFocusRing = (options: BarSpecOptions): RectMark => {
         fill: { value: 'transparent' },
         strokeWidth: { value: FOCUS_RING_STROKE_WIDTH },
         stroke: { value: getS2ColorValue('blue-800', colorScheme) },
-        // Mirror the segment's own corners so stacked middle segments stay square.
-        ...getDynamicFocusRingCorners(options),
       },
       update: {
+        // Mirror the segment's own corners so stacked middle segments stay square.
+        ...getDynamicFocusRingCorners(options),
         x: { signal: `datum.bounds.x1 - ${FOCUS_RING_OFFSET}` },
         x2: { signal: `datum.bounds.x2 + ${FOCUS_RING_OFFSET}` },
         y: { signal: `datum.bounds.y1 - ${FOCUS_RING_OFFSET}` },
@@ -142,15 +149,13 @@ export const getStackFocusRing = (options: BarSpecOptions): RectMark => {
   const baseline = `scale('${metricScaleKey}', 0)`;
   const update: RectEncodeEntry =
     orientation === 'vertical'
-      ? 
-        {
+      ? {
           x: { signal: dimStart },
           x2: { signal: dimEnd },
           y: { signal: `${stackTop} - ${FOCUS_RING_OFFSET}` },
           y2: { signal: `${baseline} + ${FOCUS_RING_OFFSET}` },
         }
-      : 
-        {
+      : {
           y: { signal: dimStart },
           y2: { signal: dimEnd },
           x: { signal: `${baseline} - ${FOCUS_RING_OFFSET}` },

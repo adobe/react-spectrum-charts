@@ -74,6 +74,8 @@ import {
   getSymbolWidthFromRscSymbolSize,
   getVegaSymbolSizeFromRscSymbolSize,
   initializeSpec,
+  moveConstantEncodingsToEnter,
+  removeInvisibleStrokes,
 } from './specUtils.js';
 import { addTitle } from './title/titleSpecBuilder.js';
 import {
@@ -253,6 +255,9 @@ export function buildSpec({
       }
     }
   }
+
+  moveConstantEncodingsToEnter(spec.marks);
+  removeInvisibleStrokes(spec.marks);
 
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);
