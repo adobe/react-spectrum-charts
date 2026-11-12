@@ -142,7 +142,7 @@ export class CanvasRenderer implements SceneRenderer {
         ctx.font = fontString(node.fontSize, node.font, node.fontWeight);
         ctx.textAlign = node.align ?? 'left';
         ctx.textBaseline = 'alphabetic';
-        const dy = baselineOffset(node.baseline, node.fontSize);
+        const dy = baselineOffset(node);
         const lh = lineHeight(node.fontSize);
         (node.lines ?? [node.text]).forEach((line, i) => {
           if (node.halo) {

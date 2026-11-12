@@ -236,9 +236,9 @@ export const getBandOffset = (scale: unknown): number => {
  * @returns padded domain
  */
 const padDomain = ([min, max]: [number, number], width: number, padding: number): [number, number] => {
-  const frac = width / (width - 2 * padding);
-  const mid = (min + max) / 2;
-  return [mid - (mid - min) * frac, mid + (max - mid) * frac];
+  // the domain values that land at the edges once the data occupies [padding, width - padding]
+  const inner = scaleLinear().domain([padding, width - padding]).range([min, max]);
+  return [inner(0), inner(width)];
 };
 
 /**

@@ -21,13 +21,17 @@ export interface Bounds {
 const ELLIPSIS = '\u2026';
 const CACHE_MAX = 5000;
 const widthCache = new Map<string, number>();
+const metricsCache = new Map<string, FontMetrics>();
 let context: CanvasRenderingContext2D | null | undefined;
 
 const getContext = (): CanvasRenderingContext2D | null => {
   if (context === undefined) {
     context = typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d');
     if (typeof document !== 'undefined') {
-      document.fonts?.addEventListener?.('loadingdone', () => widthCache.clear());
+      document.fonts?.addEventListener?.('loadingdone', () => {
+        widthCache.clear();
+        metricsCache.clear();
+      });
     }
   }
   return context;
@@ -62,7 +66,8 @@ export const measureText = (text: string, fontSize: number, font: string, fontWe
     ctx.font = fontKey;
     width = ctx.measureText(text).width;
   } else {
-    width = 0.8 * fontSize * text.length;
+    // average glyph width when there's no canvas to measure with (e.g. jsdom)
+    width = 0.6 * fontSize * text.length;
   }
   if (widthCache.size >= CACHE_MAX) widthCache.clear();
   widthCache.set(key, width);
@@ -97,33 +102,61 @@ export const truncate = (
   return text.slice(0, lo) + ELLIPSIS;
 };
 
+/** Ascent and descent of a font in pixels, measured from the alphabetic baseline. */
+export interface FontMetrics {
+  ascent: number;
+  descent: number;
+}
+
 /**
- * Gets the pixel offset from the anchor to the alphabetic baseline.
- * @param baseline
+ * Measures a font's ascender and descender extents, estimating them without a canvas.
  * @param fontSize
- * @returns offset in pixels
+ * @param font
+ * @param fontWeight
+ * @returns FontMetrics
  */
-export const baselineOffset = (baseline: TextNode['baseline'], fontSize: number): number => {
-  switch (baseline) {
-    case 'top':
-      return Math.round(0.79 * fontSize);
-    case 'middle':
-      return Math.round(0.3 * fontSize);
-    case 'bottom':
-      return Math.round(-0.21 * fontSize);
-    default:
-      return 0;
+export const fontMetrics = (fontSize: number, font: string, fontWeight?: string | number): FontMetrics => {
+  const fontKey = fontString(fontSize, font, fontWeight);
+  const cached = metricsCache.get(fontKey);
+  if (cached) return cached;
+  const ctx = getContext();
+  let metrics = { ascent: 0.75 * fontSize, descent: 0.25 * fontSize };
+  if (ctx) {
+    ctx.font = fontKey;
+    const m = ctx.measureText('Hdgy');
+    if (m.actualBoundingBoxAscent || m.actualBoundingBoxDescent) {
+      metrics = { ascent: m.actualBoundingBoxAscent, descent: m.actualBoundingBoxDescent };
+    }
   }
+  metricsCache.set(fontKey, metrics);
+  return metrics;
 };
 
 /**
- * Gets the distance between lines of multi-line text.
+ * Gets the offset from a text node's anchor y to its first line's alphabetic baseline.
+ * @param node
+ * @returns offset in pixels
+ */
+export const baselineOffset = (node: Pick<TextNode, 'baseline' | 'fontSize' | 'font' | 'fontWeight'>): number => {
+  const { ascent, descent } = fontMetrics(node.fontSize, node.font, node.fontWeight);
+  if (node.baseline === 'top') return Math.round(ascent);
+  if (node.baseline === 'middle') return Math.round((ascent - descent) / 2);
+  if (node.baseline === 'bottom') return -Math.round(descent);
+  return 0;
+};
+
+/**
+ * Gets the distance between baselines of multi-line text.
  * @param fontSize
  * @returns line height in pixels
  */
-export const lineHeight = (fontSize: number): number => fontSize + 2;
+export const lineHeight = (fontSize: number): number => Math.round(fontSize * 1.2);
 
-const DEG_TO_RAD = Math.PI / 180;
+const rotatePoint = (px: number, py: number, cx: number, cy: number, radians: number): [number, number] => {
+  const dx = px - cx;
+  const dy = py - cy;
+  return [cx + dx * Math.cos(radians) - dy * Math.sin(radians), cy + dx * Math.sin(radians) + dy * Math.cos(radians)];
+};
 
 /**
  * Gets the bounding box of a text node.
@@ -132,26 +165,24 @@ const DEG_TO_RAD = Math.PI / 180;
  */
 export const textBounds = (node: TextNode): Bounds => {
   const lines = node.lines ?? [node.text];
-  const h = node.fontSize + lineHeight(node.fontSize) * (lines.length - 1);
+  const { ascent, descent } = fontMetrics(node.fontSize, node.font, node.fontWeight);
   const w = Math.max(...lines.map((line) => measureText(line, node.fontSize, node.font, node.fontWeight)));
-  let dx = 0;
-  if (node.align === 'center') dx = -w / 2;
-  else if (node.align === 'right') dx = -w;
-  const dy = baselineOffset(node.baseline, node.fontSize) - Math.round(0.8 * node.fontSize);
-  const x1 = node.x + dx;
-  const y1 = node.y + dy;
-  if (!node.angle) return { x1, y1, x2: x1 + w, y2: y1 + h };
-  return rotateBounds({ x1, y1, x2: x1 + w, y2: y1 + h }, node.angle * DEG_TO_RAD, node.x, node.y);
-};
-
-/** Rotates bounds about (x, y). */
-const rotateBounds = ({ x1, y1, x2, y2 }: Bounds, angle: number, x: number, y: number): Bounds => {
-  const cos = Math.cos(angle);
-  const sin = Math.sin(angle);
-  const cx = x - x * cos + y * sin;
-  const cy = y - x * sin - y * cos;
-  const xs = [cos * x1 - sin * y1 + cx, cos * x1 - sin * y2 + cx, cos * x2 - sin * y1 + cx, cos * x2 - sin * y2 + cx];
-  const ys = [sin * x1 + cos * y1 + cy, sin * x1 + cos * y2 + cy, sin * x2 + cos * y1 + cy, sin * x2 + cos * y2 + cy];
+  const h = ascent + descent + lineHeight(node.fontSize) * (lines.length - 1);
+  let left = 0;
+  if (node.align === 'center') left = -w / 2;
+  else if (node.align === 'right') left = -w;
+  const top = baselineOffset(node) - ascent;
+  if (!node.angle) return { x1: node.x + left, y1: node.y + top, x2: node.x + left + w, y2: node.y + top + h };
+  // rotate the corners about the anchor and take their extent
+  const radians = (node.angle * Math.PI) / 180;
+  const corners = [
+    [left, top],
+    [left + w, top],
+    [left, top + h],
+    [left + w, top + h],
+  ].map(([x, y]) => rotatePoint(node.x + x, node.y + y, node.x, node.y, radians));
+  const xs = corners.map(([x]) => x);
+  const ys = corners.map(([, y]) => y);
   return { x1: Math.min(...xs), y1: Math.min(...ys), x2: Math.max(...xs), y2: Math.max(...ys) };
 };
 

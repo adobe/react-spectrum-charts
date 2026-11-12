@@ -175,7 +175,7 @@ export class SvgRenderer implements SceneRenderer {
   private updateText(state: ElementState, node: TextNode, attrs: Attrs): void {
     const angle = node.angle ? ` rotate(${node.angle})` : '';
     attrs.transform = `translate(${node.x},${node.y})${angle}`;
-    attrs.y = baselineOffset(node.baseline, node.fontSize) || undefined;
+    attrs.y = baselineOffset(node) || undefined;
     attrs.fill = node.fill;
     attrs['font-family'] = node.font;
     attrs['font-size'] = `${node.fontSize}px`;

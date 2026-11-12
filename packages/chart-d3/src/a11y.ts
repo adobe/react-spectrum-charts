@@ -9,29 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { tickStep } from 'd3-array';
-import { precisionFixed } from 'd3-format';
-
 import { getChartType } from './charts/chartType.js';
-import { Formatter } from './format.js';
 import { Layout, LayoutInput } from './layout.js';
 import { isDiscreteScaleType } from './scales.js';
 import { AriaProps, SceneNode } from './scene.js';
 import { AxisOptions, Granularity } from './types.js';
 
-/** Max values a discrete domain caption lists. */
-const MAX_CAPTION_VALUES = 7;
-
-/** Time label formats per granularity, mirroring the S2 spec builder's `getTimeLabelFormats`. */
-const TIME_FORMATS: Record<Granularity, { secondary: string; primary: string }> = {
-  second: { secondary: ':%S', primary: '%-I:%M %p' },
-  minute: { secondary: '%-I:%M %p', primary: '%b %-d' },
-  hour: { secondary: '%-I %p', primary: '%b %-d' },
-  day: { secondary: '%-d', primary: '%b' },
-  week: { secondary: '%-d', primary: '%b' },
-  month: { secondary: '%b', primary: '%Y' },
-  quarter: { secondary: 'Q%q', primary: '%Y' },
-  year: { secondary: '%Y', primary: '' },
+/** Long, screen-reader-friendly date formats per granularity. */
+const CAPTION_TIME_FORMATS: Record<Granularity, string> = {
+  second: '%B %-d, %Y, %-I:%M:%S %p',
+  minute: '%B %-d, %Y, %-I:%M %p',
+  hour: '%B %-d, %Y, %-I %p',
+  day: '%B %-d, %Y',
+  week: '%B %-d, %Y',
+  month: '%B %Y',
+  quarter: 'Q%q %Y',
+  year: '%Y',
 };
 
 const GROUP_CONTAINER: AriaProps = { role: 'graphics-object', roleDescription: 'group mark container' };
@@ -60,73 +53,37 @@ export const applyContainerAria = (container: HTMLElement, description: string |
   else container.setAttribute('aria-label', description);
 };
 
-type CaptionScale = { domain: () => unknown[] };
-
-const timeCaptionFormat = (formatter: Formatter, specifier: string | undefined): ((value: unknown) => string) => {
-  const spec = specifier ? specifier.replace(/%a/g, '%A').replace(/%b/g, '%B') : '%A, %d %B %Y, %X';
-  const format = formatter.time(spec);
-  return (value) => format(value as Date);
-};
-
-const linearCaptionFormat = (formatter: Formatter, domain: unknown[]): ((value: unknown) => string) => {
-  const start = Number(domain[0]);
-  const stop = Number(domain.at(-1));
-  const precision = Math.max(0, precisionFixed(tickStep(start, stop, 5)));
-  const format = formatter.number(`,.${precision}f`);
-  return (value) => format(Number(value));
-};
-
 /**
- * Describes a scale's domain.
- * @param scale
- * @param type
+ * Describes a domain by its first and last values, with a count for discrete domains.
+ * @param domain
+ * @param discrete
  * @param format
- * @returns caption
+ * @returns description
  */
-const domainCaption = (scale: CaptionScale, type: string, format: (value: unknown) => string): string => {
-  const domain = scale.domain();
-  if (type === 'point' || type === 'band' || type === 'ordinal') {
-    const n = domain.length;
-    const values =
-      n > MAX_CAPTION_VALUES
-        ? `${domain
-            .slice(0, MAX_CAPTION_VALUES - 2)
-            .map(format)
-            .join(', ')}, ending with ${format(domain[n - 1])}`
-        : domain.map(format).join(', ');
-    const plural = n === 1 ? '' : 's';
-    return `${n} value${plural}: ${values}`;
-  }
-  return `values from ${format(domain[0])} to ${format(domain.at(-1))}`;
+const describeDomain = (domain: unknown[], discrete: boolean, format: (value: unknown) => string): string => {
+  if (!domain.length) return 'no values';
+  const first = format(domain[0]);
+  const last = format(domain.at(-1));
+  if (!discrete) return `from ${first} to ${last}`;
+  if (domain.length === 1) return `1 value, ${first}`;
+  return `${domain.length} values, from ${first} to ${last}`;
 };
 
-const axisCaption = (
-  axis: AxisOptions,
-  part: string,
-  layout: Layout,
-  input: LayoutInput,
-  xScaleType: string
-): string => {
+const axisCaption = (axis: AxisOptions, layout: Layout, input: LayoutInput, xScaleType: string): string => {
   const vertical = axis.position === 'left' || axis.position === 'right';
-  const scale = (vertical ? layout.yScale : layout.xScale) as unknown as CaptionScale;
+  const scale = (vertical ? layout.yScale : layout.xScale) as unknown as { domain: () => unknown[] };
   const type = vertical ? 'linear' : xScaleType;
-  const formats = TIME_FORMATS[axis.granularity ?? 'day'];
-  let format: (value: unknown) => string;
+  let format: (value: unknown) => string = String;
   if (type === 'time') {
-    const timeSpecifiers: Record<string, string | undefined> = {
-      secondary: vertical ? `${formats.primary}\u2000${formats.secondary}` : formats.secondary,
-      primary: formats.primary,
-    };
-    format = timeCaptionFormat(input.formatter, timeSpecifiers[part]);
+    const time = input.formatter.time(CAPTION_TIME_FORMATS[axis.granularity ?? 'day']);
+    format = (value) => time(value as Date);
   } else if (type === 'linear') {
-    format = linearCaptionFormat(input.formatter, scale.domain());
-  } else {
-    format = String;
+    const number = input.formatter.number(',~f');
+    format = (value) => number(Number(value));
   }
-  const title = part === 'primary' ? undefined : axis.title;
-  const titled = title ? ` titled '${title}'` : '';
-  const scaleCaption = isDiscreteScaleType(type) ? 'discrete' : type;
-  return `${vertical ? 'Y' : 'X'}-axis${titled} for a ${scaleCaption} scale with ${domainCaption(scale, type, format)}`;
+  const titled = axis.title ? `, ${axis.title}` : '';
+  const name = `${vertical ? 'Y' : 'X'} axis${titled}`;
+  return `${name}, ${describeDomain(scale.domain(), isDiscreteScaleType(type), format)}`;
 };
 
 const captionCache = new WeakMap<Layout, Map<string, string>>();
@@ -144,20 +101,15 @@ const getGuideCaptions = (layout: Layout, input: LayoutInput): Map<string, strin
   const xScaleType = getXScaleType(input);
   (input.options.axes ?? []).forEach((axis, i) => {
     const prefix = `axis${i}-`;
-    for (const result of layout.axes) {
-      const { key } = result.node;
-      if (!key.startsWith(prefix)) continue;
-      captions.set(key, axisCaption(axis, key.slice(prefix.length), layout, input, xScaleType));
-    }
+    // a time axis draws two label rows; caption the axis once, on its first row
+    const first = layout.axes.find((result) => result.node.key.startsWith(prefix));
+    if (first) captions.set(first.node.key, axisCaption(axis, layout, input, xScaleType));
   });
   layout.legends.forEach((legend, i) => {
     const title = input.options.legends?.[i]?.title;
-    const titled = title ? ` titled '${title}'` : '';
-    const scale = { domain: () => legend.entries.map((entry) => entry.value) };
-    captions.set(
-      legend.node.key,
-      `Symbol legend${titled} for fill color with ${domainCaption(scale, 'ordinal', String)}`
-    );
+    const titled = title ? `, ${title}` : '';
+    const labels = legend.entries.map((entry) => entry.label);
+    captions.set(legend.node.key, `Legend${titled}, ${labels.length} items: ${labels.join(', ')}`);
   });
   captionCache.set(layout, captions);
   return captions;
@@ -177,7 +129,7 @@ const ariaFor = (
   if (node.role === 'frame') return GROUP_CONTAINER;
   if (node.role === 'axis' || node.role === 'legend') {
     const label = captions.get(node.key);
-    return label ? { role: 'graphics-symbol', roleDescription: node.role, label } : undefined;
+    return label ? { role: 'graphics-symbol', roleDescription: node.role, label } : { hidden: true };
   }
   if (node.type === 'group' && node.key.endsWith('_group')) return GROUP_CONTAINER;
   if (node.role === 'line' && markName) return markContainer('line', markName);
