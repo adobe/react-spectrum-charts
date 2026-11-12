@@ -25,6 +25,7 @@ const PACKAGES = {
   'core-s2': { nodeImport: true },
   schemas: { nodeImport: true },
   'vega-spec-builder-s2': { nodeImport: true },
+  'chart-d3': { nodeImport: true },
   'react-spectrum-charts-s2': { nodeImport: false },
 };
 
@@ -91,7 +92,12 @@ try {
       }
     }
     if (!nodeImport) continue;
-    for (const subpath of Object.keys(manifest.exports).filter((key) => !key.endsWith('.json'))) {
+    const hasRuntime = (target) =>
+      typeof target === 'string' || Object.keys(target).some((condition) => condition !== 'types');
+    const runtimeSubpaths = Object.entries(manifest.exports)
+      .filter(([key, target]) => !key.endsWith('.json') && hasRuntime(target))
+      .map(([key]) => key);
+    for (const subpath of runtimeSubpaths) {
       const specifier = path.posix.join(packageName, subpath);
       try {
         run(process.execPath, ['--input-type=module', '--eval', `await import('${specifier}');`], { cwd: root });

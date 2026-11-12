@@ -16,6 +16,9 @@
       "types": "./dist/types/tokens/index.d.ts",
       "default": "./dist/tokens/index.js"
     },
+    "./options": {
+      "types": "./dist/types/options/index.d.ts"
+    },
     "./utils": {
       "types": "./dist/types/utils/index.d.ts",
       "default": "./dist/utils/index.js"

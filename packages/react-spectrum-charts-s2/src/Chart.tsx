@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FC, Ref, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { FC, Ref, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { View } from 'vega';
 
@@ -18,10 +18,12 @@ import { getColorValue } from '@spectrum-charts/core-s2/tokens';
 import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
+import { D3RscChart } from './D3RscChart.js';
 import { RscChart } from './RscChart.js';
 import { applyChartPropsDefaults, resolveAnimationTypes } from './chartUtils.js';
 import { LoadingState } from './components/LoadingState/index.js';
 import { EmptyState } from './components/index.js';
+import { ChartEngineContext } from './context/ChartEngineContext.js';
 import { ChartProvider } from './context/RscChartContext.js';
 import useChartHeight from './hooks/useChartHeight.js';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle.js';
@@ -75,6 +77,7 @@ export const Chart = ({
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const defaultEngine = useContext(ChartEngineContext);
   // Stable reference so parent re-renders don't rebuild the spec and replay draw-in.
   const animationTypes = useMemo(
     () => resolveAnimationTypes(otherProps.animationTypes, prefersReducedMotion),
@@ -129,7 +132,12 @@ export const Chart = ({
     animationTypes,
   };
 
-  const chartContent = <RscChart {...rscChartProps}>{props.children}</RscChart>;
+  const chartContent =
+    (rscChartProps.engine ?? defaultEngine) === 'd3' && !UNSAFE_vegaSpec ? (
+      <D3RscChart {...rscChartProps}>{props.children}</D3RscChart>
+    ) : (
+      <RscChart {...rscChartProps}>{props.children}</RscChart>
+    );
 
   return (
     <Provider

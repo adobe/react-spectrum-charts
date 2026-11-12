@@ -9,18 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
 import { ColorScheme } from '../../chartSpec.types.js';
 import { ColorFacet, ScaleType } from '../../specUtil.types.js';
 
-export interface LineForecastOptions {
-  /** Data field containing the forecasted metric values */
-  metric: string;
-  /** Dimension value (timestamp for time scale, number for linear) where the forecast begins */
-  start: number;
-  /** Label text shown at the forecast boundary. Defaults to `Forecast`. */
-  label?: string;
-}
+export type { LineForecastOptions } from '@spectrum-charts/core-s2/options';
 
 export interface LineForecastSpecOptions {
   color: ColorFacet;

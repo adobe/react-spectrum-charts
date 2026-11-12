@@ -9,38 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { AxisAnnotationOptions } from '@spectrum-charts/core-s2/options';
+
 import { ColorScheme } from '../chartSpec.types.js';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
-import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
 import { PartiallyRequired } from '../specUtil.types.js';
-import { SpectrumColor } from '../spectrumVizColor.types.js';
 
-export type AxisAnnotationFormat = 'span' | 'summary';
-
-export type Option = {
-  /** The id of the annotation to apply these options to */
-  id: string;
-  /** The color of the icon and range lines  */
-  color?: SpectrumColor | string;
-};
-export interface AxisAnnotationOptions {
-  /** the color to use for the annotation icon and span lines if a color isn't specified in options or multiple annotations fall in the same icon */
-  color?: SpectrumColor | string;
-  /** data field where the annotation ids are listed for each data point */
-  dataKey?: string;
-  /** show annotations as a horizontal span of icons or a single summary icon */
-  format?: AxisAnnotationFormat;
-  /** unique name for this annotation */
-  name?: string;
-  /** how far from the bottom of the chart do the annotations display */
-  offset?: number;
-  /** options specific to each annotation in the data */
-  options?: Option[];
-
-  // children
-  chartPopovers?: ChartPopoverOptions[];
-  chartInspects?: ChartInspectOptions[];
-}
+export type { AxisAnnotationFormat, AxisAnnotationOptions, Option } from '@spectrum-charts/core-s2/options';
 
 type AxisAnnotationOptionsWithDefaults =
   | 'chartPopovers'

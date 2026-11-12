@@ -9,23 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { TrendlineAnnotationOptions } from '@spectrum-charts/core-s2/options';
+
 import { ColorScheme } from '../../chartSpec.types.js';
 import { ColorFacet, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types.js';
 import { TrendlineSpecOptions } from './trendlineSpec.types.js';
 
-export interface TrendlineAnnotationOptions {
-  /** Adds a badge around the annotation */
-  badge?: boolean;
-  /** Where along the trendline to place the label: `start`, `end`, or a `dimension` value. */
-  dimensionValue?: number | 'start' | 'end';
-  /** d3 number format specifier. Only valid if labelFormat is linear or undefined.
-   *
-   * @see https://d3js.org/d3-format#locale_format
-   */
-  numberFormat?: string;
-  /** Text shown before the trendline value. */
-  prefix?: string;
-}
+export type { TrendlineAnnotationOptions } from '@spectrum-charts/core-s2/options';
 
 type TrendlineAnnotationOptionsWithDefaults = 'badge' | 'dimensionValue' | 'numberFormat' | 'prefix';
 

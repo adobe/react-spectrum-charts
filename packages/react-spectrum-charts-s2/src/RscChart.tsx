@@ -20,8 +20,7 @@ import {
   useState,
 } from 'react';
 
-import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
-import { Focusable } from 'react-aria-components';
+import { Popover } from '@react-spectrum/s2';
 import { View as VegaView } from 'vega';
 import {
   COMPONENT_NAME,
@@ -35,6 +34,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { AxisLabelTooltip } from './AxisLabelTooltip.js';
 import './Chart.css';
 import { VegaChart } from './VegaChart.js';
 import { DonutDialogContent, getDonutSwatchColor } from './components/Donut/DonutDialogContent.js';
@@ -108,15 +108,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
     selectedDataBounds,
     selectedDataName,
     keyboardPopoverComponentName,
-    hoveredAxisLabel,
-    setHoveredAxisLabel,
   } = useChartContext();
-  const axisLabelTooltipAnchorRef = useRef<HTMLDivElement>(null);
-  // Retained through the Tooltip's exit animation so it doesn't fade out empty.
-  const lastAxisLabelContentRef = useRef<string | undefined>(undefined);
-  if (hoveredAxisLabel) {
-    lastAxisLabelContentRef.current = hoveredAxisLabel.content;
-  }
 
   const sanitizedChildren = useMemo(() => sanitizeRscChartChildren(props.children), [props.children]);
 
@@ -325,26 +317,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
         ref={popoverAnchorRef}
         style={targetStyle}
       />
-      {/* onOpenChange lets React Spectrum dismiss the tooltip on Escape (WCAG 2.2 SC 1.4.13) while keyboard
-          focus stays on the axis tick; a later Escape then drills out of the navigator. */}
-      <TooltipTrigger
-        isOpen={Boolean(hoveredAxisLabel)}
-        onOpenChange={(open) => {
-          if (!open) setHoveredAxisLabel(null);
-        }}
-      >
-        {/* Focusable forwards TooltipTrigger's FocusableContext ref onto our plain div. */}
-        <Focusable>
-          <div
-            id={`${chartId}-axis-label-tooltip-anchor`}
-            data-testid="rsc-axis-label-tooltip-anchor"
-            ref={axisLabelTooltipAnchorRef}
-            style={axisLabelTooltipAnchorStyle}
-            tabIndex={-1}
-          />
-        </Focusable>
-        <Tooltip>{hoveredAxisLabel?.content ?? lastAxisLabelContentRef.current}</Tooltip>
-      </TooltipTrigger>
+      <AxisLabelTooltip style={axisLabelTooltipAnchorStyle} />
       <div id={`${chartId}-dn-root`} ref={navContainerRef} style={{ position: 'relative' }}>
         <VegaChart
           spec={spec}
@@ -416,7 +389,7 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
 };
 RscChart.displayName = 'RscChart';
 
-const ChartDialog = ({
+export const ChartDialog = ({
   popover,
   setIsPopoverOpen,
   targetElement,
