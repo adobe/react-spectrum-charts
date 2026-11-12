@@ -1,5 +1,19 @@
 # @spectrum-charts/vega-spec-builder-s2
 
+## 0.12.0
+
+### Minor Changes
+
+- 7bac1c1: Charts now apply data, size and highlight changes to the current view instead of recreating it, so `onVegaViewReady` fires less often.
+
+### Patch Changes
+
+- 9ccd54e: S2 bar, scatter, donut and bullet marks now update in place when data changes instead of being redrawn, and a data update during the draw-in animation continues it smoothly.
+- e43cb3e: Built-in chart text (empty and loading states, accessible navigation labels, and action bar labels) now follows the chart `locale`, ready for translations. The chart `locale` also sets the language of everything rendered inside the chart.
+- 645cca9: Toggling legend entries and changing `hiddenSeries`, `highlightedItem`, or `highlightedSeries` now update the chart in place instead of recreating it, and re-shown series keep their stacking order. Legend entries may be spaced slightly wider so the hidden-series icon fits.
+- 25c7e6a: Re-rendering a chart with the same children or an inline `onVegaViewReady` no longer recreates the chart view, and interaction callbacks always use the latest props.
+  - @spectrum-charts/core-s2@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes
