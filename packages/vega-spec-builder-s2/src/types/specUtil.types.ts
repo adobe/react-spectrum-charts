@@ -9,11 +9,31 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Config, Spec, SymbolShape } from 'vega';
+import { Config, Spec } from 'vega';
 
 import { GROUP_DATA, MARK_ID, SERIES_ID, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
+import { Orientation } from '@spectrum-charts/core-s2/options';
 
-import { SpectrumVizColor } from './spectrumVizColor.types.js';
+export type {
+  NumberFormat,
+  Orientation,
+  Position,
+  ScaleType,
+  ChartSymbolShape,
+  LineType,
+  LineWidth,
+  PathWidth,
+  SymbolSize,
+  StaticValue,
+  FacetRef,
+  ColorFacet,
+  LineTypeFacet,
+  LineWidthFacet,
+  OpacityFacet,
+  PathWidthFacet,
+  SymbolSizeFacet,
+  SymbolShapeFacet,
+} from '@spectrum-charts/core-s2/options';
 
 export type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
@@ -80,71 +100,6 @@ export type Datum = object & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 };
-
-export type NumberFormat = 'currency' | 'shortCurrency' | 'shortNumber' | 'standardNumber' | 'percentage' | string;
-export type Orientation = 'vertical' | 'horizontal';
-export type Position = 'left' | 'right' | 'top' | 'bottom';
-export type ScaleType = 'linear' | 'point' | 'time' | 'band';
-export type ChartSymbolShape = 'rounded-square' | SymbolShape | string;
-
-/**
- * Stroke dasharray for the line.
- *
- * solid: null,
- * dashed: 7 4,
- * dotted: 2 3,
- * dotDash: 2 3 7 4,
- * shortDash: 3 4,
- * longDash: 11 4,
- * twoDash: 5 2 11 2
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray
- */
-export type LineType = 'solid' | 'dashed' | 'dotted' | 'dotDash' | 'shortDash' | 'longDash' | 'twoDash' | number[];
-
-/**
- * Width of line in pixels
- *
- * XS: 1px,
- * S: 1.5px,
- * M: 2px,
- * L: 3px,
- * XL: 4px
- * */
-export type LineWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
-
-/**
- * Width of the trail in pixels
- *
- * XS: 6px,
- * S: 8px,
- * M: 10px,
- * L: 12px,
- * XL: 16px
- * */
-export type PathWidth = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
-
-/**
- * Width of the symbol in pixels
- *
- * XS: 6px,
- * S: 8px,
- * M: 10px,
- * L: 12px,
- * XL: 16px
- * */
-export type SymbolSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | number;
-
-export type StaticValue<T> = { value: T };
-export type FacetRef<T> = string | StaticValue<T>;
-
-export type ColorFacet = FacetRef<SpectrumVizColor | string>;
-export type LineTypeFacet = FacetRef<LineType>;
-export type LineWidthFacet = FacetRef<LineWidth>;
-export type OpacityFacet = FacetRef<number>;
-export type PathWidthFacet = FacetRef<PathWidth>;
-export type SymbolSizeFacet = FacetRef<SymbolSize>;
-export type SymbolShapeFacet = FacetRef<ChartSymbolShape>;
 
 export type FacetType =
   | 'color'

@@ -9,20 +9,5 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { FontWeight } from 'vega';
 
-export type TitlePosition = 'start' | 'middle' | 'end';
-export type TitleOrient = 'top' | 'bottom' | 'left' | 'right';
-
-export interface TitleOptions {
-  /** Title text. */
-  text: string;
-  /** Where the title sits along its side of the chart: `'start'`, `'middle'`, or `'end'`. Defaults to `'start'`. */
-  position?: TitlePosition;
-  /** Font weight of the title text. Defaults to `700`. */
-  fontWeight?: FontWeight;
-  /** Font size of the title text in pixels. Defaults to `24`. */
-  fontSize?: number;
-  /** Side of the chart the title is drawn on. Defaults to `'top'`. */
-  orient?: TitleOrient;
-}
+export type { TitleOptions, TitleOrient, TitlePosition } from '@spectrum-charts/core-s2/options';

@@ -14,12 +14,17 @@ import { useMemo } from 'react';
 import { Data, Spec, ValuesData } from 'vega';
 
 import { getColorValue } from '@spectrum-charts/core-s2/tokens';
-import { ChartData, ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder-s2';
+import { ChartData, ChartOptions, ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter/index.js';
 import { SanitizedSpecProps } from '../types/index.js';
 
-export default function useSpec({
+/**
+ * Builds the chart options both engines read from the chart's props and children; undefined for UNSAFE_vegaSpec.
+ * @param props
+ * @returns ChartOptions
+ */
+export const useChartOptions = ({
   animations,
   animationTypes,
   accessibleNavigation,
@@ -40,20 +45,34 @@ export default function useSpec({
   symbolSizes,
   title,
   UNSAFE_vegaSpec,
-}: SanitizedSpecProps): Spec {
-  return useMemo(() => {
-    if (UNSAFE_vegaSpec) {
-      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
-        backgroundColor,
-        colorScheme,
-        data,
-        description,
-        title,
-      });
-      return structuredClone(vegaSpecWithDefaults) as Spec;
-    }
-
-    const chartOptions = rscPropsToSpecBuilderOptions({
+}: SanitizedSpecProps): ChartOptions | undefined =>
+  useMemo(
+    () =>
+      UNSAFE_vegaSpec
+        ? undefined
+        : rscPropsToSpecBuilderOptions({
+            animations,
+            animationTypes,
+            accessibleNavigation,
+            backgroundColor,
+            children,
+            colors,
+            colorScheme,
+            data,
+            description,
+            hiddenSeries,
+            highlightedItem,
+            highlightedSeries,
+            idKey,
+            lineTypes,
+            lineWidths,
+            opacities,
+            symbolShapes,
+            symbolSizes,
+            title,
+          }),
+    [
+      UNSAFE_vegaSpec,
       animations,
       animationTypes,
       accessibleNavigation,
@@ -73,31 +92,25 @@ export default function useSpec({
       symbolShapes,
       symbolSizes,
       title,
-    });
+    ]
+  );
 
+export default function useSpec(props: SanitizedSpecProps): Spec {
+  const chartOptions = useChartOptions(props);
+  const { UNSAFE_vegaSpec, backgroundColor, colorScheme, data, description, title } = props;
+  return useMemo(() => {
+    if (!chartOptions) {
+      const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
+        backgroundColor,
+        colorScheme,
+        data,
+        description,
+        title,
+      });
+      return structuredClone(vegaSpecWithDefaults) as Spec;
+    }
     return buildSpec(chartOptions);
-  }, [
-    UNSAFE_vegaSpec,
-    animations,
-    animationTypes,
-    accessibleNavigation,
-    backgroundColor,
-    children,
-    colors,
-    colorScheme,
-    data,
-    description,
-    hiddenSeries,
-    highlightedItem,
-    highlightedSeries,
-    idKey,
-    lineTypes,
-    lineWidths,
-    opacities,
-    symbolShapes,
-    symbolSizes,
-    title,
-  ]);
+  }, [chartOptions, UNSAFE_vegaSpec, backgroundColor, colorScheme, data, description, title]);
 }
 
 const initializeSpec = (

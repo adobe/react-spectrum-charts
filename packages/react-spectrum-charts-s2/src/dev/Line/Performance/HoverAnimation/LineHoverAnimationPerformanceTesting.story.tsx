@@ -40,6 +40,11 @@ export default {
       options: ['hover'],
       description: "Which animation types are enabled (only 'hover' is relevant to this story group).",
     },
+    engine: {
+      control: { type: 'inline-radio' },
+      options: ['vega', 'd3'],
+      description: 'Rendering engine used by every chart.',
+    },
     renderer: {
       control: { type: 'inline-radio' },
       options: ['svg', 'canvas'],
@@ -61,7 +66,10 @@ export default {
   args: { animations: true, animationTypes: ['hover'], chartCount: 20, seriesPerChart: 30, pointsPerSeries: 10 },
 };
 
+type Engine = NonNullable<ChartProps['engine']>;
+
 type DashboardArgs = {
+  engine?: Engine;
   animations?: boolean;
   animationTypes?: AnimationType[];
   renderer?: NonNullable<ChartProps['renderer']>;
@@ -91,6 +99,7 @@ const defaultChartProps: ChartProps = { data: workspaceTrendsData, minWidth: 400
 
 type DashboardChartProps = {
   data: GeneratedTimeSeriesDatum[];
+  engine?: Engine;
   animations?: boolean;
   animationTypes?: AnimationType[];
   renderer?: NonNullable<ChartProps['renderer']>;
@@ -101,8 +110,16 @@ type DashboardChartProps = {
  * makes the Line interactive (wires up the voronoi hover overlay + hoveredItem signal), which is
  * what the hover-animation system needs to trigger at all.
  */
-const DashboardChart = ({ data, animations, animationTypes, renderer }: DashboardChartProps): ReactElement => {
-  const chartProps: ChartProps = useChartProps({ data, animations, animationTypes, renderer, width: 'auto', height: '100%' });
+const DashboardChart = ({ data, engine, animations, animationTypes, renderer }: DashboardChartProps): ReactElement => {
+  const chartProps: ChartProps = useChartProps({
+    data,
+    engine,
+    animations,
+    animationTypes,
+    renderer,
+    width: 'auto',
+    height: '100%',
+  });
   return (
     <div style={{ height: CHART_HEIGHT, overflow: 'hidden', border: '1px solid var(--spectrum-gray-300)' }}>
       <Chart {...chartProps}>
@@ -123,6 +140,7 @@ const DashboardChart = ({ data, animations, animationTypes, renderer }: Dashboar
  * changes, not just data volume within a single chart.
  */
 const DashboardStory: StoryFn<DashboardArgs> = ({
+  engine,
   animations,
   animationTypes,
   renderer,
@@ -161,6 +179,7 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
         <DashboardChart
           key={id}
           data={data}
+          engine={engine}
           animations={animations}
           animationTypes={animationTypes}
           renderer={renderer}
@@ -173,6 +192,7 @@ const DashboardStory: StoryFn<DashboardArgs> = ({
 type LargeDatasetArgs = ComponentProps<typeof Line> & {
   seriesPerChart: number;
   pointsPerSeries: number;
+  engine?: Engine;
   animations?: boolean;
   animationTypes?: AnimationType[];
 };
@@ -185,12 +205,13 @@ type LargeDatasetArgs = ComponentProps<typeof Line> & {
 const LargeDatasetStory: StoryFn<LargeDatasetArgs> = ({
   seriesPerChart,
   pointsPerSeries,
+  engine,
   animations,
   animationTypes,
   ...args
 }): ReactElement => {
   const data = useMemo(() => generateLargeData(seriesPerChart, pointsPerSeries), [seriesPerChart, pointsPerSeries]);
-  const chartProps = useChartProps({ ...defaultChartProps, data, animations, animationTypes });
+  const chartProps = useChartProps({ ...defaultChartProps, data, engine, animations, animationTypes });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Value" />

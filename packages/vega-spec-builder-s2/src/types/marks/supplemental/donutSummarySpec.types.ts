@@ -9,23 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { NumberFormat, PartiallyRequired } from '../../specUtil.types.js';
+import { DonutSummaryOptions } from '@spectrum-charts/core-s2/options';
+
+import { PartiallyRequired } from '../../specUtil.types.js';
 import { DonutSpecOptions } from '../donutSpec.types.js';
 
-export interface DonutSummaryOptions {
-  /** d3 number format specifier.
-   * Sets the number format for the summary value.
-   *
-   * see {@link https://d3js.org/d3-format#locale_format}
-   */
-  numberFormat?: NumberFormat;
-  /** Label for the metric summary */
-  label?: string;
-  /** Hides the value portion of the donut summary, only showing the label */
-  hideValue?: boolean;
-  /** Sentiment-colored delta (e.g. 0.025 renders as "+2.5%") shown below the label; hidden at XS/S for semicircles. */
-  delta?: number;
-}
+export type { DonutSummaryOptions } from '@spectrum-charts/core-s2/options';
 
 type DonutSummaryOptionsWithDefaults = 'numberFormat' | 'hideValue';
 

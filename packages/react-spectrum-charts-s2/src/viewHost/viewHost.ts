@@ -21,15 +21,15 @@ import { SplitSpec, ViewAdapter, ViewAnimation, getChangedSignals } from './view
 // Views are created and updated through a ViewAdapter. Must not depend on React.
 
 /** Everything a view is built or updated from. */
-export interface ViewHostInputs {
+export interface ViewHostInputs<TSpec = Spec, TView = View, TEnvironment = VegaEnvironment> {
   /** Inputs outside the spec that a view only takes when it's created; a change rebuilds the view */
-  environment: VegaEnvironment;
+  environment: TEnvironment;
   height: number;
   /** Called once per new view; a new function rebuilds the view */
-  onNewView: (view: View) => void;
+  onNewView: (view: TView) => void;
   /** Values that override the spec's signal initial values */
   signals?: Record<string, unknown>;
-  spec: Spec;
+  spec: TSpec;
   /** Rows for the table dataset */
   table: unknown[] | undefined;
   width: number;
@@ -38,26 +38,30 @@ export interface ViewHostInputs {
 /** How an update was applied to the chart. */
 export type UpdateRoute = 'none' | 'deferred' | 'rebuild' | 'incremental' | 'noop';
 
-export interface ViewHost {
+export interface ViewHost<TSpec = Spec, TView = View, TEnvironment = VegaEnvironment> {
   /** Routes new inputs to a rebuild, signal and data updates, a resize, or nothing; equal inputs are a no-op */
-  update: (inputs: ViewHostInputs) => UpdateRoute;
+  update: (inputs: ViewHostInputs<TSpec, TView, TEnvironment>) => UpdateRoute;
   /** Finalizes the view and detaches it from the animation ticker */
   destroy: () => void;
 }
 
 /** Adapter for the views the host creates. */
-export type ViewHostAdapter = ViewAdapter<Spec, View, VegaEnvironment>;
+export type ViewHostAdapter<TSpec = Spec, TView = View, TEnvironment = VegaEnvironment> = ViewAdapter<
+  TSpec,
+  TView,
+  TEnvironment
+>;
 
 type PendingDrawIn = { holdUntil: number; faded: boolean };
 
 /** A view that has been embedded or is being embedded, and the inputs it currently reflects. */
-interface ActiveView {
-  view?: View;
+interface ActiveView<TSpec, TView, TEnvironment> {
+  view?: TView;
   cancelled: boolean;
   failed: boolean;
-  inputs: ViewHostInputs;
+  inputs: ViewHostInputs<TSpec, TView, TEnvironment>;
   /** Spec as embedded, for carrying draw-in to the next view */
-  spec: Spec;
+  spec: TSpec;
   embeddedAt: number;
   pending?: PendingDrawIn;
   detachTicker?: () => void;
@@ -106,9 +110,9 @@ const fadeInFirstPaint = (container: HTMLElement, pending: PendingDrawIn | undef
  * @param active - the view being retired
  * @returns start time, or undefined to draw in fresh
  */
-const getCarriedDrawInStart = (
-  animation: ViewAnimation<Spec, View> | undefined,
-  { view, spec, pending, embeddedAt }: ActiveView
+const getCarriedDrawInStart = <TSpec, TView, TEnvironment>(
+  animation: ViewAnimation<TSpec, TView> | undefined,
+  { view, spec, pending, embeddedAt }: ActiveView<TSpec, TView, TEnvironment>
 ): number | undefined => {
   if (!animation) {
     return undefined;
@@ -128,14 +132,14 @@ const getCarriedDrawInStart = (
  * @param split - next spec, split
  * @returns boolean
  */
-const needsRebuild = (
-  adapter: ViewHostAdapter,
-  active: ActiveView,
-  inputs: ViewHostInputs,
+const needsRebuild = <TSpec, TView, TEnvironment>(
+  adapter: ViewHostAdapter<TSpec, TView, TEnvironment>,
+  active: ActiveView<TSpec, TView, TEnvironment>,
+  inputs: ViewHostInputs<TSpec, TView, TEnvironment>,
   split: SplitSpec
 ): boolean =>
   active.failed ||
-  active.program !== split.program ||
+  (active.program !== split.program && !adapter.updateProgram) ||
   !adapter.isSameEnvironment(active.inputs.environment, inputs.environment) ||
   active.inputs.onNewView !== inputs.onNewView ||
   // an empty chart has nothing drawn, so data arriving or leaving restarts draw-in in a new view
@@ -147,10 +151,19 @@ const needsRebuild = (
  * @param adapter - creates and updates the views
  * @returns ViewHost
  */
-export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter = vegaViewAdapter): ViewHost => {
+export const createViewHost = <TSpec = Spec, TView = View, TEnvironment = VegaEnvironment>(
+  container: HTMLElement,
+  adapter: ViewHostAdapter<TSpec, TView, TEnvironment> = vegaViewAdapter as unknown as ViewHostAdapter<
+    TSpec,
+    TView,
+    TEnvironment
+  >
+): ViewHost<TSpec, TView, TEnvironment> => {
+  type Inputs = ViewHostInputs<TSpec, TView, TEnvironment>;
+  type Active = ActiveView<TSpec, TView, TEnvironment>;
   const { animation } = adapter;
-  let active: ActiveView | undefined;
-  let latest: ViewHostInputs | undefined;
+  let active: Active | undefined;
+  let latest: Inputs | undefined;
   let destroyed = false;
   // carried across rebuilds so draw-in plays once per host
   let drawInStart: number | undefined;
@@ -175,7 +188,7 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
     }
   };
 
-  const build = (inputs: ViewHostInputs, spec: Spec, split: SplitSpec): void => {
+  const build = (inputs: Inputs, spec: TSpec, split: SplitSpec): void => {
     retire();
     const { environment, height, width } = inputs;
     const embeddedAt = Date.now();
@@ -195,7 +208,7 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
       container.style.opacity = '0';
     }
 
-    const next: ActiveView = {
+    const next: Active = {
       cancelled: false,
       failed: false,
       inputs,
@@ -239,25 +252,48 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
       });
   };
 
-  const applyIncremental = (current: ActiveView, view: View, inputs: ViewHostInputs, split: SplitSpec): UpdateRoute => {
+  const applyIncremental = (
+    current: Active,
+    view: TView,
+    inputs: Inputs,
+    spec: TSpec,
+    split: SplitSpec
+  ): UpdateRoute => {
     const signals = getChangedSignals(current.signalValues, split.signalValues);
     const tableJson = split.table === current.table ? current.tableJson : JSON.stringify(split.table);
     const tableChanged = tableJson !== current.tableJson;
     const resized = inputs.width !== current.inputs.width || inputs.height !== current.inputs.height;
+    const changes = {
+      signals,
+      table: tableChanged ? split.table ?? [] : undefined,
+      size: resized ? { width: inputs.width, height: inputs.height } : undefined,
+    };
+
+    if (current.program !== split.program) {
+      if (!adapter.updateProgram?.(view, spec, changes)) {
+        build(inputs, spec, split);
+        return 'rebuild';
+      }
+      Object.assign(current, {
+        inputs,
+        spec,
+        program: split.program,
+        signalValues: split.signalValues,
+        table: split.table,
+        tableJson,
+      });
+      return 'incremental';
+    }
     Object.assign(current, { inputs, signalValues: split.signalValues, table: split.table, tableJson });
 
     if (!signals.length && !tableChanged && !resized) {
       return 'noop';
     }
-    adapter.updateView(view, {
-      signals,
-      table: tableChanged ? split.table ?? [] : undefined,
-      size: resized ? { width: inputs.width, height: inputs.height } : undefined,
-    });
+    adapter.updateView(view, changes);
     return 'incremental';
   };
 
-  const update = (inputs: ViewHostInputs): UpdateRoute => {
+  const update = (inputs: Inputs): UpdateRoute => {
     latest = inputs;
     if (destroyed || !inputs.width || !inputs.height) {
       return 'none';
@@ -275,7 +311,7 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
     if (!active.view) {
       return 'deferred';
     }
-    return applyIncremental(active, active.view, inputs, split);
+    return applyIncremental(active, active.view, inputs, spec, split);
   };
 
   const destroy = (): void => {

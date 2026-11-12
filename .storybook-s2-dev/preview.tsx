@@ -12,6 +12,21 @@
 import type { Decorator, Preview } from '@storybook/react';
 
 import basePreview from '../.storybook-s2/preview.tsx';
+import { ChartEngineContext } from '../packages/react-spectrum-charts-s2/src/context/ChartEngineContext.ts';
+
+const LINE_TITLE_PREFIX = 'React Spectrum Charts 2/Line/';
+
+/** Renders Line stories with the engine picked in the toolbar; charts with an explicit `engine` prop keep it. */
+const engineDecorator: Decorator = (Story, context) => {
+  if (!context.title.startsWith(LINE_TITLE_PREFIX)) {
+    return <Story />;
+  }
+  return (
+    <ChartEngineContext.Provider value={context.globals.engine === 'd3' ? 'd3' : 'vega'}>
+      <Story />
+    </ChartEngineContext.Provider>
+  );
+};
 
 const accessibleNavigationDecorator: Decorator = (Story, context) => {
   if (context.globals.accessibleNavigationControls !== 'on') {
@@ -61,9 +76,22 @@ const regressionDecorator: Decorator = (Story, context) => {
 
 const preview: Preview = {
   ...basePreview,
-  decorators: [...(basePreview.decorators ?? []), accessibleNavigationDecorator, regressionDecorator],
+  decorators: [...(basePreview.decorators ?? []), accessibleNavigationDecorator, regressionDecorator, engineDecorator],
   globalTypes: {
     ...(basePreview.globalTypes ?? {}),
+    engine: {
+      description: 'Rendering engine for Line stories.',
+      defaultValue: 'vega',
+      toolbar: {
+        title: 'Engine',
+        icon: 'transfer',
+        items: [
+          { value: 'vega', title: 'Vega' },
+          { value: 'd3', title: 'D3' },
+        ],
+        dynamicTitle: true,
+      },
+    },
     accessibleNavigationControls: {
       description: 'Adds reusable before/after focus targets for accessible-navigation testing.',
       defaultValue: 'off',

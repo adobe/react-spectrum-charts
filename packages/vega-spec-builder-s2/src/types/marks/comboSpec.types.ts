@@ -9,17 +9,5 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { BarOptions } from './barSpec.types.js';
-import { LineOptions } from './lineSpec.types.js';
 
-export interface ComboOptions {
-  markType: 'combo';
-
-  /** Data field for the x-axis, used by child marks that don't set their own `dimension`. Defaults to `datetime`. */
-  dimension?: string;
-  /** Prefix for child mark names, like `combo0Bar0`. Defaults to `combo0`. */
-  name?: string;
-
-  // children
-  marks?: (BarOptions | LineOptions)[];
-}
+export type { ComboOptions } from '@spectrum-charts/core-s2/options';
