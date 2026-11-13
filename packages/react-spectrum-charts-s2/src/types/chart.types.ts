@@ -122,6 +122,8 @@ export interface ChartProps extends SharedChartProps {
   dataTestId?: string;
   /** Text to display when the data set is empty and loading is complete. Defaults to `No data found`, translated to the chart's `locale`. */
   emptyStateText?: string;
+  /** Draws with `vega` or the experimental `native` chart engine, which supports a single `Line` or `Donut`. Defaults to `vega`. @alpha */
+  engine?: 'vega' | 'native';
   /** Shows a loading spinner in place of the chart. Defaults to `false`. */
   loading?: boolean;
   /** Maximum chart width in pixels when `width` is `auto` or a percentage. */
