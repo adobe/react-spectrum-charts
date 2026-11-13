@@ -79,7 +79,12 @@ import {
   getFirstRscSeriesIdSignal,
   getLastRscSeriesIdSignal,
 } from '../signal/signalSpecBuilder.js';
-import { addUserMetaAnimatedMark, addUserMetaInteractiveMark, getFacetsFromOptions } from '../specUtils.js';
+import {
+  addUserMetaAnimatedMark,
+  addUserMetaInteractiveMark,
+  getFacetsFromOptions,
+  getUniqueSeriesIds,
+} from '../specUtils.js';
 import { addTrendlineData, getTrendlineMarks, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
 import {
   AxisOptions,
@@ -300,11 +305,6 @@ const isLineDrawInSupported = (
  * @param facets - the facets for the line
  * @returns string[] - list of the unique series ids for the line
  */
-const getUniqueSeriesIds = (data: ChartData[] | undefined, facets: string[]): string[] => {
-  if (!data?.length || !facets.length) return [];
-  return [...new Set(data.map((row) => facets.map((f) => (row as Record<string, unknown>)[f]).join(' | ')))];
-};
-
 export const addData = produce<Data[], [LineSpecOptions]>((data, options) => {
   const { chartInspects, dimension, dimensionHover, isSparkline, isMethodLast, name, scaleType, staticPoint } = options;
   const tableData = getTableData(data);

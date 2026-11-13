@@ -192,7 +192,7 @@ export function buildSpec({
         return addLine(acc, { ...mark, ...specOptions, axes, index: lineCount, data });
       case 'scatter':
         scatterCount++;
-        return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
+        return addScatter(acc, { ...mark, ...specOptions, index: scatterCount, data });
       case 'venn':
         vennCount++;
         return addVenn(acc, { ...mark, ...specOptions, index: vennCount, data, chartWidth, chartHeight });

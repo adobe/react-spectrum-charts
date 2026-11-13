@@ -75,7 +75,7 @@ describe('getRegressionTransform()', () => {
   });
   test('should use ${dimension}Normalized as ouput dimension if scaleType is time', () => {
     const transform = getRegressionTransform(
-      { ...defaultLineOptions, dimension: 'x', scaleType: 'time' },
+      { ...defaultLineOptions, dimension: 'x', scaleType: 'time' as const },
       {
         ...defaultTrendlineOptions,
         dimensionScaleType: 'time',

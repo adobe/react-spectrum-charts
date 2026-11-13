@@ -10,7 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import { Scatter } from '../../lab/components/Scatter/index.js';
-import { findAllMarksByGroupName, findChart, render } from '../../test-utils/index.js';
+import {
+  clickNthElement,
+  findAllMarksByGroupName,
+  findChart,
+  render,
+  rightClickNthElement,
+} from '../../test-utils/index.js';
 import { Basic } from './Features/ScatterFeatures.story.js';
 
 describe('Scatter', () => {
@@ -27,5 +33,26 @@ describe('Scatter', () => {
     // characterData has 16 character groups
     const points = await findAllMarksByGroupName(chart, 'scatter0');
     expect(points.length).toEqual(16);
+  });
+
+  test('calls onClick with the clicked point', async () => {
+    const onClick = jest.fn();
+    render(<Basic {...Basic.args} onClick={onClick} />);
+    const chart = await findChart();
+    const cells = await findAllMarksByGroupName(chart, 'scatter0_voronoi', 'path');
+    await clickNthElement(cells, 0);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining({ weightClass: expect.any(String) }));
+  });
+
+  test('calls onContextMenu with the event and the right-clicked point', async () => {
+    const onContextMenu = jest.fn();
+    render(<Basic {...Basic.args} onContextMenu={onContextMenu} />);
+    const chart = await findChart();
+    const cells = await findAllMarksByGroupName(chart, 'scatter0_voronoi', 'path');
+    await rightClickNthElement(cells, 0);
+    expect(onContextMenu).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ weightClass: expect.any(String) })
+    );
   });
 });

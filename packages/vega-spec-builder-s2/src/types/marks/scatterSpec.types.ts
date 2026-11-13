@@ -27,6 +27,8 @@ import { ScatterAnnotationOptions } from './supplemental/index.js';
 import { ScatterPathOptions } from './supplemental/scatterPathSpec.types.js';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
+export type ScatterOutline = 'auto' | 'always' | 'never';
+
 export interface ScatterOptions {
   markType: 'scatter';
 
@@ -42,6 +44,10 @@ export interface ScatterOptions {
   colorScaleType?: 'linear' | 'ordinal';
   /** Data key for the x position. Defaults to `x`. */
   dimension?: string;
+  /** `true` if ScatterProps has an onClick callback. Ensures interactive marks are generated even without inspect. */
+  hasOnClick?: boolean;
+  /** `true` if ScatterProps has an onContextMenu callback. Ensures interactive marks are generated even without inspect. */
+  hasOnContextMenu?: boolean;
   /** Scale type for the x position; use `time` for timestamps. Defaults to `linear`. */
   dimensionScaleType?: ScaleType;
   /** Outline dash pattern: a data key mapped to the chart's `lineTypes`, or a static line type. Defaults to `{ value: 'solid' }`. */
@@ -50,6 +56,11 @@ export interface ScatterOptions {
   lineWidth?: LineWidthFacet;
   /** Point opacity: a data key mapped to the chart's `opacities`, or a static value. Defaults to `{ value: 1 }`. */
   opacity?: OpacityFacet;
+  /**
+   * Thin border around points: `auto` only where a point's fill has under 3:1 contrast with the background, `always`, or `never`.
+   * `stroke` and `lineWidth` take precedence. Defaults to `auto`.
+   */
+  outline?: ScatterOutline;
   /** Point width: a numeric data key scaled between the chart's `symbolSizes`, or a static size. Defaults to `{ value: 'M' }`. */
   size?: SymbolSizeFacet;
 
@@ -77,6 +88,7 @@ type ScatterOptionsWithDefaults =
   | 'metric'
   | 'name'
   | 'opacity'
+  | 'outline'
   | 'size'
   | 'scatterAnnotations'
   | 'scatterPaths'
@@ -85,7 +97,13 @@ type ScatterOptionsWithDefaults =
 export interface ScatterSpecOptions extends PartiallyRequired<ScatterOptions, ScatterOptionsWithDefaults> {
   colorScheme: ColorScheme;
   highlightedItem?: HighlightedItem;
+  highlightedSeries?: string | number;
   idKey: string;
   index: number;
   interactiveMarkName: string | undefined;
+  isDrawInAnimate?: boolean;
+  isHoverAnimate?: boolean;
+  legendHighlightSignals?: string[];
+  /** Unique series IDs in the data; the series hover animation keeps one row per series. */
+  seriesIds?: string[];
 }

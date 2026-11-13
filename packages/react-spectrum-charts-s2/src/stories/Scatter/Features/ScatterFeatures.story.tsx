@@ -154,6 +154,11 @@ const Stroke = bindWithProps(ScatterStory);
 Stroke.args = { ...defaultArgs, stroke: { value: 'gray-900' }, lineWidth: { value: 'S' } };
 Object.assign(Stroke, { parameters: { controls: { include: ['stroke'] } } });
 
+// pale points show the auto outline; switch to always or never to compare
+const Outline = bindWithProps(ScatterStory);
+Outline.args = { ...defaultArgs, color: { value: 'yellow-400' }, size: { value: 'L' }, outline: 'auto' };
+Object.assign(Outline, { parameters: { controls: { include: ['outline'] } } });
+
 const ChartInspectStory = bindWithProps(ScatterStory);
 ChartInspectStory.args = { ...defaultArgs, children: <ChartInspect>{characterDialogContent}</ChartInspect> };
 Object.assign(ChartInspectStory, { parameters: { controls: { include: [] } } });
@@ -176,6 +181,7 @@ export {
   Opacity,
   Size,
   Stroke,
+  Outline,
   ChartInspectStory as ChartInspect,
   ChartPopoverStory as ChartPopover,
 };

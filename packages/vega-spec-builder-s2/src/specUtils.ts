@@ -31,6 +31,7 @@ import {
 import { getS2ColorValue, getSpectrum2VegaConfig } from '@spectrum-charts/core-s2/tokens';
 
 import {
+  ChartData,
   ChartSpecOptions,
   ChartSymbolShape,
   ColorFacet,
@@ -79,6 +80,17 @@ export const getFacetsFromOptions = ({
   secondaryFacets = [...new Set(secondaryFacets)];
 
   return { facets, secondaryFacets };
+};
+
+/**
+ * Gets the unique series IDs in the data, joined the same way as the SERIES_ID transform.
+ * @param data
+ * @param facets - the fields that split the data into series
+ * @returns string[]
+ */
+export const getUniqueSeriesIds = (data: ChartData[] | undefined, facets: string[]): string[] => {
+  if (!data?.length || !facets.length) return [];
+  return [...new Set(data.map((row) => facets.map((f) => (row as Record<string, unknown>)[f]).join(' | ')))];
 };
 
 /**

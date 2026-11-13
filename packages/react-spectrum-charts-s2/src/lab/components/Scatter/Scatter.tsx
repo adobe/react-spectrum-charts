@@ -13,7 +13,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { DEFAULT_COLOR, DEFAULT_LINEAR_DIMENSION, DEFAULT_METRIC, DEFAULT_SYMBOL_SIZE } from '@spectrum-charts/core-s2/constants';
+import {
+  DEFAULT_COLOR,
+  DEFAULT_LINEAR_DIMENSION,
+  DEFAULT_METRIC,
+  DEFAULT_SYMBOL_SIZE,
+} from '@spectrum-charts/core-s2/constants';
 
 import { ScatterProps } from '../../../types/index.js';
 
@@ -32,7 +37,10 @@ const Scatter: FC<ScatterProps> = ({
   lineWidth = { value: 0 },
   metric = DEFAULT_METRIC,
   name,
+  onClick,
+  onContextMenu,
   opacity = { value: 1 },
+  outline = 'auto',
   size = { value: DEFAULT_SYMBOL_SIZE },
   stroke,
 }) => {
