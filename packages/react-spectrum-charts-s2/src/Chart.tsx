@@ -19,6 +19,7 @@ import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { RscChart } from './RscChart.js';
+import { EngineChart, EngineExporter } from './engine/EngineChart.js';
 import { applyChartPropsDefaults, resolveAnimationTypes } from './chartUtils.js';
 import { LoadingState } from './components/LoadingState/index.js';
 import { EmptyState } from './components/index.js';
@@ -55,6 +56,7 @@ export const Chart = ({
     data,
     dataTestId,
     emptyStateText,
+    engine = 'vega',
     height,
     loading,
     maxHeight,
@@ -72,6 +74,7 @@ export const Chart = ({
   const chartId = `rsc-${useId().replace(/:/g, '')}`;
   // The view returned by vega. This is above RscChart so it can be used for downloading and copying to clipboard.
   const chartView = useRef<View | undefined>(undefined);
+  const engineChart = useRef<EngineExporter | undefined>(undefined);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -81,7 +84,7 @@ export const Chart = ({
     [otherProps.animationTypes, prefersReducedMotion]
   );
 
-  useChartImperativeHandle(ref, { chartView, title });
+  useChartImperativeHandle(ref, { chartView, engineChart, title });
 
   const containerRef = useResizeObserver<HTMLDivElement>((_target, entry) => {
     if (typeof width !== 'number') {
@@ -129,7 +132,15 @@ export const Chart = ({
     animationTypes,
   };
 
-  const chartContent = <RscChart {...rscChartProps}>{props.children}</RscChart>;
+  const vegaChart = <RscChart {...rscChartProps}>{props.children}</RscChart>;
+  const chartContent =
+    engine === 'native' && !UNSAFE_vegaSpec ? (
+      <EngineChart chartProps={rscChartProps} engineRef={engineChart} fallback={vegaChart}>
+        {props.children}
+      </EngineChart>
+    ) : (
+      vegaChart
+    );
 
   return (
     <Provider

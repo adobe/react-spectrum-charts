@@ -30,6 +30,7 @@ const config: StorybookConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@spectrum-charts/core-s2': fileURLToPath(new URL('../packages/core-s2/src', import.meta.url)),
+      '@spectrum-charts/chart-engine$': fileURLToPath(new URL('../packages/chart-engine/src/index.ts', import.meta.url)),
     };
     return config;
   },

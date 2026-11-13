@@ -15,10 +15,37 @@ import { View } from 'vega';
 
 import { ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 
+import type { EngineExporter } from '../engine/EngineChart.js';
+
 interface ChartImperativeHandleProps {
   chartView: RefObject<View | undefined>;
+  engineChart?: RefObject<EngineExporter | undefined>;
   title?: string;
 }
+
+interface ImageSource {
+  toPngUrl: () => Promise<string>;
+  toSvg: () => Promise<string>;
+}
+
+/**
+ * Gets the image source for whichever renderer drew the chart.
+ * @param props
+ * @returns ImageSource | undefined
+ */
+const getImageSource = ({ chartView, engineChart }: ChartImperativeHandleProps): ImageSource | undefined => {
+  const engine = engineChart?.current;
+  if (engine) {
+    return {
+      toPngUrl: async () => URL.createObjectURL(await engine.toPNG()),
+      toSvg: () => Promise.resolve(engine.toSVG()),
+    };
+  }
+  const view = chartView.current;
+  if (view) {
+    return { toPngUrl: () => view.toImageURL('png'), toSvg: () => view.toSVG() };
+  }
+};
 
 export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle> | undefined, props: ChartImperativeHandleProps) {
   return useImperativeHandle(forwardedRef, () => ({
@@ -34,10 +61,11 @@ export default function useChartImperativeHandle(forwardedRef: Ref<ChartHandle> 
  * @param props
  * @returns Promise<string>
  */
-const copy = ({ chartView }: ChartImperativeHandleProps) =>
+const copy = (props: ChartImperativeHandleProps) =>
   new Promise<string>((resolve, reject) => {
-    if (chartView.current) {
-      chartView.current.toImageURL('png').then(
+    const source = getImageSource(props);
+    if (source) {
+      source.toPngUrl().then(
         async (url) => {
           try {
             const response = await fetch(url);
@@ -63,11 +91,12 @@ const copy = ({ chartView }: ChartImperativeHandleProps) =>
  * @param customFileName
  * @returns Promise<string>
  */
-const download = ({ chartView, title }: ChartImperativeHandleProps, customFileName?: string) =>
+const download = (props: ChartImperativeHandleProps, customFileName?: string) =>
   new Promise<string>((resolve, reject) => {
-    if (chartView.current) {
-      const filename = `${customFileName ?? title ?? 'chart_export'}.png`;
-      chartView.current.toImageURL('png').then(
+    const source = getImageSource(props);
+    if (source) {
+      const filename = `${customFileName ?? props.title ?? 'chart_export'}.png`;
+      source.toPngUrl().then(
         (url) => {
           const link = document.createElement('a');
           link.setAttribute('href', url);
@@ -89,10 +118,11 @@ const download = ({ chartView, title }: ChartImperativeHandleProps, customFileNa
  * @param customFileName
  * @returns Promise<string>
  */
-const getBase64Png = ({ chartView }: ChartImperativeHandleProps) =>
+const getBase64Png = (props: ChartImperativeHandleProps) =>
   new Promise<string>((resolve, reject) => {
-    if (chartView.current) {
-      chartView.current.toImageURL('png').then(
+    const source = getImageSource(props);
+    if (source) {
+      source.toPngUrl().then(
         async (url) => {
           try {
             const response = await fetch(url);
@@ -127,10 +157,11 @@ const blobToBase64 = (blob): Promise<string | ArrayBuffer | null> => {
  * @param props
  * @returns Promise<string>
  */
-const getSvg = ({ chartView }: ChartImperativeHandleProps) =>
+const getSvg = (props: ChartImperativeHandleProps) =>
   new Promise<string>((resolve, reject) => {
-    if (chartView.current) {
-      chartView.current.toSVG().then(
+    const source = getImageSource(props);
+    if (source) {
+      source.toSvg().then(
         (value) => resolve(value),
         () => reject(new Error('Error occurred while converting chart to SVG'))
       );
