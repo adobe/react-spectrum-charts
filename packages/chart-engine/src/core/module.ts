@@ -1,6 +1,5 @@
 import type { SceneNode } from '../render/scene.js';
 import type { Formatters } from '../util/format.js';
-import type { CartesianFrame, CartesianSpec } from './cartesian/layout.js';
 import type { SizeTokens, Theme } from './theme.js';
 import type { BaseChartOptions, HoverContext, LegendOptions, LineStyle } from './types.js';
 
@@ -65,8 +64,6 @@ export interface LayoutInput<O, M, S> {
   env: Env;
   width: number;
   height: number;
-  /** Present when the module declares axes. */
-  frame: CartesianFrame | null;
   hidden: Set<string>;
   /** Previous geometry snapshot and progress while an update animates. */
   tween: { from: S; t: number } | null;
@@ -119,42 +116,38 @@ export interface AxisHover {
   label: string;
 }
 
-/**
- * Everything that differs between chart types. The shell (`Chart`) owns layout of the title, legend
- * and axes, interaction state, tooltips, popovers, keyboard access, animation, export and rendering.
- * All coordinates are relative to the plot area.
- *
- * O options · M model · G geometry · K mark reference · I public item · S animation snapshot
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface ChartModule<O extends BaseChartOptions<I, any>, M, G, K, I, S> {
-  /** Human name, e.g. "Line chart". */
-  readonly name: string;
-  /** Options whose change animates the data. */
-  readonly dataKeys: readonly (keyof O)[];
-
+/** Turns options into a model and the text the shell shows around the chart. */
+export interface ModelHooks<O, M> {
   prepare(options: O, env: Env): M;
   legend(model: M, options: O, env: Env): LegendSpec;
-  /** Message shown above the chart (missing data). */
-  notice(model: M, options: O): string;
+  /** Message shown above the chart (missing data). Default: none. */
+  notice?(model: M, options: O): string;
   description(model: M, options: O): string;
-  /** Declare the cartesian axes this chart needs; omit for charts without axes. */
-  axes?(model: M, options: O, env: Env, hidden: Set<string>): CartesianSpec;
+  /** Compact presentation without title, legend or notice. Default: false. */
+  minimal?(options: O): boolean;
+}
 
+/** Places marks in the plot area. */
+export interface GeometryHooks<O, M, G, S> {
   layout(input: LayoutInput<O, M, S>): G;
+  /** Captures what the next update animates from. */
   snapshot(geometry: G): S;
+}
 
-  /** Shapes and direct labels (the `marks` layer). */
+/** Scene content for each layer, in plot coordinates. */
+export interface DrawHooks<O, G, K> {
+  /** Drawn under the marks, e.g. axes and grid lines. */
+  back?(geometry: G, options: O, env: Env): SceneNode[];
+  /** Shapes and direct labels. */
   marks(geometry: G, state: DrawState<K>, env: Env, options: O): SceneNode[];
-  /** Hover, selection and focus visuals (the `overlay` layer). */
+  /** Drawn over the marks and redrawn only with data, e.g. reference lines. */
+  front?(geometry: G, options: O, env: Env): SceneNode[];
+  /** Hover, selection and focus visuals, redrawn every frame. */
   overlay(geometry: G, state: DrawState<K>, env: Env, options: O): SceneNode[];
-  /** x-axis hover label, for charts with axes. */
-  axisHover?(geometry: G, hover: Hover<K>): AxisHover | null;
+}
 
-  hoverMode(options: O): 'point' | 'x' | 'none';
-  hit(geometry: G, x: number, y: number, mode: 'point' | 'x'): Hover<K> | null;
-  hoverFor(geometry: G, mark: K, mode: 'point' | 'x'): Hover<K>;
-
+/** Maps between marks, public items and legend keys. */
+export interface IdentityHooks<G, K, I> {
   /** Stable identity of a mark. */
   key(mark: K): string;
   /** Legend key the mark belongs to. */
@@ -165,12 +158,39 @@ export interface ChartModule<O extends BaseChartOptions<I, any>, M, G, K, I, S> 
   anchor(geometry: G, mark: K): { x: number; y: number };
   /** Accessible description of one mark (popover label). */
   describe(geometry: G, mark: K): string;
-  nav(geometry: G, options: O): NavTree<K>;
+}
 
+/** Hit testing, hover content and selection rules. */
+export interface InteractionHooks<O, G, K, I> {
+  /** Default: 'point'. */
+  hoverMode?(options: O): 'point' | 'x' | 'none';
+  hit(geometry: G, x: number, y: number, mode: 'point' | 'x'): Hover<K> | null;
+  hoverFor(geometry: G, mark: K, mode: 'point' | 'x'): Hover<K>;
   context(geometry: G, hover: Hover<K>): HoverContext<I>;
   tooltip(context: HoverContext<I>): TooltipModel;
   /** Legend entries that stay emphasized while marks are hovered or selected; the rest fade. Default: none fade. */
   legendEmphasis?(hover: Hover<K> | null, selected: K[]): string[] | null;
-  /** Shift-click adds to the selection. */
+  /** Shift-click adds to the selection. Default: false. */
   multiSelect?(options: O): boolean;
+}
+
+/**
+ * Everything that differs between chart types. The shell (`Chart`) owns layout of the title and legend,
+ * interaction state, tooltips, popovers, keyboard access, animation, export and rendering.
+ * All coordinates are relative to the plot area.
+ *
+ * O options · M model · G geometry · K mark reference · I public item · S animation snapshot
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface ChartModule<O extends BaseChartOptions<I, any>, M, G, K, I, S> {
+  /** Human name, e.g. "Line chart". */
+  readonly name: string;
+  /** Options whose change animates the data. */
+  readonly dataKeys: readonly (keyof O)[];
+  model: ModelHooks<O, M>;
+  geometry: GeometryHooks<O, M, G, S>;
+  draw: DrawHooks<O, G, K>;
+  identity: IdentityHooks<G, K, I>;
+  interaction: InteractionHooks<O, G, K, I>;
+  nav(geometry: G, options: O): NavTree<K>;
 }

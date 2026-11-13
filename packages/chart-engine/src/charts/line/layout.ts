@@ -1,5 +1,5 @@
-import type { CartesianFrame, CartesianSpec, PanelFrame } from '../../core/cartesian/layout.js';
-import { axisSides } from '../../core/cartesian/layout.js';
+import type { CartesianFrame, CartesianSpec, DomainTween, PanelFrame } from '../../core/cartesian/layout.js';
+import { axisSides, layoutCartesian } from '../../core/cartesian/layout.js';
 import type { Env, LayoutInput } from '../../core/module.js';
 import { font } from '../../core/theme.js';
 import { measureText } from '../../util/text.js';
@@ -40,6 +40,7 @@ export interface LineGeometry {
 /** Previous displayed values: series id → x → value. */
 export interface LineSnapshot {
   values: Map<string, Map<number, number>>;
+  domains: Omit<DomainTween, 't'>;
 }
 
 export interface ResolvedDirect {
@@ -134,7 +135,8 @@ export function colorsFor(model: Model, o: LineChartOptions, env: Env): Pick<Lin
 
 export function layoutLine(input: LayoutInput<LineChartOptions, Model, LineSnapshot>): LineGeometry {
   const { model, options: o, env, hidden, tween } = input;
-  const frame = input.frame!;
+  const domains = tween ? { t: tween.t, ...tween.from.domains } : null;
+  const frame = layoutCartesian(lineAxes(model, o, env, hidden), o, env, input.width, input.height, domains);
   const colors = colorsFor(model, o, env);
   const visible = visibleSeries(model, hidden);
   const t = tween ? Math.max(0, Math.min(1, tween.t)) : 1;
@@ -172,5 +174,6 @@ export function snapshotLine(g: LineGeometry): LineSnapshot {
       values.set(sl.s.id, m);
     }
   }
-  return { values };
+  const { xDomain, yDomain, y2Domain } = g.frame;
+  return { values, domains: { xDomain, yDomain, y2Domain } };
 }

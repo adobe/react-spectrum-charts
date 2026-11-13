@@ -18,7 +18,7 @@ const base: DonutChartOptions = { data, category: 'c', value: 'v' };
 
 function layout(o: Partial<DonutChartOptions> = {}, hidden: string[] = [], tween: { from: ReturnType<typeof snapshotDonut>; t: number } | null = null) {
   const opts = { ...base, ...o };
-  return layoutDonut({ model: buildDonutModel(opts), options: opts, env, width: 400, height: 300, frame: null, hidden: new Set(hidden), tween });
+  return layoutDonut({ model: buildDonutModel(opts), options: opts, env, width: 400, height: 300, hidden: new Set(hidden), tween });
 }
 
 describe('donut layout', () => {
