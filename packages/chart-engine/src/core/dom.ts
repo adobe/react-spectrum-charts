@@ -2,6 +2,9 @@ import { CHROME } from './assumptions.js';
 import { Notice } from './overlay.js';
 import type { Theme } from './theme.js';
 
+/** Heading level of the chart's screen-reader title. */
+const HEADING_LEVEL = '3';
+
 /** The chart's DOM: an accessible figure with a hidden heading and description around the drawing stage. */
 export interface ChartDom {
   root: HTMLElement;
@@ -20,7 +23,7 @@ export function createChartDom(id: string): ChartDom {
   heading.className = 's2c-sr-only';
   heading.id = `${id}-title`;
   heading.setAttribute('role', 'heading');
-  heading.setAttribute('aria-level', '3');
+  heading.setAttribute('aria-level', HEADING_LEVEL);
   const desc = document.createElement('p');
   desc.className = 's2c-sr-only';
   desc.id = `${id}-desc`;
@@ -49,34 +52,45 @@ export interface ChromeInput {
 }
 
 /** Applies theme variables, sizing and accessible text. */
-export function applyChrome(dom: ChartDom, c: ChromeInput): void {
+export function applyChrome(dom: ChartDom, chrome: ChromeInput): void {
   const { root } = dom;
-  applyThemeVars(root, c.theme);
-  root.classList.toggle('s2c-minimal', c.minimal);
-  root.style.width = c.width != null ? `${c.width}px` : '';
-  if (c.height != null) root.style.height = `${c.height}px`;
-  else if (!c.containerHeight) root.style.height = `${c.minimal ? CHROME.minimalHeight : CHROME.defaultHeight}px`;
-  else root.style.height = '';
+  applyThemeVars(root, chrome.theme);
+  root.classList.toggle('s2c-minimal', chrome.minimal);
+  root.style.width = chrome.width != null ? `${chrome.width}px` : '';
+  root.style.height = rootHeight(chrome);
+  applyAccessibleName(dom, chrome);
+  dom.notice.update(chrome.minimal ? '' : chrome.notice);
+  dom.desc.textContent = chrome.description;
+}
 
-  dom.heading.textContent = c.title ?? '';
-  if (c.title) {
+/** The fixed height, a default when the container has none, or empty to fill the container. */
+function rootHeight(chrome: ChromeInput): string {
+  if (chrome.height != null) return `${chrome.height}px`;
+  if (chrome.containerHeight) return '';
+  const defaultHeight = chrome.minimal ? CHROME.minimalHeight : CHROME.defaultHeight;
+  return `${defaultHeight}px`;
+}
+
+/** Labels the figure by its title heading, or by the chart type's name when there is no title. */
+function applyAccessibleName(dom: ChartDom, chrome: ChromeInput): void {
+  const { root } = dom;
+  dom.heading.textContent = chrome.title ?? '';
+  if (chrome.title) {
     root.setAttribute('aria-labelledby', dom.heading.id);
     root.removeAttribute('aria-label');
   } else {
     root.removeAttribute('aria-labelledby');
-    root.setAttribute('aria-label', c.name);
+    root.setAttribute('aria-label', chrome.name);
   }
-  dom.notice.update(c.minimal ? '' : c.notice);
-  dom.desc.textContent = c.description;
 }
 
-function applyThemeVars(el: HTMLElement, t: Theme): void {
-  const s = el.style;
-  el.dataset.theme = t.name;
-  s.setProperty('--s2c-bg', t.background);
-  s.setProperty('--s2c-text', t.text);
-  s.setProperty('--s2c-text2', t.textSecondary);
-  s.setProperty('--s2c-border', t.surfaceBorder);
-  s.setProperty('--s2c-focus', t.focus);
-  s.setProperty('--s2c-surface', t.surface);
+function applyThemeVars(element: HTMLElement, theme: Theme): void {
+  const style = element.style;
+  element.dataset.theme = theme.name;
+  style.setProperty('--s2c-bg', theme.background);
+  style.setProperty('--s2c-text', theme.text);
+  style.setProperty('--s2c-text2', theme.textSecondary);
+  style.setProperty('--s2c-border', theme.surfaceBorder);
+  style.setProperty('--s2c-focus', theme.focus);
+  style.setProperty('--s2c-surface', theme.surface);
 }

@@ -1,6 +1,6 @@
 import type { Datum, ScaleType } from '../../core/types.js';
 import { accessor, inferXType, parseDate, toNumber } from '../../util/data.js';
-import type { LineChartOptions, LineStyle, PointShape, XValue } from './types.js';
+import type { LineChartOptions, LineStyle, PointShape, SeriesStyle, XValue } from './types.js';
 
 export interface Point {
   /** Numeric position: epoch ms for time, the value for linear, index for band. */
@@ -46,6 +46,64 @@ export interface Model {
 
 const DEFAULT_STYLES: LineStyle[] = ['solid', 'dashed', 'dotted'];
 const SHAPES: PointShape[] = ['circle', 'square', 'triangle', 'diamond'];
+/** Series name used when there is no series field and `y` is not a field name. */
+const DEFAULT_SERIES_KEY = 'value';
+
+type FieldGetter = (datum: Datum, index: number) => unknown;
+
+/** Distinct values of each encoding field, in first-appearance order. */
+interface KeyRegistry {
+  categories: string[];
+  categoryIndex: Map<string, number>;
+  seriesKeys: string[];
+  colorKeys: string[];
+  facets: string[];
+  styleKeys: string[];
+}
+
+function addUnique(list: string[], value: string): void {
+  if (!list.includes(value)) list.push(value);
+}
+
+/** Numeric x position and the parsed raw value, or null when the value can't be placed. */
+function resolveX(raw: unknown, xType: ScaleType, keys: KeyRegistry): { x: number; xRaw: XValue } | null {
+  if (xType === 'time') {
+    const date = parseDate(raw);
+    if (!date) return null;
+    return { x: +date, xRaw: date };
+  }
+  if (xType === 'linear') {
+    const value = toNumber(raw);
+    if (value == null) return null;
+    return { x: value, xRaw: value };
+  }
+  const category = raw instanceof Date ? raw.toISOString() : String(raw ?? '');
+  let index = keys.categoryIndex.get(category);
+  if (index === undefined) {
+    index = keys.categories.length;
+    keys.categories.push(category);
+    keys.categoryIndex.set(category, index);
+  }
+  return { x: index, xRaw: category };
+}
+
+function seriesKeyFor(opts: LineChartOptions, getSeries: FieldGetter | null, datum: Datum, index: number): string {
+  if (getSeries) return String(getSeries(datum, index) ?? '');
+  return typeof opts.y === 'string' ? opts.y : DEFAULT_SERIES_KEY;
+}
+
+/** Line style from the series style, the style field's mapping, or the default cycle. */
+function lineStyleFor(opts: LineChartOptions, custom: SeriesStyle | undefined, hasStyleField: boolean, styleValue: string, styleKeys: string[]): LineStyle {
+  if (custom?.lineStyle != null) return custom.lineStyle;
+  if (!hasStyleField) return 'solid';
+  const cycled = DEFAULT_STYLES[styleKeys.indexOf(styleValue) % DEFAULT_STYLES.length];
+  return opts.lineStyles?.[styleValue] ?? cycled;
+}
+
+function shapeFor(opts: LineChartOptions, custom: SeriesStyle | undefined, key: string, seriesKeys: string[]): PointShape {
+  if (custom?.shape != null) return custom.shape;
+  return opts.shapes ? SHAPES[seriesKeys.indexOf(key) % SHAPES.length] : 'circle';
+}
 
 export function buildModel(opts: LineChartOptions): Model {
   const data = opts.data ?? [];
@@ -54,93 +112,66 @@ export function buildModel(opts: LineChartOptions): Model {
   const getSeries = accessor(opts.series);
   const getColor = accessor(opts.color) ?? getSeries;
   const getStyle = accessor(opts.lineStyle);
-  const getEst = accessor(opts.estimated);
+  const getEstimated = accessor(opts.estimated);
   const getFacet = opts.layout === 'single' ? null : accessor(opts.facet);
 
-  const rawX = data.map((d, i) => getX(d, i));
+  const rawX = data.map((datum, i) => getX(datum, i));
   const xType = opts.xAxis?.type ?? inferXType(rawX);
 
-  const categories: string[] = [];
-  const catIndex = new Map<string, number>();
-  const seriesKeys: string[] = [];
-  const colorKeys: string[] = [];
-  const facets: string[] = [];
-  const styleKeys: string[] = [];
+  const keys: KeyRegistry = { categories: [], categoryIndex: new Map(), seriesKeys: [], colorKeys: [], facets: [], styleKeys: [] };
   const byId = new Map<string, SeriesModel>();
-  const y2 = new Set(opts.y2Axis?.series ?? []);
+  const y2Series = new Set(opts.y2Axis?.series ?? []);
 
-  data.forEach((d, i) => {
-    const xr = rawX[i];
-    let x: number;
-    let xRaw: XValue;
-    if (xType === 'time') {
-      const date = parseDate(xr);
-      if (!date) return;
-      x = +date;
-      xRaw = date;
-    } else if (xType === 'linear') {
-      const n = toNumber(xr);
-      if (n == null) return;
-      x = n;
-      xRaw = n;
-    } else {
-      const s = xr instanceof Date ? xr.toISOString() : String(xr ?? '');
-      let idx = catIndex.get(s);
-      if (idx === undefined) {
-        idx = categories.length;
-        categories.push(s);
-        catIndex.set(s, idx);
-      }
-      x = idx;
-      xRaw = s;
-    }
-    const key = getSeries ? String(getSeries(d, i) ?? '') : typeof opts.y === 'string' ? opts.y : 'value';
-    const colorKey = getColor ? String(getColor(d, i) ?? key) : key;
-    const facet = getFacet ? String(getFacet(d, i) ?? '') : '';
-    if (!seriesKeys.includes(key)) seriesKeys.push(key);
-    if (!colorKeys.includes(colorKey)) colorKeys.push(colorKey);
-    if (!facets.includes(facet)) facets.push(facet);
+  const createSeries = (id: string, key: string, colorKey: string, facet: string, datum: Datum, index: number): SeriesModel => {
+    const styleValue = getStyle ? String(getStyle(datum, index) ?? '') : '';
+    if (getStyle) addUnique(keys.styleKeys, styleValue);
+    const custom = opts.seriesStyles?.[key];
+    return {
+      id,
+      key,
+      colorKey,
+      styleKey: styleValue,
+      facet,
+      axis: y2Series.has(key) ? 'y2' : 'y',
+      lineStyle: lineStyleFor(opts, custom, !!getStyle, styleValue, keys.styleKeys),
+      shape: shapeFor(opts, custom, key, keys.seriesKeys),
+      area: custom?.area ?? opts.area ?? false,
+      points: [],
+      missing: false,
+    };
+  };
+
+  data.forEach((datum, i) => {
+    const position = resolveX(rawX[i], xType, keys);
+    if (!position) return;
+    const key = seriesKeyFor(opts, getSeries, datum, i);
+    const colorKey = getColor ? String(getColor(datum, i) ?? key) : key;
+    const facet = getFacet ? String(getFacet(datum, i) ?? '') : '';
+    addUnique(keys.seriesKeys, key);
+    addUnique(keys.colorKeys, colorKey);
+    addUnique(keys.facets, facet);
     const id = JSON.stringify([facet, key]);
-    let s = byId.get(id);
-    if (!s) {
-      const styleValue = getStyle ? String(getStyle(d, i) ?? '') : '';
-      if (getStyle && !styleKeys.includes(styleValue)) styleKeys.push(styleValue);
-      const custom = opts.seriesStyles?.[key];
-      const lineStyle: LineStyle =
-        custom?.lineStyle ??
-        (getStyle
-          ? (opts.lineStyles?.[styleValue] ?? DEFAULT_STYLES[styleKeys.indexOf(styleValue) % DEFAULT_STYLES.length])
-          : 'solid');
-      s = {
-        id,
-        key,
-        colorKey,
-        styleKey: styleValue,
-        facet,
-        axis: y2.has(key) ? 'y2' : 'y',
-        lineStyle,
-        shape: custom?.shape ?? (opts.shapes ? SHAPES[seriesKeys.indexOf(key) % SHAPES.length] : 'circle'),
-        area: custom?.area ?? opts.area ?? false,
-        points: [],
-        missing: false,
-      };
-      byId.set(id, s);
+    let series = byId.get(id);
+    if (!series) {
+      series = createSeries(id, key, colorKey, facet, datum, i);
+      byId.set(id, series);
     }
-    s.points.push({
-      x,
-      xRaw,
-      y: toNumber(getY(d, i)),
-      estimated: getEst ? Boolean(getEst(d, i)) : false,
-      datum: d,
+    series.points.push({
+      x: position.x,
+      xRaw: position.xRaw,
+      y: toNumber(getY(datum, i)),
+      estimated: getEstimated ? Boolean(getEstimated(datum, i)) : false,
+      datum,
       index: i,
     });
   });
 
   const series = Array.from(byId.values());
-  for (const s of series) {
-    s.points.sort((a, b) => a.x - b.x);
-    s.missing = s.points.every((p) => p.y == null);
+  for (const line of series) {
+    line.points.sort((a, b) => a.x - b.x);
+    line.missing = line.points.every((point) => point.y == null);
   }
-  const missing = seriesKeys.filter((k) => series.filter((s) => s.key === k).every((s) => s.missing));
+  const { categories, seriesKeys, colorKeys, facets, styleKeys } = keys;
+  const missing = seriesKeys.filter((key) => series.filter((line) => line.key === key).every((line) => line.missing));
   return { xType, series, seriesKeys, colorKeys, facets, styleKeys, categories, missing };
 }

@@ -5,6 +5,11 @@ import type { SizeTokens } from './theme.js';
 import { layoutTitle, type TitleLayout } from './title.js';
 import type { Padding } from './types.js';
 
+/** Default padding of minimal charts (sparklines), in px. */
+const MINIMAL_PADDING = 2;
+/** Left/right legends are never squeezed narrower than this, in px. */
+const MIN_SIDE_LEGEND_WIDTH = 40;
+
 export interface FrameInput {
   width: number;
   height: number;
@@ -22,58 +27,79 @@ export interface ChartFrame {
   plot: Rect;
 }
 
-export function resolvePadding(p: Padding | undefined, minimal: boolean): { top: number; right: number; bottom: number; left: number } {
-  const def = minimal ? 2 : CHROME.padding;
-  if (typeof p === 'number') return { top: p, right: p, bottom: p, left: p };
-  return { top: p?.top ?? def, right: p?.right ?? def, bottom: p?.bottom ?? def, left: p?.left ?? def };
+export function resolvePadding(
+  padding: Padding | undefined,
+  minimal: boolean,
+): { top: number; right: number; bottom: number; left: number } {
+  const fallback = minimal ? MINIMAL_PADDING : CHROME.padding;
+  if (typeof padding === 'number') return { top: padding, right: padding, bottom: padding, left: padding };
+  return {
+    top: padding?.top ?? fallback,
+    right: padding?.right ?? fallback,
+    bottom: padding?.bottom ?? fallback,
+    left: padding?.left ?? fallback,
+  };
 }
 
 /** Place the title, legend and plot area inside the scene. */
 export function layoutFrame(input: FrameInput): ChartFrame {
-  const pad = resolvePadding(input.padding, input.minimal);
-  let x = pad.left;
-  let y = pad.top;
-  let w = Math.max(0, input.width - pad.left - pad.right);
-  let h = Math.max(0, input.height - pad.top - pad.bottom);
-
-  let title: ChartFrame['title'] = null;
-  if (!input.minimal) {
-    const t = layoutTitle(input.title, input.subtitle, input.sizes, w);
-    if (t) {
-      title = { layout: t, x, y };
-      y += t.height + CHROME.titleGap;
-      h -= t.height + CHROME.titleGap;
-    }
-  }
-
-  let legend: LegendLayout | null = null;
+  const padding = resolvePadding(input.padding, input.minimal);
+  // The remaining space; shrinks as the title and legend take their share.
+  const plot: Rect = {
+    x: padding.left,
+    y: padding.top,
+    width: Math.max(0, input.width - padding.left - padding.right),
+    height: Math.max(0, input.height - padding.top - padding.bottom),
+  };
+  const title = input.minimal ? null : placeTitle(input, plot);
   const spec = input.legend;
-  if (spec?.show && spec.entries.length && !input.minimal) {
-    const pos = spec.position ?? 'top';
-    const vertical = (pos === 'left' || pos === 'right') && spec.kind !== 'bar';
-    const side = pos === 'left' || pos === 'right';
-    const maxW = side ? Math.max(40, w * CHROME.legendMaxShare) : w;
-    legend = layoutLegend(spec, input.sizes, maxW, vertical);
-    if (pos === 'top') {
-      legend.x = x;
-      legend.y = y;
-      y += legend.height + CHROME.legendGap;
-      h -= legend.height + CHROME.legendGap;
-    } else if (pos === 'bottom') {
-      legend.x = x;
-      legend.y = y + h - legend.height;
-      h -= legend.height + CHROME.legendGap;
-    } else if (pos === 'left') {
-      legend.x = x + (vertical ? CHROME.legendItemPadX : 0);
-      legend.y = y;
-      const used = legend.width + CHROME.legendSideGap + (vertical ? CHROME.legendItemPadX : 0);
-      x += used;
-      w -= used;
-    } else {
-      legend.x = x + w - legend.width - (vertical ? CHROME.legendItemPadX : 0);
-      legend.y = y;
-      w -= legend.width + CHROME.legendSideGap + (vertical ? CHROME.legendItemPadX : 0);
-    }
+  const showLegend = spec?.show && spec.entries.length && !input.minimal;
+  const legend = showLegend ? placeLegend(spec, input.sizes, plot) : null;
+  return {
+    title,
+    legend,
+    plot: { x: plot.x, y: plot.y, width: Math.max(0, plot.width), height: Math.max(0, plot.height) },
+  };
+}
+
+/** Lays out the title block at the top of `plot` and removes its height from `plot`. */
+function placeTitle(input: FrameInput, plot: Rect): ChartFrame['title'] {
+  const layout = layoutTitle(input.title, input.subtitle, input.sizes, plot.width);
+  if (!layout) return null;
+  const title = { layout, x: plot.x, y: plot.y };
+  plot.y += layout.height + CHROME.titleGap;
+  plot.height -= layout.height + CHROME.titleGap;
+  return title;
+}
+
+/** Lays out the legend on its side of `plot` and removes the space it uses from `plot`. */
+function placeLegend(spec: LegendSpec, sizes: SizeTokens, plot: Rect): LegendLayout {
+  const position = spec.position ?? 'top';
+  const onSide = position === 'left' || position === 'right';
+  const vertical = onSide && spec.kind !== 'bar';
+  const maxWidth = onSide ? Math.max(MIN_SIDE_LEGEND_WIDTH, plot.width * CHROME.legendMaxShare) : plot.width;
+  const legend = layoutLegend(spec, sizes, maxWidth, vertical);
+  // Vertical lists are inset so the hover background of each entry fits.
+  const verticalInset = vertical ? CHROME.legendItemPadX : 0;
+  if (position === 'top') {
+    legend.x = plot.x;
+    legend.y = plot.y;
+    plot.y += legend.height + CHROME.legendGap;
+    plot.height -= legend.height + CHROME.legendGap;
+  } else if (position === 'bottom') {
+    legend.x = plot.x;
+    legend.y = plot.y + plot.height - legend.height;
+    plot.height -= legend.height + CHROME.legendGap;
+  } else if (position === 'left') {
+    legend.x = plot.x + verticalInset;
+    legend.y = plot.y;
+    const used = legend.width + CHROME.legendSideGap + verticalInset;
+    plot.x += used;
+    plot.width -= used;
+  } else {
+    legend.x = plot.x + plot.width - legend.width - verticalInset;
+    legend.y = plot.y;
+    plot.width -= legend.width + CHROME.legendSideGap + verticalInset;
   }
-  return { title, legend, plot: { x, y, width: Math.max(0, w), height: Math.max(0, h) } };
+  return legend;
 }

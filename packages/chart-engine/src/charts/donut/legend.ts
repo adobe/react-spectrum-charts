@@ -1,30 +1,41 @@
 import type { Env, LegendEntry, LegendSpec } from '../../core/module.js';
 import { colorOfFor, formattersFor } from './layout.js';
 import { labelStyle } from './labels.js';
-import type { DonutModel } from './model.js';
+import type { DonutModel, Segment } from './model.js';
 import type { DonutChartOptions } from './types.js';
 
+function sumValues(segments: Segment[]): number {
+  return segments.reduce((sum, segment) => sum + segment.value, 0);
+}
+
+/** Legends show by default only for non-binary donuts with several categories and no direct labels. */
+function isLegendShown(model: DonutModel, options: DonutChartOptions, hidden: boolean | undefined, entryCount: number): boolean {
+  if (hidden || model.empty) return false;
+  if (options.legend === true || typeof options.legend === 'object') return true;
+  return options.legend === undefined && !model.binary && entryCount > 1 && !labelStyle(options);
+}
+
 /** One entry per category; single donuts append the share ("Phone – 65.2%"). */
-export function donutLegend(m: DonutModel, o: DonutChartOptions, env: Env): LegendSpec {
-  const lo = typeof o.legend === 'object' ? o.legend : {};
-  const colorOf = colorOfFor(m, o, env);
-  const { formatPercent } = formattersFor(o, env);
-  const single = m.pies.length === 1 ? m.pies[0] : null;
-  const total = single ? single.segments.reduce((a, s) => a + s.value, 0) : 0;
-  const values = lo.values ?? !!single;
-  const entries: LegendEntry[] = m.categories.map((c) => {
-    const v = single?.segments.filter((s) => s.category === c).reduce((a, s) => a + s.value, 0) ?? 0;
+export function donutLegend(model: DonutModel, options: DonutChartOptions, env: Env): LegendSpec {
+  const legendOptions = typeof options.legend === 'object' ? options.legend : {};
+  const colorOf = colorOfFor(model, options, env);
+  const { formatPercent } = formattersFor(options, env);
+  const singlePie = model.pies.length === 1 ? model.pies[0] : null;
+  const total = singlePie ? sumValues(singlePie.segments) : 0;
+  const showValues = legendOptions.values ?? !!singlePie;
+  const entries: LegendEntry[] = model.categories.map((category) => {
+    const categorySegments = singlePie?.segments.filter((segment) => segment.category === category);
+    const value = categorySegments ? sumValues(categorySegments) : 0;
+    const hasShare = showValues && singlePie && total > 0;
     return {
-      key: c,
-      label: c,
-      color: colorOf(c),
-      ...(values && single && total > 0 ? { value: formatPercent(v / total) } : {}),
+      key: category,
+      label: category,
+      color: colorOf(category),
+      ...(hasShare ? { value: formatPercent(value / total) } : {}),
     };
   });
-  const show =
-    !lo.hidden &&
-    !m.empty &&
-    (o.legend === true || typeof o.legend === 'object' || (o.legend === undefined && !m.binary && entries.length > 1 && !labelStyle(o)));
-  const position = lo.position ?? (o.variant === 'semicircle' ? 'bottom' : 'right');
-  return { ...lo, position, show, entries, swatch: lo.swatch ?? 'square' };
+  const show = isLegendShown(model, options, legendOptions.hidden, entries.length);
+  const defaultPosition = options.variant === 'semicircle' ? 'bottom' : 'right';
+  const position = legendOptions.position ?? defaultPosition;
+  return { ...legendOptions, position, show, entries, swatch: legendOptions.swatch ?? 'square' };
 }

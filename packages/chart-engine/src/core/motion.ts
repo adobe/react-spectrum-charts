@@ -30,16 +30,17 @@ export class Motion<S> {
     private readonly hooks: MotionHooks,
   ) {}
 
+  /** The configured duration, the given default, or 0 when animation is off or reduced motion is preferred. */
   private duration(base: number): number {
-    const a = this.setting();
-    if (a === false || prefersReducedMotion()) return 0;
-    if (typeof a === 'object' && a.duration != null) return a.duration;
+    const setting = this.setting();
+    if (setting === false || prefersReducedMotion()) return 0;
+    if (typeof setting === 'object' && setting.duration != null) return setting.duration;
     return base;
   }
 
   startReveal(): void {
-    const d = this.duration(MOTION.revealMs);
-    if (this.revealed || d === 0) {
+    const duration = this.duration(MOTION.revealMs);
+    if (this.revealed || duration === 0) {
       this.reveal = 1;
       this.revealed = true;
       return;
@@ -47,9 +48,9 @@ export class Motion<S> {
     this.revealed = true;
     this.reveal = 0;
     this.revealAnim = animate(
-      d,
-      (t) => {
-        this.reveal = t;
+      duration,
+      (progress) => {
+        this.reveal = progress;
         this.hooks.reveal();
       },
       MOTION.revealEase,
@@ -58,9 +59,9 @@ export class Motion<S> {
 
   /** Animates the next layouts from `snapshot()`; without a snapshot, updates apply immediately. */
   startTween(snapshot: (() => S) | null): void {
-    const d = this.duration(MOTION.updateMs);
+    const duration = this.duration(MOTION.updateMs);
     this.dataAnim?.cancel();
-    if (!snapshot || d === 0) {
+    if (!snapshot || duration === 0) {
       this.tween = null;
       this.enter = 1;
       return;
@@ -68,11 +69,11 @@ export class Motion<S> {
     this.tween = { from: snapshot(), t: 0 };
     this.enter = 0;
     this.dataAnim = animate(
-      d,
-      (t) => {
+      duration,
+      (progress) => {
         if (!this.tween) return;
-        this.tween.t = t;
-        this.enter = t;
+        this.tween.t = progress;
+        this.enter = progress;
         this.hooks.tween();
       },
       MOTION.updateEase,

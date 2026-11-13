@@ -16,28 +16,28 @@ export function animate(
   ease: 'inOut' | 'out' = 'inOut',
   done?: () => void,
 ): Animation {
-  const fn = ease === 'out' ? easeCubicOut : easeCubicInOut;
+  const easing = ease === 'out' ? easeCubicOut : easeCubicInOut;
   if (duration <= 0 || typeof requestAnimationFrame !== 'function') {
     step(1);
     done?.();
     return { cancel() {} };
   }
-  let raf = 0;
-  let start: number | null = null;
+  let frameRequest = 0;
+  let startTime: number | null = null;
   let cancelled = false;
   const frame = (now: number): void => {
     if (cancelled) return;
-    if (start == null) start = now;
-    const t = Math.min(1, (now - start) / duration);
-    step(fn(t));
-    if (t < 1) raf = requestAnimationFrame(frame);
+    if (startTime == null) startTime = now;
+    const progress = Math.min(1, (now - startTime) / duration);
+    step(easing(progress));
+    if (progress < 1) frameRequest = requestAnimationFrame(frame);
     else done?.();
   };
-  raf = requestAnimationFrame(frame);
+  frameRequest = requestAnimationFrame(frame);
   return {
     cancel() {
       cancelled = true;
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(frameRequest);
     },
   };
 }

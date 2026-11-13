@@ -1,43 +1,51 @@
-import { baselineOffset, parseFont, type Renderer } from './renderer.js';
+import { baselineOffset, HALO_STROKE_WIDTH, parseFont, type Renderer } from './renderer.js';
 import type { Gradient, GroupNode, LayerId, SceneNode, Style, TextNode } from './scene.js';
 import { isGradient, LAYERS } from './scene.js';
 
-const NS = 'http://www.w3.org/2000/svg';
-let uid = 0;
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+/** Numeric attributes are rounded to hundredths of a pixel. */
+const ATTRIBUTE_PRECISION = 100;
+const DEFAULT_STROKE_WIDTH = 1;
+
+/** Counter that gives each renderer a unique id prefix for its definitions. */
+let rendererCount = 0;
+
+type Clip = NonNullable<GroupNode['clip']>;
 
 export class SvgRenderer implements Renderer {
   readonly element: SVGSVGElement;
   private defs: SVGDefsElement;
   private layers = new Map<LayerId, SVGGElement>();
-  private prefix = `s2c${++uid}`;
+  private prefix = `s2c${++rendererCount}`;
   private idMap = new Map<string, string>();
   /** Definitions (clips, gradients) referenced by each layer. */
   private layerDefs = new Map<LayerId, Set<string>>();
   private current: Set<string> = new Set();
   private layer: LayerId = 'back';
 
+  /** Stable element id for a definition of `kind` belonging to the node `key` in the current layer. */
   private defId(kind: string, key: string): string {
-    const k = this.layer + ':' + kind + ':' + key;
-    let id = this.idMap.get(k);
+    const mapKey = this.layer + ':' + kind + ':' + key;
+    let id = this.idMap.get(mapKey);
     if (!id) {
       id = `${this.prefix}-${kind}-${this.idMap.size}`;
-      this.idMap.set(k, id);
+      this.idMap.set(mapKey, id);
     }
     return id;
   }
 
   constructor() {
-    this.element = document.createElementNS(NS, 'svg');
+    this.element = document.createElementNS(SVG_NAMESPACE, 'svg');
     this.element.setAttribute('class', 's2c-surface');
     this.element.setAttribute('aria-hidden', 'true');
     this.element.setAttribute('focusable', 'false');
-    this.defs = document.createElementNS(NS, 'defs');
+    this.defs = document.createElementNS(SVG_NAMESPACE, 'defs');
     this.element.append(this.defs);
     for (const id of LAYERS) {
-      const g = document.createElementNS(NS, 'g');
-      g.setAttribute('data-layer', id);
-      this.element.append(g);
-      this.layers.set(id, g);
+      const layerGroup = document.createElementNS(SVG_NAMESPACE, 'g');
+      layerGroup.setAttribute('data-layer', id);
+      this.element.append(layerGroup);
+      this.layers.set(id, layerGroup);
     }
   }
 
@@ -54,48 +62,58 @@ export class SvgRenderer implements Renderer {
     this.layer = id;
     this.reconcileGroup(this.layers.get(id)!, root);
     this.layerDefs.set(id, this.current);
-    const live = new Set<string>();
-    for (const set of this.layerDefs.values()) for (const d of set) live.add(d);
-    for (const child of Array.from(this.defs.children)) {
-      if (!live.has(child.id)) child.remove();
-    }
+    this.removeUnusedDefs();
   }
 
   destroy(): void {
     this.element.remove();
   }
 
-  private reconcileGroup(el: SVGGElement, node: GroupNode): void {
-    const transform = node.x || node.y ? `translate(${node.x ?? 0},${node.y ?? 0})` : null;
-    setAttr(el, 'transform', transform);
-    if (node.clip) {
-      const id = this.defId('clip', node.key);
-      let cp = this.defs.querySelector<SVGClipPathElement>(`#${id}`);
-      if (!cp) {
-        cp = document.createElementNS(NS, 'clipPath');
-        cp.id = id;
-        cp.append(document.createElementNS(NS, 'rect'));
-        this.defs.append(cp);
-      }
-      const r = cp.firstElementChild as SVGRectElement;
-      setAttr(r, 'x', node.clip.x);
-      setAttr(r, 'y', node.clip.y);
-      setAttr(r, 'width', Math.max(0, node.clip.width));
-      setAttr(r, 'height', Math.max(0, node.clip.height));
-      this.current.add(id);
-      setAttr(el, 'clip-path', `url(#${id})`);
-    } else {
-      setAttr(el, 'clip-path', null);
+  /** Drop clips and gradients no layer references any more. */
+  private removeUnusedDefs(): void {
+    const live = new Set<string>();
+    for (const ids of this.layerDefs.values()) for (const id of ids) live.add(id);
+    for (const child of Array.from(this.defs.children)) {
+      if (!live.has(child.id)) child.remove();
     }
-    this.applyStyle(el, node.style, node.key);
+  }
 
+  private reconcileGroup(el: SVGGElement, node: GroupNode): void {
+    setAttr(el, 'transform', translateOf(node));
+    if (node.clip) setAttr(el, 'clip-path', `url(#${this.clipPath(node.key, node.clip)})`);
+    else setAttr(el, 'clip-path', null);
+    this.applyStyle(el, node.style, node.key);
+    this.reconcileChildren(el, node.children);
+  }
+
+  /** Creates or updates the clip path for a group and returns its id. */
+  private clipPath(key: string, clip: Clip): string {
+    const id = this.defId('clip', key);
+    let clipPath = this.defs.querySelector<SVGClipPathElement>(`#${id}`);
+    if (!clipPath) {
+      clipPath = document.createElementNS(SVG_NAMESPACE, 'clipPath');
+      clipPath.id = id;
+      clipPath.append(document.createElementNS(SVG_NAMESPACE, 'rect'));
+      this.defs.append(clipPath);
+    }
+    const rect = clipPath.firstElementChild as SVGRectElement;
+    setAttr(rect, 'x', clip.x);
+    setAttr(rect, 'y', clip.y);
+    setAttr(rect, 'width', Math.max(0, clip.width));
+    setAttr(rect, 'height', Math.max(0, clip.height));
+    this.current.add(id);
+    return id;
+  }
+
+  /** Reuses elements by `data-key`, keeps them in scene order and removes the rest. */
+  private reconcileChildren(el: SVGGElement, children: SceneNode[]): void {
     const existing = new Map<string, SVGElement>();
     for (const child of Array.from(el.children) as SVGElement[]) {
-      const k = child.getAttribute('data-key');
-      if (k != null) existing.set(k, child);
+      const key = child.getAttribute('data-key');
+      if (key != null) existing.set(key, child);
     }
     let cursor: Element | null = el.firstElementChild;
-    for (const child of node.children) {
+    for (const child of children) {
       const tag = tagFor(child);
       let target = existing.get(child.key);
       if (target && target.tagName !== tag) {
@@ -104,7 +122,7 @@ export class SvgRenderer implements Renderer {
       }
       if (target) existing.delete(child.key);
       else {
-        target = document.createElementNS(NS, tag) as SVGElement;
+        target = document.createElementNS(SVG_NAMESPACE, tag) as SVGElement;
         target.setAttribute('data-key', child.key);
       }
       if (target !== cursor) el.insertBefore(target, cursor);
@@ -121,7 +139,7 @@ export class SvgRenderer implements Renderer {
         return;
       case 'path':
         setAttr(el, 'd', node.d);
-        setAttr(el, 'transform', node.x || node.y ? `translate(${node.x ?? 0},${node.y ?? 0})` : null);
+        setAttr(el, 'transform', translateOf(node));
         break;
       case 'line':
         setAttr(el, 'x1', node.x1);
@@ -141,90 +159,102 @@ export class SvgRenderer implements Renderer {
         setAttr(el, 'cy', node.cy);
         setAttr(el, 'r', node.r);
         break;
-      case 'text': {
-        const f = parseFont(node.font);
-        const y = node.y + baselineOffset(node);
-        setAttr(el, 'x', node.x);
-        setAttr(el, 'y', y);
-        setAttr(el, 'font-family', f.family);
-        setAttr(el, 'font-size', f.size);
-        setAttr(el, 'font-weight', f.weight);
-        setAttr(el, 'text-anchor', node.align ?? 'start');
-        setAttr(el, 'transform', node.rotate ? `rotate(${node.rotate},${node.x},${node.y})` : null);
-        if (node.halo) {
-          setAttr(el, 'paint-order', 'stroke');
-          setAttr(el, 'stroke-linejoin', 'round');
-        } else {
-          setAttr(el, 'paint-order', null);
-        }
-        if (el.textContent !== node.text) el.textContent = node.text;
+      case 'text':
+        updateText(el, node);
         break;
-      }
     }
     this.applyStyle(el, node.style, node.key, node.type === 'text' ? node : undefined);
   }
 
   private applyStyle(el: SVGElement, style: Style | undefined, key: string, text?: TextNode): void {
-    const s = style ?? {};
+    const resolved = style ?? {};
     if (el.tagName === 'g') {
-      setAttr(el, 'opacity', s.opacity ?? null);
+      setAttr(el, 'opacity', resolved.opacity ?? null);
       return;
     }
     let fill: string | null;
-    if (isGradient(s.fill)) fill = `url(#${this.gradient(key, s.fill)})`;
-    else fill = s.fill ?? 'none';
+    if (isGradient(resolved.fill)) fill = `url(#${this.gradient(key, resolved.fill)})`;
+    else fill = resolved.fill ?? 'none';
     setAttr(el, 'fill', fill);
     if (text?.halo) {
       setAttr(el, 'stroke', text.halo);
-      setAttr(el, 'stroke-width', 4);
+      setAttr(el, 'stroke-width', HALO_STROKE_WIDTH);
     } else {
-      setAttr(el, 'stroke', s.stroke ?? null);
-      setAttr(el, 'stroke-width', s.stroke ? (s.strokeWidth ?? 1) : null);
+      setAttr(el, 'stroke', resolved.stroke ?? null);
+      setAttr(el, 'stroke-width', resolved.stroke ? (resolved.strokeWidth ?? DEFAULT_STROKE_WIDTH) : null);
     }
-    setAttr(el, 'stroke-dasharray', s.dash && s.dash.length ? s.dash.join(' ') : null);
-    setAttr(el, 'stroke-linecap', s.lineCap ?? null);
-    if (!text?.halo) setAttr(el, 'stroke-linejoin', s.lineJoin ?? null);
-    setAttr(el, 'opacity', s.opacity ?? null);
+    const hasDash = resolved.dash && resolved.dash.length;
+    setAttr(el, 'stroke-dasharray', hasDash ? resolved.dash!.join(' ') : null);
+    setAttr(el, 'stroke-linecap', resolved.lineCap ?? null);
+    if (!text?.halo) setAttr(el, 'stroke-linejoin', resolved.lineJoin ?? null);
+    setAttr(el, 'opacity', resolved.opacity ?? null);
   }
 
-  private gradient(key: string, g: Gradient): string {
+  /** Creates or updates a vertical linear gradient and returns its id. */
+  private gradient(key: string, gradient: Gradient): string {
     const id = this.defId('grad', key);
     let el = this.defs.querySelector<SVGLinearGradientElement>(`#${id}`);
     if (!el) {
-      el = document.createElementNS(NS, 'linearGradient');
+      el = document.createElementNS(SVG_NAMESPACE, 'linearGradient');
       el.id = id;
       el.setAttribute('gradientUnits', 'userSpaceOnUse');
       el.setAttribute('x1', '0');
       el.setAttribute('x2', '0');
       this.defs.append(el);
     }
-    setAttr(el, 'y1', g.y1);
-    setAttr(el, 'y2', g.y2);
-    while (el.children.length > g.stops.length) el.lastElementChild!.remove();
-    g.stops.forEach((s, i) => {
-      let stop = el!.children[i] as SVGStopElement | undefined;
-      if (!stop) {
-        stop = document.createElementNS(NS, 'stop');
-        el!.append(stop);
+    const gradientEl = el;
+    setAttr(gradientEl, 'y1', gradient.y1);
+    setAttr(gradientEl, 'y2', gradient.y2);
+    while (gradientEl.children.length > gradient.stops.length) gradientEl.lastElementChild!.remove();
+    gradient.stops.forEach((stop, i) => {
+      let stopEl = gradientEl.children[i] as SVGStopElement | undefined;
+      if (!stopEl) {
+        stopEl = document.createElementNS(SVG_NAMESPACE, 'stop');
+        gradientEl.append(stopEl);
       }
-      setAttr(stop, 'offset', s.offset);
-      setAttr(stop, 'stop-color', s.color);
-      setAttr(stop, 'stop-opacity', s.opacity);
+      setAttr(stopEl, 'offset', stop.offset);
+      setAttr(stopEl, 'stop-color', stop.color);
+      setAttr(stopEl, 'stop-opacity', stop.opacity);
     });
     this.current.add(id);
     return id;
   }
 }
 
+/** SVG translate for a node's optional offset, or null when it has none. */
+function translateOf(node: { x?: number; y?: number }): string | null {
+  return node.x || node.y ? `translate(${node.x ?? 0},${node.y ?? 0})` : null;
+}
+
+function updateText(el: SVGElement, node: TextNode): void {
+  const font = parseFont(node.font);
+  const y = node.y + baselineOffset(node);
+  setAttr(el, 'x', node.x);
+  setAttr(el, 'y', y);
+  setAttr(el, 'font-family', font.family);
+  setAttr(el, 'font-size', font.size);
+  setAttr(el, 'font-weight', font.weight);
+  setAttr(el, 'text-anchor', node.align ?? 'start');
+  setAttr(el, 'transform', node.rotate ? `rotate(${node.rotate},${node.x},${node.y})` : null);
+  if (node.halo) {
+    setAttr(el, 'paint-order', 'stroke');
+    setAttr(el, 'stroke-linejoin', 'round');
+  } else {
+    setAttr(el, 'paint-order', null);
+  }
+  if (el.textContent !== node.text) el.textContent = node.text;
+}
+
 function tagFor(node: SceneNode): string {
   return node.type === 'group' ? 'g' : node.type;
 }
 
+/** Sets an attribute only when it changes; null removes it. */
 function setAttr(el: Element, name: string, value: string | number | null): void {
   if (value === null) {
     if (el.hasAttribute(name)) el.removeAttribute(name);
     return;
   }
-  const v = typeof value === 'number' ? String(Math.round(value * 100) / 100) : value;
-  if (el.getAttribute(name) !== v) el.setAttribute(name, v);
+  const text = typeof value === 'number' ? String(Math.round(value * ATTRIBUTE_PRECISION) / ATTRIBUTE_PRECISION) : value;
+  if (el.getAttribute(name) !== text) el.setAttribute(name, text);
 }

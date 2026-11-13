@@ -11,17 +11,17 @@ export interface LineHit {
   pt: ScreenPoint;
 }
 
+/** Spatial lookup for one panel's defined points. */
 interface PanelIndex {
   delaunay: Delaunay<number> | null;
   refs: { series: SeriesLayout; pt: ScreenPoint }[];
+  /** Distinct point x positions, ascending. */
   xs: number[];
 }
 
 const indexes = new WeakMap<LinePanel, PanelIndex>();
 
-function index(panel: LinePanel): PanelIndex {
-  let idx = indexes.get(panel);
-  if (idx) return idx;
+function buildIndex(panel: LinePanel): PanelIndex {
   const refs: PanelIndex['refs'] = [];
   const coords: number[] = [];
   const xs = new Set<number>();
@@ -33,50 +33,69 @@ function index(panel: LinePanel): PanelIndex {
       xs.add(pt.x);
     }
   }
-  idx = {
+  return {
     delaunay: refs.length ? new Delaunay(Float64Array.from(coords)) : null,
     refs,
     xs: Array.from(xs).sort((a, b) => a - b),
   };
-  indexes.set(panel, idx);
-  return idx;
 }
 
-function panelAt(g: LineGeometry, x: number, y: number): LinePanel | null {
-  const s = INTERACTION.panelSlack;
-  return g.panels.find((p) => x >= p.x - s && x <= p.x + p.width + s && y >= p.y - s && y <= p.y + p.height + s) ?? null;
+function indexFor(panel: LinePanel): PanelIndex {
+  let panelIndex = indexes.get(panel);
+  if (panelIndex) return panelIndex;
+  panelIndex = buildIndex(panel);
+  indexes.set(panel, panelIndex);
+  return panelIndex;
+}
+
+function panelAt(geometry: LineGeometry, x: number, y: number): LinePanel | null {
+  const slack = INTERACTION.panelSlack;
+  const contains = (panel: LinePanel): boolean =>
+    x >= panel.x - slack && x <= panel.x + panel.width + slack && y >= panel.y - slack && y <= panel.y + panel.height + slack;
+  return geometry.panels.find(contains) ?? null;
 }
 
 /** Every defined point of a panel at panel-local x. */
 export function itemsAt(panel: LinePanel, px: number): LineHit[] {
   const out: LineHit[] = [];
   for (const series of panel.series) {
-    const pt = series.pts.find((p) => p.x === px && p.y != null);
+    const pt = series.pts.find((point) => point.x === px && point.y != null);
     if (pt) out.push({ panel, series, pt });
   }
   return out;
 }
 
+/** Index of the x position nearest to `x`. */
+function nearestXIndex(xs: number[], x: number): number {
+  const center = bisector((value: number) => value).center(xs, x);
+  return Math.max(0, Math.min(xs.length - 1, center));
+}
+
+/** The hit whose y is closest to `y`. */
+function closestInY(items: LineHit[], y: number): LineHit {
+  let closest = items[0];
+  for (const hit of items) if (Math.abs(hit.pt.y! - y) < Math.abs(closest.pt.y! - y)) closest = hit;
+  return closest;
+}
+
 /** Nearest point (point mode) or nearest x column (x mode). Coordinates are plot-local. */
-export function hitLine(g: LineGeometry, x: number, y: number, mode: 'point' | 'x'): Hover<LineHit> | null {
-  const panel = panelAt(g, x, y);
+export function hitLine(geometry: LineGeometry, x: number, y: number, mode: 'point' | 'x'): Hover<LineHit> | null {
+  const panel = panelAt(geometry, x, y);
   if (!panel) return null;
-  const lx = x - panel.x;
-  const ly = y - panel.y;
-  const idx = index(panel);
-  if (!idx.delaunay) return null;
+  const localX = x - panel.x;
+  const localY = y - panel.y;
+  const panelIndex = indexFor(panel);
+  if (!panelIndex.delaunay) return null;
   if (mode === 'point') {
-    const ref = idx.refs[idx.delaunay.find(lx, ly)];
+    const ref = panelIndex.refs[panelIndex.delaunay.find(localX, localY)];
     if (!ref) return null;
     const hit = { panel, series: ref.series, pt: ref.pt };
     return { primary: hit, items: [hit], mode };
   }
-  const j = Math.max(0, Math.min(idx.xs.length - 1, bisector((d: number) => d).center(idx.xs, lx)));
-  const items = itemsAt(panel, idx.xs[j]);
+  const column = panelIndex.xs[nearestXIndex(panelIndex.xs, localX)];
+  const items = itemsAt(panel, column);
   if (!items.length) return null;
-  let primary = items[0];
-  for (const h of items) if (Math.abs(h.pt.y! - ly) < Math.abs(primary.pt.y! - ly)) primary = h;
-  return { primary, items, mode };
+  return { primary: closestInY(items, localY), items, mode };
 }
 
 export function hoverForLine(mark: LineHit, mode: 'point' | 'x'): Hover<LineHit> {

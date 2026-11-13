@@ -15,8 +15,8 @@ export interface DonutItem {
 }
 
 export interface DonutHoverContext extends HoverContext<DonutItem> {
-  formatValue: (v: number) => string;
-  formatPercent: (p: number) => string;
+  formatValue: (value: number) => string;
+  formatPercent: (share: number) => string;
 }
 
 export interface DonutCenterOptions {

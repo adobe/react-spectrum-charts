@@ -1,27 +1,35 @@
-import { baselineOffset } from './renderer.js';
+import { baselineOffset, HALO_STROKE_WIDTH } from './renderer.js';
 import type { Renderer } from './renderer.js';
-import type { GroupNode, LayerId, Scene, SceneNode, Style } from './scene.js';
+import type { CircleNode, GroupNode, LayerId, PathNode, RectNode, Scene, SceneNode, Style, TextNode } from './scene.js';
 import { isGradient, LAYERS } from './scene.js';
 
 type Ctx = CanvasRenderingContext2D;
+
+/** A sweep only runs once the cache holds more than twice the paths in use plus this many. */
+const PATH_CACHE_SLACK = 400;
+const DEFAULT_STROKE_WIDTH = 1;
+const FULL_CIRCLE = Math.PI * 2;
+const DEGREES_PER_HALF_TURN = 180;
+
+const TEXT_ALIGN: Record<NonNullable<TextNode['align']>, CanvasTextAlign> = { start: 'left', middle: 'center', end: 'right' };
 
 /** Caches parsed Path2D objects; shared by all layers of a chart. */
 export class PathCache {
   private paths = new Map<string, Path2D>();
   private used = new Set<string>();
-  get(d: string): Path2D {
-    this.used.add(d);
-    let p = this.paths.get(d);
-    if (!p) {
-      p = new Path2D(d);
-      this.paths.set(d, p);
+  get(pathData: string): Path2D {
+    this.used.add(pathData);
+    let path = this.paths.get(pathData);
+    if (!path) {
+      path = new Path2D(pathData);
+      this.paths.set(pathData, path);
     }
-    return p;
+    return path;
   }
   /** Drop paths not used since the last sweep once the cache grows large. */
   sweep(): void {
-    if (this.paths.size > this.used.size * 2 + 400) {
-      for (const k of this.paths.keys()) if (!this.used.has(k)) this.paths.delete(k);
+    if (this.paths.size > this.used.size * 2 + PATH_CACHE_SLACK) {
+      for (const pathData of this.paths.keys()) if (!this.used.has(pathData)) this.paths.delete(pathData);
     }
     this.used.clear();
   }
@@ -29,6 +37,10 @@ export class PathCache {
     this.paths.clear();
     this.used.clear();
   }
+}
+
+function devicePixelRatioOrOne(): number {
+  return typeof devicePixelRatio === 'number' && devicePixelRatio > 0 ? devicePixelRatio : 1;
 }
 
 /** Stacked canvases, one per layer, so a hover only repaints the overlay canvas. */
@@ -45,11 +57,11 @@ export class CanvasRenderer implements Renderer {
     this.element.className = 's2c-surface s2c-canvas-stack';
     this.element.setAttribute('aria-hidden', 'true');
     for (const id of LAYERS) {
-      const c = document.createElement('canvas');
-      c.dataset.layer = id;
-      if (!c.getContext('2d')) throw new Error('Canvas 2D context is unavailable');
-      this.element.append(c);
-      this.canvases.set(id, c);
+      const canvas = document.createElement('canvas');
+      canvas.dataset.layer = id;
+      if (!canvas.getContext('2d')) throw new Error('Canvas 2D context is unavailable');
+      this.element.append(canvas);
+      this.canvases.set(id, canvas);
     }
   }
 
@@ -62,18 +74,18 @@ export class CanvasRenderer implements Renderer {
   }
 
   renderLayer(id: LayerId, root: GroupNode): void {
-    const dpr = typeof devicePixelRatio === 'number' && devicePixelRatio > 0 ? devicePixelRatio : 1;
-    const c = this.canvases.get(id)!;
-    const w = Math.round(this.width * dpr);
-    const h = Math.round(this.height * dpr);
-    if (c.width !== w) c.width = w;
-    if (c.height !== h) c.height = h;
-    c.style.width = `${this.width}px`;
-    c.style.height = `${this.height}px`;
-    const ctx = c.getContext('2d')!;
+    const pixelRatio = devicePixelRatioOrOne();
+    const canvas = this.canvases.get(id)!;
+    const pixelWidth = Math.round(this.width * pixelRatio);
+    const pixelHeight = Math.round(this.height * pixelRatio);
+    if (canvas.width !== pixelWidth) canvas.width = pixelWidth;
+    if (canvas.height !== pixelHeight) canvas.height = pixelHeight;
+    canvas.style.width = `${this.width}px`;
+    canvas.style.height = `${this.height}px`;
+    const ctx = canvas.getContext('2d')!;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, pixelWidth, pixelHeight);
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     if (id === 'back' && this.background) {
       ctx.fillStyle = this.background;
       ctx.fillRect(0, 0, this.width, this.height);
@@ -101,124 +113,143 @@ export function drawScene(ctx: Ctx, scene: Scene, scale = 1): void {
 
 export function drawNode(ctx: Ctx, node: SceneNode, cache: PathCache): void {
   if (node.type === 'group') {
-    ctx.save();
-    if (node.x || node.y) ctx.translate(node.x ?? 0, node.y ?? 0);
-    if (node.style?.opacity != null) ctx.globalAlpha *= node.style.opacity;
-    if (node.clip) {
-      ctx.beginPath();
-      ctx.rect(node.clip.x, node.clip.y, Math.max(0, node.clip.width), Math.max(0, node.clip.height));
-      ctx.clip();
-    }
-    for (const child of node.children) drawNode(ctx, child, cache);
-    ctx.restore();
+    drawGroup(ctx, node, cache);
     return;
   }
-  const s = node.style ?? {};
+  const style = node.style ?? {};
   ctx.save();
-  if (s.opacity != null) ctx.globalAlpha *= s.opacity;
+  if (style.opacity != null) ctx.globalAlpha *= style.opacity;
   switch (node.type) {
-    case 'path': {
-      if (node.x || node.y) ctx.translate(node.x ?? 0, node.y ?? 0);
-      const p = cache.get(node.d);
-      if (setFill(ctx, s)) ctx.fill(p);
-      if (setStroke(ctx, s)) ctx.stroke(p);
+    case 'path':
+      drawPath(ctx, node, style, cache);
       break;
-    }
     case 'line':
-      if (setStroke(ctx, s)) {
+      if (setStroke(ctx, style)) {
         ctx.beginPath();
         ctx.moveTo(node.x1, node.y1);
         ctx.lineTo(node.x2, node.y2);
         ctx.stroke();
       }
       break;
-    case 'rect': {
-      ctx.beginPath();
-      const w = Math.max(0, node.width);
-      const h = Math.max(0, node.height);
-      if (node.rx) ctx.roundRect(node.x, node.y, w, h, node.rx);
-      else ctx.rect(node.x, node.y, w, h);
-      if (setFill(ctx, s)) ctx.fill();
-      if (setStroke(ctx, s)) ctx.stroke();
+    case 'rect':
+      drawRect(ctx, node, style);
       break;
-    }
     case 'circle':
-      ctx.beginPath();
-      ctx.arc(node.cx, node.cy, node.r, 0, Math.PI * 2);
-      if (setFill(ctx, s)) ctx.fill();
-      if (setStroke(ctx, s)) ctx.stroke();
+      drawCircle(ctx, node, style);
       break;
-    case 'text': {
-      ctx.font = node.font;
-      ctx.textAlign = node.align === 'middle' ? 'center' : node.align === 'end' ? 'right' : 'left';
-      ctx.textBaseline = 'alphabetic';
-      ctx.translate(node.x, node.y);
-      if (node.rotate) ctx.rotate((node.rotate * Math.PI) / 180);
-      const y = baselineOffset(node);
-      if (node.halo) {
-        ctx.strokeStyle = node.halo;
-        ctx.lineWidth = 4;
-        ctx.lineJoin = 'round';
-        ctx.setLineDash([]);
-        ctx.strokeText(node.text, 0, y);
-      }
-      if (setFill(ctx, s)) ctx.fillText(node.text, 0, y);
+    case 'text':
+      drawText(ctx, node, style);
       break;
-    }
   }
   ctx.restore();
 }
 
-function setFill(ctx: Ctx, s: Style): boolean {
-  if (!s.fill || s.fill === 'none') return false;
-  if (isGradient(s.fill)) {
-    const g = ctx.createLinearGradient(0, s.fill.y1, 0, s.fill.y2);
-    for (const stop of s.fill.stops) g.addColorStop(clamp01(stop.offset), withAlpha(stop.color, stop.opacity));
-    ctx.fillStyle = g;
+function drawGroup(ctx: Ctx, node: GroupNode, cache: PathCache): void {
+  ctx.save();
+  if (node.x || node.y) ctx.translate(node.x ?? 0, node.y ?? 0);
+  if (node.style?.opacity != null) ctx.globalAlpha *= node.style.opacity;
+  if (node.clip) {
+    ctx.beginPath();
+    ctx.rect(node.clip.x, node.clip.y, Math.max(0, node.clip.width), Math.max(0, node.clip.height));
+    ctx.clip();
+  }
+  for (const child of node.children) drawNode(ctx, child, cache);
+  ctx.restore();
+}
+
+function drawPath(ctx: Ctx, node: PathNode, style: Style, cache: PathCache): void {
+  if (node.x || node.y) ctx.translate(node.x ?? 0, node.y ?? 0);
+  const path = cache.get(node.d);
+  if (setFill(ctx, style)) ctx.fill(path);
+  if (setStroke(ctx, style)) ctx.stroke(path);
+}
+
+function drawRect(ctx: Ctx, node: RectNode, style: Style): void {
+  ctx.beginPath();
+  const width = Math.max(0, node.width);
+  const height = Math.max(0, node.height);
+  if (node.rx) ctx.roundRect(node.x, node.y, width, height, node.rx);
+  else ctx.rect(node.x, node.y, width, height);
+  if (setFill(ctx, style)) ctx.fill();
+  if (setStroke(ctx, style)) ctx.stroke();
+}
+
+function drawCircle(ctx: Ctx, node: CircleNode, style: Style): void {
+  ctx.beginPath();
+  ctx.arc(node.cx, node.cy, node.r, 0, FULL_CIRCLE);
+  if (setFill(ctx, style)) ctx.fill();
+  if (setStroke(ctx, style)) ctx.stroke();
+}
+
+function drawText(ctx: Ctx, node: TextNode, style: Style): void {
+  ctx.font = node.font;
+  ctx.textAlign = node.align ? TEXT_ALIGN[node.align] : 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.translate(node.x, node.y);
+  if (node.rotate) ctx.rotate((node.rotate * Math.PI) / DEGREES_PER_HALF_TURN);
+  const y = baselineOffset(node);
+  if (node.halo) {
+    ctx.strokeStyle = node.halo;
+    ctx.lineWidth = HALO_STROKE_WIDTH;
+    ctx.lineJoin = 'round';
+    ctx.setLineDash([]);
+    ctx.strokeText(node.text, 0, y);
+  }
+  if (setFill(ctx, style)) ctx.fillText(node.text, 0, y);
+}
+
+function setFill(ctx: Ctx, style: Style): boolean {
+  if (!style.fill || style.fill === 'none') return false;
+  if (isGradient(style.fill)) {
+    const gradient = ctx.createLinearGradient(0, style.fill.y1, 0, style.fill.y2);
+    for (const stop of style.fill.stops) gradient.addColorStop(clamp01(stop.offset), withAlpha(stop.color, stop.opacity));
+    ctx.fillStyle = gradient;
   } else {
-    ctx.fillStyle = s.fill;
+    ctx.fillStyle = style.fill;
   }
   return true;
 }
 
-function setStroke(ctx: Ctx, s: Style): boolean {
-  if (!s.stroke || s.stroke === 'none') return false;
-  ctx.strokeStyle = s.stroke;
-  ctx.lineWidth = s.strokeWidth ?? 1;
-  ctx.setLineDash(s.dash ?? []);
-  ctx.lineCap = s.lineCap ?? 'butt';
-  ctx.lineJoin = s.lineJoin ?? 'miter';
+function setStroke(ctx: Ctx, style: Style): boolean {
+  if (!style.stroke || style.stroke === 'none') return false;
+  ctx.strokeStyle = style.stroke;
+  ctx.lineWidth = style.strokeWidth ?? DEFAULT_STROKE_WIDTH;
+  ctx.setLineDash(style.dash ?? []);
+  ctx.lineCap = style.lineCap ?? 'butt';
+  ctx.lineJoin = style.lineJoin ?? 'miter';
   return true;
 }
 
-function clamp01(v: number): number {
-  return v < 0 ? 0 : v > 1 ? 1 : v;
+function clamp01(value: number): number {
+  if (value < 0) return 0;
+  if (value > 1) return 1;
+  return value;
 }
 
 const alphaCache = new Map<string, string>();
+
+/** Red, green and blue channels of a hex or rgb()/rgba() color, or null for other formats. */
+function parseRgb(color: string): [number, number, number] | null {
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
+  if (hex) {
+    const digits = hex[1].length === 3 ? hex[1].replace(/./g, '$&$&') : hex[1];
+    return [parseInt(digits.slice(0, 2), 16), parseInt(digits.slice(2, 4), 16), parseInt(digits.slice(4, 6), 16)];
+  }
+  const rgb = /^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i.exec(color);
+  if (rgb) return [+rgb[1], +rgb[2], +rgb[3]];
+  return null;
+}
 
 /** Apply an opacity to any CSS color so canvas gradients match SVG stop-opacity. */
 export function withAlpha(color: string, alpha: number): string {
   if (alpha >= 1) return color;
   const key = color + '|' + alpha;
-  const hit = alphaCache.get(key);
-  if (hit) return hit;
-  let r: number, g: number, b: number;
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
-  const rgb = /^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i.exec(color);
-  if (hex) {
-    const h = hex[1].length === 3 ? hex[1].replace(/./g, '$&$&') : hex[1];
-    r = parseInt(h.slice(0, 2), 16);
-    g = parseInt(h.slice(2, 4), 16);
-    b = parseInt(h.slice(4, 6), 16);
-  } else if (rgb) {
-    r = +rgb[1];
-    g = +rgb[2];
-    b = +rgb[3];
-  } else {
-    return color;
-  }
-  const out = `rgba(${r},${g},${b},${alpha})`;
+  const cached = alphaCache.get(key);
+  if (cached) return cached;
+  const channels = parseRgb(color);
+  if (!channels) return color;
+  const [red, green, blue] = channels;
+  const out = `rgba(${red},${green},${blue},${alpha})`;
   alphaCache.set(key, out);
   return out;
 }

@@ -15,27 +15,36 @@ export interface TitleLayout {
   height: number;
 }
 
+/** Gap between the last title line and the subtitle, in px. */
+const SUBTITLE_GAP = 4;
+/** Title and subtitle each wrap to at most this many lines. */
+const MAX_LINES = 3;
+const TITLE_WEIGHT = 700;
+
+/** Wraps `text` and appends its lines from `y`; returns the y below the last line. */
+function appendLines(lines: TitleLine[], text: string, textFont: string, width: number, lineHeight: number, y: number, secondary: boolean): number {
+  for (const lineText of wrapText(text, textFont, width, MAX_LINES)) {
+    lines.push({ text: lineText, y, font: textFont, secondary });
+    y += lineHeight;
+  }
+  return y;
+}
+
 /** Wrap the title (bold) and subtitle (regular, secondary color) to the chart width. */
 export function layoutTitle(title: string | undefined, subtitle: string | undefined, sizes: SizeTokens, width: number): TitleLayout | null {
   if (!title && !subtitle) return null;
   const lines: TitleLine[] = [];
   let y = 0;
   if (title) {
-    const f = font(sizes.titleFont, 700);
-    const lh = Math.round(sizes.titleFont * CHROME.titleLineHeight);
-    for (const text of wrapText(title, f, width, 3)) {
-      lines.push({ text, y, font: f, secondary: false });
-      y += lh;
-    }
+    const titleFont = font(sizes.titleFont, TITLE_WEIGHT);
+    const lineHeight = Math.round(sizes.titleFont * CHROME.titleLineHeight);
+    y = appendLines(lines, title, titleFont, width, lineHeight, y, false);
   }
   if (subtitle) {
-    if (title) y += 4;
-    const f = font(CHROME.subtitleFont);
-    const lh = Math.round(CHROME.subtitleFont * CHROME.subtitleLineHeight);
-    for (const text of wrapText(subtitle, f, width, 3)) {
-      lines.push({ text, y, font: f, secondary: true });
-      y += lh;
-    }
+    if (title) y += SUBTITLE_GAP;
+    const subtitleFont = font(CHROME.subtitleFont);
+    const lineHeight = Math.round(CHROME.subtitleFont * CHROME.subtitleLineHeight);
+    y = appendLines(lines, subtitle, subtitleFont, width, lineHeight, y, true);
   }
   return { lines, height: y };
 }
@@ -43,15 +52,15 @@ export function layoutTitle(title: string | undefined, subtitle: string | undefi
 export function drawTitle(layout: TitleLayout, x: number, y: number, theme: Theme): SceneNode {
   return group(
     'title',
-    layout.lines.map((l, i) => ({
+    layout.lines.map((line, i) => ({
       type: 'text' as const,
       key: `t${i}`,
       x: 0,
-      y: l.y,
-      text: l.text,
-      font: l.font,
+      y: line.y,
+      text: line.text,
+      font: line.font,
       baseline: 'top' as const,
-      style: { fill: l.secondary ? theme.textSecondary : theme.text },
+      style: { fill: line.secondary ? theme.textSecondary : theme.text },
     })),
     { x, y },
   );

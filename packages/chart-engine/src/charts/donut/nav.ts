@@ -1,35 +1,58 @@
 import { DONUT } from '../../core/assumptions.js';
 import type { NavGroup, NavTree } from '../../core/module.js';
-import { arcBounds, ringPath, type ArcLayout, type DonutGeometry } from './layout.js';
+import { arcBounds, ringPath, type ArcLayout, type DonutGeometry, type PieLayout } from './layout.js';
 
-export function describeArc(g: DonutGeometry, a: ArcLayout): string {
-  const facet = a.pie.facet != null && g.trellis ? `${a.pie.facet}, ` : '';
-  return `${facet}${a.category}, ${g.formatPercent(a.percent)}, ${g.formatValue(a.value)}`;
+/** Arcs narrower than this (radians) are skipped by keyboard navigation. */
+const MIN_FOCUSABLE_SPAN = 1e-6;
+
+function plural(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+export function describeArc(geometry: DonutGeometry, arc: ArcLayout): string {
+  const facet = arc.pie.facet != null && geometry.trellis ? `${arc.pie.facet}, ` : '';
+  return `${facet}${arc.category}, ${geometry.formatPercent(arc.percent)}, ${geometry.formatValue(arc.value)}`;
+}
+
+/** Focus rectangle around the whole donut (the top half for semicircles). */
+function pieFocusRect(pie: PieLayout, semicircle: boolean) {
+  const offset = DONUT.focusOffset;
+  const heightFactor = semicircle ? 1 : 2;
+  return {
+    x: pie.cx - pie.outer - offset,
+    y: pie.cy - pie.outer - offset,
+    width: 2 * (pie.outer + offset),
+    height: heightFactor * (pie.outer + offset),
+  };
+}
+
+function pieGroup(geometry: DonutGeometry, pie: PieLayout): NavGroup<ArcLayout> {
+  const offset = DONUT.focusOffset;
+  const arcs = pie.arcs.filter((arc) => arc.end - arc.start > MIN_FOCUSABLE_SPAN);
+  const name = pie.facet ?? 'Donut';
+  const focusInner = Math.max(0, pie.inner - offset);
+  const focusOuter = pie.outer + offset;
+  return {
+    key: `pie-${pie.index}`,
+    label: `${name}, ${plural(arcs.length, 'segment')}, total ${geometry.formatValue(pie.total)}`,
+    rect: pieFocusRect(pie, geometry.semicircle),
+    items: arcs.map((arc) => ({
+      mark: arc,
+      match: arc.category,
+      label: describeArc(geometry, arc),
+      rect: arcBounds(pie.cx, pie.cy, focusInner, focusOuter, arc.start, arc.end),
+      path: ringPath(pie.cx, pie.cy, focusInner, focusOuter, arc.start, arc.end),
+    })),
+  };
 }
 
 /**
  * Keyboard structure. A single donut is flat: focus starts at 12 o'clock (or 9 o'clock for semicircles) and
  * moves clockwise. A trellis has one group per facet; up/down moves to the same category in the next facet.
  */
-export function donutNav(g: DonutGeometry): NavTree<ArcLayout> {
-  const o = DONUT.focusOffset;
-  const groups: NavGroup<ArcLayout>[] = g.pies.map((p) => {
-    const arcs = p.arcs.filter((a) => a.end - a.start > 1e-6);
-    const name = p.facet ?? 'Donut';
-    return {
-      key: `pie-${p.index}`,
-      label: `${name}, ${arcs.length} segment${arcs.length === 1 ? '' : 's'}, total ${g.formatValue(p.total)}`,
-      rect: { x: p.cx - p.outer - o, y: p.cy - p.outer - o, width: 2 * (p.outer + o), height: (g.semicircle ? 1 : 2) * (p.outer + o) },
-      items: arcs.map((a) => ({
-        mark: a,
-        match: a.category,
-        label: describeArc(g, a),
-        rect: arcBounds(p.cx, p.cy, Math.max(0, p.inner - o), p.outer + o, a.start, a.end),
-        path: ringPath(p.cx, p.cy, Math.max(0, p.inner - o), p.outer + o, a.start, a.end),
-      })),
-    };
-  });
-  const n = g.pies.length;
-  const label = n > 1 ? `${n} donuts.` : `${groups[0]?.items.length ?? 0} segments.`;
-  return { label, flat: n === 1, groups };
+export function donutNav(geometry: DonutGeometry): NavTree<ArcLayout> {
+  const groups = geometry.pies.map((pie) => pieGroup(geometry, pie));
+  const pieCount = geometry.pies.length;
+  const label = pieCount > 1 ? `${pieCount} donuts.` : `${groups[0]?.items.length ?? 0} segments.`;
+  return { label, flat: pieCount === 1, groups };
 }

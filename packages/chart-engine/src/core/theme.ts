@@ -77,16 +77,17 @@ export function clearSystemColorCache(): void {
   systemColorCache.clear();
 }
 
+/** Windows high contrast: maps theme colors to the CSS system colors. */
 function contrastTheme(base: Theme): Theme {
   const text = resolveSystemColor('CanvasText', base.text);
-  const bg = resolveSystemColor('Canvas', base.background);
+  const background = resolveSystemColor('Canvas', base.background);
   const gray = resolveSystemColor('GrayText', base.neutral);
   const highlight = resolveSystemColor('Highlight', base.focus);
   return {
     ...base,
     name: 'contrast',
-    background: bg,
-    surface: bg,
+    background,
+    surface: background,
     surfaceBorder: text,
     text,
     textSecondary: text,
@@ -99,12 +100,13 @@ function contrastTheme(base: Theme): Theme {
     crosshair: text,
     neutral: gray,
     secondary: gray,
-    legendHover: bg,
+    legendHover: background,
     focus: highlight,
     fadeOpacity: CONTRAST_FADE_OPACITY,
   };
 }
 
+/** Whether a media query matches; false where `matchMedia` is unavailable. */
 export function matches(query: string): boolean {
   return typeof matchMedia === 'function' && matchMedia(query).matches;
 }
@@ -131,6 +133,7 @@ export const SIZES: Record<ChartSize, SizeTokens> = {
   S: { lineWidth: 1.5, axisFont: 12, labelFont: 14, titleFont: 16, facetFont: 12, legendFont: 12, pointRadius: 3 },
 };
 
+/** A CSS font shorthand in the chart's font family. */
 export function font(size: number, weight: number | string = 400): string {
   return `${weight} ${size}px ${FONT_FAMILY}`;
 }

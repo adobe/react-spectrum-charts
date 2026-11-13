@@ -4,9 +4,15 @@ import type { Env, LayoutInput } from '../../core/module.js';
 import { font } from '../../core/theme.js';
 import { measureText } from '../../util/text.js';
 import type { Model, Point, SeriesModel } from './model.js';
-import type { LineChartOptions } from './types.js';
+import type { DirectLabelOptions, LineChartOptions } from './types.js';
 
+/** Gap between a direct or trailing label and the plot edge. */
 const LABEL_GAP = 8;
+const BOLD = 700;
+/** Line width of minimal charts (sparklines). */
+const MINIMAL_LINE_WIDTH = 1.5;
+/** Room above the plot for value labels, relative to the label font size. */
+const VALUE_LABEL_LINE_HEIGHT_RATIO = 1.3;
 
 export interface ScreenPoint {
   /** Position within the panel. */
@@ -49,68 +55,98 @@ export interface ResolvedDirect {
   include: (k: string) => boolean;
 }
 
+/** Category labels default to the end unless only a value label was requested. */
+function defaultCategory(directLabels: DirectLabelOptions): ResolvedDirect['category'] {
+  if (directLabels.category !== undefined) return directLabels.category;
+  return directLabels.value === 'end' ? false : 'end';
+}
+
 export function resolveDirect(opts: LineChartOptions): ResolvedDirect {
-  const d = opts.directLabels;
-  if (d === false || d === undefined || opts.minimal) return { category: false, value: false, include: () => false };
-  if (d === true) return { category: 'end', value: false, include: () => true };
-  const set = d.include ? new Set(d.include) : null;
+  const directLabels = opts.directLabels;
+  if (directLabels === false || directLabels === undefined || opts.minimal) return { category: false, value: false, include: () => false };
+  if (directLabels === true) return { category: 'end', value: false, include: () => true };
+  const included = directLabels.include ? new Set(directLabels.include) : null;
   return {
-    category: d.category === undefined ? (d.value === 'end' ? false : 'end') : d.category,
-    value: d.value === 'end',
-    include: (k) => !set || set.has(k),
+    category: defaultCategory(directLabels),
+    value: directLabels.value === 'end',
+    include: (key) => !included || included.has(key),
   };
 }
 
-export function isTrellis(model: Model, o: LineChartOptions): boolean {
-  return model.facets.length > 1 || (o.layout === 'trellis' && !!o.facet);
+export function isTrellis(model: Model, options: LineChartOptions): boolean {
+  return model.facets.length > 1 || (options.layout === 'trellis' && !!options.facet);
 }
 
 export function visibleSeries(model: Model, hidden: Set<string>): SeriesModel[] {
-  return model.series.filter((s) => !s.missing && !hidden.has(s.key) && !hidden.has(s.colorKey));
+  return model.series.filter((series) => !series.missing && !hidden.has(series.key) && !hidden.has(series.colorKey));
 }
 
-function lineWidthFor(o: LineChartOptions, env: Env): number {
-  return o.lineWidth ?? (o.minimal ? 1.5 : env.sizes.lineWidth);
+function lineWidthFor(options: LineChartOptions, env: Env): number {
+  const defaultWidth = options.minimal ? MINIMAL_LINE_WIDTH : env.sizes.lineWidth;
+  return options.lineWidth ?? defaultWidth;
 }
 
-/** What the line chart needs from the shared cartesian axes, including room for its direct labels. */
-export function lineAxes(model: Model, o: LineChartOptions, env: Env, hidden: Set<string>): CartesianSpec {
+/** Room above the plot for value labels or the end marker. */
+function topMargin(options: LineChartOptions, env: Env, direct: ResolvedDirect, lineWidth: number): number {
   const { sizes } = env;
-  const visible = visibleSeries(model, hidden);
-  const trellis = isTrellis(model, o);
-  const hasY2 = (o.y2Axis?.series?.length ?? 0) > 0 && visible.some((s) => s.axis === 'y2');
-  const xs: number[] = [];
-  for (const s of visible.length ? visible : model.series) for (const p of s.points) xs.push(p.x);
-  const yValues: number[] = [];
-  const y2Values: number[] = [];
-  for (const s of visible) {
-    const target = s.axis === 'y2' && hasY2 ? y2Values : yValues;
-    for (const p of s.points) if (p.y != null) target.push(p.y);
-  }
-  for (const a of o.annotations ?? []) if (a.y != null) yValues.push(a.y);
+  if (direct.value) return Math.round(sizes.labelFont * VALUE_LABEL_LINE_HEIGHT_RATIO);
+  if (options.endMarker) return Math.ceil(sizes.pointRadius + lineWidth / 2);
+  return 0;
+}
 
-  const { yPosition, showYAxis } = axisSides(o, trellis);
-  const lineWidth = lineWidthFor(o, env);
-  const direct = resolveDirect(o);
-  const top = direct.value ? Math.round(sizes.labelFont * 1.3) : o.endMarker ? Math.ceil(sizes.pointRadius + lineWidth / 2) : 0;
-  const labelFont = font(sizes.labelFont, 700);
+/** Room left and right of the plot for outside direct labels, the trailing label and the end marker. */
+function sideMargins(
+  options: LineChartOptions,
+  env: Env,
+  visible: SeriesModel[],
+  direct: ResolvedDirect,
+  axes: { yPosition: 'left' | 'right'; showYAxis: boolean; hasY2: boolean },
+  lineWidth: number,
+): { left: number; right: number } {
+  const { sizes } = env;
+  const { yPosition, showYAxis, hasY2 } = axes;
+  const labelFont = font(sizes.labelFont, BOLD);
   const namesWidth = (): number => {
-    const names = visible.filter((s) => direct.include(s.key)).map((s) => s.key);
-    return names.length ? Math.max(...names.map((k) => measureText(k, labelFont))) : 0;
+    const names = visible.filter((series) => direct.include(series.key)).map((series) => series.key);
+    return names.length ? Math.max(...names.map((name) => measureText(name, labelFont))) : 0;
   };
   let left = 0;
   let right = 0;
   // End-of-line category labels sit outside the plot only when the y axis is on the left.
   if (direct.category === 'end' && (yPosition === 'left' || !showYAxis) && !hasY2) {
-    const w = namesWidth();
-    if (w) right += Math.ceil(w) + LABEL_GAP;
+    const width = namesWidth();
+    if (width) right += Math.ceil(width) + LABEL_GAP;
   }
   if (direct.category === 'start' && (yPosition === 'right' || !showYAxis)) {
-    const w = namesWidth();
-    if (w) left += Math.ceil(w) + LABEL_GAP;
+    const width = namesWidth();
+    if (width) left += Math.ceil(width) + LABEL_GAP;
   }
-  if (o.trailingLabel) right += Math.ceil(measureText(o.trailingLabel, labelFont)) + LABEL_GAP;
-  if (o.endMarker) right += Math.ceil(sizes.pointRadius + lineWidth);
+  if (options.trailingLabel) right += Math.ceil(measureText(options.trailingLabel, labelFont)) + LABEL_GAP;
+  if (options.endMarker) right += Math.ceil(sizes.pointRadius + lineWidth);
+  return { left, right };
+}
+
+/** What the line chart needs from the shared cartesian axes, including room for its direct labels. */
+export function lineAxes(model: Model, options: LineChartOptions, env: Env, hidden: Set<string>): CartesianSpec {
+  const visible = visibleSeries(model, hidden);
+  const trellis = isTrellis(model, options);
+  const hasY2 = (options.y2Axis?.series?.length ?? 0) > 0 && visible.some((series) => series.axis === 'y2');
+  const xs: number[] = [];
+  const xSource = visible.length ? visible : model.series;
+  for (const series of xSource) for (const point of series.points) xs.push(point.x);
+  const yValues: number[] = [];
+  const y2Values: number[] = [];
+  for (const series of visible) {
+    const target = series.axis === 'y2' && hasY2 ? y2Values : yValues;
+    for (const point of series.points) if (point.y != null) target.push(point.y);
+  }
+  for (const annotation of options.annotations ?? []) if (annotation.y != null) yValues.push(annotation.y);
+
+  const { yPosition, showYAxis } = axisSides(options, trellis);
+  const lineWidth = lineWidthFor(options, env);
+  const direct = resolveDirect(options);
+  const top = topMargin(options, env, direct, lineWidth);
+  const { left, right } = sideMargins(options, env, visible, direct, { yPosition, showYAxis, hasY2 }, lineWidth);
 
   return {
     xType: model.xType,
@@ -124,56 +160,58 @@ export function lineAxes(model: Model, o: LineChartOptions, env: Env, hidden: Se
   };
 }
 
-export function colorsFor(model: Model, o: LineChartOptions, env: Env): Pick<LineGeometry, 'colorOf' | 'seriesColor'> {
+export function colorsFor(model: Model, options: LineChartOptions, env: Env): Pick<LineGeometry, 'colorOf' | 'seriesColor'> {
   const palette = env.palette;
-  const colorOf = (k: string): string =>
-    o.colors?.[k] ?? o.seriesStyles?.[k]?.color ?? palette[Math.max(0, model.colorKeys.indexOf(k)) % palette.length];
+  const colorOf = (colorKey: string): string => {
+    const paletteIndex = Math.max(0, model.colorKeys.indexOf(colorKey)) % palette.length;
+    return options.colors?.[colorKey] ?? options.seriesStyles?.[colorKey]?.color ?? palette[paletteIndex];
+  };
   const bySeries = new Map<string, string>();
-  for (const s of model.series) if (!bySeries.has(s.key)) bySeries.set(s.key, colorOf(s.colorKey));
-  return { colorOf, seriesColor: (k) => bySeries.get(k) ?? colorOf(k) };
+  for (const series of model.series) if (!bySeries.has(series.key)) bySeries.set(series.key, colorOf(series.colorKey));
+  return { colorOf, seriesColor: (seriesKey) => bySeries.get(seriesKey) ?? colorOf(seriesKey) };
 }
 
 export function layoutLine(input: LayoutInput<LineChartOptions, Model, LineSnapshot>): LineGeometry {
-  const { model, options: o, env, hidden, tween } = input;
+  const { model, options, env, hidden, tween } = input;
   const domains = tween ? { t: tween.t, ...tween.from.domains } : null;
-  const frame = layoutCartesian(lineAxes(model, o, env, hidden), o, env, input.width, input.height, domains);
-  const colors = colorsFor(model, o, env);
+  const frame = layoutCartesian(lineAxes(model, options, env, hidden), options, env, input.width, input.height, domains);
+  const colors = colorsFor(model, options, env);
   const visible = visibleSeries(model, hidden);
-  const t = tween ? Math.max(0, Math.min(1, tween.t)) : 1;
-  const display = (s: SeriesModel, p: Point): number | null => {
-    if (p.y == null || !tween || t >= 1) return p.y;
-    const prev = tween.from.values.get(s.id)?.get(p.x);
-    return prev == null ? p.y : prev + (p.y - prev) * t;
+  const progress = tween ? Math.max(0, Math.min(1, tween.t)) : 1;
+  /** Value shown at this point of the update animation. */
+  const displayed = (series: SeriesModel, point: Point): number | null => {
+    if (point.y == null || !tween || progress >= 1) return point.y;
+    const previous = tween.from.values.get(series.id)?.get(point.x);
+    return previous == null ? point.y : previous + (point.y - previous) * progress;
   };
-  const panels: LinePanel[] = frame.panels.map((pf) => ({
-    ...pf,
-    series: visible
-      .filter((s) => s.facet === pf.facet || !frame.trellis)
-      .map((s) => {
-        const scale = s.axis === 'y2' && frame.y2 ? frame.y2 : frame.y;
-        return {
-          s,
-          color: colors.seriesColor(s.key),
-          pts: s.points.map((p) => {
-            const value = display(s, p);
-            return { x: frame.xScale(p.x), y: value == null ? null : scale(value), value, p };
-          }),
-          entering: !!tween && !tween.from.values.has(s.id),
-        };
+  const layoutSeries = (series: SeriesModel): SeriesLayout => {
+    const scale = series.axis === 'y2' && frame.y2 ? frame.y2 : frame.y;
+    return {
+      s: series,
+      color: colors.seriesColor(series.key),
+      pts: series.points.map((point) => {
+        const value = displayed(series, point);
+        return { x: frame.xScale(point.x), y: value == null ? null : scale(value), value, p: point };
       }),
+      entering: !!tween && !tween.from.values.has(series.id),
+    };
+  };
+  const panels: LinePanel[] = frame.panels.map((panelFrame) => ({
+    ...panelFrame,
+    series: visible.filter((series) => series.facet === panelFrame.facet || !frame.trellis).map(layoutSeries),
   }));
-  return { frame, panels, ...colors, lineWidth: lineWidthFor(o, env) };
+  return { frame, panels, ...colors, lineWidth: lineWidthFor(options, env) };
 }
 
-export function snapshotLine(g: LineGeometry): LineSnapshot {
+export function snapshotLine(geometry: LineGeometry): LineSnapshot {
   const values = new Map<string, Map<number, number>>();
-  for (const panel of g.panels) {
-    for (const sl of panel.series) {
-      const m = new Map<number, number>();
-      for (const pt of sl.pts) if (pt.value != null) m.set(pt.p.x, pt.value);
-      values.set(sl.s.id, m);
+  for (const panel of geometry.panels) {
+    for (const series of panel.series) {
+      const valueByX = new Map<number, number>();
+      for (const point of series.pts) if (point.value != null) valueByX.set(point.p.x, point.value);
+      values.set(series.s.id, valueByX);
     }
   }
-  const { xDomain, yDomain, y2Domain } = g.frame;
+  const { xDomain, yDomain, y2Domain } = geometry.frame;
   return { values, domains: { xDomain, yDomain, y2Domain } };
 }

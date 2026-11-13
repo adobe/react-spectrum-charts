@@ -70,253 +70,401 @@ export interface DomainTween {
   y2Domain: [number, number] | null;
 }
 
+/** Length of an x-axis tick mark. */
 export const TICK = 6;
+/** Space between tick labels and the plot, and between labels and an axis title. */
 const LABEL_GAP = 8;
+/** Space between the end of a tick mark and its label. */
+const TICK_LABEL_GAP = 4;
+/** Axis label line height as a multiple of the font size. */
+const LINE_HEIGHT_RATIO = 1.3;
+const FACET_TITLE_LINE_HEIGHT_RATIO = 1.4;
+const FACET_TITLE_PADDING = 6;
+const MIN_PLOT_SIZE = 10;
+const ONE_DAY_MS = 864e5;
+/** Padding around a single-valued y domain, as a fraction of the value. */
+const FLAT_Y_DOMAIN_PAD_RATIO = 0.1;
+/** Padding above and below the data in minimal charts, as a fraction of the domain. */
+const MINIMAL_Y_PAD_RATIO = 0.08;
+const NICE_Y_TICK_COUNT = 6;
+/** Rough spacing between linear x ticks, used to pick ticks for the label format. */
+const LINEAR_X_TICK_SPACING = 80;
+const MIN_LINEAR_X_TICK_COUNT = 2;
+const TRELLIS_COLUMN_GAP = 24;
+const TRELLIS_ROW_GAP_WITH_X_AXIS = 12;
+const TRELLIS_ROW_GAP_WITHOUT_X_AXIS = 16;
+/** Minimum chart widths for the default number of trellis columns. */
+const TRELLIS_COLUMN_BREAKPOINTS = [
+  { minWidth: 900, columns: 3 },
+  { minWidth: 480, columns: 2 },
+] as const;
+
+type Domain = [number, number];
+
+interface XAxisContext {
+  spec: CartesianSpec;
+  options: CartesianOptions;
+  formatters: Formatters;
+  xDomain: Domain;
+  showXAxis: boolean;
+  showTimeSuperLabels: boolean;
+  axisFont: string;
+  columns: number;
+  columnGap: number;
+  width: number;
+}
+
+interface XAxis {
+  plotWidth: number;
+  xScale: (v: number) => number;
+  xInvert: (px: number) => number;
+  xTicks: Tick[];
+}
+
+/** Line height of axis labels for a font size. */
+export function axisLineHeight(fontSize: number): number {
+  return Math.round(fontSize * LINE_HEIGHT_RATIO);
+}
 
 /** Which side the y axis is on and whether the axes are shown. */
-export function axisSides(o: CartesianOptions, trellis: boolean): { yPosition: 'left' | 'right'; showXAxis: boolean; showYAxis: boolean } {
+export function axisSides(options: CartesianOptions, trellis: boolean): { yPosition: 'left' | 'right'; showXAxis: boolean; showYAxis: boolean } {
+  const defaultPosition = trellis ? 'left' : 'right';
   return {
-    yPosition: o.yAxis?.position ?? (trellis ? 'left' : 'right'),
-    showXAxis: !o.minimal && !o.xAxis?.hidden,
-    showYAxis: !o.minimal && !o.yAxis?.hidden,
+    yPosition: options.yAxis?.position ?? defaultPosition,
+    showXAxis: !options.minimal && !options.xAxis?.hidden,
+    showYAxis: !options.minimal && !options.yAxis?.hidden,
   };
 }
 
 export function makeNumberFormat(
-  f: Formatters,
+  formatters: Formatters,
   spec: AxisOptions['format'],
   ticks: number[],
   extraPrecision = 0,
 ): (n: number) => string {
   if (spec === 'compact' || spec === '$compact') {
     const prefix = spec === '$compact' ? '$' : '';
-    if (extraPrecision === 0) return autoNumberFormat(ticks, f, prefix);
-    return compactFormatter(f, 1, prefix);
+    if (extraPrecision === 0) return autoNumberFormat(ticks, formatters, prefix);
+    return compactFormatter(formatters, 1, prefix);
   }
-  const fallback = extraPrecision ? compactFormatter(f, 1) : autoNumberFormat(ticks, f);
-  return numberFormatter(f, spec, fallback);
+  const fallback = extraPrecision ? compactFormatter(formatters, 1) : autoNumberFormat(ticks, formatters);
+  return numberFormatter(formatters, spec, fallback);
 }
 
-function lerpDomain(from: [number, number] | null | undefined, to: [number, number], t: number): [number, number] {
-  if (!from || t >= 1) return to;
-  return [interpolateNumber(from[0], to[0])(t), interpolateNumber(from[1], to[1])(t)];
+function lerpDomain(from: Domain | null | undefined, to: Domain, progress: number): Domain {
+  if (!from || progress >= 1) return to;
+  return [interpolateNumber(from[0], to[0])(progress), interpolateNumber(from[1], to[1])(progress)];
 }
 
 export function xPosition(v: unknown, xType: ScaleType, categories: string[]): number | null {
   if (v == null) return null;
   if (xType === 'time') {
-    const d = parseDate(v);
-    return d ? +d : null;
+    const date = parseDate(v);
+    return date ? +date : null;
   }
   if (xType === 'linear') return toNumber(v);
-  const i = categories.indexOf(String(v));
-  return i < 0 ? null : i;
+  const index = categories.indexOf(String(v));
+  return index < 0 ? null : index;
+}
+
+/** Target x domain: data extent, overridden by the axis domain and widened if empty. */
+function targetXDomain(spec: CartesianSpec, options: CartesianOptions): Domain {
+  let domain: Domain;
+  if (spec.xType === 'band') domain = [0, Math.max(0, spec.categories.length - 1)];
+  else {
+    const [min, max] = extent(spec.xs);
+    domain = min == null || max == null ? [0, 1] : [min, max];
+  }
+  const requested = options.xAxis?.domain;
+  if (requested && spec.xType !== 'band') {
+    const start = requested[0] == null ? null : xPosition(requested[0], spec.xType, spec.categories);
+    const end = requested[1] == null ? null : xPosition(requested[1], spec.xType, spec.categories);
+    domain = [start ?? domain[0], end ?? domain[1]];
+  }
+  if (domain[0] === domain[1]) {
+    const pad = spec.xType === 'time' ? ONE_DAY_MS : 1;
+    domain = [domain[0] - pad, domain[1] + pad];
+  }
+  return domain;
+}
+
+/** Target domain of a y axis: data plus reference lines, zero, padding and nicing. */
+function targetYDomain(spec: CartesianSpec, options: CartesianOptions, axis: 'y' | 'y2'): Domain {
+  const minimal = !!options.minimal;
+  const axisOptions = axis === 'y' ? options.yAxis : options.y2Axis;
+  const values = axis === 'y' ? [...spec.yValues] : [...(spec.y2Values ?? [])];
+  for (const referenceLine of options.referenceLines ?? []) {
+    if ((referenceLine.axis ?? 'y') === axis) {
+      const value = toNumber(referenceLine.value);
+      if (value != null) values.push(value);
+    }
+  }
+  let low = values.length ? Math.min(...values) : 0;
+  let high = values.length ? Math.max(...values) : 1;
+  if (axisOptions?.zero ?? !minimal) {
+    low = Math.min(low, 0);
+    high = Math.max(high, 0);
+  }
+  if (low === high) {
+    const pad = Math.abs(low) * FLAT_Y_DOMAIN_PAD_RATIO || 1;
+    low -= pad;
+    high += pad;
+  }
+  const requested = axisOptions?.domain;
+  if (requested) {
+    low = requested[0] == null ? low : Number(requested[0]);
+    high = requested[1] == null ? high : Number(requested[1]);
+  }
+  if (minimal && !requested) {
+    const pad = (high - low) * MINIMAL_Y_PAD_RATIO;
+    const lowPad = axisOptions?.zero ? 0 : pad;
+    return [low - lowPad, high + pad];
+  }
+  if (axisOptions?.nice === false || requested) return [low, high];
+  return scaleLinear().domain([low, high]).nice(NICE_Y_TICK_COUNT).domain() as Domain;
+}
+
+function defaultFacetColumns(width: number): number {
+  for (const breakpoint of TRELLIS_COLUMN_BREAKPOINTS) {
+    if (width >= breakpoint.minWidth) return breakpoint.columns;
+  }
+  return 1;
+}
+
+function facetColumnCount(options: CartesianOptions, trellis: boolean, facetCount: number, width: number): number {
+  if (!trellis) return 1;
+  const requested = options.facetColumns ?? defaultFacetColumns(width);
+  return Math.max(1, Math.min(facetCount, requested));
+}
+
+function trellisRowGap(trellis: boolean, showXAxis: boolean): number {
+  if (!trellis) return 0;
+  return showXAxis ? TRELLIS_ROW_GAP_WITH_X_AXIS : TRELLIS_ROW_GAP_WITHOUT_X_AXIS;
+}
+
+/** Height of the x axis: tick, labels, optional super labels and title. */
+function xAxisHeight(options: CartesianOptions, showXAxis: boolean, showTimeSuperLabels: boolean, lineHeight: number): number {
+  if (!showXAxis) return 0;
+  const titleHeight = options.xAxis?.title ? lineHeight + LABEL_GAP : 0;
+  const superLabelHeight = showTimeSuperLabels ? lineHeight : 0;
+  return TICK + TICK_LABEL_GAP + lineHeight + superLabelHeight + titleHeight;
+}
+
+/** Y ticks with labels formatted for the axis. */
+function labeledYTicks(
+  scale: ScaleLinear<number, number>,
+  axisOptions: AxisOptions | undefined,
+  formatters: Formatters,
+  plotHeight: number,
+  fontSize: number,
+): Tick[] {
+  const ticks = yTicks(scale, null, formatters, plotHeight, fontSize, axisOptions?.ticks);
+  const format = makeNumberFormat(formatters, axisOptions?.format, ticks.map((tick) => tick.value));
+  for (const tick of ticks) tick.label = format(tick.value);
+  return ticks;
+}
+
+/** Horizontal room a y axis needs for its labels and title. */
+function yAxisWidth(ticks: Tick[], title: string | undefined, axisFont: string, lineHeight: number): number {
+  if (ticks.length === 0) return 0;
+  const widestLabel = Math.max(...ticks.map((tick) => measureText(tick.label, axisFont)));
+  const titleWidth = title ? lineHeight + LABEL_GAP : 0;
+  return Math.ceil(widestLabel) + LABEL_GAP + titleWidth;
+}
+
+function buildTimeXAxis(context: XAxisContext, plotWidth: number): XAxis {
+  const { options, formatters, xDomain } = context;
+  const scale = scaleTime().domain([new Date(xDomain[0]), new Date(xDomain[1])]).range([0, plotWidth]);
+  let xTicks: Tick[] = [];
+  if (context.showXAxis) {
+    xTicks = timeTicks(scale, formatters, context.axisFont, plotWidth, options.xAxis?.ticks, context.showTimeSuperLabels);
+  }
+  const format = options.xAxis?.format;
+  if (format) {
+    const formatDate = typeof format === 'string' ? formatters.time(format) : (format as (v: Date) => string);
+    for (const tick of xTicks) {
+      tick.label = formatDate(new Date(tick.value));
+      delete tick.superLabel;
+    }
+  }
+  return {
+    plotWidth,
+    xScale: (v) => scale(new Date(v)),
+    xInvert: (px) => +scale.invert(px),
+    xTicks,
+  };
+}
+
+function buildLinearXAxis(context: XAxisContext, plotWidth: number): XAxis {
+  const { options, formatters } = context;
+  const scale = scaleLinear().domain(context.xDomain).range([0, plotWidth]);
+  if (options.xAxis?.nice) scale.nice();
+  let xTicks: Tick[] = [];
+  if (context.showXAxis) {
+    const formatSpec = options.xAxis?.format;
+    let format: ((n: number) => string) | null = null;
+    if (formatSpec !== undefined) {
+      const tickCount = Math.max(MIN_LINEAR_X_TICK_COUNT, Math.floor(plotWidth / LINEAR_X_TICK_SPACING));
+      format = makeNumberFormat(formatters, formatSpec, scale.ticks(tickCount));
+    }
+    xTicks = linearXTicks(scale, format, formatters, context.axisFont, plotWidth, options.xAxis?.ticks);
+  }
+  return { plotWidth, xScale: scale, xInvert: (px) => scale.invert(px), xTicks };
+}
+
+function buildBandXAxis(context: XAxisContext, plotWidth: number): XAxis {
+  const { categories } = context.spec;
+  const scale = scaleLinear()
+    .domain(categories.length > 1 ? context.xDomain : [-1, 1])
+    .range([0, plotWidth]);
+  let xTicks: Tick[] = [];
+  if (context.showXAxis) xTicks = bandTicks(categories, (i) => scale(i), context.axisFont, plotWidth);
+  return { plotWidth, xScale: scale, xInvert: (px) => scale.invert(px), xTicks };
+}
+
+/** X scale and ticks for a panel width derived from the left and right gutters. */
+function buildXAxis(context: XAxisContext, left: number, right: number): XAxis {
+  const { columns, columnGap } = context;
+  const plotWidth = Math.max(MIN_PLOT_SIZE, (context.width - left - right - (columns - 1) * columnGap) / columns);
+  if (context.spec.xType === 'time') return buildTimeXAxis(context, plotWidth);
+  if (context.spec.xType === 'linear') return buildLinearXAxis(context, plotWidth);
+  return buildBandXAxis(context, plotWidth);
+}
+
+/** Widens the gutters, if needed, so the outermost x labels stay inside the chart. */
+function fitOuterXLabels(context: XAxisContext, left: number, right: number): { left: number; right: number; xAxis: XAxis } {
+  const xAxis = buildXAxis(context, left, right);
+  if (!context.showXAxis || !xAxis.xTicks.length) return { left, right, xAxis };
+  const first = xAxis.xTicks[0];
+  const last = xAxis.xTicks[xAxis.xTicks.length - 1];
+  const firstOverflow = measureText(first.label, context.axisFont) / 2 - first.pos;
+  const lastOverflow = measureText(last.label, context.axisFont) / 2 - (xAxis.plotWidth - last.pos);
+  const fittedLeft = Math.max(left, Math.ceil(firstOverflow));
+  const fittedRight = Math.max(right, Math.ceil(lastOverflow));
+  if (fittedLeft === left && fittedRight === right) return { left, right, xAxis };
+  return { left: fittedLeft, right: fittedRight, xAxis: buildXAxis(context, fittedLeft, fittedRight) };
+}
+
+interface PanelGrid {
+  facets: string[];
+  columns: number;
+  trellis: boolean;
+  left: number;
+  top: number;
+  plotWidth: number;
+  plotHeight: number;
+  columnGap: number;
+  rowGap: number;
+  facetTitleHeight: number;
+}
+
+function placePanels(grid: PanelGrid): PanelFrame[] {
+  const { columns, plotWidth, plotHeight, facetTitleHeight } = grid;
+  const facetCount = grid.facets.length;
+  return grid.facets.map((facet, index) => {
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    return {
+      facet,
+      index,
+      x: grid.left + column * (plotWidth + grid.columnGap),
+      y: grid.top + row * (plotHeight + grid.rowGap + facetTitleHeight) + facetTitleHeight,
+      width: plotWidth,
+      height: plotHeight,
+      showXLabels: index + columns >= facetCount,
+      showYLabels: !grid.trellis || column === 0,
+    };
+  });
+}
+
+/** Formats an x value for tooltips and accessible labels. */
+function makeXValueFormatter(spec: CartesianSpec, options: CartesianOptions, formatters: Formatters, xTicks: Tick[]): (v: XValue) => string {
+  if (spec.xType === 'time') {
+    const sortedPositions = Array.from(new Set(spec.xs)).sort((a, b) => a - b);
+    const fullFormat = timeFormatsForGrain(formatters, inferGrain(sortedPositions)).full;
+    const custom = options.xAxis?.format;
+    return (v) => {
+      const date = parseDate(v);
+      if (!date) return String(v ?? '');
+      return typeof custom === 'function' ? (custom as (v: Date) => string)(date) : fullFormat(date);
+    };
+  }
+  if (spec.xType === 'linear') {
+    const extraPrecision = options.xAxis?.format ? 0 : 1;
+    const format = makeNumberFormat(formatters, options.xAxis?.format, xTicks.map((tick) => tick.value), extraPrecision);
+    return (v) => {
+      const value = toNumber(v);
+      return value == null ? String(v ?? '') : format(value);
+    };
+  }
+  return (v) => String(v ?? '');
 }
 
 /** Scales, ticks and panel placement for charts with x/y axes. */
 export function layoutCartesian(
   spec: CartesianSpec,
-  o: CartesianOptions,
+  options: CartesianOptions,
   env: Env,
   width: number,
   height: number,
   tween: DomainTween | null,
 ): CartesianFrame {
-  const { sizes, f } = env;
-  const minimal = !!o.minimal;
+  const { sizes, f: formatters } = env;
   const trellis = spec.trellis;
-  const { yPosition, showXAxis, showYAxis } = axisSides(o, trellis);
+  const { yPosition, showXAxis, showYAxis } = axisSides(options, trellis);
   const axisFontSize = sizes.axisFont;
   const axisFont = font(axisFontSize);
-  const lineHeight = Math.round(axisFontSize * 1.3);
+  const lineHeight = axisLineHeight(axisFontSize);
   const hasY2 = spec.y2Values != null;
 
-  // ---- domains ----
-  const xs = spec.xs;
-  let xDom: [number, number];
-  if (spec.xType === 'band') xDom = [0, Math.max(0, spec.categories.length - 1)];
-  else {
-    const [a, b] = extent(xs);
-    xDom = a == null || b == null ? [0, 1] : [a, b];
-  }
-  const xd = o.xAxis?.domain;
-  if (xd && spec.xType !== 'band') {
-    const a = xd[0] == null ? null : xPosition(xd[0], spec.xType, spec.categories);
-    const b = xd[1] == null ? null : xPosition(xd[1], spec.xType, spec.categories);
-    xDom = [a ?? xDom[0], b ?? xDom[1]];
-  }
-  if (xDom[0] === xDom[1]) {
-    const d = spec.xType === 'time' ? 864e5 : 1;
-    xDom = [xDom[0] - d, xDom[1] + d];
-  }
+  const progress = tween ? Math.max(0, Math.min(1, tween.t)) : 1;
+  const xDomain = lerpDomain(tween?.xDomain, targetXDomain(spec, options), progress);
+  const yDomain = lerpDomain(tween?.yDomain, targetYDomain(spec, options, 'y'), progress);
+  const y2Domain = hasY2 ? lerpDomain(tween?.y2Domain, targetYDomain(spec, options, 'y2'), progress) : null;
 
-  const yDomainFor = (axis: 'y' | 'y2'): [number, number] => {
-    const axisOpts = axis === 'y' ? o.yAxis : o.y2Axis;
-    const vals = axis === 'y' ? [...spec.yValues] : [...(spec.y2Values ?? [])];
-    for (const r of o.referenceLines ?? []) {
-      if ((r.axis ?? 'y') === axis) {
-        const n = toNumber(r.value);
-        if (n != null) vals.push(n);
-      }
-    }
-    let lo = vals.length ? Math.min(...vals) : 0;
-    let hi = vals.length ? Math.max(...vals) : 1;
-    if (axisOpts?.zero ?? !minimal) {
-      lo = Math.min(lo, 0);
-      hi = Math.max(hi, 0);
-    }
-    if (lo === hi) {
-      const d = Math.abs(lo) * 0.1 || 1;
-      lo -= d;
-      hi += d;
-    }
-    const dom = axisOpts?.domain;
-    if (dom) {
-      lo = dom[0] == null ? lo : Number(dom[0]);
-      hi = dom[1] == null ? hi : Number(dom[1]);
-    }
-    if (minimal && !dom) {
-      const padY = (hi - lo) * 0.08;
-      return [lo - (axisOpts?.zero ? 0 : padY), hi + padY];
-    }
-    if (axisOpts?.nice === false || dom) return [lo, hi];
-    return scaleLinear().domain([lo, hi]).nice(6).domain() as [number, number];
-  };
-  const t = tween ? Math.max(0, Math.min(1, tween.t)) : 1;
-  const xDomain = lerpDomain(tween?.xDomain, xDom, t);
-  const yDomain = lerpDomain(tween?.yDomain, yDomainFor('y'), t);
-  const y2Domain = hasY2 ? lerpDomain(tween?.y2Domain, yDomainFor('y2'), t) : null;
-
-  // ---- vertical space ----
   const facets = trellis ? spec.facets : [''];
-  const n = facets.length;
-  const cols = trellis ? Math.max(1, Math.min(n, o.facetColumns ?? (width >= 900 ? 3 : width >= 480 ? 2 : 1))) : 1;
-  const rows = Math.ceil(n / cols);
-  const facetTitleHeight = trellis ? Math.round(sizes.facetFont * 1.4) + 6 : 0;
+  const columns = facetColumnCount(options, trellis, facets.length, width);
+  const rows = Math.ceil(facets.length / columns);
+  const facetTitleHeight = trellis ? Math.round(sizes.facetFont * FACET_TITLE_LINE_HEIGHT_RATIO) + FACET_TITLE_PADDING : 0;
 
-  const timeSuper = spec.xType === 'time' && o.xAxis?.superLabels !== false;
-  const xTitleH = showXAxis && o.xAxis?.title ? lineHeight + LABEL_GAP : 0;
-  const xAxisH = showXAxis ? TICK + 4 + lineHeight + (timeSuper ? lineHeight : 0) + xTitleH : 0;
+  const showTimeSuperLabels = spec.xType === 'time' && options.xAxis?.superLabels !== false;
   const top = Math.max(spec.margin.top, showYAxis ? Math.ceil(axisFontSize / 2) : 0);
-  const bottom = xAxisH;
-  const rowGap = trellis ? (showXAxis ? 12 : 16) : 0;
-  const plotHeight = Math.max(10, (height - top - bottom - (rows - 1) * rowGap - rows * facetTitleHeight) / rows);
+  const bottom = xAxisHeight(options, showXAxis, showTimeSuperLabels, lineHeight);
+  const rowGap = trellisRowGap(trellis, showXAxis);
+  const plotHeight = Math.max(MIN_PLOT_SIZE, (height - top - bottom - (rows - 1) * rowGap - rows * facetTitleHeight) / rows);
 
   const y = scaleLinear().domain(yDomain).range([plotHeight, 0]);
   const y2 = y2Domain ? scaleLinear().domain(y2Domain).range([plotHeight, 0]) : null;
-  const yT = showYAxis ? yTicks(y, null, f, plotHeight, axisFontSize, o.yAxis?.ticks) : [];
-  const yFmt = makeNumberFormat(f, o.yAxis?.format, yT.map((d) => d.value));
-  for (const tk of yT) tk.label = yFmt(tk.value);
-  const y2T = y2 && showYAxis ? yTicks(y2, null, f, plotHeight, axisFontSize, o.y2Axis?.ticks) : [];
-  const y2Fmt = makeNumberFormat(f, o.y2Axis?.format, y2T.map((d) => d.value));
-  for (const tk of y2T) tk.label = y2Fmt(tk.value);
-  const yValueFmt = makeNumberFormat(f, o.yAxis?.format, yT.map((d) => d.value), 1);
-  const y2ValueFmt = makeNumberFormat(f, o.y2Axis?.format, y2T.map((d) => d.value), 1);
+  const yTickList = showYAxis ? labeledYTicks(y, options.yAxis, formatters, plotHeight, axisFontSize) : [];
+  const y2TickList = y2 && showYAxis ? labeledYTicks(y2, options.y2Axis, formatters, plotHeight, axisFontSize) : [];
+  const yValueFormat = makeNumberFormat(formatters, options.yAxis?.format, yTickList.map((tick) => tick.value), 1);
+  const y2ValueFormat = makeNumberFormat(formatters, options.y2Axis?.format, y2TickList.map((tick) => tick.value), 1);
 
-  const axisWidth = (ticks: Tick[], title?: string): number =>
-    ticks.length === 0
-      ? 0
-      : Math.ceil(Math.max(...ticks.map((tk) => measureText(tk.label, axisFont)))) + LABEL_GAP + (title ? lineHeight + LABEL_GAP : 0);
-  const yW = showYAxis ? axisWidth(yT, o.yAxis?.title) : 0;
-  const y2W = showYAxis && y2 ? axisWidth(y2T, o.y2Axis?.title) : 0;
+  const yWidth = showYAxis ? yAxisWidth(yTickList, options.yAxis?.title, axisFont, lineHeight) : 0;
+  const y2Width = showYAxis && y2 ? yAxisWidth(y2TickList, options.y2Axis?.title, axisFont, lineHeight) : 0;
+  const leftAxisWidth = yPosition === 'left' ? yWidth : y2Width;
+  const rightAxisWidth = yPosition === 'right' ? yWidth : y2Width;
+  const columnGap = trellis ? TRELLIS_COLUMN_GAP : 0;
 
-  let left = (yPosition === 'left' ? yW : y2W) + spec.margin.left;
-  let right = (yPosition === 'right' ? yW : y2W) + spec.margin.right;
-  const colGap = trellis ? 24 : 0;
-
-  const buildX = (l: number, r: number) => {
-    const plotWidth = Math.max(10, (width - l - r - (cols - 1) * colGap) / cols);
-    let xScale: (v: number) => number;
-    let xInvert: (px: number) => number;
-    let xT: Tick[] = [];
-    if (spec.xType === 'time') {
-      const sc = scaleTime().domain([new Date(xDomain[0]), new Date(xDomain[1])]).range([0, plotWidth]);
-      xScale = (v) => sc(new Date(v));
-      xInvert = (px) => +sc.invert(px);
-      if (showXAxis) xT = timeTicks(sc, f, axisFont, plotWidth, o.xAxis?.ticks, timeSuper);
-      const fmt = o.xAxis?.format;
-      if (fmt) {
-        const tf = typeof fmt === 'string' ? f.time(fmt) : (fmt as (v: Date) => string);
-        for (const tk of xT) {
-          tk.label = tf(new Date(tk.value));
-          delete tk.superLabel;
-        }
-      }
-    } else if (spec.xType === 'linear') {
-      const sc = scaleLinear().domain(xDomain).range([0, plotWidth]);
-      if (o.xAxis?.nice) sc.nice();
-      xScale = sc;
-      xInvert = (px) => sc.invert(px);
-      if (showXAxis) {
-        const fmtSpec = o.xAxis?.format;
-        const fmt = fmtSpec === undefined ? null : makeNumberFormat(f, fmtSpec, sc.ticks(Math.max(2, Math.floor(plotWidth / 80))));
-        xT = linearXTicks(sc, fmt, f, axisFont, plotWidth, o.xAxis?.ticks);
-      }
-    } else {
-      const sc = scaleLinear()
-        .domain(spec.categories.length > 1 ? xDomain : [-1, 1])
-        .range([0, plotWidth]);
-      xScale = sc;
-      xInvert = (px) => sc.invert(px);
-      if (showXAxis) xT = bandTicks(spec.categories, (i) => sc(i), axisFont, plotWidth);
-    }
-    return { plotWidth, xScale, xInvert, xT };
+  const xAxisContext: XAxisContext = {
+    spec,
+    options,
+    formatters,
+    xDomain,
+    showXAxis,
+    showTimeSuperLabels,
+    axisFont,
+    columns,
+    columnGap,
+    width,
   };
+  const { left, xAxis } = fitOuterXLabels(xAxisContext, leftAxisWidth + spec.margin.left, rightAxisWidth + spec.margin.right);
+  const { plotWidth, xScale, xInvert, xTicks } = xAxis;
 
-  let xb = buildX(left, right);
-  if (showXAxis && xb.xT.length) {
-    // Keep the outermost labels inside the chart.
-    const first = xb.xT[0];
-    const last = xb.xT[xb.xT.length - 1];
-    const firstOver = measureText(first.label, axisFont) / 2 - first.pos;
-    const lastOver = measureText(last.label, axisFont) / 2 - (xb.plotWidth - last.pos);
-    const nl = Math.max(left, Math.ceil(firstOver));
-    const nr = Math.max(right, Math.ceil(lastOver));
-    if (nl !== left || nr !== right) {
-      left = nl;
-      right = nr;
-      xb = buildX(left, right);
-    }
-  }
-  const { plotWidth, xScale, xInvert, xT } = xb;
-
-  const panels: PanelFrame[] = facets.map((facet, index) => {
-    const row = Math.floor(index / cols);
-    const col = index % cols;
-    return {
-      facet,
-      index,
-      x: left + col * (plotWidth + colGap),
-      y: top + row * (plotHeight + rowGap + facetTitleHeight) + facetTitleHeight,
-      width: plotWidth,
-      height: plotHeight,
-      showXLabels: index + cols >= n,
-      showYLabels: !trellis || col === 0,
-    };
-  });
-
-  let formatX: (v: XValue) => string;
-  if (spec.xType === 'time') {
-    const grain = inferGrain(Array.from(new Set(xs)).sort((a, b) => a - b));
-    const full = timeFormatsForGrain(f, grain).full;
-    const custom = o.xAxis?.format;
-    formatX = (v) => {
-      const d = parseDate(v);
-      if (!d) return String(v ?? '');
-      return typeof custom === 'function' ? (custom as (v: Date) => string)(d) : full(d);
-    };
-  } else if (spec.xType === 'linear') {
-    const fmt = makeNumberFormat(f, o.xAxis?.format, xT.map((d) => d.value), o.xAxis?.format ? 0 : 1);
-    formatX = (v) => {
-      const n2 = toNumber(v);
-      return n2 == null ? String(v ?? '') : fmt(n2);
-    };
-  } else {
-    formatX = (v) => String(v ?? '');
-  }
+  const panels = placePanels({ facets, columns, trellis, left, top, plotWidth, plotHeight, columnGap, rowGap, facetTitleHeight });
   const formatY = (v: number | null, axis: 'y' | 'y2' = 'y'): string => {
     if (v == null) return '';
-    return axis === 'y2' ? y2ValueFmt(v) : yValueFmt(v);
+    return axis === 'y2' ? y2ValueFormat(v) : yValueFormat(v);
   };
 
   return {
@@ -329,11 +477,11 @@ export function layoutCartesian(
     xInvert,
     y,
     y2,
-    xTicks: xT,
-    yTicks: yT,
-    y2Ticks: y2T,
+    xTicks,
+    yTicks: yTickList,
+    y2Ticks: y2TickList,
     yPosition,
-    formatX,
+    formatX: makeXValueFormatter(spec, options, formatters, xTicks),
     formatY,
     xValue: (v) => xPosition(v, spec.xType, spec.categories),
     axisFont,

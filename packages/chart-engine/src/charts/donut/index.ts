@@ -9,15 +9,25 @@ import { buildDonutModel, type DonutModel } from './model.js';
 import { describeArc, donutNav } from './nav.js';
 import type { DonutChartOptions, DonutHoverContext, DonutItem } from './types.js';
 
-function toItem(a: ArcLayout): DonutItem {
+/** Screen reader summary, e.g. "Donut chart with 3 segments: a, b, and c. Use the arrow keys…". */
+function describeDonut(model: DonutModel, options: DonutChartOptions): string {
+  const segmentCount = model.categories.length;
+  const kind = options.variant === 'semicircle' ? 'Semicircle donut chart' : 'Donut chart';
+  const facets = model.pies.length > 1 ? ` in ${model.pies.length} small multiples` : '';
+  const plural = segmentCount === 1 ? '' : 's';
+  const list = segmentCount ? `: ${listFormat(model.categories)}` : '';
+  return `${kind}${facets} with ${segmentCount} segment${plural}${list}. Use the arrow keys to explore values.`;
+}
+
+function toItem(arc: ArcLayout): DonutItem {
   return {
-    category: a.category,
-    value: a.value,
-    percent: a.percent,
-    total: a.pie.total,
-    index: a.segment.index,
-    datum: a.segment.datum,
-    ...(a.pie.facet != null ? { facet: a.pie.facet } : {}),
+    category: arc.category,
+    value: arc.value,
+    percent: arc.percent,
+    total: arc.pie.total,
+    index: arc.segment.index,
+    datum: arc.segment.datum,
+    ...(arc.pie.facet != null ? { facet: arc.pie.facet } : {}),
   };
 }
 
@@ -27,15 +37,10 @@ export const donutModule: ChartModule<DonutChartOptions, DonutModel, DonutGeomet
   dataKeys: ['data', 'category', 'value', 'facet', 'sort', 'binary', 'variant'],
 
   model: {
-    prepare: (o) => buildDonutModel(o),
+    prepare: (options) => buildDonutModel(options),
     legend: donutLegend,
-    notice: (m) => (m.empty ? 'There are no data available.' : ''),
-    description: (m, o) => {
-      const n = m.categories.length;
-      const kind = o.variant === 'semicircle' ? 'Semicircle donut chart' : 'Donut chart';
-      const facets = m.pies.length > 1 ? ` in ${m.pies.length} small multiples` : '';
-      return `${kind}${facets} with ${n} segment${n === 1 ? '' : 's'}${n ? `: ${listFormat(m.categories)}` : ''}. Use the arrow keys to explore values.`;
-    },
+    notice: (model) => (model.empty ? 'There are no data available.' : ''),
+    description: describeDonut,
   },
 
   geometry: {
@@ -44,61 +49,62 @@ export const donutModule: ChartModule<DonutChartOptions, DonutModel, DonutGeomet
   },
 
   draw: {
-    marks: (g, state, env) => drawDonutMarks(g, state, env),
-    overlay: (g, state, env) => drawDonutOverlay(g, state, env),
+    marks: (geometry, state, env) => drawDonutMarks(geometry, state, env),
+    overlay: (geometry, state, env) => drawDonutOverlay(geometry, state, env),
   },
 
   identity: {
-    key: (a) => a.key,
-    group: (a) => a.category,
-    item: (_g, a) => toItem(a),
-    find: (g, item) => {
-      for (const p of g.pies) {
-        if (item.facet != null && p.facet !== item.facet) continue;
-        const a = p.arcs.find((x) => x.category === item.category);
-        if (a && a.end > a.start) return a;
+    key: (arc) => arc.key,
+    group: (arc) => arc.category,
+    item: (_g, arc) => toItem(arc),
+    find: (geometry, item) => {
+      for (const pie of geometry.pies) {
+        if (item.facet != null && pie.facet !== item.facet) continue;
+        const arc = pie.arcs.find((candidate) => candidate.category === item.category);
+        if (arc && arc.end > arc.start) return arc;
       }
       return null;
     },
-    anchor: (_g, a) => {
-      const mid = (a.start + a.end) / 2;
-      const p = a.pie;
-      return { x: p.cx + Math.sin(mid) * p.outer, y: p.cy - Math.cos(mid) * p.outer };
+    anchor: (_g, arc) => {
+      const midAngle = (arc.start + arc.end) / 2;
+      const pie = arc.pie;
+      return { x: pie.cx + Math.sin(midAngle) * pie.outer, y: pie.cy - Math.cos(midAngle) * pie.outer };
     },
     describe: describeArc,
   },
 
   interaction: {
-    hit: (g, x, y) => {
-      const a = hitDonut(g, x, y);
-      return a ? hoverForDonut(g, a) : null;
+    hit: (geometry, x, y) => {
+      const arc = hitDonut(geometry, x, y);
+      return arc ? hoverForDonut(geometry, arc) : null;
     },
-    hoverFor: (g, a) => hoverForDonut(g, a),
-    context: (g, hover): DonutHoverContext => ({
+    hoverFor: (geometry, arc) => hoverForDonut(geometry, arc),
+    context: (geometry, hover): DonutHoverContext => ({
       item: toItem(hover.primary),
       items: hover.items.map(toItem),
       mode: hover.mode,
-      colorOf: (k) => (k === hover.primary.category ? hover.primary.color : g.colorOf(k)),
-      formatValue: g.formatValue,
-      formatPercent: g.formatPercent,
+      colorOf: (category) => (category === hover.primary.category ? hover.primary.color : geometry.colorOf(category)),
+      formatValue: geometry.formatValue,
+      formatPercent: geometry.formatPercent,
     }),
-    tooltip: (c) => {
-      const ctx = c as DonutHoverContext;
-      const it = ctx.item;
+    tooltip: (context) => {
+      const donutContext = context as DonutHoverContext;
+      const item = donutContext.item;
+      const value = `${donutContext.formatPercent(item.percent)} (${donutContext.formatValue(item.value)})`;
       return {
-        ...(it.facet != null ? { title: it.facet } : {}),
-        rows: [{ color: ctx.colorOf(it.category), name: it.category, value: `${ctx.formatPercent(it.percent)} (${ctx.formatValue(it.value)})` }],
+        ...(item.facet != null ? { title: item.facet } : {}),
+        rows: [{ color: donutContext.colorOf(item.category), name: item.category, value }],
       };
     },
     legendEmphasis: (hover, selected) => {
-      const keys = new Set(selected.map((a) => a.category));
+      const keys = new Set(selected.map((arc) => arc.category));
       if (hover) keys.add(hover.primary.category);
       return keys.size ? [...keys] : null;
     },
-    multiSelect: (o) => o.multiSelect ?? true,
+    multiSelect: (options) => options.multiSelect ?? true,
   },
 
-  nav: (g) => donutNav(g),
+  nav: (geometry) => donutNav(geometry),
 };
 
 /** A Spectrum 2 donut chart. */

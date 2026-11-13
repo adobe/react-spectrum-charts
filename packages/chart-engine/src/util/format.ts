@@ -10,15 +10,26 @@ export interface Formatters {
   minus: string;
 }
 
+const MINUS_SIGN = '\u2212';
+
+/** Number and time formatters for a locale (d3 defaults when none is given). */
 export function createFormatters(locale?: LocaleOptions): Formatters {
-  const num: FormatLocaleObject | null = locale?.number ? formatLocale(locale.number) : null;
-  const tim: TimeLocaleObject | null = locale?.time ? timeFormatLocale(locale.time) : null;
+  const numberLocale: FormatLocaleObject | null = locale?.number ? formatLocale(locale.number) : null;
+  const timeLocale: TimeLocaleObject | null = locale?.time ? timeFormatLocale(locale.time) : null;
   return {
-    number: (s) => (num ? num.format(s) : d3Format(s)),
-    time: (s) => (tim ? tim.format(s) : d3TimeFormat(s)),
-    minus: locale?.number?.minus ?? '\u2212',
+    number: (specifier) => (numberLocale ? numberLocale.format(specifier) : d3Format(specifier)),
+    time: (specifier) => (timeLocale ? timeLocale.format(specifier) : d3TimeFormat(specifier)),
+    minus: locale?.number?.minus ?? MINUS_SIGN,
   };
 }
+
+const THOUSAND = 1e3;
+/** Values below 1K keep at least this many fraction digits. */
+const MIN_PLAIN_DECIMALS = 2;
+/** Most fraction digits `decimalsForStep` returns. */
+const MAX_STEP_DECIMALS = 3;
+/** Relative tolerance when checking whether a scaled step is a whole number. */
+const STEP_EPSILON = 1e-6;
 
 const SUFFIXES: [number, string][] = [
   [1e12, 'T'],
@@ -31,53 +42,56 @@ const SUFFIXES: [number, string][] = [
  * Compact number formatter in the style of the design (10M, 9.5M, 720K).
  * `decimals` is the maximum number of fraction digits; trailing zeros are trimmed.
  */
-export function compactFormatter(f: Formatters, decimals = 1, prefix = ''): (n: number) => string {
-  const fmt = f.number(`,.${decimals}~f`);
-  const plain = f.number(`,.${Math.max(decimals, 2)}~f`);
-  return (n: number) => {
-    if (n == null || !Number.isFinite(n)) return '';
-    const abs = Math.abs(n);
-    const sign = n < 0 ? f.minus : '';
+export function compactFormatter(formatters: Formatters, decimals = 1, prefix = ''): (n: number) => string {
+  const plainDecimals = Math.max(decimals, MIN_PLAIN_DECIMALS);
+  const formatScaled = formatters.number(`,.${decimals}~f`);
+  const formatPlain = formatters.number(`,.${plainDecimals}~f`);
+  /** True when rounding would print 1000 or more, so the next larger suffix should be used. */
+  const roundsToThousand = (amount: number, digits: number) => Number(amount.toFixed(digits)) >= THOUSAND;
+  return (value: number) => {
+    if (value == null || !Number.isFinite(value)) return '';
+    const abs = Math.abs(value);
+    const sign = value < 0 ? formatters.minus : '';
     for (let i = 0; i < SUFFIXES.length; i++) {
       const [threshold, suffix] = SUFFIXES[i];
-      if (abs >= threshold) {
-        const scaled = abs / threshold;
-        // 999,950 should read 1M rather than 1000K.
-        if (i > 0 && Number(scaled.toFixed(decimals)) >= 1000) {
-          const [up, upSuffix] = SUFFIXES[i - 1];
-          return `${sign}${prefix}${fmt(abs / up)}${upSuffix}`;
-        }
-        return `${sign}${prefix}${fmt(scaled)}${suffix}`;
+      if (abs < threshold) continue;
+      const scaled = abs / threshold;
+      // 999,950 should read 1M rather than 1000K.
+      if (i > 0 && roundsToThousand(scaled, decimals)) {
+        const [largerThreshold, largerSuffix] = SUFFIXES[i - 1];
+        return `${sign}${prefix}${formatScaled(abs / largerThreshold)}${largerSuffix}`;
       }
+      return `${sign}${prefix}${formatScaled(scaled)}${suffix}`;
     }
-    if (Number(abs.toFixed(Math.max(decimals, 2))) >= 1000) return `${sign}${prefix}${fmt(abs / 1e3)}K`;
-    return `${sign}${prefix}${plain(abs)}`;
+    if (roundsToThousand(abs, plainDecimals)) return `${sign}${prefix}${formatScaled(abs / THOUSAND)}K`;
+    return `${sign}${prefix}${formatPlain(abs)}`;
   };
 }
 
 /** Number of fraction digits needed to distinguish values spaced by `step` in compact notation. */
 export function decimalsForStep(step: number, maxValue: number): number {
   const abs = Math.abs(maxValue);
-  const unit = SUFFIXES.find(([t]) => abs >= t)?.[0] ?? 1;
+  const unit = SUFFIXES.find(([threshold]) => abs >= threshold)?.[0] ?? 1;
   const scaled = step / unit;
   if (!Number.isFinite(scaled) || scaled <= 0) return 0;
   // Fewest digits that represent the step exactly (0.5 → 1, 0.25 → 2), capped at 3.
-  for (let d = 0; d < 3; d++) {
-    const v = scaled * 10 ** d;
-    if (Math.abs(v - Math.round(v)) < 1e-6 * Math.max(1, v)) return d;
+  for (let digits = 0; digits < MAX_STEP_DECIMALS; digits++) {
+    const shifted = scaled * 10 ** digits;
+    if (Math.abs(shifted - Math.round(shifted)) < STEP_EPSILON * Math.max(1, shifted)) return digits;
   }
-  return 3;
+  return MAX_STEP_DECIMALS;
 }
 
+/** Formatter from a user function, a d3-format specifier, or the fallback. */
 export function numberFormatter(
-  f: Formatters,
+  formatters: Formatters,
   spec: string | ((v: never) => string) | undefined,
   fallback: (n: number) => string,
 ): (n: number) => string {
   if (typeof spec === 'function') return spec as (n: number) => string;
   if (typeof spec === 'string') {
-    const fn = f.number(spec);
-    return (n) => (n == null || !Number.isFinite(n) ? '' : fn(n));
+    const format = formatters.number(spec);
+    return (value) => (value == null || !Number.isFinite(value) ? '' : format(value));
   }
   return fallback;
 }
@@ -90,25 +104,32 @@ export interface TimeLabelFormats {
   full: (d: Date) => string;
 }
 
-export function timeFormatsForGrain(f: Formatters, grain: TimeGrain): TimeLabelFormats {
+export function timeFormatsForGrain(formatters: Formatters, grain: TimeGrain): TimeLabelFormats {
+  const timeFormat = formatters.time;
   switch (grain) {
     case 'year':
-      return { primary: f.time('%Y'), superLabel: null, full: f.time('%Y') };
+      return { primary: timeFormat('%Y'), superLabel: null, full: timeFormat('%Y') };
     case 'quarter':
     case 'month':
-      return { primary: f.time('%b'), superLabel: f.time('%Y'), full: f.time('%b %Y') };
+      return { primary: timeFormat('%b'), superLabel: timeFormat('%Y'), full: timeFormat('%b %Y') };
     case 'week':
     case 'day':
-      return { primary: f.time('%b %-d'), superLabel: f.time('%Y'), full: f.time('%b %-d, %Y') };
+      return { primary: timeFormat('%b %-d'), superLabel: timeFormat('%Y'), full: timeFormat('%b %-d, %Y') };
     case 'hour':
     case 'minute':
-      return { primary: f.time('%H:%M'), superLabel: f.time('%b %-d'), full: f.time('%b %-d, %H:%M') };
+      return { primary: timeFormat('%H:%M'), superLabel: timeFormat('%b %-d'), full: timeFormat('%b %-d, %H:%M') };
     default:
-      return { primary: f.time('%H:%M:%S'), superLabel: f.time('%b %-d'), full: f.time('%b %-d, %H:%M:%S') };
+      return { primary: timeFormat('%H:%M:%S'), superLabel: timeFormat('%b %-d'), full: timeFormat('%b %-d, %H:%M:%S') };
   }
 }
 
 const MS = { second: 1e3, minute: 6e4, hour: 36e5, day: 864e5 };
+const DAYS_PER_YEAR = 365;
+/** Tick steps of at least this many days count as yearly (allows for rounded steps). */
+const MIN_YEAR_TICK_DAYS = 360;
+/** Shortest month. */
+const MIN_MONTH_DAYS = 28;
+const DAYS_PER_WEEK = 7;
 
 /** Infer the granularity of a sorted list of timestamps from their smallest gap and alignment. */
 export function inferGrain(times: number[]): TimeGrain {
@@ -118,14 +139,15 @@ export function inferGrain(times: number[]): TimeGrain {
     const gap = times[i] - times[i - 1];
     if (gap > 0 && gap < minGap) minGap = gap;
   }
-  const dates = times.map((t) => new Date(t));
-  const allMidnight = dates.every((d) => d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0);
-  const allFirst = allMidnight && dates.every((d) => d.getDate() === 1);
-  const allJan = allFirst && dates.every((d) => d.getMonth() === 0);
-  if (allJan && (minGap === Infinity || minGap >= 365 * MS.day)) return 'year';
-  if (allFirst && (minGap === Infinity || minGap >= 28 * MS.day)) return 'month';
-  if (minGap === Infinity) return allMidnight ? 'day' : 'hour';
-  if (minGap >= 7 * MS.day) return 'week';
+  const dates = times.map((time) => new Date(time));
+  const allMidnight = dates.every((date) => date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0);
+  const allFirst = allMidnight && dates.every((date) => date.getDate() === 1);
+  const allJan = allFirst && dates.every((date) => date.getMonth() === 0);
+  const singleTime = minGap === Infinity;
+  if (allJan && (singleTime || minGap >= DAYS_PER_YEAR * MS.day)) return 'year';
+  if (allFirst && (singleTime || minGap >= MIN_MONTH_DAYS * MS.day)) return 'month';
+  if (singleTime) return allMidnight ? 'day' : 'hour';
+  if (minGap >= DAYS_PER_WEEK * MS.day) return 'week';
   if (minGap >= MS.day) return 'day';
   if (minGap >= MS.hour) return 'hour';
   if (minGap >= MS.minute) return 'minute';
@@ -134,8 +156,8 @@ export function inferGrain(times: number[]): TimeGrain {
 
 /** Granularity represented by a set of axis ticks. */
 export function grainForTickStep(step: number): TimeGrain {
-  if (step >= 360 * MS.day) return 'year';
-  if (step >= 28 * MS.day) return 'month';
+  if (step >= MIN_YEAR_TICK_DAYS * MS.day) return 'year';
+  if (step >= MIN_MONTH_DAYS * MS.day) return 'month';
   if (step >= MS.day) return 'day';
   if (step >= MS.minute) return 'hour';
   return 'second';

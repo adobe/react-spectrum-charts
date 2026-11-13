@@ -17,33 +17,46 @@ export interface LayerInput<O, G, K> {
   frame: ChartFrame;
 }
 
+/** A size no real layout matches, so the next `resize` always applies. */
+function unsetSize(): { width: number; height: number; background: string } {
+  return { width: -1, height: -1, background: '' };
+}
+
 function plotGroup(frame: ChartFrame, key: string, children: SceneNode[]): GroupNode {
   return group(key, children, { x: frame.plot.x, y: frame.plot.y });
 }
 
 /** Title and the module's background content, e.g. axes. */
-export function backLayer<O, G, K>(i: LayerInput<O, G, K>): GroupNode {
+export function backLayer<O, G, K>(input: LayerInput<O, G, K>): GroupNode {
   const nodes: SceneNode[] = [];
-  const f = i.frame;
-  if (f.title) nodes.push(drawTitle(f.title.layout, f.title.x, f.title.y, i.env.theme));
-  if (i.draw.back) nodes.push(plotGroup(f, 'axes', i.draw.back(i.geometry, i.options, i.env)));
+  const { frame } = input;
+  if (frame.title) nodes.push(drawTitle(frame.title.layout, frame.title.x, frame.title.y, input.env.theme));
+  if (input.draw.back) {
+    const axes = input.draw.back(input.geometry, input.options, input.env);
+    nodes.push(plotGroup(frame, 'axes', axes));
+  }
   return group('back', nodes);
 }
 
-export function marksLayer<O, G, K>(i: LayerInput<O, G, K>, state: DrawState<K>): GroupNode {
-  return group('marks', [plotGroup(i.frame, 'plot', i.draw.marks(i.geometry, state, i.env, i.options))]);
+export function marksLayer<O, G, K>(input: LayerInput<O, G, K>, state: DrawState<K>): GroupNode {
+  const marks = input.draw.marks(input.geometry, state, input.env, input.options);
+  return group('marks', [plotGroup(input.frame, 'plot', marks)]);
 }
 
 /** The module's foreground content, e.g. reference lines, and the legend. */
-export function frontLayer<O, G, K>(i: LayerInput<O, G, K>, legend: LegendDrawState): GroupNode {
+export function frontLayer<O, G, K>(input: LayerInput<O, G, K>, legend: LegendDrawState): GroupNode {
   const nodes: SceneNode[] = [];
-  if (i.draw.front) nodes.push(plotGroup(i.frame, 'refs', i.draw.front(i.geometry, i.options, i.env)));
-  if (i.frame.legend) nodes.push(drawLegend(i.frame.legend, legend, i.env.theme, i.env.sizes));
+  if (input.draw.front) {
+    const references = input.draw.front(input.geometry, input.options, input.env);
+    nodes.push(plotGroup(input.frame, 'refs', references));
+  }
+  if (input.frame.legend) nodes.push(drawLegend(input.frame.legend, legend, input.env.theme, input.env.sizes));
   return group('front', nodes);
 }
 
-export function overlayLayer<O, G, K>(i: LayerInput<O, G, K>, state: DrawState<K>): GroupNode {
-  return group('overlay', [plotGroup(i.frame, 'plot', i.draw.overlay(i.geometry, state, i.env, i.options))]);
+export function overlayLayer<O, G, K>(input: LayerInput<O, G, K>, state: DrawState<K>): GroupNode {
+  const overlay = input.draw.overlay(input.geometry, state, input.env, input.options);
+  return group('overlay', [plotGroup(input.frame, 'plot', overlay)]);
 }
 
 /** The renderer and its layers. Layers other than the overlay redraw only when their signature changes. */
@@ -52,7 +65,7 @@ export class LayerStack {
   private type: RendererType | null = null;
   private signatures = new Map<LayerId, string>();
   /** Last size the renderer was set to. */
-  size = { width: -1, height: -1, background: '' };
+  size = unsetSize();
 
   constructor(private readonly stage: HTMLElement) {}
 
@@ -68,8 +81,8 @@ export class LayerStack {
 
   /** Applies a new size or background; either change redraws every layer. */
   resize(width: number, height: number, background: string): void {
-    const s = this.size;
-    if (width === s.width && height === s.height && background === s.background) return;
+    const current = this.size;
+    if (width === current.width && height === current.height && background === current.background) return;
     this.size = { width, height, background };
     this.renderer!.setSize(width, height, background);
     this.signatures.clear();
@@ -77,7 +90,7 @@ export class LayerStack {
 
   /** Forces the next `resize` to apply, e.g. after a pixel ratio change. */
   invalidate(): void {
-    this.size = { width: -1, height: -1, background: '' };
+    this.size = unsetSize();
   }
 
   draw(id: LayerId, signature: string, build: () => GroupNode): void {

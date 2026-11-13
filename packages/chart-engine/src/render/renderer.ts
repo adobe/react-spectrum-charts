@@ -9,16 +9,24 @@ export interface Renderer {
   destroy(): void;
 }
 
+/** Stroke width of the background halo behind text, shared by both renderers. */
+export const HALO_STROKE_WIDTH = 4;
+
+const DEFAULT_FONT = { weight: '400', size: '12px', sizePx: 12 } as const;
+
+/** Distance from the alphabetic baseline to each anchor, relative to the font size. */
+const BASELINE_RATIO = { top: 0.78, middle: 0.34, bottom: 0.22 } as const;
+
 /** Offset from the anchor y to the alphabetic baseline, shared by both renderers. */
 export function baselineOffset(node: TextNode): number {
-  const size = Number(/(\d+(?:\.\d+)?)px/.exec(node.font)?.[1] ?? 12);
+  const size = Number(/(\d+(?:\.\d+)?)px/.exec(node.font)?.[1] ?? DEFAULT_FONT.sizePx);
   switch (node.baseline) {
     case 'top':
-      return size * 0.78;
+      return size * BASELINE_RATIO.top;
     case 'middle':
-      return size * 0.34;
+      return size * BASELINE_RATIO.middle;
     case 'bottom':
-      return -size * 0.22;
+      return -size * BASELINE_RATIO.bottom;
     default:
       return 0;
   }
@@ -26,6 +34,7 @@ export function baselineOffset(node: TextNode): number {
 
 /** Matches CSS font shorthand: "<weight> <size>px <family>". */
 export function parseFont(font: string): { weight: string; size: string; family: string } {
-  const m = /^(\S+)\s+(\d+(?:\.\d+)?px)\s+(.*)$/.exec(font);
-  return m ? { weight: m[1], size: m[2], family: m[3] } : { weight: '400', size: '12px', family: font };
+  const match = /^(\S+)\s+(\d+(?:\.\d+)?px)\s+(.*)$/.exec(font);
+  if (!match) return { weight: DEFAULT_FONT.weight, size: DEFAULT_FONT.size, family: font };
+  return { weight: match[1], size: match[2], family: match[3] };
 }

@@ -8,7 +8,7 @@ import { downloadFile, sceneToPNG, sceneToSVG } from './export.js';
 import { layoutFrame, type ChartFrame } from './frame.js';
 import { backLayer, frontLayer, LayerStack, marksLayer, overlayLayer, type LayerInput } from './layers.js';
 import { LegendControls } from './legend.js';
-import type { ChartModule, DrawState, Env, Hover } from './module.js';
+import type { ChartModule, DrawState, Env, Hover, LegendSpec, Rect } from './module.js';
 import { Motion } from './motion.js';
 import { Navigator } from './navigator.js';
 import { Popover, renderTooltip, Tooltip } from './overlay.js';
@@ -17,9 +17,22 @@ import { injectStyles } from './styles.js';
 import { clearSystemColorCache, resolveTheme, SIZES } from './theme.js';
 import type { BaseChartOptions, ChartState, ContentResult } from './types.js';
 
+const DEFAULT_THEME = 'light';
+const DEFAULT_SIZE = 'L';
+const DEFAULT_RENDERER = 'svg';
+
 let chartCount = 0;
 
 type AnyOptions<I> = BaseChartOptions<I, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+type Point = { x: number; y: number };
+
+/** Normalizes the argument of `select()` to a list. */
+function toItemList<I>(items: I | I[] | null): I[] {
+  if (items == null) return [];
+  if (Array.isArray(items)) return items;
+  return [items];
+}
 
 /**
  * The chart shell. It owns everything chart types share — layout of the title and legend, interaction
@@ -39,30 +52,32 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   private readonly legendControls: LegendControls;
   private readonly tooltip: Tooltip;
   private readonly popover: Popover;
-  private readonly nav: Navigator<K>;
+  private readonly keyboardNav: Navigator<K>;
   private readonly state: InteractionState<I>;
   private readonly motion: Motion<S>;
 
   private model!: M;
   private env!: Env;
   private frame: ChartFrame | null = null;
-  private geom: G | null = null;
-  private version = 0;
+  private geometry: G | null = null;
+  /** Incremented on every layout; part of each layer's redraw signature. */
+  private layoutVersion = 0;
 
   // Transient interaction state.
-  private pointer: { x: number; y: number } | null = null;
+  private pointer: Point | null = null;
   private pointerHover: Hover<K> | null = null;
-  private keyMark: K | null = null;
-  private keyGroup: string | null = null;
+  private keyboardMark: K | null = null;
+  private keyboardGroup: string | null = null;
   private legendActive: string | null = null;
   private lastHoverKey = '';
+  /** Selection keys the open popover was rendered for. */
   private popoverFor = '';
   private selectedViaKeyboard = false;
 
-  private raf = 0;
+  private animationFrame = 0;
   private needLayout = true;
   private destroyed = false;
-  private ro: ResizeObserver | null = null;
+  private resizeObserver: ResizeObserver | null = null;
   private cleanup: (() => void)[] = [];
 
   constructor(
@@ -74,79 +89,24 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
     this.module = module;
     this.opts = { ...options };
     this.state = new InteractionState(() => this.opts);
-    this.motion = new Motion(() => this.opts.animation, {
-      reveal: () => this.paint(),
-      tween: () => {
-        this.relayout(false);
-        this.paint();
-      },
-      settle: () => {
-        this.needLayout = true;
-        this.flush();
-      },
-    });
+    this.motion = this.createMotion();
 
     this.dom = createChartDom(this.id);
     this.element = this.dom.root;
     const stage = this.dom.stage;
     this.layers = new LayerStack(stage);
-    this.legendControls = new LegendControls({
-      onHover: (k) => {
-        if (k !== this.legendActive) {
-          this.legendActive = k;
-          this.opts.onLegendHover?.(k);
-        }
-        this.schedule();
-      },
-      onToggle: (k) => this.toggleHidden(k),
-    });
+    this.legendControls = this.createLegendControls();
     stage.append(this.legendControls.element);
     container.append(this.element);
 
-    this.nav = new Navigator<K>(stage, this.id, (m) => this.module.identity.key(m), {
-      onFocusItem: (mark) => {
-        this.keyMark = mark;
-        this.emitHover();
-        this.schedule();
-      },
-      onFocusGroup: (k) => {
-        this.keyGroup = k;
-        this.schedule();
-      },
-      onSelect: (mark, additive) => {
-        this.selectedViaKeyboard = true;
-        this.toggleSelect(mark, null, additive);
-      },
-      onLeave: () => this.schedule(),
-    });
+    this.keyboardNav = this.createKeyboardNav(stage);
     this.tooltip = new Tooltip(stage);
     this.popover = new Popover(stage, () => this.dismissPopover());
 
     this.bindPointer();
-    this.cleanup.push(
-      watchEnvironment({
-        colorScheme: () => this.opts.theme === 'auto' && this.retheme(),
-        forcedColors: () => this.retheme(),
-        pixelRatio: () => {
-          this.layers.invalidate();
-          this.schedule(true);
-        },
-        fonts: () => {
-          clearTextCache();
-          this.schedule(true);
-        },
-      }),
-    );
+    this.cleanup.push(this.watchSystemSettings());
     this.configure();
-
-    if (typeof ResizeObserver === 'function') {
-      this.ro = new ResizeObserver(() => {
-        if (this.destroyed) return;
-        this.needLayout = true;
-        this.flush();
-      });
-      this.ro.observe(stage);
-    }
+    this.observeResize(stage);
     this.flush();
     this.motion.startReveal();
   }
@@ -155,7 +115,7 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
 
   /** Merge new options. Data changes animate from the current state. */
   update(partial: Partial<O>): void {
-    const dataChanged = this.module.dataKeys.some((k) => k in partial && partial[k] !== this.opts[k]);
+    const dataChanged = this.module.dataKeys.some((key) => key in partial && partial[key] !== this.opts[key]);
     const hiddenChanged = !!partial.state && 'hidden' in partial.state && partial.state.hidden !== this.opts.state?.hidden;
     this.opts = { ...this.opts, ...partial };
     this.configure();
@@ -171,7 +131,7 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   getState(): Required<ChartState<I>> {
     const hover = this.currentHover();
     return {
-      hovered: hover && this.geom ? this.module.identity.item(this.geom, hover.primary) : null,
+      hovered: hover && this.geometry ? this.module.identity.item(this.geometry, hover.primary) : null,
       selected: this.state.selected(),
       highlighted: this.state.highlighted(),
       hidden: [...this.state.hidden()],
@@ -180,7 +140,7 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
 
   /** Select one item, several items, or none. */
   select(items: I | I[] | null): void {
-    this.setSelected(items == null ? [] : Array.isArray(items) ? items : [items]);
+    this.setSelected(toItemList(items));
   }
 
   setHighlight(key: string | null): void {
@@ -206,7 +166,7 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
 
   /** The chart as drawn, without hover, selection or focus, including the title and legend. */
   toScene(): Scene {
-    if (this.needLayout || !this.geom) this.relayout(true);
+    if (this.needLayout || !this.geometry) this.relayout(true);
     const input = this.layerInput()!;
     const state: DrawState<K> = {
       hover: null,
@@ -241,20 +201,100 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
 
   /** Download the chart as an image file. */
   async download(format: 'png' | 'svg' = 'png', filename?: string): Promise<void> {
-    const name = filename ?? `${(this.opts.title ?? this.module.name).replace(/[^\w-]+/g, '-').toLowerCase()}.${format}`;
+    const name = filename ?? this.defaultFilename(format);
     downloadFile(format === 'svg' ? this.toSVG() : await this.toPNG(), name);
   }
 
   destroy(): void {
     this.destroyed = true;
-    if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
     this.motion.cancel();
-    this.ro?.disconnect();
-    for (const fn of this.cleanup) fn();
+    this.resizeObserver?.disconnect();
+    for (const stop of this.cleanup) stop();
     this.popover.destroy();
-    this.nav.destroy();
+    this.keyboardNav.destroy();
     this.layers.destroy();
     this.element.remove();
+  }
+
+  // ---------------------------------------------------------------- setup
+
+  private createMotion(): Motion<S> {
+    return new Motion(() => this.opts.animation, {
+      reveal: () => this.paint(),
+      tween: () => {
+        this.relayout(false);
+        this.paint();
+      },
+      settle: () => {
+        this.needLayout = true;
+        this.flush();
+      },
+    });
+  }
+
+  private createLegendControls(): LegendControls {
+    return new LegendControls({
+      onHover: (key) => {
+        if (key !== this.legendActive) {
+          this.legendActive = key;
+          this.opts.onLegendHover?.(key);
+        }
+        this.schedule();
+      },
+      onToggle: (key) => this.toggleHidden(key),
+    });
+  }
+
+  private createKeyboardNav(stage: HTMLElement): Navigator<K> {
+    return new Navigator<K>(stage, this.id, (mark) => this.module.identity.key(mark), {
+      onFocusItem: (mark) => {
+        this.keyboardMark = mark;
+        this.emitHover();
+        this.schedule();
+      },
+      onFocusGroup: (key) => {
+        this.keyboardGroup = key;
+        this.schedule();
+      },
+      onSelect: (mark, additive) => {
+        this.selectedViaKeyboard = true;
+        this.toggleSelect(mark, null, additive);
+      },
+      onLeave: () => this.schedule(),
+    });
+  }
+
+  /** Redraws when the color scheme, forced colors, pixel ratio or fonts change; returns a stop function. */
+  private watchSystemSettings(): () => void {
+    return watchEnvironment({
+      colorScheme: () => this.opts.theme === 'auto' && this.retheme(),
+      forcedColors: () => this.retheme(),
+      pixelRatio: () => {
+        this.layers.invalidate();
+        this.schedule(true);
+      },
+      fonts: () => {
+        clearTextCache();
+        this.schedule(true);
+      },
+    });
+  }
+
+  private observeResize(stage: HTMLElement): void {
+    if (typeof ResizeObserver !== 'function') return;
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.destroyed) return;
+      this.needLayout = true;
+      this.flush();
+    });
+    this.resizeObserver.observe(stage);
+  }
+
+  private defaultFilename(format: 'png' | 'svg'): string {
+    const baseName = this.opts.title ?? this.module.name;
+    const slug = baseName.replace(/[^\w-]+/g, '-').toLowerCase();
+    return `${slug}.${format}`;
   }
 
   // ---------------------------------------------------------------- configuration
@@ -264,22 +304,27 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   }
 
   private configure(): void {
-    const o = this.opts;
-    const m = this.module.model;
-    const theme = resolveTheme(o.theme ?? 'light');
-    this.env = { theme, sizes: SIZES[o.size ?? 'L'], f: createFormatters(o.locale), palette: o.palette ?? theme.palette };
-    this.model = m.prepare(o, this.env);
-    this.layers.use(o.renderer ?? 'svg');
+    const options = this.opts;
+    const modelHooks = this.module.model;
+    const theme = resolveTheme(options.theme ?? DEFAULT_THEME);
+    this.env = {
+      theme,
+      sizes: SIZES[options.size ?? DEFAULT_SIZE],
+      f: createFormatters(options.locale),
+      palette: options.palette ?? theme.palette,
+    };
+    this.model = modelHooks.prepare(options, this.env);
+    this.layers.use(options.renderer ?? DEFAULT_RENDERER);
     applyChrome(this.dom, {
       theme,
       minimal: this.minimal,
-      width: o.width,
-      height: o.height,
+      width: options.width,
+      height: options.height,
       containerHeight: this.container.clientHeight,
-      title: o.title,
+      title: options.title,
       name: this.module.name,
-      notice: m.notice?.(this.model, o) ?? '',
-      description: o.description ?? m.description(this.model, o),
+      notice: modelHooks.notice?.(this.model, options) ?? '',
+      description: options.description ?? modelHooks.description(this.model, options),
     });
   }
 
@@ -292,12 +337,12 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   // ---------------------------------------------------------------- interaction
 
   private selectedMarks(): K[] {
-    const g = this.geom;
-    if (!g) return [];
+    const geometry = this.geometry;
+    if (!geometry) return [];
     return this.state
       .selected()
-      .map((i) => this.module.identity.find(g, i))
-      .filter((m): m is K => m != null);
+      .map((item) => this.module.identity.find(geometry, item))
+      .filter((mark): mark is K => mark != null);
   }
 
   private hoverMode(): 'point' | 'x' {
@@ -305,27 +350,31 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   }
 
   private currentHover(): Hover<K> | null {
-    const g = this.geom;
-    if (!g) return null;
+    const geometry = this.geometry;
+    if (!geometry) return null;
     const { identity, interaction } = this.module;
     if (this.state.controlled('hovered')) {
       const item = this.opts.state!.hovered;
-      const mark = item ? identity.find(g, item) : null;
-      return mark ? interaction.hoverFor(g, mark, this.hoverMode()) : null;
+      const mark = item ? identity.find(geometry, item) : null;
+      return mark ? interaction.hoverFor(geometry, mark, this.hoverMode()) : null;
     }
-    if (this.keyMark != null) return interaction.hoverFor(g, this.keyMark, this.hoverMode());
+    if (this.keyboardMark != null) return interaction.hoverFor(geometry, this.keyboardMark, this.hoverMode());
     return this.pointerHover;
   }
 
+  /** Calls `onHover` when the uncontrolled hover target changes. */
   private emitHover(): void {
-    const g = this.geom;
-    if (this.state.controlled('hovered') || !g) return;
+    const geometry = this.geometry;
+    if (this.state.controlled('hovered') || !geometry) return;
     const { identity, interaction } = this.module;
-    const hover = this.keyMark != null ? interaction.hoverFor(g, this.keyMark, this.hoverMode()) : this.pointerHover;
+    const hover =
+      this.keyboardMark != null ? interaction.hoverFor(geometry, this.keyboardMark, this.hoverMode()) : this.pointerHover;
     const key = hover ? identity.key(hover.primary) : '';
     if (key === this.lastHoverKey) return;
     this.lastHoverKey = key;
-    this.opts.onHover?.(hover ? identity.item(g, hover.primary) : null, hover ? interaction.context(g, hover) : null);
+    const item = hover ? identity.item(geometry, hover.primary) : null;
+    const context = hover ? interaction.context(geometry, hover) : null;
+    this.opts.onHover?.(item, context);
   }
 
   private toggleHidden(key: string): void {
@@ -338,24 +387,29 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   }
 
   private toggleSelect(mark: K, event: Event | null, additive: boolean): void {
-    const g = this.geom!;
-    const { identity, interaction } = this.module;
-    const item = identity.item(g, mark);
+    const geometry = this.geometry!;
+    const item = this.module.identity.item(geometry, mark);
     if (event) this.opts.onClick?.(item, event);
     if (!(this.opts.selectable || this.opts.popover)) return;
+    this.setSelected(this.nextSelection(geometry, mark, item, additive));
+  }
+
+  /** The selection after clicking `mark`: additive clicks toggle it in the set, others toggle a single selection. */
+  private nextSelection(geometry: G, mark: K, item: I, additive: boolean): I[] {
+    const { identity, interaction } = this.module;
     const key = identity.key(mark);
-    const cur = this.state.selected();
-    const keyOf = (i: I): string => {
-      const m = identity.find(g, i);
-      return m ? identity.key(m) : '';
+    const current = this.state.selected();
+    const keyOf = (selectedItem: I): string => {
+      const selectedMark = identity.find(geometry, selectedItem);
+      return selectedMark ? identity.key(selectedMark) : '';
     };
-    let next: I[];
     if (additive && interaction.multiSelect?.(this.opts)) {
-      next = cur.some((i) => keyOf(i) === key) ? cur.filter((i) => keyOf(i) !== key) : [...cur, item];
-    } else {
-      next = cur.length === 1 && keyOf(cur[0]) === key ? [] : [item];
+      const alreadySelected = current.some((selectedItem) => keyOf(selectedItem) === key);
+      if (alreadySelected) return current.filter((selectedItem) => keyOf(selectedItem) !== key);
+      return [...current, item];
     }
-    this.setSelected(next);
+    const isOnlySelection = current.length === 1 && keyOf(current[0]) === key;
+    return isOnlySelection ? [] : [item];
   }
 
   private setSelected(items: I[]): void {
@@ -371,42 +425,50 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
     this.popover.hide();
     this.popoverFor = '';
     this.setSelected([]);
-    if (viaKeyboard && marks.length) this.nav.focusMark(marks[marks.length - 1]);
+    if (viaKeyboard && marks.length) this.keyboardNav.focusMark(marks[marks.length - 1]);
   }
 
   // ---------------------------------------------------------------- pointer
 
   /** Pointer position in plot coordinates, or null outside the plot's hit area. */
-  private locate(e: PointerEvent | MouseEvent): { x: number; y: number } | null {
+  private locate(event: PointerEvent | MouseEvent): Point | null {
     if (!this.frame) return null;
-    const r = this.dom.stage.getBoundingClientRect();
-    return { x: e.clientX - r.left - this.frame.plot.x, y: e.clientY - r.top - this.frame.plot.y };
+    const stageRect = this.dom.stage.getBoundingClientRect();
+    return {
+      x: event.clientX - stageRect.left - this.frame.plot.x,
+      y: event.clientY - stageRect.top - this.frame.plot.y,
+    };
   }
 
-  private overControls(e: Event): boolean {
-    const t = e.target as Node;
-    return this.popover.element.contains(t) || this.tooltip.element.contains(t) || this.legendControls.element.contains(t);
+  /** Whether the event target is inside the popover, tooltip or legend controls. */
+  private overControls(event: Event): boolean {
+    const target = event.target as Node;
+    return (
+      this.popover.element.contains(target) ||
+      this.tooltip.element.contains(target) ||
+      this.legendControls.element.contains(target)
+    );
   }
 
   private bindPointer(): void {
     const stage = this.dom.stage;
-    const move = (e: PointerEvent): void => {
-      if (this.module.interaction.hoverMode?.(this.opts) === 'none' || !this.geom) return;
-      if (this.popover.element.contains(e.target as Node)) return;
-      this.pointer = this.overControls(e) ? null : this.locate(e);
+    const move = (event: PointerEvent): void => {
+      if (this.module.interaction.hoverMode?.(this.opts) === 'none' || !this.geometry) return;
+      if (this.popover.element.contains(event.target as Node)) return;
+      this.pointer = this.overControls(event) ? null : this.locate(event);
       this.refreshPointerHover();
     };
-    const leave = (e: PointerEvent): void => {
-      if (e.pointerType === 'touch') return;
+    const leave = (event: PointerEvent): void => {
+      if (event.pointerType === 'touch') return;
       this.pointer = null;
       this.refreshPointerHover();
     };
-    const click = (e: MouseEvent): void => {
-      if (!this.geom || this.overControls(e)) return;
-      const p = this.locate(e);
-      const info = p ? this.module.interaction.hit(this.geom, p.x, p.y, 'point') : null;
+    const click = (event: MouseEvent): void => {
+      if (!this.geometry || this.overControls(event)) return;
+      const position = this.locate(event);
+      const hit = position ? this.module.interaction.hit(this.geometry, position.x, position.y, 'point') : null;
       this.selectedViaKeyboard = false;
-      if (info) this.toggleSelect(info.primary, e, e.shiftKey);
+      if (hit) this.toggleSelect(hit.primary, event, event.shiftKey);
       else if (this.state.selected().length) this.setSelected([]);
     };
     stage.addEventListener('pointermove', move);
@@ -422,12 +484,14 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   }
 
   private refreshPointerHover(): void {
-    const p = this.pointer;
-    const info = p && this.geom ? this.module.interaction.hit(this.geom, p.x, p.y, this.hoverMode()) : null;
-    const key = (h: Hover<K> | null): string => (h ? `${h.mode}:${this.module.identity.key(h.primary)}` : '');
-    const changed = key(info) !== key(this.pointerHover);
-    this.pointerHover = info;
-    const clickable = !!info && !!(this.opts.selectable || this.opts.popover || this.opts.onClick);
+    const pointer = this.pointer;
+    const hit =
+      pointer && this.geometry ? this.module.interaction.hit(this.geometry, pointer.x, pointer.y, this.hoverMode()) : null;
+    const signature = (hover: Hover<K> | null): string =>
+      hover ? `${hover.mode}:${this.module.identity.key(hover.primary)}` : '';
+    const changed = signature(hit) !== signature(this.pointerHover);
+    this.pointerHover = hit;
+    const clickable = !!hit && !!(this.opts.selectable || this.opts.popover || this.opts.onClick);
     this.dom.stage.style.cursor = clickable ? 'pointer' : '';
     if (changed) {
       this.emitHover();
@@ -438,90 +502,128 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
   // ---------------------------------------------------------------- layout & rendering
 
   private startTween(): void {
-    const g = this.geom;
-    this.motion.startTween(g ? () => this.module.geometry.snapshot(g) : null);
+    const geometry = this.geometry;
+    this.motion.startTween(geometry ? () => this.module.geometry.snapshot(geometry) : null);
   }
 
   private schedule(layout = false): void {
     if (this.destroyed) return;
     if (layout) this.needLayout = true;
-    if (this.raf) return;
+    if (this.animationFrame) return;
     if (typeof requestAnimationFrame !== 'function') {
       this.flush();
       return;
     }
-    this.raf = requestAnimationFrame(() => {
-      this.raf = 0;
+    this.animationFrame = requestAnimationFrame(() => {
+      this.animationFrame = 0;
       this.flush();
     });
   }
 
   private flush(): void {
     if (this.destroyed) return;
-    if (this.raf) {
-      cancelAnimationFrame(this.raf);
-      this.raf = 0;
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = 0;
     }
-    if (this.needLayout || !this.geom) this.relayout(true);
+    if (this.needLayout || !this.geometry) this.relayout(true);
     this.paint();
+  }
+
+  /** Drawing size: the fixed width option or the stage's width, and the stage's height. */
+  private stageSize(): { width: number; height: number } {
+    const width = Math.max(0, this.opts.width ?? this.dom.stage.clientWidth);
+    const height = Math.max(0, this.dom.stage.clientHeight);
+    return { width, height };
   }
 
   private relayout(settle: boolean): void {
     this.needLayout = false;
-    const o = this.opts;
-    const { identity, interaction } = this.module;
-    const env = this.env;
-    const width = Math.max(0, o.width ?? this.dom.stage.clientWidth);
-    const height = Math.max(0, this.dom.stage.clientHeight);
+    const options = this.opts;
     const hidden = this.state.hidden();
-    const legend = this.module.model.legend(this.model, o, env);
-    const frame = layoutFrame({
-      width,
-      height,
-      padding: o.padding,
-      minimal: this.minimal,
-      title: o.title,
-      subtitle: o.subtitle,
-      legend,
-      sizes: env.sizes,
-    });
+    const legend = this.module.model.legend(this.model, options, this.env);
+    const frame = this.layoutChrome(legend);
     this.frame = frame;
-    const { plot } = frame;
     const tween = this.motion.tween;
 
-    // Carry keyboard focus over to the new geometry.
-    const focusItem = this.keyMark != null && this.geom ? identity.item(this.geom, this.keyMark) : null;
-    const g = this.module.geometry.layout({ model: this.model, options: o, env, width: plot.width, height: plot.height, hidden, tween });
-    this.geom = g;
-    this.version++;
-    if (focusItem) this.keyMark = identity.find(g, focusItem);
-    if (this.pointer) this.pointerHover = interaction.hit(g, this.pointer.x, this.pointer.y, this.hoverMode());
+    const geometry = this.layoutGeometry(frame.plot, hidden, tween);
     this.legendControls.update(frame.legend, hidden, legend.title);
-    if (settle && !tween) {
-      const tree = this.module.nav(g, o);
-      tree.label = o.title ? `${o.title}. ${tree.label}` : tree.label;
-      this.nav.update(tree, { x: plot.x, y: plot.y }, { x: 0, y: 0, width: plot.width, height: plot.height });
-    }
+    if (settle && !tween) this.updateKeyboardNav(geometry, frame.plot);
+  }
+
+  /** Places the title, legend and plot area in the stage. */
+  private layoutChrome(legend: LegendSpec): ChartFrame {
+    const options = this.opts;
+    const { width, height } = this.stageSize();
+    return layoutFrame({
+      width,
+      height,
+      padding: options.padding,
+      minimal: this.minimal,
+      title: options.title,
+      subtitle: options.subtitle,
+      legend,
+      sizes: this.env.sizes,
+    });
+  }
+
+  /** Lays out the marks and carries keyboard focus and pointer hover over to the new geometry. */
+  private layoutGeometry(plot: Rect, hidden: Set<string>, tween: Motion<S>['tween']): G {
+    const { identity, interaction } = this.module;
+    const focusItem = this.keyboardMark != null && this.geometry ? identity.item(this.geometry, this.keyboardMark) : null;
+    const geometry = this.module.geometry.layout({
+      model: this.model,
+      options: this.opts,
+      env: this.env,
+      width: plot.width,
+      height: plot.height,
+      hidden,
+      tween,
+    });
+    this.geometry = geometry;
+    this.layoutVersion++;
+    if (focusItem) this.keyboardMark = identity.find(geometry, focusItem);
+    if (this.pointer) this.pointerHover = interaction.hit(geometry, this.pointer.x, this.pointer.y, this.hoverMode());
+    return geometry;
+  }
+
+  private updateKeyboardNav(geometry: G, plot: Rect): void {
+    const options = this.opts;
+    const tree = this.module.nav(geometry, options);
+    tree.label = options.title ? `${options.title}. ${tree.label}` : tree.label;
+    this.keyboardNav.update(tree, { x: plot.x, y: plot.y }, { x: 0, y: 0, width: plot.width, height: plot.height });
   }
 
   private layerInput(): LayerInput<O, G, K> | null {
-    if (this.geom == null || !this.frame) return null;
-    return { draw: this.module.draw, geometry: this.geom, options: this.opts, env: this.env, frame: this.frame };
+    if (this.geometry == null || !this.frame) return null;
+    return { draw: this.module.draw, geometry: this.geometry, options: this.opts, env: this.env, frame: this.frame };
   }
 
   private paint(): void {
     const input = this.layerInput();
     if (!input || this.destroyed) return;
-    const o = this.opts;
-    const { identity, interaction } = this.module;
-    const width = Math.max(0, o.width ?? this.dom.stage.clientWidth);
-    const height = Math.max(0, this.dom.stage.clientHeight);
+    const { width, height } = this.stageSize();
     this.layers.resize(width, height, this.env.theme.background);
 
     const hover = this.currentHover();
     const selected = this.selectedMarks();
-    const legendEmphasis = this.legendActive ?? this.keyGroup;
-    const emphasized = legendEmphasis ?? (hover && hover.mode === 'point' ? identity.group(hover.primary) : null);
+    const selectedKeys = selected.map((mark) => this.module.identity.key(mark)).join(',');
+    this.drawLayers(input, hover, selected, selectedKeys);
+
+    this.syncTooltip(input.geometry, hover);
+    this.syncPopover(input.geometry, selected, selectedKeys);
+  }
+
+  /** Legend key of a point-hovered mark, which fades the other groups. */
+  private pointHoverGroup(hover: Hover<K> | null): string | null {
+    if (hover && hover.mode === 'point') return this.module.identity.group(hover.primary);
+    return null;
+  }
+
+  /** Redraws each layer whose signature changed; the overlay always redraws. */
+  private drawLayers(input: LayerInput<O, G, K>, hover: Hover<K> | null, selected: K[], selectedKeys: string): void {
+    const legendEmphasis = this.legendActive ?? this.keyboardGroup;
+    const emphasized = legendEmphasis ?? this.pointHoverGroup(hover);
     const { reveal, enter } = this.motion;
     const state: DrawState<K> = {
       hover,
@@ -530,41 +632,42 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
       emphasized,
       reveal,
       enter,
-      hoverLabels: !o.tooltip,
+      hoverLabels: !this.opts.tooltip,
     };
-    const selKeys = selected.map((s) => identity.key(s)).join(',');
     const hidden = this.state.hidden();
-    const legendKeys = legendEmphasis != null ? [legendEmphasis] : (interaction.legendEmphasis?.(hover, selected) ?? null);
+    const legendKeys =
+      legendEmphasis != null ? [legendEmphasis] : (this.module.interaction.legendEmphasis?.(hover, selected) ?? null);
     const hovered = this.legendControls.hovered;
-    const v = this.version;
-    this.layers.draw('back', `${v}`, () => backLayer(input));
-    this.layers.draw('marks', [v, reveal, enter, state.highlighted, emphasized, hover?.mode, selKeys].join('|'), () => marksLayer(input, state));
-    this.layers.draw('front', [v, [...hidden].join(','), legendKeys?.join(','), hovered].join('|'), () =>
-      frontLayer(input, { hidden, emphasized: legendKeys, hovered }),
-    );
-    this.layers.draw('overlay', '', () => overlayLayer(input, state));
+    const version = this.layoutVersion;
 
-    this.syncTooltip(input.geometry, hover);
-    this.syncPopover(input.geometry, selected, selKeys);
+    const marksSignature = [version, reveal, enter, state.highlighted, emphasized, hover?.mode, selectedKeys].join('|');
+    const frontSignature = [version, [...hidden].join(','), legendKeys?.join(','), hovered].join('|');
+    this.layers.draw('back', `${version}`, () => backLayer(input));
+    this.layers.draw('marks', marksSignature, () => marksLayer(input, state));
+    this.layers.draw('front', frontSignature, () => frontLayer(input, { hidden, emphasized: legendKeys, hovered }));
+    this.layers.draw('overlay', '', () => overlayLayer(input, state));
   }
 
-  private syncTooltip(g: G, hover: Hover<K> | null): void {
-    const o = this.opts;
-    if (!hover || !o.tooltip) {
+  private syncTooltip(geometry: G, hover: Hover<K> | null): void {
+    const options = this.opts;
+    if (!hover || !options.tooltip) {
       this.tooltip.hide();
       return;
     }
     const { identity, interaction } = this.module;
-    const ctx = interaction.context(g, hover);
-    const content: ContentResult = typeof o.tooltip === 'function' ? o.tooltip(ctx as never) : renderTooltip(interaction.tooltip(ctx));
-    const a = identity.anchor(g, hover.primary);
+    const context = interaction.context(geometry, hover);
+    const content: ContentResult =
+      typeof options.tooltip === 'function'
+        ? options.tooltip(context as never)
+        : renderTooltip(interaction.tooltip(context));
+    const anchor = identity.anchor(geometry, hover.primary);
     const plot = this.frame!.plot;
-    this.tooltip.show(content, plot.x + a.x, plot.y + a.y);
+    this.tooltip.show(content, plot.x + anchor.x, plot.y + anchor.y);
   }
 
-  private syncPopover(g: G, selected: K[], selKeys: string): void {
-    const o = this.opts;
-    if (!selected.length || !o.popover) {
+  private syncPopover(geometry: G, selected: K[], selectedKeys: string): void {
+    const options = this.opts;
+    if (!selected.length || !options.popover) {
       if (this.popover.open || this.popoverFor) {
         this.popoverFor = '';
         this.popover.hide();
@@ -573,16 +676,17 @@ export class Chart<O extends AnyOptions<I>, I, M = unknown, G = unknown, K = unk
     }
     const { identity } = this.module;
     const plot = this.frame!.plot;
-    const a = identity.anchor(g, selected[selected.length - 1]);
-    const ax = plot.x + a.x;
-    const ay = plot.y + a.y;
-    if (selKeys !== this.popoverFor) {
-      this.popoverFor = selKeys;
-      const items = selected.map((s) => identity.item(g, s));
-      const content = o.popover(items[items.length - 1], () => this.dismissPopover(), items);
-      this.popover.show(content, ax, ay, selected.map((s) => identity.describe(g, s)).join('; '), this.selectedViaKeyboard);
+    const anchor = identity.anchor(geometry, selected[selected.length - 1]);
+    const anchorX = plot.x + anchor.x;
+    const anchorY = plot.y + anchor.y;
+    if (selectedKeys !== this.popoverFor) {
+      this.popoverFor = selectedKeys;
+      const items = selected.map((mark) => identity.item(geometry, mark));
+      const content = options.popover(items[items.length - 1], () => this.dismissPopover(), items);
+      const label = selected.map((mark) => identity.describe(geometry, mark)).join('; ');
+      this.popover.show(content, anchorX, anchorY, label, this.selectedViaKeyboard);
     } else if (this.popover.open) {
-      this.popover.reposition(ax, ay);
+      this.popover.reposition(anchorX, anchorY);
     }
   }
 }

@@ -7,6 +7,7 @@ import type { BaseChartOptions, HoverContext, LegendOptions, LineStyle } from '.
 export interface Env {
   theme: Theme;
   sizes: SizeTokens;
+  /** Number and date formatters for the chart's locale. */
   f: Formatters;
   palette: string[];
 }

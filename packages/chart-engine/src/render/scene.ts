@@ -107,20 +107,40 @@ export function isGradient(fill: Style['fill']): fill is Gradient {
   return typeof fill === 'object' && fill !== null;
 }
 
+/** Marker sizes relative to the point radius, so every shape looks about as heavy as a circle. */
+const MARKER_SCALE = {
+  /** Half the side of a square. */
+  square: 0.9,
+  /** Distance from centre to a triangle's apex. */
+  triangle: 1.15,
+  /** Depth of a triangle's base below the centre, relative to its apex distance. */
+  triangleBase: 0.85,
+  /** Distance from centre to a diamond's corners. */
+  diamond: 1.25,
+} as const;
+
+/** Length of a direction triangle from base to tip, relative to its half-base. */
+const ARROW_LENGTH_RATIO = 1.2;
+const DEFAULT_ARROW_HALF_BASE = 5;
+
+/** Dash patterns relative to the stroke width. */
+const DASH = { dashLength: 2.5, dashGap: 1.6, dotGap: 2 } as const;
+
 /** Path data for a point marker centred on (0, 0). */
 export function shapePath(shape: string, r: number): string {
   switch (shape) {
     case 'square': {
-      const s = r * 0.9;
-      return `M${-s},${-s}H${s}V${s}H${-s}Z`;
+      const half = r * MARKER_SCALE.square;
+      return `M${-half},${-half}H${half}V${half}H${-half}Z`;
     }
     case 'triangle': {
-      const h = r * 1.15;
-      return `M0,${-h}L${h},${h * 0.85}L${-h},${h * 0.85}Z`;
+      const apex = r * MARKER_SCALE.triangle;
+      const base = apex * MARKER_SCALE.triangleBase;
+      return `M0,${-apex}L${apex},${base}L${-apex},${base}Z`;
     }
     case 'diamond': {
-      const h = r * 1.25;
-      return `M0,${-h}L${h},0L0,${h}L${-h},0Z`;
+      const corner = r * MARKER_SCALE.diamond;
+      return `M0,${-corner}L${corner},0L0,${corner}L${-corner},0Z`;
     }
     default:
       return `M${r},0A${r},${r} 0 1,1 ${-r},0A${r},${r} 0 1,1 ${r},0Z`;
@@ -128,27 +148,35 @@ export function shapePath(shape: string, r: number): string {
 }
 
 /** Small filled triangle pointing in `dir`, with its base centered on (x, y). */
-export function triangle(key: string, x: number, y: number, dir: 'left' | 'right' | 'up' | 'down', color: string, s = 5): PathNode {
+export function triangle(
+  key: string,
+  x: number,
+  y: number,
+  dir: 'left' | 'right' | 'up' | 'down',
+  color: string,
+  halfBase = DEFAULT_ARROW_HALF_BASE,
+): PathNode {
+  const length = halfBase * ARROW_LENGTH_RATIO;
   let d: string;
   switch (dir) {
     case 'right':
-      d = `M${x},${y - s}L${x + s * 1.2},${y}L${x},${y + s}Z`;
+      d = `M${x},${y - halfBase}L${x + length},${y}L${x},${y + halfBase}Z`;
       break;
     case 'left':
-      d = `M${x},${y - s}L${x - s * 1.2},${y}L${x},${y + s}Z`;
+      d = `M${x},${y - halfBase}L${x - length},${y}L${x},${y + halfBase}Z`;
       break;
     case 'down':
-      d = `M${x - s},${y}L${x},${y + s * 1.2}L${x + s},${y}Z`;
+      d = `M${x - halfBase},${y}L${x},${y + length}L${x + halfBase},${y}Z`;
       break;
     default:
-      d = `M${x - s},${y}L${x},${y - s * 1.2}L${x + s},${y}Z`;
+      d = `M${x - halfBase},${y}L${x},${y - length}L${x + halfBase},${y}Z`;
   }
   return { type: 'path', key, d, style: { fill: color } };
 }
 
 /** Dash pattern for a line style at a given stroke width. */
-export function dashFor(style: 'solid' | 'dashed' | 'dotted' | undefined, w: number): number[] | undefined {
-  if (style === 'dashed') return [w * 2.5, w * 1.6];
-  if (style === 'dotted') return [0, w * 2];
+export function dashFor(style: 'solid' | 'dashed' | 'dotted' | undefined, width: number): number[] | undefined {
+  if (style === 'dashed') return [width * DASH.dashLength, width * DASH.dashGap];
+  if (style === 'dotted') return [0, width * DASH.dotGap];
   return undefined;
 }
