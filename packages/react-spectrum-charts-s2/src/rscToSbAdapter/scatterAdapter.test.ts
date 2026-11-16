@@ -15,7 +15,7 @@ import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
 import { ChartPopover } from '../components/ChartPopover/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
-import { ScatterAnnotation, ScatterPath, Trendline } from '../lab/index.js';
+import { ScatterAnnotation, ScatterPath, ScatterSizeKey, Trendline } from '../lab/index.js';
 import { childrenToOptions } from './childrenAdapter.js';
 import { getScatterOptions } from './scatterAdapter.js';
 
@@ -27,6 +27,7 @@ describe('getScatterOptions()', () => {
     expect(options.chartInspects).toHaveLength(0);
     expect(options.scatterAnnotations).toHaveLength(0);
     expect(options.scatterPaths).toHaveLength(0);
+    expect(options.scatterSizeKeys).toHaveLength(0);
     expect(options.trendlines).toHaveLength(0);
   });
   it('should convert popover children to chartPopovers array', () => {
@@ -44,6 +45,10 @@ describe('getScatterOptions()', () => {
   it('should convert scatter annotation children to scatterAnnotations array', () => {
     const options = getScatterOptions({ children: [createElement(ScatterAnnotation)] }, childrenToOptions);
     expect(options.scatterAnnotations).toHaveLength(1);
+  });
+  it('should convert scatter size key children to scatterSizeKeys array', () => {
+    const options = getScatterOptions({ children: [createElement(ScatterSizeKey)] }, childrenToOptions);
+    expect(options.scatterSizeKeys).toHaveLength(1);
   });
   it('should convert trendline children to trendlines array', () => {
     const options = getScatterOptions({ children: [createElement(Trendline)] }, childrenToOptions);

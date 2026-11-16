@@ -27,6 +27,7 @@ import {
   ReferenceLineOptions,
   ScatterAnnotationOptions,
   ScatterPathOptions,
+  ScatterSizeKeyOptions,
   SegmentLabelOptions,
   TitleOptions,
   TrendlineAnnotationOptions,
@@ -57,6 +58,7 @@ import {
   Scatter,
   ScatterAnnotation,
   ScatterPath,
+  ScatterSizeKey,
   Trendline,
   TrendlineAnnotation,
 } from '../lab/index.js';
@@ -81,6 +83,7 @@ import {
   ReferenceLineProps,
   ScatterAnnotationProps,
   ScatterPathProps,
+  ScatterSizeKeyProps,
   ScatterProps,
   SegmentLabelProps,
   TitleProps,
@@ -122,6 +125,7 @@ export const childrenToOptions: ChildrenToOptions = (children) => {
   const referenceLines: ReferenceLineOptions[] = [];
   const scatterAnnotations: ScatterAnnotationOptions[] = [];
   const scatterPaths: ScatterPathOptions[] = [];
+  const scatterSizeKeys: ScatterSizeKeyOptions[] = [];
   const segmentLabels: SegmentLabelOptions[] = [];
   const titles: TitleOptions[] = [];
   const trendlineAnnotations: TrendlineAnnotationOptions[] = [];
@@ -221,6 +225,9 @@ export const childrenToOptions: ChildrenToOptions = (children) => {
       case ScatterPath.displayName:
         scatterPaths.push(child.props as ScatterPathProps);
         break;
+      case ScatterSizeKey.displayName:
+        scatterSizeKeys.push(child.props as ScatterSizeKeyProps);
+        break;
 
       case SegmentLabel.displayName:
         segmentLabels.push(child.props as SegmentLabelProps);
@@ -268,6 +275,7 @@ export const childrenToOptions: ChildrenToOptions = (children) => {
     referenceLines,
     scatterAnnotations,
     scatterPaths,
+    scatterSizeKeys,
     segmentLabels,
     titles,
     trendlineAnnotations,

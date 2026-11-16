@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, Mark, NumericValueRef, ProductionRule, Signal, ValuesData } from 'vega';
+import { Data, Mark, NumericValueRef, ProductionRule, Signal, SourceData, SymbolMark, ValuesData } from 'vega';
 
 import {
   CONTROLLED_HIGHLIGHTED_ITEM,
@@ -18,6 +18,7 @@ import {
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
   FADE_FACTOR,
+  FILTERED_TABLE,
   HOVERED_ITEM,
   HOVER_ACTIVE_TIMER,
   HOVER_ANIM_LAST_CHANGE_DATA,
@@ -242,3 +243,55 @@ export const fadeInAfterScatterDrawIn = (marks: Mark[]): void => {
     mark.encode.update.opacity = opacity === undefined ? { signal: reveal } : applyDrawInReveal(opacity, reveal);
   }
 };
+
+/**
+ * Gets the data source of the points that reach furthest to each edge of the plot at their final size.
+ * @param options
+ * @param size - the points' final size rule
+ * @returns SourceData
+ */
+export const getScatterDrawInBoundsData = (options: ScatterSpecOptions, size: NumericValueRef): SourceData => {
+  const { dimension, dimensionScaleType, metric, name } = options;
+  const xField = dimensionScaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+  const sizeExpr =
+    'scale' in size && 'field' in size
+      ? `scale('${size.scale as string}', datum.${size.field as string})`
+      : `${(size as { value: number }).value}`;
+  const edges = ['Left', 'Right', 'Top', 'Bottom'].map((edge) => `rscBounds${edge}`);
+  return {
+    name: `${name}_drawInBounds`,
+    source: FILTERED_TABLE,
+    transform: [
+      { type: 'formula', as: 'rscBoundsX', expr: `scale('${getScaleName('x', dimensionScaleType)}', datum.${xField})` },
+      { type: 'formula', as: 'rscBoundsY', expr: `scale('yLinear', datum.${metric})` },
+      { type: 'formula', as: 'rscBoundsSize', expr: sizeExpr },
+      { type: 'formula', as: 'rscBoundsR', expr: 'sqrt(datum.rscBoundsSize) / 2' },
+      { type: 'formula', as: edges[0], expr: 'datum.rscBoundsX - datum.rscBoundsR' },
+      { type: 'formula', as: edges[1], expr: 'datum.rscBoundsX + datum.rscBoundsR' },
+      { type: 'formula', as: edges[2], expr: 'datum.rscBoundsY - datum.rscBoundsR' },
+      { type: 'formula', as: edges[3], expr: 'datum.rscBoundsY + datum.rscBoundsR' },
+      { type: 'aggregate', fields: edges, ops: ['argmin', 'argmax', 'argmin', 'argmax'], as: edges },
+      { type: 'fold', fields: edges },
+    ],
+  };
+};
+
+/**
+ * Gets invisible points at the edges' final size so growing points don't change the chart's autosize bounds.
+ * @param options
+ * @returns SymbolMark
+ */
+export const getScatterDrawInBoundsMark = ({ name }: ScatterSpecOptions): SymbolMark => ({
+  name: `${name}_drawInBounds`,
+  type: 'symbol',
+  from: { data: `${name}_drawInBounds` },
+  interactive: false,
+  encode: {
+    enter: { shape: { value: 'circle' }, opacity: { value: 0 }, strokeWidth: { value: 1 } },
+    update: {
+      x: { signal: 'datum.value.rscBoundsX' },
+      y: { signal: 'datum.value.rscBoundsY' },
+      size: { signal: 'datum.value.rscBoundsSize' },
+    },
+  },
+});

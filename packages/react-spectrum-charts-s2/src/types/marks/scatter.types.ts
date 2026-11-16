@@ -17,6 +17,7 @@ import { ChartPopoverElement, ChartInspectElement } from '../dialogs/index.js';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types.js';
 import { ScatterAnnotationElement } from './supplemental/scatterAnnotation.types.js';
 import { ScatterPathElement } from './supplemental/scatterPath.types.js';
+import { ScatterSizeKeyElement } from './supplemental/scatterSizeKey.types.js';
 import { TrendlineElement } from './supplemental/trendline.types.js';
 
 type ScatterChildElement =
@@ -24,6 +25,7 @@ type ScatterChildElement =
   | ChartInspectElement
   | ScatterAnnotationElement
   | ScatterPathElement
+  | ScatterSizeKeyElement
   | TrendlineElement;
 
 export interface ScatterProps
@@ -36,6 +38,7 @@ export interface ScatterProps
     | 'markType'
     | 'scatterAnnotations'
     | 'scatterPaths'
+    | 'scatterSizeKeys'
     | 'trendlines'
   > {
   children?: Children<ScatterChildElement>;

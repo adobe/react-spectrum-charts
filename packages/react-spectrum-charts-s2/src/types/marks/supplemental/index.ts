@@ -18,6 +18,7 @@ export * from './lineDirectLabel.types.js';
 export * from './linePointAnnotation.types.js';
 export * from './scatterAnnotation.types.js';
 export * from './scatterPath.types.js';
+export * from './scatterSizeKey.types.js';
 export * from './segmentLabel.types.js';
 export * from './trendline.types.js';
 export * from './trendlineAnnotation.types.js';

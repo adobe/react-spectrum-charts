@@ -111,6 +111,21 @@ describe('scatter animations', () => {
       expect(new Set(sizes(chart)).size).toBe(1);
     });
 
+    test('keeps the chart bounds fixed while points grow', async () => {
+      const chart = await createView({ marks: [{ ...scatter, size: 'weight' }] });
+      const bounds = () => JSON.stringify((chart.scenegraph() as unknown as { root: { bounds: object } }).root.bounds);
+      const start = bounds();
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS / 2);
+      expect(bounds()).toBe(start);
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS);
+      expect(bounds()).toBe(start);
+    });
+
+    test('reserves only the edge points', async () => {
+      const chart = await createView({ marks: [{ ...scatter, size: 'weight' }] });
+      expect(getMarkItems(chart, 'scatter_drawInBounds').length).toBeLessThanOrEqual(4);
+    });
+
     test('settles sized points at their own sizes', async () => {
       const chart = await createView({ marks: [{ ...scatter, size: 'weight' }] });
       await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 2);

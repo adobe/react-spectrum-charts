@@ -29,6 +29,7 @@ import {
   ReferenceLineOptions,
   ScatterAnnotationOptions,
   ScatterPathOptions,
+  ScatterSizeKeyOptions,
   SegmentLabelOptions,
   TitleOptions,
   TrendlineAnnotationOptions,
@@ -54,6 +55,7 @@ export type ChildOptions = {
   referenceLines: ReferenceLineOptions[];
   scatterAnnotations: ScatterAnnotationOptions[];
   scatterPaths: ScatterPathOptions[];
+  scatterSizeKeys: ScatterSizeKeyOptions[];
   segmentLabels: SegmentLabelOptions[];
   titles: TitleOptions[];
   trendlineAnnotations: TrendlineAnnotationOptions[];

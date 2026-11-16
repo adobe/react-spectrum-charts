@@ -37,6 +37,7 @@ import { addDrawInClockSignals, addDrawInDoneSignal, addDrawInLabelFadeTimer } f
 import { addHoverAnimationSignals } from '../marks/hoverAnimationUtils.js';
 import {
   getInteractiveMarkName,
+  getSymbolSizeProductionRule,
   hasPopover,
   isDrawInAnimationEnabled,
   isHoverAnimationEnabled,
@@ -53,8 +54,13 @@ import {
 } from '../specUtils.js';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
 import { ChartData, ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
-import { addScatterHoverAnimationData, addScatterItemHighlightSignals } from './scatterAnimationUtils.js';
+import {
+  addScatterHoverAnimationData,
+  addScatterItemHighlightSignals,
+  getScatterDrawInBoundsData,
+} from './scatterAnimationUtils.js';
 import { addScatterMarks } from './scatterMarkUtils.js';
+import { getScatterSizeKeyLegends } from './scatterSizeKey/scatterSizeKeyUtils.js';
 
 /**
  * Adds all the necessary parts of a scatter to the spec
@@ -98,6 +104,7 @@ export const addScatter = produce<
       outline = 'auto',
       scatterAnnotations = [],
       scatterPaths = [],
+      scatterSizeKeys = [],
       size = { value: 'M' },
       trendlines = [],
       stroke,
@@ -139,6 +146,7 @@ export const addScatter = produce<
       outline,
       scatterAnnotations,
       scatterPaths,
+      scatterSizeKeys,
       size,
       trendlines,
       seriesIds: getUniqueSeriesIds(data, getFacetsFromOptions({ color, lineType, opacity }).facets),
@@ -162,6 +170,7 @@ export const addScatter = produce<
     spec.signals = addSignals(spec.signals ?? [], scatterOptions);
     spec.scales = setScales(spec.scales ?? [], scatterOptions);
     spec.marks = addScatterMarks(spec.marks ?? [], scatterOptions);
+    spec.legends = [...(spec.legends ?? []), ...getScatterSizeKeyLegends(scatterOptions)];
   }
 );
 
@@ -194,6 +203,9 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
   addInspectData(data, scatterOptions);
   addTrendlineData(data, scatterOptions);
   if (scatterOptions.isHoverAnimate) addScatterHoverAnimationData(data, scatterOptions);
+  if (scatterOptions.isDrawInAnimate) {
+    data.push(getScatterDrawInBoundsData(scatterOptions, getSymbolSizeProductionRule(scatterOptions.size)));
+  }
 });
 
 /**

@@ -18,7 +18,8 @@ export const getScatterOptions = (
   { children, onClick, onContextMenu, ...scatterProps }: ScatterProps,
   childrenToOptions: ChildrenToOptions
 ): ScatterOptions => {
-  const { chartInspects, chartPopovers, scatterAnnotations, scatterPaths, trendlines } = childrenToOptions(children);
+  const { chartInspects, chartPopovers, scatterAnnotations, scatterPaths, scatterSizeKeys, trendlines } =
+    childrenToOptions(children);
   return {
     ...scatterProps,
     chartInspects,
@@ -28,6 +29,7 @@ export const getScatterOptions = (
     markType: 'scatter',
     scatterAnnotations,
     scatterPaths,
+    scatterSizeKeys,
     trendlines,
   };
 };

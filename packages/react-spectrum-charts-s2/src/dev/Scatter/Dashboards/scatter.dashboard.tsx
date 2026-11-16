@@ -17,7 +17,14 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend, ReferenceLine, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Scatter, ScatterAnnotation, ScatterPath, Trendline, TrendlineAnnotation } from '../../../lab/index.js';
+import {
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  ScatterSizeKey,
+  Trendline,
+  TrendlineAnnotation,
+} from '../../../lab/index.js';
 import {
   AxisProps,
   ChartInspectProps,
@@ -28,6 +35,7 @@ import {
   ScatterAnnotationProps,
   ScatterPathProps,
   ScatterProps,
+  ScatterSizeKeyProps,
   TitleProps,
   TrendlineAnnotationProps,
   TrendlineProps,
@@ -303,6 +311,47 @@ const baseScatterVariations: Variation[] = [
     render: () => <ScatterVariationChart scatterProps={{ size: 'weight' }} />,
   },
   {
+    id: 'scatter-size-key-default',
+    title: 'Size key',
+    description: 'ScatterSizeKey with a title: min, middle, and max weight at true size, stacked on the right.',
+    dataset: 'standard',
+    coverage: [
+      'ScatterSizeKey',
+      'ScatterSizeKey.title',
+      'ScatterSizeKey.position=right',
+      'ScatterSizeKey.direction=vertical',
+    ],
+    render: () => (
+      <ScatterVariationChart scatterProps={{ size: 'weight' }}>
+        <ScatterSizeKey title="Weight" />
+      </ScatterVariationChart>
+    ),
+  },
+  {
+    id: 'scatter-size-key-bottom',
+    title: 'Size key at the bottom',
+    description: 'The key below the plot runs horizontally by default.',
+    dataset: 'standard',
+    coverage: ['ScatterSizeKey.position=bottom'],
+    render: () => (
+      <ScatterVariationChart scatterProps={{ size: 'weight' }}>
+        <ScatterSizeKey title="Weight" position="bottom" />
+      </ScatterVariationChart>
+    ),
+  },
+  {
+    id: 'scatter-size-key-horizontal',
+    title: 'Horizontal size key',
+    description: 'A horizontal row on the right, under the series legend.',
+    dataset: 'standard',
+    coverage: ['ScatterSizeKey.direction=horizontal'],
+    render: () => (
+      <ScatterVariationChart scatterProps={{ size: 'weight' }}>
+        <ScatterSizeKey title="Weight" direction="horizontal" />
+      </ScatterVariationChart>
+    ),
+  },
+  {
     id: 'size-static',
     title: 'Large static size',
     description: 'Every point uses the XL size token.',
@@ -425,7 +474,9 @@ const baseScatterVariations: Variation[] = [
     dataset: 'standard',
     coverage: ['outline=never'],
     render: () => (
-      <ScatterVariationChart scatterProps={{ color: { value: 'yellow-400' }, outline: 'never', size: { value: 'L' } }} />
+      <ScatterVariationChart
+        scatterProps={{ color: { value: 'yellow-400' }, outline: 'never', size: { value: 'L' } }}
+      />
     ),
   },
   {
@@ -1621,7 +1672,14 @@ export const ScatterDashboard = (): ReactElement => (
 
 const scatterCoverage: PropCoverage<ScatterProps> = {
   blend: ['blend-default', 'blend-normal', 'blend-darken', 'dark-background'],
-  children: ['path-default', 'annotation-default', 'trendline-default', 'inspect-default', 'popover-default'],
+  children: [
+    'path-default',
+    'annotation-default',
+    'trendline-default',
+    'inspect-default',
+    'popover-default',
+    'scatter-size-key-default',
+  ],
   clip: ['clip-off', 'clip-on'],
   color: ['defaults', 'color-series', 'color-static', 'color-linear'],
   colorScaleType: ['defaults', 'color-linear'],
@@ -1637,6 +1695,12 @@ const scatterCoverage: PropCoverage<ScatterProps> = {
   outline: ['defaults', 'outline-auto', 'outline-always', 'outline-never'],
   size: ['defaults', 'size-key', 'size-static', 'size-pixels', 'chart-symbol-sizes'],
   stroke: ['stroke-static', 'stroke-key'],
+};
+
+const scatterSizeKeyCoverage: PropCoverage<ScatterSizeKeyProps> = {
+  direction: ['scatter-size-key-default', 'scatter-size-key-horizontal'],
+  position: ['scatter-size-key-default', 'scatter-size-key-bottom'],
+  title: ['scatter-size-key-default'],
 };
 
 const scatterPathCoverage: PropCoverage<ScatterPathProps> = {
@@ -1773,6 +1837,7 @@ export const dashboard: DashboardDefinition = {
   coverage: {
     Scatter: scatterCoverage,
     ScatterPath: scatterPathCoverage,
+    ScatterSizeKey: scatterSizeKeyCoverage,
     ScatterAnnotation: scatterAnnotationCoverage,
     Trendline: trendlineCoverage,
     TrendlineAnnotation: trendlineAnnotationCoverage,

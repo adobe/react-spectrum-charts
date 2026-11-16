@@ -42,7 +42,12 @@ import {
 import { getScatterPathMarks } from '../scatterPath/scatterPathUtils.js';
 import { getTrendlineMarks } from '../trendline/index.js';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types/index.js';
-import { fadeInAfterScatterDrawIn, getScatterAnimatedOpacity, getScatterDrawInSize } from './scatterAnimationUtils.js';
+import {
+  fadeInAfterScatterDrawIn,
+  getScatterAnimatedOpacity,
+  getScatterDrawInBoundsMark,
+  getScatterDrawInSize,
+} from './scatterAnimationUtils.js';
 import { getScatterAnnotationMarks } from './scatterAnnotation/index.js';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
@@ -59,6 +64,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
     type: 'group',
     clip: options.clip ?? false,
     marks: [
+      ...(isDrawInAnimate ? [getScatterDrawInBoundsMark(options)] : []),
       getScatterMark(options),
       ...annotationMarks,
       ...getScatterHoverMarks(options),
