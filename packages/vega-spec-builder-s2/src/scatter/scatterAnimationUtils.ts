@@ -12,11 +12,15 @@
 import { Data, Mark, NumericValueRef, ProductionRule, Signal, SourceData, SymbolMark, ValuesData } from 'vega';
 
 import {
+  ANIMATION_TIMER,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
+  DRAW_IN_DURATION,
+  DRAW_IN_PAINT_FADE_MS,
+  DRAW_IN_START,
   FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -28,7 +32,8 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { isHighlightedByGroup } from '../chartInspect/chartInspectUtils.js';
-import { applyDrawInReveal, getCubicBezierExpr, getDrawInLabelFadeExpr } from '../marks/drawInAnimationUtils.js';
+import { addAnimationTimerSignal } from '../marks/animationTimerUtils.js';
+import { applyDrawInReveal, getCubicBezierExpr } from '../marks/drawInAnimationUtils.js';
 import {
   addHoverAnimLastChangeData,
   getHoverAnimStateData,
@@ -220,15 +225,6 @@ const getScatterDrawInPositionExpr = ({ dimensionScaleType }: ScatterSpecOptions
 };
 
 /**
- * Gets the eased draw-in progress at which a point finishes growing.
- * @param options
- * @param x - expression for the point's x in pixels
- * @returns expression string
- */
-export const getScatterSettleProgressExpr = (options: ScatterSpecOptions, x: string): string =>
-  `${getScatterDrawInPositionExpr(options, x)} * ${1 - SCATTER_DRAW_IN_GROW_WINDOW} + ${SCATTER_DRAW_IN_GROW_WINDOW}`;
-
-/**
  * Grows a point's size during the draw-in; the radius grows with the progress.
  * @param size - the point's size rule once drawn
  * @param options
@@ -248,11 +244,29 @@ export const getScatterDrawInSize = (size: NumericValueRef, options: ScatterSpec
 };
 
 /**
+ * Gets the 0-1 fade for layers that appear once the points finish drawing in.
+ * @returns expression string
+ */
+export const getScatterFollowerFadeExpr = (): string =>
+  `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START} - ${DRAW_IN_DURATION}) / ${DRAW_IN_PAINT_FADE_MS}, 0, 1)`;
+
+/**
+ * Keeps the animation timer running until layers that follow the draw-in finish fading in.
+ * @param signals
+ */
+export const addScatterFollowerFadeTimer = (signals: Signal[]): void =>
+  addAnimationTimerSignal(
+    signals,
+    (clock) => `${clock} - ${DRAW_IN_START} < ${DRAW_IN_DURATION} + ${DRAW_IN_PAINT_FADE_MS}`,
+    true
+  );
+
+/**
  * Fades marks in after the points finish drawing in (annotations, paths, trendlines).
  * @param marks
  */
 export const fadeInAfterScatterDrawIn = (marks: Mark[]): void => {
-  const reveal = getDrawInLabelFadeExpr('1');
+  const reveal = getScatterFollowerFadeExpr();
   for (const mark of marks) {
     if (mark.type === 'group') {
       fadeInAfterScatterDrawIn(mark.marks ?? []);
@@ -324,9 +338,8 @@ export const getScatterDrawInBoundsMark = ({ name }: ScatterSpecOptions): Symbol
  * Fades label marks in after the points finish drawing in, through fillOpacity so the label transform can still hide labels.
  * @param marks
  */
-export const fadeInLabelsAfterScatterDrawIn = (marks: Mark[], options: ScatterSpecOptions): void => {
-  // a label's datum is its point's scene item, so it fades in as its own point finishes growing
-  const reveal = getDrawInLabelFadeExpr(getScatterSettleProgressExpr(options, 'datum.x'));
+export const fadeInLabelsAfterScatterDrawIn = (marks: Mark[]): void => {
+  const reveal = getScatterFollowerFadeExpr();
   for (const mark of marks) {
     const update = mark.encode?.update;
     const fillOpacity = update?.fillOpacity;

@@ -14,6 +14,7 @@ import { GroupMark, Mark, View, expressionFunction, parse } from 'vega';
 import {
   ANIMATION_HOVER_SPEED,
   ANIMATION_TIMER,
+  DRAW_IN_PAINT_FADE_MS,
   DRAW_IN_SWEEP_DURATION_MS,
   FADE_FACTOR,
   TABLE,
@@ -132,13 +133,17 @@ describe('scatter animations', () => {
       expect(bounds()).toBe(start);
     });
 
-    test('fades annotation labels in from left to right as their points finish', async () => {
+    test('fades annotation labels in together once the points finish', async () => {
       const chart = await createView({ marks: [{ ...scatter, scatterAnnotations: [{ textKey: 'id' }] }] });
-      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.75);
-      const shown = getMarkItems(chart, /Annotation/).map((item) => item.fillOpacity ?? 0);
-      expect(shown[0]).toBeGreaterThan(shown[2]);
-      await tick(chart, DRAW_IN_SWEEP_DURATION_MS);
-      expect(getMarkItems(chart, /Annotation/).every((item) => (item.fillOpacity ?? 0) > 0)).toBe(true);
+      const fades = () => getMarkItems(chart, /Annotation/).map((item) => item.fillOpacity ?? 0);
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.9);
+      expect(fades().every((fade) => fade === 0)).toBe(true);
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.1 + DRAW_IN_PAINT_FADE_MS / 2);
+      expect(new Set(fades()).size).toBe(1);
+      expect(fades()[0]).toBeGreaterThan(0);
+      expect(fades()[0]).toBeLessThan(1);
+      await tick(chart, DRAW_IN_PAINT_FADE_MS);
+      expect(fades().every((fade) => fade === 1)).toBe(true);
     });
 
     test('reserves only the edge points', async () => {

@@ -52,7 +52,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
   const trendlineMarks = getTrendlineMarks(options);
   if (isDrawInAnimate) {
     fadeInAfterScatterDrawIn([...pathMarks, ...trendlineMarks]);
-    fadeInLabelsAfterScatterDrawIn(annotationMarks, options);
+    fadeInLabelsAfterScatterDrawIn(annotationMarks);
   }
 
   const scatterGroup: GroupMark = {
