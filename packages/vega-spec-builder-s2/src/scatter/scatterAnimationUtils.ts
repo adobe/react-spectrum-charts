@@ -40,7 +40,7 @@ import {
 import { getLineWidthProductionRule, hasPopover } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { ScatterSpecOptions } from '../types/index.js';
-import { getScatterOutlineEncoding } from './scatterMarkUtils.js';
+import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
 
 /** Fraction of the draw-in each point spends growing; the rest staggers their starts from left to right. */
 export const SCATTER_DRAW_IN_GROW_WINDOW = 0.3;

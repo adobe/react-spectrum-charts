@@ -15,7 +15,7 @@ import { SYMBOL_SIZE_SCALE } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { ScatterSizeKeyOptions, ScatterSpecOptions } from '../../types/index.js';
-import { SCATTER_OUTLINE_OPACITY } from '../scatterMarkUtils.js';
+import { SCATTER_OUTLINE_OPACITY } from '../scatterOutlineUtils.js';
 
 /**
  * Gets a size key legend for each ScatterSizeKey child, when the scatter sizes points by a data field.

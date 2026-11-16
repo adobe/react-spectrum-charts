@@ -10,16 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Blend, ColorValueRef, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
+import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
-import {
-  BACKGROUND_COLOR,
-  DEFAULT_OPACITY_RULE,
-  FADE_FACTOR,
-  FILTERED_TABLE,
-  SELECTED_ITEM,
-} from '@spectrum-charts/core-s2/constants';
-import { getS2ColorValue, spectrumColors } from '@spectrum-charts/core-s2/tokens';
+import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
+import { spectrumColors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   addHoveredItemOpacityRules,
@@ -28,7 +22,6 @@ import {
 import { getRowKeyField } from '../data/rowKeyUtils.js';
 import {
   getColorProductionRule,
-  getColorProductionRuleSignalString,
   getLineWidthProductionRule,
   getOpacityProductionRule,
   getPointsForVoronoi,
@@ -50,6 +43,7 @@ import {
   getScatterDrawInSize,
 } from './scatterAnimationUtils.js';
 import { getScatterAnnotationMarks } from './scatterAnnotation/index.js';
+import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
   const { isDrawInAnimate, name } = options;
@@ -149,38 +143,6 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
         y: { scale: 'yLinear', field: metric },
       },
     },
-  };
-};
-
-/** Opacity of the outline color; matches the Spectrum 2 color swatch border (gray-1000 at 42%). */
-export const SCATTER_OUTLINE_OPACITY = 0.42;
-/** Minimum contrast between a point's fill and the background before `auto` outlines it (WCAG non-text contrast). */
-export const SCATTER_OUTLINE_MIN_CONTRAST = 3;
-
-/**
- * Gets the outline encodings for scatter points, or none when `outline` is `never` or `stroke`/`lineWidth` are set.
- * @param options ScatterSpecOptions
- * @returns stroke, strokeOpacity, and strokeWidth encodings
- */
-export const getScatterOutlineEncoding = ({
-  color,
-  colorScaleType,
-  colorScheme,
-  lineWidth,
-  outline,
-  stroke,
-}: ScatterSpecOptions): { stroke?: ColorValueRef; strokeOpacity?: NumericValueRef; strokeWidth?: NumericValueRef } => {
-  const hasCustomLineWidth = typeof lineWidth !== 'object' || lineWidth.value !== 0;
-  if (outline === 'never' || stroke !== undefined || hasCustomLineWidth) return {};
-  const fill = getColorProductionRuleSignalString(color, colorScheme, colorScaleType);
-  const strokeWidth: NumericValueRef =
-    outline === 'always'
-      ? { value: 1 }
-      : { signal: `contrast(${fill}, ${BACKGROUND_COLOR}) < ${SCATTER_OUTLINE_MIN_CONTRAST} ? 1 : 0` };
-  return {
-    stroke: { value: getS2ColorValue('gray-1000', colorScheme) },
-    strokeOpacity: { value: SCATTER_OUTLINE_OPACITY },
-    strokeWidth,
   };
 };
 

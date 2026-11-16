@@ -24,14 +24,13 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import {
-  SCATTER_OUTLINE_OPACITY,
   addScatterMarks,
   getOpacity,
   getScatterHoverMarks,
   getScatterMark,
-  getScatterOutlineEncoding,
   getSelectRingSize,
 } from './scatterMarkUtils.js';
+import { SCATTER_OUTLINE_OPACITY, getScatterOutlineEncoding } from './scatterOutlineUtils.js';
 import { defaultScatterOptions } from './scatterTestUtils.js';
 
 describe('addScatterMarks()', () => {
