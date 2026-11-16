@@ -213,15 +213,37 @@ export const getScatterDrawInProgressExpr = (options: ScatterSpecOptions): strin
 };
 
 /**
- * Gets an expression for a point's 0-1 position across the x range, which sets when it starts growing.
+ * Gets the name of the signal holding the points' x extent in pixels, which the draw-in sweeps across.
+ * @param name - scatter name
+ * @returns string
+ */
+export const getScatterDrawInExtentSignalName = (name: string): string => `${name}_drawInExtent`;
+
+/**
+ * Adds the signal holding the points' x extent in pixels, so the sweep spans the points rather than the whole plot.
+ * @param signals
+ * @param options
+ */
+export const addScatterDrawInExtentSignal = (signals: Signal[], options: ScatterSpecOptions): void => {
+  const { dimension, dimensionScaleType, name } = options;
+  const scaleName = getScaleName('x', dimensionScaleType);
+  const field = dimensionScaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
+  const extent = `extent(pluck(data('${FILTERED_TABLE}'), '${field}'))`;
+  signals.push({
+    name: getScatterDrawInExtentSignalName(name),
+    update: `[scale('${scaleName}', ${extent}[0]), scale('${scaleName}', ${extent}[1])]`,
+  });
+};
+
+/**
+ * Gets an expression for a point's 0-1 position across the points' x extent, which sets when it starts growing.
  * @param options
  * @param x - expression for the point's x in pixels
  * @returns expression string
  */
-const getScatterDrawInPositionExpr = ({ dimensionScaleType }: ScatterSpecOptions, x: string): string => {
-  const scaleName = getScaleName('x', dimensionScaleType);
-  const [start, end] = [`range('${scaleName}')[0]`, `range('${scaleName}')[1]`];
-  return `clamp((${x} - ${start}) / max(${end} - ${start}, 1), 0, 1)`;
+const getScatterDrawInPositionExpr = ({ name }: ScatterSpecOptions, x: string): string => {
+  const extent = getScatterDrawInExtentSignalName(name);
+  return `clamp((${x} - ${extent}[0]) / max(${extent}[1] - ${extent}[0], 1), 0, 1)`;
 };
 
 /**

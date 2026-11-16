@@ -55,6 +55,7 @@ import {
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
 import { ChartData, ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
 import {
+  addScatterDrawInExtentSignal,
   addScatterFollowerFadeTimer,
   addScatterHoverAnimationData,
   addScatterItemHighlightSignals,
@@ -221,6 +222,7 @@ export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scat
 
   if (isDrawInAnimate) {
     addDrawInClockSignals(signals, DRAW_IN_SWEEP_DURATION_MS);
+    addScatterDrawInExtentSignal(signals, scatterOptions);
     addDrawInDoneSignal(signals);
     if (hasDrawInFollowers(scatterOptions)) addScatterFollowerFadeTimer(signals);
   }

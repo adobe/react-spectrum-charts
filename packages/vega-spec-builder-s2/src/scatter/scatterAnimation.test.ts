@@ -162,6 +162,16 @@ describe('scatter animations', () => {
       expect(placed).toEqual(labels(still));
     });
 
+    test('sweeps across the points, not the whole plot', async () => {
+      // every point sits at the far right of a plot that starts at 0
+      const rightData = data.map((row, i) => ({ ...row, x: 98 + i }));
+      const chart = await createView({ data: rightData, marks: [{ ...scatter, size: undefined }] });
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.4);
+      const [left, , right] = sizes(chart);
+      expect(left).toBeGreaterThan(0);
+      expect(right).toBe(0);
+    });
+
     test('settles sized points at their own sizes', async () => {
       const chart = await createView({ marks: [{ ...scatter, size: 'weight' }] });
       await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 2);
