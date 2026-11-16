@@ -234,7 +234,13 @@ The interactive example has these controls. The code above uses the shown values
 
 ### Outline
 
-Points have no outline by default (`lineWidth` is `0`). `lineWidth` takes `XS` (1px), `S` (1.5px), `M` (2px), `L` (3px), `XL` (4px), or a number of pixels. `lineType` sets the outline dash pattern, and `stroke` sets its color, which defaults to the point's `color`. A translucent fill with a solid outline keeps overlapping points readable.
+`outline` adds a thin border so pale points stay visible. The border is `gray-1000` at 42% opacity, 1px wide, like the border on a Spectrum 2 color swatch.
+
+-   `auto` (default) outlines only points whose fill has less than 3:1 contrast with the chart background, so pale colors get a border and strong ones don't.
+-   `always` outlines every point.
+-   `never` turns the border off.
+
+For a custom outline, set `lineWidth` and `stroke` instead; they take precedence over `outline`. `lineWidth` takes `XS` (1px), `S` (1.5px), `M` (2px), `L` (3px), `XL` (4px), or a number of pixels. `lineType` sets the outline dash pattern, and `stroke` sets its color, which defaults to the point's `color`. A translucent fill with a solid outline keeps overlapping points readable.
 
 Each of these can also be a field name. A `lineWidth` field maps through `lineWidths` on `Chart`, a `lineType` field through `lineTypes`, and a `stroke` field through the color scale.
 
@@ -258,6 +264,7 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 The interactive example has these controls. The code above uses the shown values.
 
+-   `outline` on `Scatter`: `auto`, `always` or `never`. Shown: `auto`.
 -   `lineWidth` on `Scatter`: `0`, `XS`, `S`, `M`, `L`, `XL` or `audience`. Shown: `0`.
 -   `lineType` on `Scatter`: `solid`, `dashed`, `dotted` or `audience`. Shown: `solid`.
 -   `stroke` on `Scatter`: `none`, `gray-800` or `audience`. Shown: `none`.
@@ -585,6 +592,37 @@ The interactive example has these controls. The code above uses the shown values
 > 
 > `TrendlineAnnotation` only works with the `average` and `median` methods. With regression or moving-average methods the chart fails to render.
 
+## ScatterSizeLegend
+
+When `size` is a data field, add `ScatterSizeLegend` inside `Scatter` to explain the point sizes. It shows the smallest and largest values and a rounded middle value as circles at the same size as the points, so readers can compare them directly.
+
+-   `title` names the size field, separately from the `Legend` title.
+-   `position` places the legend on a side of the plot (default `right`). It sits after the `Legend`.
+-   `direction` stacks the circles (`vertical`, the default on the left or right) or lays them in a row (`horizontal`, the default on the top or bottom).
+
+```jsx
+import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+import {
+  Scatter,
+  ScatterSizeLegend,
+} from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData}>
+  <Axis position="left" grid title="Revenue ($K)" />
+  <Axis position="bottom" grid title="Spend ($K)" />
+  <Scatter dimension="spend" metric="revenue" color="channel" size="reach">
+    <ScatterSizeLegend />
+  </Scatter>
+  <Legend title="Channel" />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `title` on `ScatterSizeLegend`: any text. Shown: `Reach (K)`.
+-   `position` on `ScatterSizeLegend`: `right`, `left`, `top` or `bottom`. Shown: `right`.
+-   `direction` on `ScatterSizeLegend`: `default`, `vertical` or `horizontal`. Shown: `default`.
+
 ## Legend
 
 Add `Legend` as a sibling of `Scatter` to list its series. The plot shrinks to make room for it.
@@ -622,17 +660,21 @@ The interactive example has these controls. The code above uses the shown values
 
 ### Size, gradient, and opacity legends
 
-A numeric `size` field gets a size legend, listed after any category entries, and a linear `color` field gets a gradient legend. When points share one color and `opacity` is a field, set `opacity` on `Legend` to that field so the legend symbols match.
+A linear `color` field gets a gradient legend. When points share one color and `opacity` is a field, set `opacity` on `Legend` to that field so the legend symbols match. `Legend` doesn't show point sizes; add [`ScatterSizeLegend`](#scattersizelegend) to `Scatter` for that.
 
 ```jsx
-import { Axis, Chart, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import {
+  Scatter,
+  ScatterSizeLegend,
+} from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 <Chart data={scatterCampaignData}>
   <Axis position="left" grid title="Revenue ($K)" />
   <Axis position="bottom" grid title="Spend ($K)" />
-  <Scatter dimension="spend" metric="revenue" size="reach" />
-  <Legend position="right" title="Reach (K)" />
+  <Scatter dimension="spend" metric="revenue" size="reach">
+    <ScatterSizeLegend title="Reach (K)" />
+  </Scatter>
 </Chart>
 ```
 
@@ -761,9 +803,22 @@ The interactive example has these controls. The code above uses the shown values
 -   `rightClick` on `ChartPopover`: `true` or `false`. Shown: `false`.
 -   `tooltipAnchor` on `Chart`: `cursor` or `mark`. Shown: `cursor`.
 
+### Click and right-click
+
+`onClick` on `Scatter` is called with the clicked point's row. `onContextMenu` is called with the mouse event and the row when a point is right-clicked; use it to show your own context menu. Both use the same nearest-point targeting as hover, so the pointer doesn't need to be exactly on a point.
+
+```tsx
+<Scatter
+  dimension="spend"
+  metric="revenue"
+  onClick={(datum) => openCampaign(datum.id)}
+  onContextMenu={(event, datum) => showMenu(event.clientX, event.clientY, datum)}
+/>
+```
+
 > **Note:**
 > 
-> `Scatter` doesn't support `onClick`, `onContextMenu`, `onMouseOver`, or `onMouseOut` yet.
+> `Scatter` doesn't support `onMouseOver` or `onMouseOut` yet.
 
 ### Highlighting
 
@@ -801,7 +856,39 @@ The interactive example has these controls. The code above uses the shown values
 
 ## Animation
 
-`Scatter` doesn't animate yet: `animationTypes` on `Chart` has no effect on points, paths, or trendlines.
+The chart's `animationTypes` lists which animations play. By default, `drawIn` grows the points in from left to right over 850ms when the chart mounts; paths, labels, and trendlines fade in once the points finish. `hover` eases points in and out of their faded state when a point, a legend entry, or a controlled highlight changes. Moving from one point to another fades the old point out while the new one fades in.
+
+```jsx
+import {
+  Axis,
+  Chart,
+  ChartInspect,
+  Legend,
+} from '@spectrum-charts/react-spectrum-charts-s2';
+import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+
+<Chart data={scatterCampaignData}>
+  <Axis position="left" grid title="Revenue ($K)" />
+  <Axis position="bottom" grid title="Spend ($K)" />
+  <Scatter dimension="spend" metric="revenue" color="channel">
+    <ChartInspect>
+      {(datum) => (
+        <div>
+          {datum.campaign}: ${datum.revenue}K revenue on ${datum.spend}K spend
+        </div>
+      )}
+    </ChartInspect>
+  </Scatter>
+  <Legend highlight />
+</Chart>
+```
+
+The interactive example has these controls. The code above uses the shown values.
+
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+-   `animationTypes` on `Chart`: `true` or `false`. Shown: `true`.
+
+Draw-in plays once when the chart mounts; re-renders, data updates, and resizing don't replay it. Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all animation. See [Animation](/react-spectrum-charts/s2/docs/docs/guides/animation).
 
 ## API
 
@@ -822,7 +909,10 @@ The interactive example has these controls. The code above uses the shown values
 | `lineWidth` — Outline width: a data key mapped to the chart's `lineWidths`, or a static width. | `LineWidthFacet` | `{ value: 0 }` |
 | `metric` — Key in the data that is used as the metric | `string` | `'value'` |
 | `name` — Sets the name of the component. | `string` | – |
+| `onClick` — Called with the row's data when a point is clicked. | `MarkCallback` | – |
+| `onContextMenu` — Called with the event and the row's data when a point is right-clicked. Use it to show a custom context menu. | `ContextMenuCallback` | – |
 | `opacity` — Point opacity: a data key mapped to the chart's `opacities`, or a static value. | `OpacityFacet` | `{ value: 1 }` |
+| `outline` — Thin border around points: `auto` only where a point's fill has under 3:1 contrast with the background, `always`, or `never`. `stroke` and `lineWidth` take precedence. | `"auto" \| "always" \| "never"` | `'auto'` |
 | `size` — Point width: a numeric data key scaled between the chart's `symbolSizes`, or a static size. | `SymbolSizeFacet` | `{ value: DEFAULT_SYMBOL_SIZE }` |
 | `stroke` — Outline color: a data key mapped to the color scale, or a static color. | `ColorFacet` | `'color'` |
 
@@ -841,6 +931,14 @@ The interactive example has these controls. The code above uses the shown values
 | --- | --- | --- |
 | `anchor` — Specifies where to position the annotation relative to the data point. When an array is provided, each position is tried in order until one fits within the chart bounds and doesn't overlap with other annotations or points. If no position fits, the annotation is not displayed. | `LabelAnchor \| LabelAnchor[]` | `['right', 'top', 'bottom', 'left']` |
 | `textKey` — Data field with the label text. | `string` | `'annotation'` |
+
+### ScatterSizeLegend
+
+| Prop | Type | Default |
+| --- | --- | --- |
+| `direction` — Lays the circles out in a row or a column. Defaults to `vertical` on the left or right, `horizontal` on the top or bottom. | `"vertical" \| "horizontal"` | – |
+| `position` — Side of the plot the legend is placed on. | `"top" \| "bottom" \| "left" \| "right"` | `'right'` |
+| `title` — Heading shown above the size legend, usually the name of the size field. | `string` | – |
 
 ### Trendline
 

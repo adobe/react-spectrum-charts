@@ -86,7 +86,8 @@ The chart fades in over 150ms on first paint. Draw-in then waits until the page 
 | [Bar](/react-spectrum-charts/s2/docs/docs/bar#animation) | Yes | Bars grow from the baseline over 700ms. |
 | [Donut](/react-spectrum-charts/s2/docs/docs/donut#animation) | Yes | Segments sweep in over 750ms. |
 | [Combo](/react-spectrum-charts/s2/docs/docs/combo#animation) | Yes | Bars and lines draw in together over 850ms. |
-| [Area](/react-spectrum-charts/s2/docs/docs/area#animation), [Scatter](/react-spectrum-charts/s2/docs/docs/scatter#animation), [Bullet](/react-spectrum-charts/s2/docs/docs/bullet#animation) | No | No |
+| [Scatter](/react-spectrum-charts/s2/docs/docs/scatter#animation) | Yes | Points grow in from left to right over 850ms. |
+| [Area](/react-spectrum-charts/s2/docs/docs/area#animation), [Bullet](/react-spectrum-charts/s2/docs/docs/bullet#animation) | No | No |
 
 Hover animation applies to marks that respond to hover or highlighting: for example, a mark with a `ChartInspect` or `ChartPopover`, a chart with a `Legend` that has `highlight`, or a chart with `highlightedSeries` or `highlightedItem`. See [Highlighting](/react-spectrum-charts/s2/docs/docs/interaction#highlighting).
 
