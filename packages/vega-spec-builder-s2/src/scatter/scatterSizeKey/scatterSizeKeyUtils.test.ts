@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { View, expressionFunction, parse } from 'vega';
+import { View, parse } from 'vega';
 
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
