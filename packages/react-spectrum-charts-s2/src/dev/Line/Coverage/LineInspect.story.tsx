@@ -68,4 +68,27 @@ ItemInspect.args = {
   interactionMode: 'item',
 };
 
-export { Inspect, ItemInspect };
+const AdaptiveInspect = bindWithProps(BasicLineStory);
+AdaptiveInspect.args = {
+  ...defaultArgs,
+  interactionMode: 'adaptive',
+  children: (
+    <ChartInspect>
+      {(datum) => (
+        <div>
+          <div>{formatTimestamp(datum.datetime as number)}</div>
+          {(datum.rscHoverTarget === 'item'
+            ? [datum]
+            : workspaceTrendsData.filter((point) => point.datetime === datum.datetime)
+          ).map((point) => (
+            <div key={String(point.series)}>
+              {String(point.series)}: {Number(point.value).toLocaleString()}
+            </div>
+          ))}
+        </div>
+      )}
+    </ChartInspect>
+  ),
+};
+
+export { Inspect, ItemInspect, AdaptiveInspect };

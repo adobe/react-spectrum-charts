@@ -26,6 +26,9 @@ export const LineDirectLabelSchema = z
       .optional()
       .describe('Where to place the label along the line: "start" or "end". Defaults to "end".'),
     format: z.string().optional().describe('Number format string (matches axis formatting).'),
+    textKey: z.string().min(1).optional().describe(
+      'Field containing preformatted text at the first/last finite metric point. Overrides value and format; prefix still applies. Missing or empty text omits the label.'
+    ),
     prefix: z.string().optional().describe('Text prepended to the value.'),
     excludeSeries: z.array(z.string()).optional().describe('Series values to exclude from labeling.'),
     fontSize: z.number().optional().describe('Override font size in pixels.'),

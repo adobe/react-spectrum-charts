@@ -15,7 +15,23 @@ import { renderHook } from '@testing-library/react';
 
 import { Axis } from '../components/index.js';
 import { ChartChildElement } from '../types/index.js';
+import useAxisAnnotationOnClickDetails from './useAxisAnnotationOnClickDetails.js';
 import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails.js';
+
+test('annotation activation retains axis indices and custom names, and clears removed callbacks', () => {
+  const onAnnotationClick = jest.fn();
+  const children = [
+    createElement(Axis, { position: 'left' }),
+    createElement(Axis, { position: 'bottom', onAnnotationClick, axisAnnotations: [{}, { name: 'custom_events' }] }),
+  ];
+  const { result, rerender } = renderHook(({ elements }) => useAxisAnnotationOnClickDetails(elements), {
+    initialProps: { elements: children },
+  });
+  expect(result.current.map(({ markName }) => markName)).toEqual(['axis1Annotation0_icon', 'custom_events_icon']);
+  expect(result.current.every((entry) => entry.onClick === onAnnotationClick)).toBe(true);
+  rerender({ elements: [createElement(Axis, { position: 'bottom' })] });
+  expect(result.current).toEqual([]);
+});
 
 describe('useAxisLabelOnClickDetails()', () => {
   it('should return an empty array when there are no Axis children', () => {

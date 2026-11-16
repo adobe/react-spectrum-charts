@@ -68,6 +68,12 @@ const getOpacity = (lineOptions: LineSpecOptions): ProductionRule<NumericValueRe
   // Non-animated
   const opacityRules: ProductionRule<NumericValueRef> = [];
   if (interactiveMarkName) {
+    if (lineOptions.interactionMode === 'adaptive') {
+      opacityRules.push({
+        test: `${interactiveMarkName}_${HOVERED_ITEM} && ${interactiveMarkName}_${HOVERED_ITEM}.rscHoverTarget === 'dimension'`,
+        value: 1,
+      });
+    }
     if (isHighlightedByGroup) {
       opacityRules.push({
         test: `length(data('${interactiveMarkName}_highlightedData'))`,
@@ -129,9 +135,9 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
     encode: {
       update: {
         size: getPointSizeEncoding(pointSize),
-        y: getLineYEncoding(lineOptions, metric),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
+        y: getLineYEncoding(lineOptions, metric),
         x: getXProductionRule(scaleType, dimension),
       },
     },

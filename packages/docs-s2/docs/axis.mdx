@@ -174,6 +174,9 @@ can repeat labels, such as `Q1 Q1 Q2`. Match the tick count to the data if you s
 `range` fixes the minimum and maximum of a linear or time axis, such as `[0, 0.05]`, instead of
 fitting the data. It is ignored on band scales.
 
+For a Line with `dualMetricAxis`, each metric axis's `range` applies independently to its
+primary or secondary scale. Hiding axis labels does not remove its fixed range.
+
 <AxisRangePlayground />
 
 ## Tick count
@@ -288,4 +291,58 @@ from rendering.
 
 :::note
 `AxisAnnotation` from the Spectrum 1 package isn't available in Spectrum 2.
+Low-level spec-builder `axisAnnotations` options use the parent time axis's
+dimension, including custom field names. Point and ranged annotations retain
+numeric midpoint coordinates when the input values are dates.
 :::
+
+### Axis annotations
+
+Use `Axis.axisAnnotations` on a bottom time axis. `dataKey` retains source-row
+membership behavior. Alternatively, supply independent span `data` with unique
+string `id`s and finite numeric `value` positions. Optional `lower` and `upper`
+must both be present, ordered, and contain `value`. This preserves positions
+between source buckets without adding source rows or expanding the source domain.
+Coincident positions share an icon; `options` supplies colors by annotation ID.
+An empty `data` array clears annotations. Precomputed data requires `format: 'span'`.
+
+```tsx
+<Axis
+  position="bottom"
+  labelFormat="time"
+  axisAnnotations={[
+    {
+      format: 'span',
+      data: [{ id: 'release', value: 1750464000000, lower: 1750377600000, upper: 1750550400000 }],
+      options: [{ id: 'release', color: 'magenta-600' }],
+    },
+  ]}
+  onAnnotationClick={(event, annotationIds) => {
+    openDetails(annotationIds, { x: event.clientX, y: event.clientY });
+  }}
+/>
+```
+
+`onAnnotationClick` receives the native mouse event and a deduplicated ID array,
+including every member of a coincident group. No private Vega fields are exposed.
+The callback does not persist selection by itself or provide keyboard activation.
+
+Set `selectedIds` on a span annotation to control selection independently of
+pointer hover, for example while an external details dialog is open. IDs must be
+unique, nonempty strings. Selecting any member selects its coincident group.
+Selected icons and ranges remain fully opaque after pointer leave; other icons
+are hidden. Multiple groups may be selected. Pass `[]` when details close to
+restore ordinary hover, or omit the option to preserve the default press/hover
+behavior. Unavailable source IDs have no effect and become selected if they
+return during source updates. This also supports anchors at numeric zero.
+
+```tsx
+axisAnnotations={[{
+  format: 'span',
+  data: annotationPositions,
+  selectedIds: selectedAnnotationIds
+}]}
+```
+
+Clear controlled selection when its owning dialog, source, or chart is disposed.
+Keyboard activation and full dialog accessibility need separate qualification.

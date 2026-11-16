@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data } from 'vega';
+import { Data, View, expressionFunction, parse } from 'vega';
 
 import {
   DEFAULT_COLOR,
@@ -20,6 +20,8 @@ import {
   TRENDLINE_VALUE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { baseData } from '../specUtils.js';
 import {
   addTableDataTransforms,
@@ -31,6 +33,116 @@ import {
 import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils.js';
 
 const getDefaultData = (): Data[] => JSON.parse(JSON.stringify(baseData));
+
+beforeAll(() => {
+  Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', () => 400);
+});
+
+test.each(['empty', 'all-null'])('precomputed %s fits leave the source chart intact', async (fit) => {
+  const rows = [
+    { series: 'A', datetime: 0, value: 1 },
+    { series: 'A', datetime: 1000, value: 2 },
+  ];
+  const spec = buildSpec({
+    data: rows,
+    animations: false,
+    marks: [
+      {
+        markType: 'line',
+        color: 'series',
+        trendlines: [{ data: fit === 'empty' ? [] : rows.map((row) => ({ ...row, value: null })) }],
+      },
+    ],
+  });
+  const view = new View(parse(JSON.parse(JSON.stringify(spec))), { renderer: 'none' }).insert('table', rows);
+  try {
+    await view.width(400).height(200).runAsync();
+    const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+    expect(svg.querySelector('.line0 path')?.getAttribute('d')).toMatch(/^M/);
+    for (const path of svg.querySelectorAll('.line0Trendline0 path')) {
+      expect(path.getAttribute('d')).toBeNull();
+    }
+    expect(view.data('table').map((row) => row.value)).toEqual([1, 2]);
+  } finally {
+    view.finalize();
+  }
+});
+
+test.each([
+  { datetime: NaN, value: 1 },
+  { datetime: null, value: 1 },
+  { datetime: 0, value: Infinity },
+  { datetime: 0 },
+])('rejects invalid precomputed coordinates explicitly (%j)', (row) => {
+  const data = getDefaultData();
+  expect(() =>
+    addTrendlineData(data, {
+      ...defaultLineOptions,
+      trendlines: [{ data: [row] }],
+    })
+  ).toThrow('finite numeric dimensions and finite or null metrics');
+});
+
+test('rejects interactive compositions for precomputed trends explicitly', () => {
+  expect(() =>
+    addTrendlineData(getDefaultData(), {
+      ...defaultLineOptions,
+      trendlines: [{ data: [], chartInspects: [{}] }],
+    })
+  ).toThrow('horizontal, noninteractive Line trendline');
+});
+
+test('precomputed Line trends retain gaps, parent dual scales, visibility and resize geometry', async () => {
+  const rows = ['A', 'B'].flatMap((series, seriesIndex) =>
+    [10, 20, 30].map((value, index) => ({
+      series,
+      timestamp: Date.UTC(2026, 0, index + 1),
+      value: value * (seriesIndex ? 100 : 1),
+    }))
+  );
+  const data = rows.map((row, index) => ({ ...row, value: index % 3 === 1 ? null : row.value }));
+  const spec = buildSpec({
+    data: rows,
+    axes: [
+      { position: 'left', range: [0, 30] },
+      { position: 'right', range: [0, 3000] },
+    ],
+    legends: [{ highlight: false }],
+    animations: false,
+    marks: [
+      {
+        markType: 'line',
+        name: 'testLine',
+        dimension: 'timestamp',
+        color: 'series',
+        dualMetricAxis: true,
+        chartInspects: [{}],
+        trendlines: [{ data, displayOnHover: true }],
+      },
+    ],
+  });
+  const view = new View(parse(JSON.parse(JSON.stringify(spec))), { renderer: 'none' }).insert('table', rows);
+  try {
+    for (const height of [200, 320]) {
+      for (const series of ['A', 'B']) {
+        await view.width(400).height(height).signal('controlledHighlightedSeries', series).runAsync();
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const paths = svg.querySelectorAll('.testLineTrendline0 path');
+        expect(paths).toHaveLength(1);
+        const path = paths[0].getAttribute('d') ?? '';
+        expect(path).not.toMatch(/NaN|Infinity/);
+        expect(path.match(/M/g)).toHaveLength(2);
+        expect(Number(path.match(/^M[^,]+,([\d.]+)/)?.[1])).toBeCloseTo((height * 2) / 3, 2);
+      }
+    }
+    await view.signal('hiddenSeries', ['B']).runAsync();
+    expect(view.data('testLineTrendline0_highResolutionData').map((row) => row.series)).toEqual(['A', 'A', 'A']);
+    expect(view.data('table').map((row) => row.value)).toEqual([10, 20, 30, 1000, 2000, 3000]);
+  } finally {
+    view.finalize();
+  }
+});
 
 describe('addTrendlineData()', () => {
   test('should add normalized dimension for regression trendline', () => {

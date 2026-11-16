@@ -23,6 +23,7 @@ const LineDirectLabel: FC<LineDirectLabelProps> = ({
   value = 'last',
   position = 'end',
   format,
+  textKey,
   prefix,
   excludeSeries,
   fontSize,

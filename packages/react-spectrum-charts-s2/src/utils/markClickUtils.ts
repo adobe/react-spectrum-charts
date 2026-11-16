@@ -11,11 +11,19 @@
  */
 import { RefObject } from 'react';
 
-import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
+import { Bounds, Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import {
+  COMPONENT_NAME,
+  DIMENSION_FIELD,
+  FILTERED_TABLE,
+  GROUP_DATA,
+  MARK_ID,
+  SERIES_ID,
+} from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
+import type { AxisAnnotationOnClickDetail } from '../hooks/useAxisAnnotationOnClickDetails.js';
 import type { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails.js';
 import type { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails.js';
 import type { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails.js';
@@ -88,7 +96,11 @@ const handleMarkClick = (
 };
 
 /** @returns whether a matching popover button was actually found and clicked. */
-export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu'): boolean => {
+export const triggerPopover = (
+  chartId: string,
+  itemName: string | undefined,
+  trigger: 'click' | 'contextmenu'
+): boolean => {
   if (!itemName) return false;
   const button = document.querySelector(
     `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
@@ -148,14 +160,18 @@ export const getOnChartMarkContextMenuCallback = (
     const itemName = getItemName(item);
     const detail = markClickDetails.find((d) => d.markName === itemName);
     if (detail?.onContextMenu && contextMenuModeAllowsMark(detail.contextMenuMode, fullMarkName)) {
-      const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+      const nativeEvent =
+        (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
       let datum = item.datum;
       if (fullMarkName.endsWith('_xAxisVoronoi')) {
         const dimensionField = datum[DIMENSION_FIELD] as string;
         if (dimensionField) {
           const dimensionValue = toComparableValue(datum[dimensionField]);
           const tableData = chartView.current.data(FILTERED_TABLE);
-          datum = { ...datum, [GROUP_DATA]: tableData.filter((d) => toComparableValue(d[dimensionField]) === dimensionValue) };
+          datum = {
+            ...datum,
+            [GROUP_DATA]: tableData.filter((d) => toComparableValue(d[dimensionField]) === dimensionValue),
+          };
         }
       }
       detail.onContextMenu(nativeEvent, datum);
@@ -169,9 +185,7 @@ export const getOnChartMarkContextMenuCallback = (
  * @param axisLabelOnClickDetails - The details for all axes with the onClick prop.
  * @returns The callback for axis label click events.
  */
-export const getOnAxisLabelClickCallback = (
-  axisLabelOnClickDetails?: AxisLabelOnClickDetail[]
-): ViewEventCallback => {
+export const getOnAxisLabelClickCallback = (axisLabelOnClickDetails?: AxisLabelOnClickDetail[]): ViewEventCallback => {
   return (event, item) => {
     if (!item || !axisLabelOnClickDetails?.length || !isAxisLabelItem(item)) return;
 
@@ -182,13 +196,33 @@ export const getOnAxisLabelClickCallback = (
     if (datum.index < 0 || datum.value === undefined) return;
 
     const index = getAxisLabelIndex(item, datum.index);
-    const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+    const nativeEvent =
+      (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
     axisLabelOnClickDetails.find((detail) => detail.markName === itemName)?.onClick?.(nativeEvent, datum.value, index);
   };
 };
 
 const isAxisLabelItem = (item: ActionItem): boolean =>
   isItemSceneItem(item) && 'role' in item.mark && item.mark.role === 'axis-label';
+
+export const getOnAxisAnnotationClickCallback =
+  (details: AxisAnnotationOnClickDetail[]): ViewEventCallback =>
+  (event, item) => {
+    if (!isItemSceneItem(item)) return;
+    const detail = details.find((entry) => entry.markName === Reflect.get(item.mark, 'name'));
+    if (!detail) return;
+    const annotations: unknown = item.datum.annotations;
+    if (!Array.isArray(annotations) || !annotations.length) throw new Error('Axis annotation activation requires IDs.');
+    const ids = annotations.map((entry: unknown) => {
+      const id: unknown =
+        entry && typeof entry === 'object' ? Reflect.get(entry, `${detail.annotationName}_id`) : undefined;
+      if (typeof id !== 'string' || !id) throw new Error('Axis annotation activation requires valid IDs.');
+      return id;
+    });
+    const nativeEvent: unknown = 'sourceEvent' in event ? event.sourceEvent : event;
+    if (!(nativeEvent instanceof MouseEvent)) throw new Error('Axis annotation activation requires a mouse event.');
+    detail.onClick(nativeEvent, [...new Set(ids)]);
+  };
 
 /**
  * Vega's tick datum.index is a fraction (`i / (tickCount - 1)`, per vega-encode's AxisTicks),
@@ -212,7 +246,23 @@ const contextMenuModeAllowsMark = (contextMenuMode: ContextMenuMode | undefined,
   return true;
 };
 
-const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>) => {
+const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>): NonNullable<ActionItem> => {
+  const adaptive: unknown = Reflect.get(item, 'adaptiveHover');
+  if (adaptive && typeof adaptive === 'object') {
+    const anchor = isItemSceneItem(item.datum) ? item.datum : item;
+    const point: unknown = Reflect.get(adaptive, 'rscHoverPoint');
+    if (point !== undefined) {
+      if (!point || typeof point !== 'object') throw new Error('Adaptive Line hover requires a valid anchor point.');
+      const x: unknown = Reflect.get(point, 'x');
+      const y: unknown = Reflect.get(point, 'y');
+      if (typeof x !== 'number' || typeof y !== 'number' || !Number.isFinite(x) || !Number.isFinite(y)) {
+        throw new Error('Adaptive Line hover requires finite anchor coordinates.');
+      }
+      const selected = { ...anchor, datum: adaptive, bounds: new Bounds().set(x, y, x, y) };
+      return selected;
+    }
+    return { ...anchor, datum: adaptive };
+  }
   // if they clicked on a mark group then we want to go down an additional level
   if (isGroupMarkItem(item)) {
     item = item.datum;
@@ -233,7 +283,7 @@ const userDidNotClickOnLegend = (item: unknown): item is Item & SceneItem => {
 
 /**
  * Handles mark mouse input events (mouseover/mouseout)
- * Only supports bar marks.
+ * Supports bar and line interaction marks.
  * @param event
  * @param item
  * @param markMouseInputDetails
@@ -279,12 +329,33 @@ export const handleLegendItemMouseInput = (
  */
 export const getOnMouseInputCallback = (
   onLegendMouseInput?: (seriesName: string) => void,
-  markMouseInputDetails?: MarkMouseInputDetail[]
+  markMouseInputDetails?: MarkMouseInputDetail[],
+  onLegendMouseOut = onLegendMouseInput
 ): ViewEventCallback => {
+  let adaptiveDatum: Datum | undefined;
   return (event, item) => {
     if (!item) return;
+    if (Reflect.has(item, 'adaptiveHover')) {
+      const detail = markMouseInputDetails?.find((entry) => entry.markName === getItemName(item));
+      if (event.type === 'mouseout') {
+        if (adaptiveDatum) detail?.onMouseOut?.(adaptiveDatum);
+        adaptiveDatum = undefined;
+      } else {
+        const selected: unknown = Reflect.get(item, 'adaptiveHover');
+        if (selected && typeof selected === 'object') {
+          const next: Datum = getGroupOrAreaMarkItemFromItem(item).datum;
+          if (next[MARK_ID] !== adaptiveDatum?.[MARK_ID]) {
+            if (adaptiveDatum) detail?.onMouseOut?.(adaptiveDatum);
+            detail?.onMouseOver?.(next);
+            adaptiveDatum = next;
+          }
+        }
+      }
+      return;
+    }
+    if (event.type === 'mousemove') return;
     if (isLegendItem(item)) {
-      handleLegendItemMouseInput(item, onLegendMouseInput);
+      handleLegendItemMouseInput(item, event.type === 'mouseout' ? onLegendMouseOut : onLegendMouseInput);
     } else if (markMouseInputDetails?.length) {
       handleMarkMouseInput(event, item, markMouseInputDetails);
     }

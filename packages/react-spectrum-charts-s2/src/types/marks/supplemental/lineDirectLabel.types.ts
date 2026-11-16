@@ -32,6 +32,11 @@ export interface LineDirectLabelProps {
   position?: LineDirectLabelPosition;
   /** d3 number format for the value. Defaults to `',.2~f'`. */
   format?: string;
+  /**
+   * Field containing preformatted label text at the first/last finite metric point.
+   * Overrides value and format; prefix still applies. Missing or empty text omits the label.
+   */
+  textKey?: string;
   /** Text prepended to the value, separated by a space. */
   prefix?: string;
   /** Series values to exclude from labeling. */
