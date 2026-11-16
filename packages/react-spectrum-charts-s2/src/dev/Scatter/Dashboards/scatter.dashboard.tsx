@@ -731,6 +731,25 @@ const interactionVariations: Variation[] = [
     ),
   },
   {
+    id: 'on-mouse-over-out',
+    title: 'onMouseOver and onMouseOut',
+    description: 'Hover in and out of points; the latest event is shown below the chart.',
+    dataset: 'standard',
+    coverage: ['onMouseOver', 'onMouseOut'],
+    render: () => (
+      <CallbackVariation
+        render={(log) => (
+          <ScatterVariationChart
+            scatterProps={{
+              onMouseOver: (datum) => log(`Over ${formatDatum(datum)}`),
+              onMouseOut: (datum) => log(`Out ${formatDatum(datum)}`),
+            }}
+          />
+        )}
+      />
+    ),
+  },
+  {
     id: 'on-context-menu',
     title: 'onContextMenu',
     description: 'Right-click near a point; the datum is shown below the chart.',
@@ -1691,6 +1710,8 @@ const scatterCoverage: PropCoverage<ScatterProps> = {
   name: ['defaults', 'named-interactive'],
   onClick: ['on-click'],
   onContextMenu: ['on-context-menu'],
+  onMouseOut: ['on-mouse-over-out'],
+  onMouseOver: ['on-mouse-over-out'],
   opacity: ['defaults', 'opacity-static', 'opacity-key', 'chart-opacities'],
   outline: ['defaults', 'outline-auto', 'outline-always', 'outline-never'],
   size: ['defaults', 'size-key', 'size-static', 'size-pixels', 'chart-symbol-sizes'],

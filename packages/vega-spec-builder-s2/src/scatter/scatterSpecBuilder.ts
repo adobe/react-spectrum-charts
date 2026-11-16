@@ -134,6 +134,7 @@ export const addScatter = produce<
           chartInspects,
           hasOnClick: options.hasOnClick,
           hasOnContextMenu: options.hasOnContextMenu,
+          hasMouseInteraction: options.hasMouseInteraction,
           highlightedItem: options.highlightedItem,
           trendlines,
         },
