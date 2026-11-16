@@ -196,7 +196,7 @@ describe('getTrendlineLineMark()', () => {
     ).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
     expect(
       getTrendlineLineMark(
-        { ...defaultLineOptions, scaleType: 'linear', dimension: 'count' },
+        { ...defaultLineOptions, scaleType: 'linear' as const, dimension: 'count' },
         { ...defaultTrendlineOptions, dimensionScaleType: 'linear', trendlineDimension: 'count' }
       ).encode?.update?.x
     ).toEqual({ field: 'count', scale: 'xLinear' });

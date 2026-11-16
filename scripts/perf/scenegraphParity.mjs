@@ -75,11 +75,22 @@ const categories = (series, bars) => {
   return rows;
 };
 
+const points = (series, count) => {
+  const rows = [];
+  for (let s = 0; s < series; s++) {
+    for (let p = 0; p < count; p++) {
+      rows.push({ series: `s${s}`, x: (s * 13 + p * 7) % 100, value: 5 + ((s * 11 + p * 17) % 60), size: 1 + (p % 5) });
+    }
+  }
+  return rows;
+};
+
 const slices = (count) => Array.from({ length: count }, (_, i) => ({ series: `s${i}`, value: 10 + ((i * 37) % 50) }));
 
 const LINE = { markType: 'line', color: 'series', dimension: 'datetime', metric: 'value', scaleType: 'time' };
 const BAR = { markType: 'bar', color: 'series', dimension: 'category', metric: 'value' };
 const DONUT = { markType: 'donut', color: 'series', metric: 'value' };
+const SCATTER = { markType: 'scatter', color: 'series', dimension: 'x', metric: 'value' };
 
 const PRESETS = {
   'line-hover': {
@@ -117,6 +128,22 @@ const PRESETS = {
       pie: { ...DONUT, holeRatio: 0 },
       holeRatio: { ...DONUT, holeRatio: 0.6 },
       semicircle: { ...DONUT, variant: 'semicircle' },
+    },
+  },
+  'scatter-draw-in': {
+    scenario: 'drawIn',
+    data: points(4, 40),
+    variants: {
+      default: SCATTER,
+      sized: { ...SCATTER, size: 'size' },
+    },
+  },
+  'scatter-hover': {
+    scenario: 'hover',
+    data: points(4, 40),
+    variants: {
+      default: { ...SCATTER, chartInspects: [{}] },
+      highlightBySeries: { ...SCATTER, chartInspects: [{ highlightBy: 'series' }] },
     },
   },
   'donut-hover': {

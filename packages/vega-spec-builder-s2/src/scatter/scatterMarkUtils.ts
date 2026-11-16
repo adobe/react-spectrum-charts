@@ -10,10 +10,16 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
+import { Blend, ColorValueRef, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
-import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
-import { spectrumColors } from '@spectrum-charts/core-s2/tokens';
+import {
+  BACKGROUND_COLOR,
+  DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
+  FILTERED_TABLE,
+  SELECTED_ITEM,
+} from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue, spectrumColors } from '@spectrum-charts/core-s2/tokens';
 
 import {
   addHoveredItemOpacityRules,
@@ -22,6 +28,7 @@ import {
 import { getRowKeyField } from '../data/rowKeyUtils.js';
 import {
   getColorProductionRule,
+  getColorProductionRuleSignalString,
   getLineWidthProductionRule,
   getOpacityProductionRule,
   getPointsForVoronoi,
@@ -35,10 +42,17 @@ import {
 import { getScatterPathMarks } from '../scatterPath/scatterPathUtils.js';
 import { getTrendlineMarks } from '../trendline/index.js';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types/index.js';
+import { fadeInAfterScatterDrawIn, getScatterAnimatedOpacity, getScatterDrawInSize } from './scatterAnimationUtils.js';
 import { getScatterAnnotationMarks } from './scatterAnnotation/index.js';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
-  const { name } = options;
+  const { isDrawInAnimate, name } = options;
+  const annotationMarks = getScatterAnnotationMarks(options);
+  const pathMarks = getScatterPathMarks(options);
+  const trendlineMarks = getTrendlineMarks(options);
+  if (isDrawInAnimate) {
+    fadeInAfterScatterDrawIn([...annotationMarks, ...pathMarks, ...trendlineMarks]);
+  }
 
   const scatterGroup: GroupMark = {
     name: `${name}_group`,
@@ -46,13 +60,13 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
     clip: options.clip ?? false,
     marks: [
       getScatterMark(options),
-      ...getScatterAnnotationMarks(options),
+      ...annotationMarks,
       ...getScatterHoverMarks(options),
       ...getScatterSelectMarks(options),
     ],
   };
 
-  marks.push(...getScatterPathMarks(options), scatterGroup, ...getTrendlineMarks(options));
+  marks.push(...pathMarks, scatterGroup, ...trendlineMarks);
 });
 
 /**
@@ -98,6 +112,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
   } = options;
 
   const blendEncoding = getBlendEncoding(blend, colorScheme);
+  const sizeRule = getSymbolSizeProductionRule(size);
 
   return {
     name,
@@ -116,15 +131,48 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
       update: {
         fill: getColorProductionRule(color, colorScheme, colorScaleType),
         fillOpacity: getOpacityProductionRule(opacity),
-        size: getSymbolSizeProductionRule(size),
+        size: options.isDrawInAnimate ? getScatterDrawInSize(sizeRule, options) : sizeRule,
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeWidth: getLineWidthProductionRule(lineWidth),
         stroke: getColorProductionRule(stroke ?? color, colorScheme, colorScaleType),
-        opacity: getOpacity(options),
+        ...getScatterOutlineEncoding(options),
+        opacity: options.isHoverAnimate ? getScatterAnimatedOpacity(options) : getOpacity(options),
         x: getXProductionRule(dimensionScaleType, dimension),
         y: { scale: 'yLinear', field: metric },
       },
     },
+  };
+};
+
+/** Opacity of the outline color; matches the Spectrum 2 color swatch border (gray-1000 at 42%). */
+export const SCATTER_OUTLINE_OPACITY = 0.42;
+/** Minimum contrast between a point's fill and the background before `auto` outlines it (WCAG non-text contrast). */
+export const SCATTER_OUTLINE_MIN_CONTRAST = 3;
+
+/**
+ * Gets the outline encodings for scatter points, or none when `outline` is `never` or `stroke`/`lineWidth` are set.
+ * @param options ScatterSpecOptions
+ * @returns stroke, strokeOpacity, and strokeWidth encodings
+ */
+export const getScatterOutlineEncoding = ({
+  color,
+  colorScaleType,
+  colorScheme,
+  lineWidth,
+  outline,
+  stroke,
+}: ScatterSpecOptions): { stroke?: ColorValueRef; strokeOpacity?: NumericValueRef; strokeWidth?: NumericValueRef } => {
+  const hasCustomLineWidth = typeof lineWidth !== 'object' || lineWidth.value !== 0;
+  if (outline === 'never' || stroke !== undefined || hasCustomLineWidth) return {};
+  const fill = getColorProductionRuleSignalString(color, colorScheme, colorScaleType);
+  const strokeWidth: NumericValueRef =
+    outline === 'always'
+      ? { value: 1 }
+      : { signal: `contrast(${fill}, ${BACKGROUND_COLOR}) < ${SCATTER_OUTLINE_MIN_CONTRAST} ? 1 : 0` };
+  return {
+    stroke: { value: getS2ColorValue('gray-1000', colorScheme) },
+    strokeOpacity: { value: SCATTER_OUTLINE_OPACITY },
+    strokeWidth,
   };
 };
 

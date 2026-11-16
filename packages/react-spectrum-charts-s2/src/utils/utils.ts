@@ -284,7 +284,7 @@ export function getElement(
  */
 export const getAllMarkElements = (
   target: unknown,
-  source: typeof Bar | typeof Donut | typeof Line,
+  source: typeof Bar | typeof Donut | typeof Line | typeof Scatter,
   elements: MappedElement[] = [],
   name: string = '',
   parent?: string

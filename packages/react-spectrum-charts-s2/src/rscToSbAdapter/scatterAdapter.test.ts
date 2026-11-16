@@ -53,6 +53,14 @@ describe('getScatterOptions()', () => {
     const options = getScatterOptions({ color: DEFAULT_COLOR }, childrenToOptions);
     expect(options).toHaveProperty('color', DEFAULT_COLOR);
   });
+  it('should convert click callbacks to flags', () => {
+    const options = getScatterOptions({ onClick: jest.fn(), onContextMenu: jest.fn() }, childrenToOptions);
+    expect(options).toMatchObject({ hasOnClick: true, hasOnContextMenu: true });
+    expect(options).not.toHaveProperty('onClick');
+  });
+  it('should set the click flags to false without callbacks', () => {
+    expect(getScatterOptions({}, childrenToOptions)).toMatchObject({ hasOnClick: false, hasOnContextMenu: false });
+  });
   it('should not add props that are not provided', () => {
     const options = getScatterOptions({}, childrenToOptions);
     expect(options).not.toHaveProperty('color');

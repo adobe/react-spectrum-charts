@@ -8,6 +8,7 @@ description: Scatter plots that show the relationship between two numeric values
 import { PropsTable } from '@site/src/components/PropsTable';
 import { DataCode } from '@site/src/components/examples/DataCode';
 import {
+  ScatterAnimationPlayground,
   ScatterAnnotationPlayground,
   ScatterBlendPlayground,
   ScatterClipPlayground,
@@ -122,7 +123,16 @@ its own opacity. Opacities are evenly spaced unless you list them in `opacities`
 
 ### Outline
 
-Points have no outline by default (`lineWidth` is `0`). `lineWidth` takes `XS` (1px), `S` (1.5px),
+`outline` adds a thin border so pale points stay visible. The border is `gray-1000` at 42% opacity,
+1px wide, like the border on a Spectrum 2 color swatch.
+
+- `auto` (default) outlines only points whose fill has less than 3:1 contrast with the chart
+  background, so pale colors get a border and strong ones don't.
+- `always` outlines every point.
+- `never` turns the border off.
+
+For a custom outline, set `lineWidth` and `stroke` instead; they take precedence over `outline`.
+`lineWidth` takes `XS` (1px), `S` (1.5px),
 `M` (2px), `L` (3px), `XL` (4px), or a number of pixels. `lineType` sets the outline dash pattern,
 and `stroke` sets its color, which defaults to the point's `color`. A translucent fill with a solid
 outline keeps overlapping points readable.
@@ -287,8 +297,23 @@ following the cursor; `tooltipPlacement` picks the side.
 
 <ScatterInteractionPlayground />
 
+### Click and right-click
+
+`onClick` on `Scatter` is called with the clicked point's row. `onContextMenu` is called with the
+mouse event and the row when a point is right-clicked; use it to show your own context menu. Both
+use the same nearest-point targeting as hover, so the pointer doesn't need to be exactly on a point.
+
+```tsx
+<Scatter
+  dimension="spend"
+  metric="revenue"
+  onClick={(datum) => openCampaign(datum.id)}
+  onContextMenu={(event, datum) => showMenu(event.clientX, event.clientY, datum)}
+/>
+```
+
 :::note
-`Scatter` doesn't support `onClick`, `onContextMenu`, `onMouseOver`, or `onMouseOut` yet.
+`Scatter` doesn't support `onMouseOver` or `onMouseOut` yet.
 :::
 
 ### Highlighting
@@ -302,8 +327,17 @@ its entry is hovered.
 
 ## Animation
 
-`Scatter` doesn't animate yet: `animationTypes` on `Chart` has no effect on points, paths, or
-trendlines.
+The chart's `animationTypes` lists which animations play. By default, `drawIn` grows the points in
+from left to right over 850ms when the chart mounts; paths, labels, and trendlines fade in once the
+points finish. `hover` eases points in and out of their faded state when a point, a legend entry, or
+a controlled highlight changes. Moving from one point to another fades the old point out while the
+new one fades in.
+
+<ScatterAnimationPlayground />
+
+Draw-in plays once when the chart mounts; re-renders, data updates, and resizing don't replay it.
+Set `animationTypes={['hover']}` to turn off draw-in only, or `animations={false}` to turn off all
+animation. See [Animation](./guides/animation.mdx).
 
 ## API
 

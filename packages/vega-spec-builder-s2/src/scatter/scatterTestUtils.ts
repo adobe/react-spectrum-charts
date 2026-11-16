@@ -36,6 +36,7 @@ export const defaultScatterOptions: ScatterSpecOptions = {
   metric: DEFAULT_METRIC,
   name: 'scatter0',
   opacity: { value: 1 },
+  outline: 'auto',
   scatterAnnotations: [],
   scatterPaths: [],
   size: { value: 'M' },

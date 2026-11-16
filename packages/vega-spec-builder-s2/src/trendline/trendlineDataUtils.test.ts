@@ -359,7 +359,7 @@ describe('addTableDataTransforms()', () => {
   test('should add normalized dimension transform if regression method and time scale type', () => {
     const transforms = addTableDataTransforms([], {
       ...defaultLineOptions,
-      scaleType: 'time',
+      scaleType: 'time' as const,
       trendlines: [{ method: 'linear' }],
     });
     expect(transforms).toHaveLength(3);
@@ -370,7 +370,7 @@ describe('addTableDataTransforms()', () => {
   test('should add extent transforms if there are trendlines with regression methods', () => {
     const transforms = addTableDataTransforms([], {
       ...defaultLineOptions,
-      scaleType: 'linear',
+      scaleType: 'linear' as const,
       trendlines: [{ method: 'linear' }],
     });
     expect(transforms).toHaveLength(1);
@@ -380,14 +380,14 @@ describe('addTableDataTransforms()', () => {
     expect(
       addTableDataTransforms([], {
         ...defaultLineOptions,
-        scaleType: 'linear',
+        scaleType: 'linear' as const,
         trendlines: [{ method: 'average' }],
       })
     ).toHaveLength(0);
     expect(
       addTableDataTransforms([], {
         ...defaultLineOptions,
-        scaleType: 'linear',
+        scaleType: 'linear' as const,
         trendlines: [{ method: 'movingAverage-2' }],
       })
     ).toHaveLength(0);
@@ -395,7 +395,7 @@ describe('addTableDataTransforms()', () => {
   test('should not add normalized dimension transform if it is not a time scale', () => {
     const transforms = addTableDataTransforms([], {
       ...defaultLineOptions,
-      scaleType: 'linear',
+      scaleType: 'linear' as const,
       trendlines: [{ method: 'linear' }],
     });
     expect(transforms).toHaveLength(1);
