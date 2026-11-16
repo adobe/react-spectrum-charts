@@ -102,7 +102,9 @@
     "changeset:status": "node ./scripts/checkChangeset.js",
     "release": "node ./scripts/buildUnpublishedPackages.js && changeset publish",
     "check:packages": "node scripts/checkPackageExports.mjs",
-    "verify": "yarn changeset:status && yarn lint --quiet && yarn lint:sonar && yarn build:s2 && yarn tsc && yarn check:packages"
+    "intl:compile": "node scripts/compileIntl.mjs",
+    "intl:check": "node scripts/compileIntl.mjs --check",
+    "verify": "yarn changeset:status && yarn intl:check && yarn lint --quiet && yarn lint:sonar && yarn build:s2 && yarn tsc && yarn check:packages"
   },
   "devDependencies": {
     "@adobe/react-spectrum": "3.34.1",

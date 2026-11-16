@@ -17,6 +17,7 @@ import { SignalListenerHandler, View } from 'vega';
 
 import {
   COMPONENT_NAME,
+  DEFAULT_LOCALE,
   DIMENSION_HOVER_AREA,
   FOCUSED_DIMENSION,
   FOCUSED_ITEM,
@@ -27,6 +28,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { formatMessage } from '../intl/index.js';
 import { ActionItem, getItemBounds, triggerPopover } from '../utils/markClickUtils.js';
 import { clearAxisFocusRing, getVisibleAxisLabelColumns, padAxisBounds, positionOverlayAtBounds, setAxisFocusRing } from './axisLabelGeometry.js';
 import { applyHoverParitySignals, findFocusedRow, findFocusedStackRow, getNodeFieldValues, Row } from './barHoverParity.js';
@@ -368,6 +370,7 @@ export const attachDataNavigator = ({
     );
   }
 
+  const messageLocale = locale ?? DEFAULT_LOCALE;
   const rendering: DataNavigatorRenderer = dataNavigator.rendering({
     elementData: structure.nodes,
     defaults: {
@@ -377,7 +380,7 @@ export const attachDataNavigator = ({
     suffixId: chartId,
     root: {
       id: container.id,
-      description: 'Accessible chart navigation',
+      description: formatMessage(messageLocale, 'navigation.region'),
       width: '100%',
       // A falsy height here is a no-op in the library's own `root.height && (...)` check, so this
       // must stay a truthy value or .dn-wrapper (and every .dn-node under it) collapses to 0px tall.
@@ -388,6 +391,13 @@ export const attachDataNavigator = ({
   });
 
   rendering.initialize();
+  // data-navigator hardcodes English text for its entry button and exit note.
+  if (rendering.entryButton) rendering.entryButton.innerText = formatMessage(messageLocale, 'navigation.enter');
+  if (rendering.exitElement) {
+    const exitText = formatMessage(messageLocale, 'navigation.exit');
+    rendering.exitElement.innerText = exitText;
+    rendering.exitElement.setAttribute('aria-label', exitText);
+  }
 
   // Invisible DOM overlay for the axis focus ring, so it can extend past the plot's clipped bounds
   // for overflowing/long axis labels — unlike the bar/stack ring, which is drawn on the Vega canvas.

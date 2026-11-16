@@ -20,8 +20,8 @@ import {
   FADE_FACTOR,
   FILTERED_TABLE,
   GROUP_ID,
-  HOVER_FRACTION_DATA,
   HOVERED_SERIES,
+  HOVER_FRACTION_DATA,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
@@ -312,6 +312,17 @@ describe('setHoverOpacityForMarks()', () => {
     });
   });
 
+  test('should leave a data-driven opacity untouched', () => {
+    const badgeMark: Mark = {
+      name: 'scatter0Trendline0Annotation0_badge',
+      type: 'rect',
+      encode: { update: { fill: { scale: 'color', field: 'series' }, opacity: { field: 'opacity' } } },
+    };
+    const marks = structuredClone([badgeMark]);
+    setHoverOpacityForMarks('legend0', marks);
+    expect(marks[0].encode?.update?.opacity).toEqual({ field: 'opacity' });
+  });
+
   describe('trendline hover-support mark sharing the trendline name prefix', () => {
     // Named like `<parent>Trendline_hoverRule` — shares the "Trendline" prefix with the
     // trendline's own line mark, but isn't the trendline mark itself. Its non-array opacity
@@ -394,7 +405,7 @@ describe('setHoverStrokeWidthForMarks()', () => {
   });
 
   test.each(['line0Trendline0', 'line0MetricRange0_line', 'line0_highlightOverlayLine'])(
-    'should not thicken a renamed line mark on hover -- %s is not the chart\'s own line',
+    "should not thicken a renamed line mark on hover -- %s is not the chart's own line",
     (name) => {
       const marks = JSON.parse(JSON.stringify([{ ...markWithStrokeWidth, name }]));
       setHoverStrokeWidthForMarks('legend0', marks);

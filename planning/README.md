@@ -10,7 +10,7 @@ How work is proposed, tracked, and recorded in react-spectrum-charts.
 | Significant or uncertain change (new subsystem, cross-chart API) | RFC in [`rfcs/`](../rfcs) |
 | What a component's next stage includes | GitHub milestone (see [Stages](#stages)) |
 | Open-ended research before a proposal exists | Research note in [`planning/research/`](./research) |
-| Durable architecture knowledge | `.claude/architecture-*.md` |
+| Durable architecture knowledge | `architecture/*.md` |
 
 There are no separate decision records. A merged RFC is the record of the decision.
 
@@ -18,7 +18,7 @@ There are no separate decision records. A merged RFC is the record of the decisi
 
 ## Issues
 
-Bugs and small features are GitHub issues. Use the issue templates, or the `file-issue`
+Bugs and small features are GitHub issues. Use the issue templates, or the `filing-issues`
 skill, which investigates the root cause and drafts the issue body.
 
 **Labels**

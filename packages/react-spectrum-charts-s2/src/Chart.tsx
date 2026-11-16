@@ -20,21 +20,22 @@ import { ChartData, ChartHandle } from '@spectrum-charts/vega-spec-builder-s2';
 import './Chart.css';
 import { RscChart } from './RscChart.js';
 import { applyChartPropsDefaults, resolveAnimationTypes } from './chartUtils.js';
-import { EmptyState } from './components/index.js';
 import { LoadingState } from './components/LoadingState/index.js';
+import { EmptyState } from './components/index.js';
 import { ChartProvider } from './context/RscChartContext.js';
 import useChartHeight from './hooks/useChartHeight.js';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle.js';
-import usePrefersReducedMotion from './hooks/usePrefersReducedMotion.js';
 import useChartWidth from './hooks/useChartWidth.js';
+import usePrefersReducedMotion from './hooks/usePrefersReducedMotion.js';
 import { useResizeObserver } from './hooks/useResizeObserver.js';
+import { getMessageLocale, useFormatMessage } from './intl/index.js';
 import { ChartProps, RscChartProps } from './types/index.js';
 
 interface PlaceholderContentProps {
   data: ChartData[];
   loading?: boolean;
   height?: number;
-  emptyStateText: string;
+  emptyStateText?: string;
 }
 
 /**
@@ -133,6 +134,7 @@ export const Chart = ({
   return (
     <Provider
       colorScheme={colorScheme}
+      locale={getMessageLocale(otherProps.locale)}
       UNSAFE_style={{ backgroundColor: 'transparent', height: '100%' }}
     >
       <div ref={containerRef} id={chartId} data-testid={dataTestId} className="rsc-container">
@@ -152,12 +154,13 @@ export const Chart = ({
 Chart.displayName = 'Chart';
 
 const PlaceholderContent: FC<PlaceholderContentProps> = ({ data, emptyStateText, loading, ...layoutProps }) => {
+  const formatMessage = useFormatMessage();
   if (loading) {
     //show a spinner while data is loading
     return <LoadingState {...layoutProps} />;
   } else if (!data.length) {
     //if it is no longer loading but there is not data, show the empty state
-    return <EmptyState {...layoutProps} text={emptyStateText} />;
+    return <EmptyState {...layoutProps} text={emptyStateText ?? formatMessage('chart.emptyState')} />;
   }
   return <></>;
 };

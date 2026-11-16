@@ -13,11 +13,13 @@ import { produce } from 'immer';
 import { Data, Scale, Signal } from 'vega';
 
 import {
+  AnimationType,
   COLOR_SCALE,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_DIMENSION_SCALE_TYPE,
   DEFAULT_LINEAR_DIMENSION,
   DEFAULT_METRIC,
+  DRAW_IN_SWEEP_DURATION_MS,
   FILTERED_TABLE,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
@@ -30,13 +32,28 @@ import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 
 import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils.js';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils.js';
-import { getInteractiveMarkName, hasPopover, isInteractive } from '../marks/markUtils.js';
+import { addRowKeyTransforms } from '../data/rowKeyUtils.js';
+import { addDrawInClockSignals, addDrawInDoneSignal, addDrawInLabelFadeTimer } from '../marks/drawInAnimationUtils.js';
+import { addHoverAnimationSignals } from '../marks/hoverAnimationUtils.js';
+import {
+  getInteractiveMarkName,
+  hasPopover,
+  isDrawInAnimationEnabled,
+  isHoverAnimationEnabled,
+  isInteractive,
+} from '../marks/markUtils.js';
 import { addContinuousDimensionScale, addFieldToFacetScaleDomain, addMetricScale } from '../scale/scaleSpecBuilder.js';
 import { setScatterPathScales } from '../scatterPath/index.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
-import { addUserMetaInteractiveMark } from '../specUtils.js';
+import {
+  addUserMetaAnimatedMark,
+  addUserMetaInteractiveMark,
+  getFacetsFromOptions,
+  getUniqueSeriesIds,
+} from '../specUtils.js';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
-import { ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
+import { ChartData, ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
+import { addScatterHoverAnimationData, addScatterItemHighlightSignals } from './scatterAnimationUtils.js';
 import { addScatterMarks } from './scatterMarkUtils.js';
 
 /**
@@ -46,11 +63,25 @@ import { addScatterMarks } from './scatterMarkUtils.js';
  */
 export const addScatter = produce<
   ScSpec,
-  [ScatterOptions & { colorScheme?: ColorScheme; highlightedItem?: HighlightedItem; index?: number; idKey: string }]
+  [
+    ScatterOptions & {
+      animations?: boolean;
+      animationTypes?: AnimationType[];
+      colorScheme?: ColorScheme;
+      data?: ChartData[];
+      highlightedItem?: HighlightedItem;
+      highlightedSeries?: string | number;
+      index?: number;
+      idKey: string;
+      legendHighlightSignals?: string[];
+    }
+  ]
 >(
   (
     spec,
     {
+      animations,
+      animationTypes,
       chartPopovers = [],
       chartInspects = [],
       color = { value: 'categorical-100' },
@@ -64,12 +95,14 @@ export const addScatter = produce<
       metric = DEFAULT_METRIC,
       name,
       opacity = { value: 1 },
+      outline = 'auto',
       scatterAnnotations = [],
       scatterPaths = [],
       size = { value: 'M' },
       trendlines = [],
       stroke,
       blend,
+      data,
       ...options
     }
   ) => {
@@ -87,7 +120,14 @@ export const addScatter = produce<
       dimensionScaleType,
       index,
       interactiveMarkName: getInteractiveMarkName(
-        { chartPopovers, chartInspects, highlightedItem: options.highlightedItem, trendlines },
+        {
+          chartPopovers,
+          chartInspects,
+          hasOnClick: options.hasOnClick,
+          hasOnContextMenu: options.hasOnContextMenu,
+          highlightedItem: options.highlightedItem,
+          trendlines,
+        },
         scatterName
       ),
       lineType,
@@ -96,14 +136,28 @@ export const addScatter = produce<
       stroke,
       name: scatterName,
       opacity,
+      outline,
       scatterAnnotations,
       scatterPaths,
       size,
       trendlines,
+      seriesIds: getUniqueSeriesIds(data, getFacetsFromOptions({ color, lineType, opacity }).facets),
       ...options,
     };
+    scatterOptions.isHoverAnimate = isHoverAnimationEnabled(
+      animations,
+      animationTypes,
+      isInteractive(scatterOptions) ||
+        scatterOptions.highlightedItem !== undefined ||
+        scatterOptions.highlightedSeries !== undefined ||
+        Boolean(scatterOptions.legendHighlightSignals?.length)
+    );
+    scatterOptions.isDrawInAnimate = isDrawInAnimationEnabled(animations, animationTypes);
 
     spec.usermeta = addUserMetaInteractiveMark(spec.usermeta, scatterOptions.interactiveMarkName);
+    if (scatterOptions.isHoverAnimate) {
+      spec.usermeta = addUserMetaAnimatedMark(spec.usermeta, scatterName);
+    }
     spec.data = addData(spec.data ?? [], scatterOptions);
     spec.signals = addSignals(spec.signals ?? [], scatterOptions);
     spec.scales = setScales(spec.scales ?? [], scatterOptions);
@@ -112,13 +166,16 @@ export const addScatter = produce<
 );
 
 export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptions) => {
-  const { chartInspects, dimension, dimensionScaleType, highlightedItem, idKey, name } = scatterOptions;
+  const { chartInspects, dimension, dimensionScaleType, idKey, name } = scatterOptions;
   if (dimensionScaleType === 'time') {
     const tableData = getTableData(data);
     tableData.transform = addTimeTransform(tableData.transform ?? [], dimension);
   }
+  const { facets, secondaryFacets } = getFacetsFromOptions(scatterOptions);
+  // x is a measure, so points are identified by series and order rather than by position
+  addRowKeyTransforms(data, { name, idKey, fields: [...facets, ...secondaryFacets] });
 
-  if (isInteractive(scatterOptions) || highlightedItem !== undefined) {
+  if (isInteractive(scatterOptions)) {
     data.push(getFilteredInspectData(chartInspects));
   }
 
@@ -136,6 +193,7 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
   }
   addInspectData(data, scatterOptions);
   addTrendlineData(data, scatterOptions);
+  if (scatterOptions.isHoverAnimate) addScatterHoverAnimationData(data, scatterOptions);
 });
 
 /**
@@ -144,16 +202,33 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
  * @param scatterOptions ScatterSpecOptions
  */
 export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scatterOptions) => {
-  const { highlightedItem, name: scatterName } = scatterOptions;
+  const { isDrawInAnimate, isHoverAnimate, name: scatterName } = scatterOptions;
   // trendline signals
   setTrendlineSignals(signals, scatterOptions);
 
-  // highlightedItem alone still needs the hovered item signal that the voronoi and opacity rules reference
-  if (!isInteractive(scatterOptions) && highlightedItem === undefined) return;
+  if (isDrawInAnimate) {
+    addDrawInClockSignals(signals, DRAW_IN_SWEEP_DURATION_MS);
+    addDrawInDoneSignal(signals);
+    if (hasDrawInFollowers(scatterOptions)) addDrawInLabelFadeTimer(signals);
+  }
+  if (isHoverAnimate) {
+    addHoverAnimationSignals(signals, scatterName);
+    addScatterItemHighlightSignals(signals, scatterOptions);
+  }
+
+  if (!isInteractive(scatterOptions)) return;
   // interactive signals
   addHoveredItemSignal(signals, scatterName, `${scatterName}_voronoi`, 2);
   addInspectSignals(signals, scatterOptions);
 });
+
+/**
+ * Whether the scatter has marks that fade in once its points finish drawing in.
+ * @param scatterOptions ScatterSpecOptions
+ * @returns boolean
+ */
+const hasDrawInFollowers = ({ scatterAnnotations, scatterPaths, trendlines }: ScatterSpecOptions): boolean =>
+  Boolean(scatterAnnotations.length || scatterPaths.length || trendlines.length);
 
 /**
  * Sets up all the scales for scatter on the scales array

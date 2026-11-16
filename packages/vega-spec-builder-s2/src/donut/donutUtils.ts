@@ -16,6 +16,7 @@ import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_HOLE_RATIO,
+  DEFAULT_OPACITY_RULE,
   DONUT_BOOLEAN_SECONDARY_COLOR,
   DONUT_LABELED_RADIUS,
   DONUT_LABEL_MIN_SPACE_RATIO,
@@ -38,6 +39,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
+import { getRowKeyField } from '../data/rowKeyUtils.js';
 import { getDrawInLabelFadeExpr } from '../marks/drawInAnimationUtils.js';
 import { HoverMatchRule, getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import {
@@ -91,11 +93,12 @@ export const getDonutOpacity = (options: DonutSpecOptions): ({ test?: string } &
   if (options.isHoverAnimate) {
     return [{ signal: getHoverDeemphasisOpacitySignal(options.name, getDonutAnimIdField(options.name)) }];
   }
-  const opacity = getMarkOpacity(options);
   if (!isInteractive(options) && isDonutInteractive(options)) {
+    const opacity = [DEFAULT_OPACITY_RULE];
     addHoveredItemOpacityRules(opacity, options);
+    return opacity;
   }
-  return opacity;
+  return getMarkOpacity(options);
 };
 
 /** Gets the 0-1 linear label fade that starts when the label's slice finishes drawing. */
@@ -458,15 +461,13 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
     name,
     description: name,
     from: { data: FILTERED_TABLE },
+    key: getRowKeyField(options),
     encode: {
-      enter: {
-        fill: getArcFillEncoding(options),
-        tooltip: getInspectEncoding(chartInspects, name),
-      },
       update: {
         x: { signal: 'width / 2' },
         y: { signal: getDonutCenterYSignal(options) },
-        ...(hoveredArcFillEncoding ? { fill: hoveredArcFillEncoding } : {}),
+        fill: hoveredArcFillEncoding ?? getArcFillEncoding(options),
+        tooltip: getInspectEncoding(chartInspects, name),
         startAngle: getDonutAngleEncoding(options, 'startAngle'),
         endAngle: getDonutAngleEncoding(options, 'endAngle'),
         innerRadius:
@@ -521,9 +522,9 @@ export const getEmptyStateArcMark = (options: DonutSpecOptions): ArcMark => {
       enter: {
         fill: { value: getS2ColorValue('gray-200', colorScheme) },
         startAngle: { value: startAngle },
-        endAngle: { signal: `${startAngle} + ${sweep}` },
       },
       update: {
+        endAngle: { signal: `${startAngle} + ${sweep}` },
         x: { signal: 'width / 2' },
         y: { signal: getDonutCenterYSignal(options) },
         innerRadius: { signal: getDonutInnerRadiusExpr(options) },

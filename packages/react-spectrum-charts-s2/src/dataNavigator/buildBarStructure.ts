@@ -12,11 +12,16 @@
 import dataNavigator, { NodeObject, Structure, StructureOptions } from 'data-navigator';
 import { parseColor } from 'react-stately';
 
-import { DEFAULT_CATEGORICAL_DIMENSION, DEFAULT_METRIC, NAVIGATION_ID_SEPARATOR } from '@spectrum-charts/core-s2/constants';
+import {
+  DEFAULT_CATEGORICAL_DIMENSION,
+  DEFAULT_LOCALE,
+  DEFAULT_METRIC,
+  NAVIGATION_ID_SEPARATOR,
+} from '@spectrum-charts/core-s2/constants';
 import { Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { formatMessage } from '../intl/index.js';
 import { addSiblingKeySynonyms, getBaseNavigationRules } from './navigationRules.js';
-import { DEFAULT_DATA_NAVIGATOR_LOCALE, getDataNavigatorIntl } from './dataNavigatorIntl.js';
 
 export interface BuildBarStructureOptions {
   /** The chart data (plain objects). */
@@ -178,7 +183,7 @@ export const buildBarStructure = ({
   orientation = 'vertical',
   title,
   fieldLabels = {},
-  locale = 'en-US',
+  locale = DEFAULT_LOCALE,
   metricTitleBySeries,
 }: BuildBarStructureOptions): BarStructure => {
   const effectiveType = type ?? 'stacked';
@@ -291,7 +296,7 @@ export interface NodeLabelOptions {
 /** A row's `field: value` parts, limited to `fieldLabels` (and labeled by them) when provided, with color/metric-series overrides applied. `excludeFields` drops fields already stated elsewhere (e.g. a division's own dimension value). */
 const buildFieldValueParts = (
   data: Record<string, unknown>,
-  { fieldLabels = {}, colorOverride, order, metricSeriesLabel, locale = 'en-US' }: NodeLabelOptions,
+  { fieldLabels = {}, colorOverride, order, metricSeriesLabel, locale = DEFAULT_LOCALE }: NodeLabelOptions,
   excludeFields: string[] = []
 ): string[] => {
   const labeledFields = Object.keys(fieldLabels).filter((field) => !excludeFields.includes(field));
@@ -307,13 +312,26 @@ const buildFieldValueParts = (
   return entries
     .filter(([key]) => key !== order)
     .map(([key, value]) => {
-      if (key === colorOverride) return `${fieldLabels[key] ?? 'Color'}: ${getAccessibleColorName(value, locale)}`;
+      if (key === colorOverride) {
+        const colorLabel = fieldLabels[key] ?? formatMessage(locale, 'navigation.colorLabel');
+        return `${colorLabel}: ${getAccessibleColorName(value, locale)}`;
+      }
       if (metricSeriesLabel && key === metricSeriesLabel.metric) {
         const seriesTitle = metricSeriesLabel.titleBySeries[String(data[metricSeriesLabel.color])];
         if (seriesTitle) return `${seriesTitle}: ${value}`;
       }
       return `${fieldLabels[key] ?? key}: ${value}`;
     });
+};
+
+/** "Metric by dimension" summary of the whole chart for the root node. */
+const buildRootLabel = (node: NodeObject, options: NodeLabelOptions): string => {
+  const { dimension, metric, color, data: rows, fieldLabels = {}, locale = DEFAULT_LOCALE } = options;
+  if (!dimension || !metric) return String(node.id);
+  const count = rows ? new Set(rows.map((row) => row[dimension])).size : 0;
+  const variables = { dimension: fieldLabels[dimension] ?? dimension, count, metricLabel: fieldLabels[metric] ?? metric };
+  if (color) return formatMessage(locale, 'navigation.stackedBarDescription', { ...variables, color: fieldLabels[color] ?? color });
+  return formatMessage(locale, count ? 'navigation.barDescription' : 'navigation.barDescriptionWithoutCount', variables);
 };
 
 /**
@@ -323,15 +341,7 @@ const buildFieldValueParts = (
  * whenever one is supplied (see `buildBarStructure`), so this fallback only ever applies without one.
  */
 export const buildNodeLabel = (node: NodeObject, options: NodeLabelOptions = {}): string => {
-  if (node.dimensionLevel === 1) {
-    const { dimension, metric, color, data: rows, fieldLabels = {}, locale = DEFAULT_DATA_NAVIGATOR_LOCALE } = options;
-    if (!dimension || !metric) return String(node.id);
-    const { formatMessage } = getDataNavigatorIntl(locale);
-    const count = rows ? new Set(rows.map((row) => row[dimension])).size : undefined;
-    const variables = { dimension: fieldLabels[dimension] ?? dimension, count: count ?? 0, metricLabel: fieldLabels[metric] ?? metric };
-    if (color) return formatMessage('bar.stackedDescription', { ...variables, color: fieldLabels[color] ?? color });
-    return formatMessage('bar.description', { ...variables, count: count ?? 0 });
-  }
+  if (node.dimensionLevel === 1) return buildRootLabel(node, options);
 
   if (node.dimensionLevel != null) {
     const { dimension, data: rows, rowsByDimension, fieldLabels = {} } = options;

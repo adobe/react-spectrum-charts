@@ -90,13 +90,17 @@ describe('getBulletMarks', () => {
 });
 
 describe('getBulletMarkRect', () => {
+  test('Should key the rect by the row key field', () => {
+    expect(getBulletMarkRect(sampleOptionsColumn)).toHaveProperty('key', 'bullet0_rowKey');
+  });
+
   test('Should return the correct rect mark object', () => {
     const data = getBulletMarkRect(sampleOptionsColumn);
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
 
     // Expect the correct amount of fields in the update object
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(10);
   });
 
   describe('getBulletMarkRect threshold color logic', () => {
@@ -112,7 +116,7 @@ describe('getBulletMarkRect', () => {
       };
 
       const rectMark = getBulletMarkRect(optionsWithThresholdColor);
-      expect(rectMark.encode?.enter?.fill).toEqual([{ field: 'barColor' }]);
+      expect(rectMark.encode?.update?.fill).toEqual([{ field: 'barColor' }]);
     });
 
     test('Uses default color field when thresholdBarColor is disabled or no thresholds exist', () => {
@@ -123,7 +127,7 @@ describe('getBulletMarkRect', () => {
       };
 
       const rectMark = getBulletMarkRect(optionsNoThresholds);
-      expect(rectMark.encode?.enter?.fill).toEqual([{ value: optionsNoThresholds.color }]);
+      expect(rectMark.encode?.update?.fill).toEqual([{ value: optionsNoThresholds.color }]);
     });
 
     test('Uses default color field when thresholdBarColor is disabled', () => {
@@ -138,7 +142,7 @@ describe('getBulletMarkRect', () => {
       };
 
       const rectMark = getBulletMarkRect(optionsNoThresholds);
-      expect(rectMark.encode?.enter?.fill).toEqual([{ value: optionsNoThresholds.color }]);
+      expect(rectMark.encode?.update?.fill).toEqual([{ value: optionsNoThresholds.color }]);
     });
 
     test('Uses default color field when thresholdBarColor is disabled and no thresholds exist', () => {
@@ -149,7 +153,7 @@ describe('getBulletMarkRect', () => {
       };
 
       const rectMark = getBulletMarkRect(optionsNoThresholds);
-      expect(rectMark.encode?.enter?.fill).toEqual([{ value: optionsNoThresholds.color }]);
+      expect(rectMark.encode?.update?.fill).toEqual([{ value: optionsNoThresholds.color }]);
     });
   });
 });
@@ -159,7 +163,7 @@ describe('getBulletMarkTarget', () => {
     const data = getBulletMarkTarget(sampleOptionsColumn);
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(5);
   });
 
   test('Should hide the target line when the target value is missing', () => {
@@ -176,7 +180,7 @@ describe('getBulletMarkLabel', () => {
     const data = getBulletMarkLabel(sampleOptionsColumn);
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(2);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(3);
   });
 });
 
@@ -185,7 +189,7 @@ describe('getBulletMarkValueLabel', () => {
     const data = getBulletMarkValueLabel(sampleOptionsColumn);
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(2);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(3);
   });
 
   test('Should apply numberFormat specifier to metric and target values', () => {
@@ -195,8 +199,8 @@ describe('getBulletMarkValueLabel', () => {
     const metricValueLabel = marksGroup.marks?.find((mark) => mark.name === `${options.name}ValueLabel`);
     expect(metricValueLabel).toBeDefined();
 
-    if (metricValueLabel?.encode?.enter?.text) {
-      const textEncode = metricValueLabel.encode.enter.text;
+    if (metricValueLabel?.encode?.update?.text) {
+      const textEncode = metricValueLabel.encode.update.text;
       if (typeof textEncode === 'object' && 'signal' in textEncode) {
         expect(textEncode.signal).toContain(`format(datum.${options.metric}, '$,.2f')`);
       }
@@ -205,8 +209,8 @@ describe('getBulletMarkValueLabel', () => {
     const TargetValueLabel = marksGroup.marks?.find((mark) => mark.name?.includes('TargetValueLabel'));
     expect(TargetValueLabel).toBeDefined();
 
-    if (TargetValueLabel?.encode?.enter?.text) {
-      const textEncode = TargetValueLabel.encode.enter.text;
+    if (TargetValueLabel?.encode?.update?.text) {
+      const textEncode = TargetValueLabel.encode.update.text;
       if (typeof textEncode === 'object' && 'signal' in textEncode) {
         expect(textEncode.signal).toContain(`format(datum.${options.target}, '$,.2f')`);
       }
@@ -480,8 +484,8 @@ describe('getBulletMarkTrack', () => {
     const data = getBulletTrack(options);
     expect(data).toBeDefined();
     expect(data.encode?.update).toBeDefined();
-    expect(Object.keys(data.encode?.update ?? {}).length).toBe(4);
-    expect(Object.keys(data.encode?.enter ?? {}).length).toBe(5);
+    expect(Object.keys(data.encode?.update ?? {}).length).toBe(8);
+    expect(Object.keys(data.encode?.enter ?? {}).length).toBe(1);
     expect(data.encode?.update?.width).toBeDefined();
     expect(data.encode?.update?.width).toStrictEqual({ signal: 'width' });
   });
@@ -518,9 +522,9 @@ describe('ChartInspect support', () => {
     const rectMark = getBulletMarkRect(sampleOptionsWithInspect);
     const targetMark = getBulletMarkTarget(sampleOptionsWithInspect);
     expect(rectMark.interactive).toBe(true);
-    expect(rectMark.encode?.enter?.tooltip).toBeDefined();
+    expect(rectMark.encode?.update?.tooltip).toBeDefined();
     expect(targetMark.interactive).toBe(true);
-    expect(targetMark.encode?.enter?.tooltip).toBeDefined();
+    expect(targetMark.encode?.update?.tooltip).toBeDefined();
   });
 
   test('addMarks includes a hover area mark when chartInspects and track are both present', () => {
@@ -638,7 +642,7 @@ describe('Number format integration in marks', () => {
     const options = { ...sampleOptionsColumn, numberFormat: 'shortNumber' };
     const valueLabelMark = getBulletMarkValueLabel(options);
 
-    const textEncode = valueLabelMark.encode?.enter?.text;
+    const textEncode = valueLabelMark.encode?.update?.text;
     expect(textEncode).toBeDefined();
 
     if (Array.isArray(textEncode)) {
@@ -651,7 +655,7 @@ describe('Number format integration in marks', () => {
     const options = { ...sampleOptionsColumn, numberFormat: 'currency' };
     const valueLabelMark = getBulletMarkValueLabel(options);
 
-    const textEncode = valueLabelMark.encode?.enter?.text;
+    const textEncode = valueLabelMark.encode?.update?.text;
     expect(textEncode).toBeDefined();
 
     if (Array.isArray(textEncode)) {
@@ -668,7 +672,7 @@ describe('Number format integration in marks', () => {
     };
     const targetLabelMark = getBulletMarkTargetValueLabel(options);
 
-    const textEncode = targetLabelMark.encode?.enter?.text;
+    const textEncode = targetLabelMark.encode?.update?.text;
     expect(textEncode).toBeDefined();
 
     if (typeof textEncode === 'object' && 'signal' in textEncode) {
@@ -685,7 +689,7 @@ describe('Number format integration in marks', () => {
     };
     const targetLabelMark = getBulletMarkTargetValueLabel(options);
 
-    const textEncode = targetLabelMark.encode?.enter?.text;
+    const textEncode = targetLabelMark.encode?.update?.text;
     expect(textEncode).toBeDefined();
 
     if (typeof textEncode === 'object' && 'signal' in textEncode) {
@@ -702,7 +706,7 @@ describe('Number format integration in marks', () => {
     };
     const targetLabelMark = getBulletMarkTargetValueLabel(options);
 
-    const textEncode = targetLabelMark.encode?.enter?.text;
+    const textEncode = targetLabelMark.encode?.update?.text;
     expect(textEncode).toBeDefined();
 
     if (typeof textEncode === 'object' && 'signal' in textEncode) {

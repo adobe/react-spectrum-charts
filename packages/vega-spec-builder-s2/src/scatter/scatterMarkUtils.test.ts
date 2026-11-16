@@ -15,13 +15,23 @@ import {
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_ITEM,
   DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
   HOVERED_ITEM,
   MARK_ID,
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
+import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { addScatterMarks, getOpacity, getScatterHoverMarks, getScatterMark, getSelectRingSize } from './scatterMarkUtils.js';
+import {
+  SCATTER_OUTLINE_OPACITY,
+  addScatterMarks,
+  getOpacity,
+  getScatterHoverMarks,
+  getScatterMark,
+  getScatterOutlineEncoding,
+  getSelectRingSize,
+} from './scatterMarkUtils.js';
 import { defaultScatterOptions } from './scatterTestUtils.js';
 
 describe('addScatterMarks()', () => {
@@ -51,6 +61,10 @@ describe('addScatterMarks()', () => {
     expect(marks).toHaveLength(2);
     expect(marks[1].name).toBe('scatter0Trendline0_group');
   });
+  test('should key the symbol mark by the row key field', () => {
+    const marks = addScatterMarks([], defaultScatterOptions);
+    expect((marks[0] as GroupMark).marks?.[0]).toHaveProperty('key', 'scatter0_rowKey');
+  });
   test('should make clip true to enable disable group clipping', () => {
     const marks = addScatterMarks([], { ...defaultScatterOptions, clip: true });
     expect(marks).toHaveLength(1);
@@ -59,8 +73,14 @@ describe('addScatterMarks()', () => {
 });
 
 describe('getOpacity()', () => {
-  test('should return the default rule if there are not any interactive children', () => {
-    expect(getOpacity(defaultScatterOptions)).toEqual([DEFAULT_OPACITY_RULE]);
+  test('should only fade for controlled highlights if there are not any interactive children', () => {
+    expect(getOpacity(defaultScatterOptions)).toEqual([
+      {
+        test: 'isArray(controlledHighlightedItem) && length(controlledHighlightedItem) > 0 && indexof(controlledHighlightedItem, datum.rscMarkId) === -1',
+        value: FADE_FACTOR,
+      },
+      DEFAULT_OPACITY_RULE,
+    ]);
   });
   test('should include hover rules if inspect exists', () => {
     const opacity = getOpacity({ ...defaultScatterOptions, chartInspects: [{}] });
@@ -114,10 +134,10 @@ describe('getScatterSelectMarks()', () => {
 });
 
 describe('getScatterMark() stroke', () => {
-  test('should use color for stroke when stroke is not provided', () => {
-    const mark = getScatterMark({ ...defaultScatterOptions, color: 'category' });
-    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'category' });
-    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+  test('should use color for stroke when stroke is not provided and there is no outline', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, color: 'category', outline: 'never' });
+    expect(mark.encode?.update?.stroke).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.update?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
   });
 
   test('should use stroke prop when provided', () => {
@@ -127,9 +147,9 @@ describe('getScatterMark() stroke', () => {
       stroke: { value: 'gray-800' },
     });
     // fill should use color
-    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.update?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
     // stroke should use the stroke prop value
-    expect(mark.encode?.enter?.stroke).toHaveProperty('value');
+    expect(mark.encode?.update?.stroke).toHaveProperty('value');
   });
 
   test('should use stroke as data field when stroke is a string', () => {
@@ -139,9 +159,9 @@ describe('getScatterMark() stroke', () => {
       stroke: 'borderCategory',
     });
     // fill should use color
-    expect(mark.encode?.enter?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
+    expect(mark.encode?.update?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
     // stroke should use the stroke field
-    expect(mark.encode?.enter?.stroke).toEqual({ scale: COLOR_SCALE, field: 'borderCategory' });
+    expect(mark.encode?.update?.stroke).toEqual({ scale: COLOR_SCALE, field: 'borderCategory' });
   });
 
   test('should allow different fill and stroke colors', () => {
@@ -151,7 +171,7 @@ describe('getScatterMark() stroke', () => {
       stroke: { value: 'gray-900' },
     });
     // fill and stroke should be different
-    expect(mark.encode?.enter?.fill).not.toEqual(mark.encode?.enter?.stroke);
+    expect(mark.encode?.update?.fill).not.toEqual(mark.encode?.update?.stroke);
   });
 
   test('should use round stroke caps so zero-length dotted dashes render', () => {
@@ -179,5 +199,47 @@ describe('getScatterMark() blend', () => {
   test('should use custom blend mode when provided', () => {
     const mark = getScatterMark({ ...defaultScatterOptions, blend: 'overlay' });
     expect(mark.encode?.enter?.blend).toEqual({ value: 'overlay' });
+  });
+});
+
+describe('getScatterOutlineEncoding()', () => {
+  test('outlines only low-contrast points by default', () => {
+    const encoding = getScatterOutlineEncoding(defaultScatterOptions);
+    expect(encoding.stroke).toHaveProperty('value', getS2ColorValue('gray-1000', 'light'));
+    expect(encoding.strokeOpacity).toHaveProperty('value', SCATTER_OUTLINE_OPACITY);
+    expect(encoding.strokeWidth).toHaveProperty(
+      'signal',
+      `contrast('${getS2ColorValue('categorical-100', 'light')}', chartBackgroundColor) < 3 ? 1 : 0`
+    );
+  });
+
+  test('compares the scale color when color is a data key', () => {
+    const encoding = getScatterOutlineEncoding({ ...defaultScatterOptions, color: 'series' });
+    expect(encoding.strokeWidth).toHaveProperty(
+      'signal',
+      "contrast(scale('color', datum.series), chartBackgroundColor) < 3 ? 1 : 0"
+    );
+  });
+
+  test('outlines every point with outline="always"', () => {
+    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, outline: 'always' }).strokeWidth).toHaveProperty(
+      'value',
+      1
+    );
+  });
+
+  test('adds no outline with outline="never"', () => {
+    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, outline: 'never' })).toEqual({});
+  });
+
+  test('leaves custom stroke and lineWidth alone', () => {
+    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, stroke: 'series' })).toEqual({});
+    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, lineWidth: { value: 2 } })).toEqual({});
+    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, lineWidth: 'weight' })).toEqual({});
+  });
+
+  test('uses the dark gray-1000 in dark mode', () => {
+    const encoding = getScatterOutlineEncoding({ ...defaultScatterOptions, colorScheme: 'dark', outline: 'always' });
+    expect(encoding.stroke).toHaveProperty('value', getS2ColorValue('gray-1000', 'dark'));
   });
 });

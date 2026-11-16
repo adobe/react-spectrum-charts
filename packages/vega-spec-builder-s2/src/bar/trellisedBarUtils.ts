@@ -53,7 +53,7 @@ export const getTrellisGroupMark = (options: BarSpecOptions, marks: Mark[], repe
 
     // Encode the trellis on its axis
     encode: {
-      enter: {
+      update: {
         [trellisAxis]: { scale: scaleName, field: trellis },
         height: { signal: trellisOrientation === 'vertical' ? `bandwidth('${scaleName}')` : 'height' },
         width: { signal: trellisOrientation === 'horizontal' ? `bandwidth('${scaleName}')` : 'width' },

@@ -9,20 +9,33 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, ColorValueRef, GroupMark, NumericValueRef, ProductionRule, Scale, LinearScale, Signal, TextValueRef, View, expressionFunction, parse } from 'vega';
+import {
+  Axis,
+  ColorValueRef,
+  GroupMark,
+  LinearScale,
+  NumericValueRef,
+  ProductionRule,
+  Scale,
+  Signal,
+  TextValueRef,
+  View,
+  expressionFunction,
+  parse,
+} from 'vega';
 
 import {
   COLOR_SCALE,
   DEFAULT_COLOR_SCHEME,
+  DEFAULT_FONT_COLOR,
   DEFAULT_LABEL_FONT_WEIGHT,
   FADE_FACTOR,
   FILTERED_TABLE,
+  FIRST_RSC_SERIES_ID,
   HOVERED_ITEM,
   LAST_RSC_SERIES_ID,
-  FIRST_RSC_SERIES_ID,
-  SERIES_ID,
-  DEFAULT_FONT_COLOR,
   MIN_THUMBNAIL_SIZE,
+  SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
@@ -264,10 +277,8 @@ describe('Spec builder, Axis', () => {
         });
       });
       test('zero should default to true if no custom range is set', () => {
-        const resultScales = addAxis(
-          { usermeta: {}, scales: defaultLinearScales },
-          { position: 'bottom' }
-        ).scales as LinearScale[];
+        const resultScales = addAxis({ usermeta: {}, scales: defaultLinearScales }, { position: 'bottom' })
+          .scales as LinearScale[];
 
         expect(resultScales?.at(0)?.zero).toEqual(true);
         expect(resultScales?.at(1)?.zero).toEqual(true);
@@ -288,7 +299,7 @@ describe('Spec builder, Axis', () => {
 
         expect(resultScales?.at(1)?.domain).toEqual([0, 100]);
       });
-      test('custom X range that doesn\'t start at 0', () => {
+      test("custom X range that doesn't start at 0", () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
           { position: 'bottom', range: [10, 100] }
@@ -297,7 +308,7 @@ describe('Spec builder, Axis', () => {
         expect(resultScales?.at(0)?.domain).toEqual([10, 100]);
         expect(resultScales?.at(0)?.zero).toEqual(false);
       });
-      test('custom Y range that doesn\'t start at 0', () => {
+      test("custom Y range that doesn't start at 0", () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
           { position: 'bottom', range: [100, 1000] }
@@ -460,7 +471,7 @@ describe('Spec builder, Axis', () => {
           scaleName: 'yLinear',
           scaleType: 'linear',
           usermeta: { metricAxisCount: 1 },
-        })[0].encode?.labels?.enter?.fill;
+        })[0].encode?.labels?.update?.fill;
         expect(labelFillEncoding).toHaveLength(1);
         expect(labelFillEncoding?.[0]).toEqual({ signal: "scale('color', lastRscSeriesId)" });
       });
@@ -490,7 +501,7 @@ describe('Spec builder, Axis', () => {
           scaleType: 'linear',
           subLabels: defaultSubLabels,
           usermeta: { metricAxisCount: 1 },
-        })[1].encode?.labels?.enter?.fill;
+        })[1].encode?.labels?.update?.fill;
         expect(labelFillEncoding).toHaveLength(1);
         expect(labelFillEncoding?.[0]).toEqual({ signal: "scale('color', lastRscSeriesId)" });
       });
@@ -801,7 +812,10 @@ describe('Spec builder, Axis', () => {
           usermeta: {},
         });
 
-        const hideThumbnailCondition = { test: `testAxisAxisThumbnail0ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`, value: 0 };
+        const hideThumbnailCondition = {
+          test: `testAxisAxisThumbnail0ThumbnailSize < ${MIN_THUMBNAIL_SIZE}`,
+          value: 0,
+        };
         const expectedDy = [hideThumbnailCondition, { signal: `testAxisAxisThumbnail0ThumbnailSize` }];
 
         expect(axes).toHaveLength(2);
@@ -825,29 +839,28 @@ describe('Spec builder, Axis', () => {
         usermeta: {},
       })[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
       // S2: no label-hiding test is prepended for reference lines
-      const hasHidingRule = Array.isArray(labelTextEncoding) &&
+      const hasHidingRule =
+        Array.isArray(labelTextEncoding) &&
         labelTextEncoding.some(
-          (rule) => typeof (rule as { test?: string }).test === 'string' &&
-            (rule as { test: string }).test.includes('scale(')
+          (rule) =>
+            typeof (rule as { test?: string }).test === 'string' && (rule as { test: string }).test.includes('scale(')
         );
       expect(hasHidingRule).toBe(false);
     });
     test('should NOT add label-hiding rules for multiple reference lines (S2 spec: no axis label hiding)', () => {
       const labelTextEncoding = addAxes([], {
         ...defaultAxisOptions,
-        referenceLines: [
-          { value: 10 },
-          { value: 15 },
-        ],
+        referenceLines: [{ value: 10 }, { value: 15 }],
         scaleName: 'xLinear',
         scaleType: 'linear',
         usermeta: {},
       })[0].encode?.labels?.update?.text as ProductionRule<TextValueRef>;
 
-      const hasHidingRule = Array.isArray(labelTextEncoding) &&
+      const hasHidingRule =
+        Array.isArray(labelTextEncoding) &&
         labelTextEncoding.some(
-          (rule) => typeof (rule as { test?: string }).test === 'string' &&
-            (rule as { test: string }).test.includes('scale(')
+          (rule) =>
+            typeof (rule as { test?: string }).test === 'string' && (rule as { test: string }).test.includes('scale(')
         );
       expect(hasHidingRule).toBe(false);
     });
@@ -978,22 +991,27 @@ describe('Spec builder, Axis', () => {
       expect(marks[0]).toHaveProperty('type', 'group');
       expect(marks[0]).toHaveProperty('interactive', false);
       expect(marks[0]).toHaveProperty('clip', true);
-      expect(marks[0]).toHaveProperty('marks', expect.arrayContaining([
-        expect.objectContaining({ name: 'axis0ReferenceLine0', type: 'rule' }),
-        expect.objectContaining({ name: 'axis0ReferenceLine0_startCap_S', type: 'path' }),
-        expect.objectContaining({ name: 'axis0ReferenceLine0_endCap_S', type: 'path' }),
-        expect.objectContaining({ name: 'axis0ReferenceLine0_labelBackground', type: 'text' }),
-        expect.objectContaining({ name: 'axis0ReferenceLine0_label', type: 'text' }),
-      ]));
+      expect(marks[0]).toHaveProperty(
+        'marks',
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'axis0ReferenceLine0', type: 'rule' }),
+          expect.objectContaining({ name: 'axis0ReferenceLine0_startCap_S', type: 'path' }),
+          expect.objectContaining({ name: 'axis0ReferenceLine0_endCap_S', type: 'path' }),
+          expect.objectContaining({ name: 'axis0ReferenceLine0_labelBackground', type: 'text' }),
+          expect.objectContaining({ name: 'axis0ReferenceLine0_label', type: 'text' }),
+        ])
+      );
     });
 
     test.each(['left', 'bottom'] as const)('does not add an empty reference-line group on the %s axis', (position) => {
-      expect(addAxesMarks([], {
-        ...defaultAxisOptions,
-        position,
-        scaleName: 'yLinear',
-        usermeta: {},
-      })).toHaveLength(0);
+      expect(
+        addAxesMarks([], {
+          ...defaultAxisOptions,
+          position,
+          scaleName: 'yLinear',
+          usermeta: {},
+        })
+      ).toHaveLength(0);
     });
 
     test('should add baseline to the end of the marks if baseline offset is 0', () => {
@@ -1206,7 +1224,7 @@ describe('Spec builder, Axis', () => {
           usermeta: {},
         }) as GroupMark[];
 
-        const labelFillEncoding = marks[0].axes?.[0].encode?.labels?.enter?.fill as ProductionRule<ColorValueRef>[];
+        const labelFillEncoding = marks[0].axes?.[0].encode?.labels?.update?.fill as ProductionRule<ColorValueRef>[];
         const labelFillOpacity = marks[0].axes?.[0].encode?.labels?.update
           ?.fillOpacity as ProductionRule<NumericValueRef>[];
         const titleFillUpdate = marks[0].axes?.[0].encode?.title?.update?.fill as ProductionRule<ColorValueRef>[];
@@ -1365,19 +1383,17 @@ describe('Spec builder, Axis', () => {
         },
       ];
 
-      const fillValue = [
-        { signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` },
-      ];
+      const fillValue = [{ signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` }];
 
       // Should create new encode object
       expect(axis.encode).toBeDefined();
       expect(axis.encode?.labels).toBeDefined();
-      expect(axis.encode?.labels?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
       expect(axis.encode?.labels?.update?.fillOpacity).toEqual(fillOpacity);
 
       // Should have title encodings
       expect(axis.encode?.title).toBeDefined();
-      expect(axis.encode?.title?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
       expect(axis.encode?.title?.update?.fillOpacity).toEqual(fillOpacity);
     });
   });
@@ -1498,8 +1514,8 @@ describe('Spec builder, Axis', () => {
 
       // Should apply secondary axis encodings
       const fillValue = [{ signal: `scale('${COLOR_SCALE}', ${LAST_RSC_SERIES_ID})` }];
-      expect(axis.encode?.labels?.enter?.fill).toEqual(fillValue);
-      expect(axis.encode?.title?.enter?.fill).toEqual(fillValue);
+      expect(axis.encode?.labels?.update?.fill).toEqual(fillValue);
+      expect(axis.encode?.title?.update?.fill).toEqual(fillValue);
     });
 
     test('should pass explicit colorScheme to primary axis', () => {

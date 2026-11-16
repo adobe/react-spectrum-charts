@@ -19,6 +19,7 @@ import {
   getColorProductionRule,
   getLineWidthProductionRule,
   getOpacityProductionRule,
+  getSeriesFacet,
   getStrokeDashProductionRule,
   hasInspect,
 } from '../marks/markUtils.js';
@@ -53,13 +54,7 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
         name: `${name}_group`,
         type: 'group',
         clip: true,
-        from: {
-          facet: {
-            name: `${name}_facet`,
-            data,
-            groupby: facets,
-          },
-        },
+        ...getSeriesFacet(`${name}_facet`, data, facets),
         marks: [getTrendlineLineMark(markOptions, trendlineOptions)],
       });
     }
@@ -119,14 +114,14 @@ export const getTrendlineRuleMark = (
     interactive: false,
     encode: {
       enter: {
-        ...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
-        stroke: getColorProductionRule(trendlineColor, colorScheme),
         strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
         strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
         strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
       },
       update: {
+        ...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
+        stroke: getColorProductionRule(trendlineColor, colorScheme),
         ...getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation),
         opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
       },
@@ -208,14 +203,14 @@ export const getTrendlineLineMark = (
     interactive: false,
     encode: {
       enter: {
-        y: getLineYProductionRule(trendlineDimension, orientation),
-        stroke: getColorProductionRule(trendlineColor, colorScheme),
         strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
         strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
         strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
       },
       update: {
+        y: getLineYProductionRule(trendlineDimension, orientation),
+        stroke: getColorProductionRule(trendlineColor, colorScheme),
         x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
         opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
       },

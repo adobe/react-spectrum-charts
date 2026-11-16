@@ -19,6 +19,7 @@ import {
   DEFAULT_CATEGORICAL_DIMENSION,
   DEFAULT_COLOR,
   DEFAULT_METRIC,
+  DEFAULT_OPACITY_RULE,
   DIMENSION_HOVER_AREA,
   DRAW_IN_DONE,
   FILTERED_TABLE,
@@ -30,15 +31,15 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SERIES_ID,
-  STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
 import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { BarSpecOptions } from '../types/index.js';
 import {
-  defaultBarEnterEncodings,
   defaultBarOptions,
   defaultBarOptionsWithSecondayColor,
+  defaultBarUpdateEncodings,
   defaultCornerRadiusEncodings,
   defaultDodgedCornerRadiusEncodings,
   defaultDodgedYEncodings,
@@ -56,7 +57,7 @@ import {
   getBarItemSelectionRing,
   getBarOpacity,
   getBarPadding,
-  getBaseBarEnterEncodings,
+  getBaseBarUpdateEncodings,
   getBaseScaleName,
   getCornerRadiusEncodings,
   getDimensionSelectionRing,
@@ -65,6 +66,7 @@ import {
   getMetricEncodings,
   getOrientationProperties,
   getStackedCornerRadiusEncodings,
+  getStackedCornerRadiusTransforms,
   getStackedMetricEncodings,
   getStroke,
   getStrokeDash,
@@ -96,7 +98,7 @@ describe('barUtils', () => {
     describe('horizontal orientation', () => {
       test('defaultBarOptions should return encodings on x axis', () => {
         const domainEncodings = getMetricEncodings({ ...defaultBarOptions, orientation: 'horizontal' });
-        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y as unknown[]).length;
+        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y2 as unknown[]).length;
 
         expect(domainEncodings.x).toHaveLength(defaultStackedEncodingStartLength);
         expect(domainEncodings.x2).toEqual({ scale: 'xLinear', field: `${DEFAULT_METRIC}1` });
@@ -117,7 +119,7 @@ describe('barUtils', () => {
           type: 'dodged',
           orientation: 'horizontal',
         });
-        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y as unknown[]).length;
+        const defaultStackedEncodingStartLength = (defaultStackedYEncodings.y2 as unknown[]).length;
 
         expect(domainEncodings.x).toHaveLength(defaultStackedEncodingStartLength);
         expect(domainEncodings.x2).toEqual({ scale: 'xLinear', field: `${DEFAULT_METRIC}1` });
@@ -130,36 +132,36 @@ describe('barUtils', () => {
     const endValue = `datum.${DEFAULT_METRIC}1`;
 
     describe('vertical orientation', () => {
-      test('defaultBarOptions, should return with keys "y" and "y2"', () => {
+      test('defaultBarOptions, should put the gap-adjusted start on "y2" and the end on "y"', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(Object.keys(encodings)).toEqual(['y', 'y2']);
+        expect(Object.keys(encodings)).toEqual(['y2', 'y']);
       });
 
       test('first should test for starting at 0', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y?.[0]?.test).toEqual(`${startValue} === 0`);
-        expect(encodings.y?.[0]?.signal).toEqual(`scale('yLinear', ${startValue})`);
+        expect(encodings.y2?.[0]?.test).toEqual(`${startValue} === 0`);
+        expect(encodings.y2?.[0]?.signal).toEqual(`scale('yLinear', ${startValue})`);
       });
 
       test('should second test for ending positive value', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y?.[1]?.test).toEqual(`${endValue} > 0`);
-        expect(encodings.y?.[1]?.signal).toEqual(
+        expect(encodings.y2?.[1]?.test).toEqual(`${endValue} > 0`);
+        expect(encodings.y2?.[1]?.signal).toEqual(
           `max(scale('yLinear', ${startValue}) - 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
         );
       });
 
       test('should third assume ending negative value', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y?.[2]?.test).toBeUndefined();
-        expect(encodings.y?.[2]?.signal).toEqual(
+        expect(encodings.y2?.[2]?.test).toBeUndefined();
+        expect(encodings.y2?.[2]?.signal).toEqual(
           `min(scale('yLinear', ${startValue}) + 1.5, scale('yLinear', datum.${DEFAULT_METRIC}1))`
         );
       });
 
       test('should end on datum.metric1', () => {
         const encodings = getStackedMetricEncodings(defaultBarOptions);
-        expect(encodings.y2).toEqual({ scale: 'yLinear', field: `${DEFAULT_METRIC}1` });
+        expect(encodings.y).toEqual({ scale: 'yLinear', field: `${DEFAULT_METRIC}1` });
       });
     });
 
@@ -231,39 +233,6 @@ describe('barUtils', () => {
       expect(horizontal?.cornerRadiusBottomRight).toEqual(vertical?.cornerRadiusTopRight);
       expect(horizontal?.cornerRadiusBottomLeft).toEqual(vertical?.cornerRadiusBottomRight);
     });
-    test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
-      const squareRadius = getCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
-
-      // Square radius should have values of 0
-      expect(squareRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-        })
-      );
-
-      const roundRadius = getCornerRadiusEncodings({ ...defaultBarOptions });
-
-      // S2 always uses 4
-      expect(roundRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
-    });
-
-    test('corner radius should be 4 for stacked bars', () => {
-      const radius = getCornerRadiusEncodings({ ...defaultBarOptions });
-
-      expect(radius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
-    });
-
     test('corner radius should be 4 for dodged bars', () => {
       const radius = getCornerRadiusEncodings({ ...defaultBarOptions, type: 'dodged' });
 
@@ -275,8 +244,8 @@ describe('barUtils', () => {
       );
     });
 
-    test('corner radius should be 0 when hasSquareCorners is true', () => {
-      const squareRadius = getCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
+    test('dodged corner radius should be 0 when hasSquareCorners is true', () => {
+      const squareRadius = getCornerRadiusEncodings({ ...defaultBarOptions, type: 'dodged', hasSquareCorners: true });
 
       expect(squareRadius).toEqual(
         expect.objectContaining({
@@ -287,77 +256,31 @@ describe('barUtils', () => {
     });
   });
 
-  describe('getStackedCorderRadiusEncodings()', () => {
-    test('defaultBarOptions, should return default encodings', () => {
+  describe('getStackedCornerRadiusEncodings()', () => {
+    test('defaultBarOptions, should read the precomputed corner radius fields', () => {
       expect(getStackedCornerRadiusEncodings(defaultBarOptions)).toStrictEqual(defaultCornerRadiusEncodings);
     });
-    test('defaultBarOptions with secondary color, should include secondaryColor in singal path', () => {
-      expect(getStackedCornerRadiusEncodings(defaultBarOptionsWithSecondayColor).cornerRadiusTopLeft).toStrictEqual([
+  });
+
+  describe('getStackedCornerRadiusTransforms()', () => {
+    test('rounds the positive top and negative bottom of each stack', () => {
+      expect(getStackedCornerRadiusTransforms(defaultBarOptions)).toStrictEqual([
         {
-          test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-          value: 4,
+          type: 'formula',
+          as: 'bar0_topCornerRadius',
+          expr: `datum.${DEFAULT_METRIC}1 > 0 && datum.bar0_stackMax === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
         },
-        { value: 0 },
-      ]);
-    });
-    test('dodged with secondary color, should include secondaryColor in singal path', () => {
-      expect(
-        getStackedCornerRadiusEncodings({
-          ...defaultBarOptionsWithSecondayColor,
-          type: 'dodged',
-        }).cornerRadiusTopLeft
-      ).toStrictEqual([
         {
-          test: `datum.${DEFAULT_METRIC}1 > 0 && data('bar0_stacks')[indexof(pluck(data('bar0_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${DEFAULT_METRIC}1 === datum.${DEFAULT_METRIC}1`,
-          value: 4,
+          type: 'formula',
+          as: 'bar0_bottomCornerRadius',
+          expr: `datum.${DEFAULT_METRIC}1 < 0 && datum.bar0_stackMin === datum.${DEFAULT_METRIC}1 ? 4 : 0`,
         },
-        { value: 0 },
       ]);
-    });
-
-    test('corner radius should be 0 when the hasSquareCorners prop is true', () => {
-      const squareRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
-
-      // Square radius should have values of 0
-      expect(squareRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-        })
-      );
-
-      const roundRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions });
-
-      expect(roundRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
-    });
-
-    test('corner radius should be 4 for stacked bars', () => {
-      const radius = getStackedCornerRadiusEncodings({ ...defaultBarOptions });
-
-      expect(radius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusBottomLeft: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-          cornerRadiusBottomRight: expect.arrayContaining([expect.objectContaining({ value: 4 })]),
-        })
-      );
     });
 
     test('corner radius should be 0 when hasSquareCorners is true', () => {
-      const squareRadius = getStackedCornerRadiusEncodings({ ...defaultBarOptions, hasSquareCorners: true });
-
-      expect(squareRadius).toEqual(
-        expect.objectContaining({
-          cornerRadiusTopLeft: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-          cornerRadiusTopRight: expect.arrayContaining([expect.objectContaining({ value: 0 })]),
-        })
-      );
+      const transforms = getStackedCornerRadiusTransforms({ ...defaultBarOptions, hasSquareCorners: true });
+      transforms.forEach(({ expr }) => expect(expr).toMatch(/\? 0 : 0$/));
     });
   });
 
@@ -564,14 +487,12 @@ describe('barUtils', () => {
         from: { data: FILTERED_TABLE },
         interactive: false,
         encode: {
-          enter: {
+          update: {
             cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
             cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
             cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             fill: { signal: BACKGROUND_COLOR },
-          },
-          update: {
             y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
             y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
             x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
@@ -598,15 +519,15 @@ describe('barUtils', () => {
         interactive: false,
         encode: {
           enter: {
-            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
-            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
-            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
-            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             fill: { value: 'transparent' },
             stroke: { value: '#4B75FF' },
             strokeWidth: { value: 2 },
           },
           update: {
+            cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusBottomRight: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopLeft: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+            cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
             y: { signal: `min(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) - 3` },
             y2: { signal: `max(scale('yLinear', 0), scale('yLinear', datum.${DEFAULT_METRIC})) + 3` },
             x: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
@@ -626,6 +547,10 @@ describe('barUtils', () => {
       const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
       // metric axis is x for a horizontal bar; the ring outsets x/x2 and the dimension band on y
       expect(ring.encode?.update).toStrictEqual({
+        cornerRadiusTopLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+        cornerRadiusTopRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
+        cornerRadiusBottomLeft: [{ test: 'datum.value < 0', value: 6 }, { value: 2 }],
+        cornerRadiusBottomRight: [{ test: 'datum.value > 0', value: 6 }, { value: 2 }],
         x: { signal: `min(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) - 3` },
         x2: { signal: `max(scale('xLinear', 0), scale('xLinear', datum.${DEFAULT_METRIC})) + 3` },
         y: { signal: `scale('bar0_position', datum.bar0_dodgeGroup) - 3` },
@@ -680,15 +605,11 @@ describe('barUtils', () => {
         width: { scale: 'xBand', band: 1 },
       };
       const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
-      const enter = ring.encode?.enter as RectEncodeEntry;
+      const update = ring.encode?.update as RectEncodeEntry;
 
-      // the ring reuses the bar's stacked corner-radius production rules (including the
-      // data('..._stacks') test strings), each branch's value widened by the 2px gap
-      const barCorners = getStackedCornerRadiusEncodings(options);
-      const widenBranches = (rule: RectEncodeEntry['cornerRadiusTopLeft']) =>
-        (rule as { test?: string; value: number }[]).map((branch) => ({ ...branch, value: branch.value + 2 }));
-      expect(enter.cornerRadiusTopLeft).toStrictEqual(widenBranches(barCorners.cornerRadiusTopLeft));
-      expect(enter.cornerRadiusBottomRight).toStrictEqual(widenBranches(barCorners.cornerRadiusBottomRight));
+      // the ring reads the bar's precomputed stacked corner radius fields, offset by the 2px gap
+      expect(update.cornerRadiusTopLeft).toStrictEqual({ field: 'bar0_topCornerRadius', offset: 2 });
+      expect(update.cornerRadiusBottomRight).toStrictEqual({ field: 'bar0_bottomCornerRadius', offset: 2 });
     });
 
     test('backdrop and outline ring share identical position and corner-radius encodings', () => {
@@ -696,13 +617,11 @@ describe('barUtils', () => {
       const dimensionEncodings = getDodgedDimensionEncodings(options);
       const backdrop = getBarItemSelectionBackdrop(options, FILTERED_TABLE, dimensionEncodings);
       const ring = getBarItemSelectionRing(options, FILTERED_TABLE, dimensionEncodings);
-      const backdropEnter = backdrop.encode?.enter as RectEncodeEntry;
-      const ringEnter = ring.encode?.enter as RectEncodeEntry;
+      const { fill, ...backdropUpdate } = backdrop.encode?.update as RectEncodeEntry;
 
       // the two marks must stay geometrically aligned — they differ only in fill/stroke
-      expect(backdrop.encode?.update).toStrictEqual(ring.encode?.update);
-      expect(backdropEnter.cornerRadiusTopLeft).toStrictEqual(ringEnter.cornerRadiusTopLeft);
-      expect(backdropEnter.cornerRadiusBottomRight).toStrictEqual(ringEnter.cornerRadiusBottomRight);
+      expect(fill).toStrictEqual({ signal: BACKGROUND_COLOR });
+      expect(backdropUpdate).toStrictEqual(ring.encode?.update);
     });
 
     test('serializes a plain value-ref dimension encoding into a numeric outset expression', () => {
@@ -777,16 +696,16 @@ describe('barUtils', () => {
     });
   });
 
-  describe('getBaseBarEnterEncodings()', () => {
+  describe('getBaseBarUpdateEncodings()', () => {
     test('default options', () => {
-      expect(getBaseBarEnterEncodings(defaultBarOptions)).toStrictEqual(defaultBarEnterEncodings);
+      expect(getBaseBarUpdateEncodings(defaultBarOptions)).toStrictEqual(defaultBarUpdateEncodings);
     });
   });
 
   describe('getDodgedGroupMark()', () => {
     test('should retrun group mark', () => {
       expect(getDodgedGroupMark(defaultBarOptions)).toStrictEqual({
-        encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+        encode: { update: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
         from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
         name: 'bar0_group',
         scales: [
@@ -805,7 +724,7 @@ describe('barUtils', () => {
     test('uses groupedPadding for paddingInner if it exists', () => {
       const groupedPadding = PADDING_RATIO + 0.1;
       expect(getDodgedGroupMark({ ...defaultBarOptions, groupedPadding })).toStrictEqual({
-        encode: { enter: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
+        encode: { update: { x: { field: DEFAULT_CATEGORICAL_DIMENSION, scale: 'xBand' } } },
         from: { facet: { data: FILTERED_TABLE, groupby: DEFAULT_CATEGORICAL_DIMENSION, name: 'bar0_facet' } },
         name: 'bar0_group',
         scales: [
@@ -896,7 +815,7 @@ describe('getBarDimensionHoverArea()', () => {
 
   test('should not set a tooltip when no inspect targets dimensionArea', () => {
     const mark = getBarDimensionHoverArea({ ...defaultBarOptions, chartInspects: [{ targets: ['item'] }] }, 'stacked');
-    expect(mark.encode?.enter).toHaveProperty('tooltip', undefined);
+    expect(mark.encode?.update).toHaveProperty('tooltip', undefined);
   });
 
   test('should set a tooltip when an inspect targets dimensionArea', () => {
@@ -904,7 +823,7 @@ describe('getBarDimensionHoverArea()', () => {
       { ...defaultBarOptions, chartInspects: [{ targets: ['dimensionArea'] }] },
       'stacked'
     );
-    expect(mark.encode?.enter?.tooltip).toBeDefined();
+    expect(mark.encode?.update?.tooltip).toBeDefined();
   });
 });
 
@@ -1018,7 +937,7 @@ describe('getBarOpacity()', () => {
 
   test('falls back to the instant getMarkOpacity rules when not isHoverAnimate', () => {
     const opacity = getBarOpacity(defaultBarOptions);
-    expect(opacity).toStrictEqual([{ value: 1 }]);
+    expect(opacity).toStrictEqual([getControlledHighlightedItemOpacityRule(MARK_ID), DEFAULT_OPACITY_RULE]);
   });
 
   test('hides stacked segments the draw-in has not reached', () => {
@@ -1036,35 +955,39 @@ describe('getBarOpacity()', () => {
 
   test('hides unstacked bars until the draw-in grows them from zero', () => {
     const opacity = getBarOpacity({ ...defaultBarOptions, type: 'dodged', isDrawInAnimate: true });
-    expect(opacity).toStrictEqual([{ test: 'datum.bar0_drawInValue === 0', value: 0 }, { value: 1 }]);
+    expect(opacity).toStrictEqual([
+      { test: 'datum.bar0_drawInValue === 0', value: 0 },
+      getControlledHighlightedItemOpacityRule(MARK_ID),
+      DEFAULT_OPACITY_RULE,
+    ]);
   });
 });
 
 describe('bar draw-in encodings', () => {
   const drawInOptions: BarSpecOptions = { ...defaultBarOptions, isDrawInAnimate: true };
 
-  test('getBaseBarEnterEncodings() leaves the metric out of enter so it can animate', () => {
-    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y');
-    expect(getBaseBarEnterEncodings(drawInOptions)).not.toHaveProperty('y2');
-    expect(getBaseBarEnterEncodings(defaultBarOptions)).toHaveProperty('y2');
+  test('getBaseBarUpdateEncodings() leaves out the metric so the draw-in encodings can animate it', () => {
+    expect(getBaseBarUpdateEncodings(drawInOptions)).not.toHaveProperty('y');
+    expect(getBaseBarUpdateEncodings(drawInOptions)).not.toHaveProperty('y2');
+    expect(getBaseBarUpdateEncodings(defaultBarOptions)).toHaveProperty('y2');
   });
 
   test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for stacked bars', () => {
     const encodings = getBarDrawInUpdateEncodings(drawInOptions);
-    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'bar0_drawInValue' });
-    expect(JSON.stringify(encodings.y)).toContain('datum.bar0_drawInValue > 0');
+    expect(encodings).toHaveProperty('y', { scale: 'yLinear', field: 'bar0_drawInValue' });
+    expect(JSON.stringify(encodings.y2)).toContain('datum.bar0_drawInValue > 0');
   });
 
   test('getBarDrawInUpdateEncodings() reads the precomputed draw-in value for non-stacked bars', () => {
     expect(getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged' })).toStrictEqual({
-      y: { scale: 'yLinear', value: 0 },
-      y2: { scale: 'yLinear', field: 'bar0_drawInValue' },
+      y: { scale: 'yLinear', field: 'bar0_drawInValue' },
+      y2: { scale: 'yLinear', value: 0 },
     });
   });
 
   test('getBarDrawInUpdateEncodings() reads the draw-in value on both dual metric axes', () => {
     const encodings = getBarDrawInUpdateEncodings({ ...drawInOptions, type: 'dodged', dualMetricAxis: true });
-    expect(encodings.y2).toEqual([
+    expect(encodings.y).toEqual([
       expect.objectContaining({ scale: 'yLinearSecondary', field: 'bar0_drawInValue' }),
       expect.objectContaining({ scale: 'yLinearPrimary', field: 'bar0_drawInValue' }),
     ]);
@@ -1076,7 +999,7 @@ describe('bar draw-in encodings', () => {
 
   test('getBarBackgroundDrawInUpdateEncodings() uses the final geometry and stays hidden until draw-in is done', () => {
     const encodings = getBarBackgroundDrawInUpdateEncodings(drawInOptions);
-    expect(encodings).toHaveProperty('y2', { scale: 'yLinear', field: 'value1' });
+    expect(encodings).toHaveProperty('y', { scale: 'yLinear', field: 'value1' });
     expect(encodings).toHaveProperty('opacity', { signal: `${DRAW_IN_DONE} ? 1 : 0` });
     expect(getBarBackgroundDrawInUpdateEncodings(defaultBarOptions)).toStrictEqual({});
   });

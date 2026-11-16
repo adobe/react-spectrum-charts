@@ -51,7 +51,7 @@ describe('trellisedBarUtils', () => {
 
       test('encodes the x axis with the "xTrellisBand" scale and trellis field', () => {
         const result = getTrellisGroupMark(horizontalTrellisOptions, [], defaultRepeatedScale);
-        const xEncoding = result.encode?.enter?.x as { scale: string; field: string };
+        const xEncoding = result.encode?.update?.x as { scale: string; field: string };
 
         expect(xEncoding).toBeDefined();
         expect(xEncoding.scale).toEqual('xTrellisBand');
@@ -61,8 +61,8 @@ describe('trellisedBarUtils', () => {
       test('encodes the width with bandwidth("xTrellisBand") and height with "height"', () => {
         const result = getTrellisGroupMark(horizontalTrellisOptions, [], defaultRepeatedScale);
 
-        expect(result.encode?.enter?.width).toEqual({ signal: "bandwidth('xTrellisBand')" });
-        expect(result.encode?.enter?.height).toEqual({ signal: 'height' });
+        expect(result.encode?.update?.width).toEqual({ signal: "bandwidth('xTrellisBand')" });
+        expect(result.encode?.update?.height).toEqual({ signal: 'height' });
       });
     });
 
@@ -86,7 +86,7 @@ describe('trellisedBarUtils', () => {
 
       test('encodes the y axis with the "yTrellisBand" scale and trellis field', () => {
         const result = getTrellisGroupMark(verticalTrellisOptions, [], defaultRepeatedScale);
-        const xEncoding = result.encode?.enter?.y as { scale: string; field: string };
+        const xEncoding = result.encode?.update?.y as { scale: string; field: string };
 
         expect(xEncoding).toBeDefined();
         expect(xEncoding.scale).toEqual('yTrellisBand');
@@ -96,8 +96,8 @@ describe('trellisedBarUtils', () => {
       test('encodes the height with bandwidth("yTrellisBand") and width with "width"', () => {
         const result = getTrellisGroupMark(verticalTrellisOptions, [], defaultRepeatedScale);
 
-        expect(result.encode?.enter?.height).toEqual({ signal: "bandwidth('yTrellisBand')" });
-        expect(result.encode?.enter?.width).toEqual({ signal: 'width' });
+        expect(result.encode?.update?.height).toEqual({ signal: "bandwidth('yTrellisBand')" });
+        expect(result.encode?.update?.width).toEqual({ signal: 'width' });
       });
     });
   });

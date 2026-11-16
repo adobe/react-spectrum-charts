@@ -30,15 +30,18 @@ jest.mock('../../../hooks/useChartProps.js', () => ({
 beforeAll(stubS2BrowserApis);
 beforeEach(() => localStorage.clear());
 
-test('wires the dashboard hover switch into all scatter charts while switching datasets', async () => {
+test('wires each dashboard animation switch into all scatter charts while switching datasets', async () => {
   render(<PropVariations />);
   const hover = screen.getByRole('switch', { name: 'Scatter hover opacity animation' });
-  expect(screen.queryByRole('switch', { name: 'Scatter draw-in animation' })).toBeNull();
+  const drawIn = screen.getByRole('switch', { name: 'Scatter draw-in animation' });
   const expectAnimationTypes = (types: string) => {
     const charts = screen.getAllByTestId('variation-chart');
     expect(charts.length).toBeGreaterThan(1);
     charts.forEach((chart) => expect(chart.getAttribute('data-animation-types')).toBe(types));
   };
+  expectAnimationTypes('hover,drawIn');
+
+  await userEvent.click(drawIn);
   expectAnimationTypes('hover');
 
   await userEvent.click(hover);
@@ -48,6 +51,9 @@ test('wires the dashboard hover switch into all scatter charts while switching d
   await userEvent.click(screen.getAllByRole('option')[1]);
   expectAnimationTypes('');
 
+  await userEvent.click(drawIn);
+  expectAnimationTypes('drawIn');
+
   await userEvent.click(hover);
-  expectAnimationTypes('hover');
+  expectAnimationTypes('hover,drawIn');
 });

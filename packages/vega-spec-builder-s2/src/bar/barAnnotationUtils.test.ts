@@ -45,7 +45,7 @@ describe('getAnnotationMarks()', () => {
       'category'
     ) as GroupMark[];
     group.marks?.forEach((mark) => {
-      expect(mark.encode).not.toHaveProperty('update');
+      expect(mark.encode?.update).not.toHaveProperty('opacity');
     });
   });
 

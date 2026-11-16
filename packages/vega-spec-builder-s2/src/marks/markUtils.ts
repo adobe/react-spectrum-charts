@@ -13,7 +13,9 @@ import {
   AreaEncodeEntry,
   ArrayValueRef,
   ColorValueRef,
+  Compare,
   EncodeEntry,
+  FromFacet,
   GroupMark,
   NumericValueRef,
   PathMark,
@@ -27,17 +29,18 @@ import {
   BACKGROUND_COLOR,
   CHART_SIZE_FONT_SIZE,
   COLOR_SCALE,
-  COMPONENT_NAME,
   DEFAULT_ANIMATION_TYPES,
   DEFAULT_OPACITY_RULE,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FADE_FACTOR,
+  FIRST_MARK_ID,
   HOVER_SHAPE,
   HOVER_SHAPE_COUNT,
   HOVER_SIZE,
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
+  MARK_ID,
   OPACITY_SCALE,
   SELECTED_GROUP,
   SELECTED_ITEM,
@@ -45,7 +48,10 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { addHoveredItemOpacityRules } from '../chartInspect/chartInspectUtils.js';
+import {
+  addHoveredItemOpacityRules,
+  getControlledHighlightedItemOpacityRule,
+} from '../chartInspect/chartInspectUtils.js';
 import { LineMarkOptions } from '../line/lineUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import {
@@ -56,8 +62,8 @@ import {
 import {
   BarSpecOptions,
   ChartActionBarOptions,
-  ChartPopoverOptions,
   ChartInspectOptions,
+  ChartPopoverOptions,
   ColorFacet,
   ColorScheme,
   DonutSpecOptions,
@@ -76,6 +82,29 @@ import {
   VennSpecOptions,
 } from '../types/index.js';
 import { getHoverMarkName } from './hoverMarkUtils.js';
+
+/**
+ * Gets a series facet whose groups are drawn in first-row order, so re-shown series keep their z-order.
+ * @param name facet name
+ * @param data source data name
+ * @param groupby facet fields
+ * @returns group mark from and sort
+ */
+export const getSeriesFacet = (
+  name: string,
+  data: string,
+  groupby: string | string[]
+): { from: FromFacet; sort: Compare } => ({
+  from: {
+    facet: {
+      name,
+      data,
+      groupby,
+      aggregate: { fields: [MARK_ID], ops: ['min'], as: [FIRST_MARK_ID] },
+    },
+  },
+  sort: { field: `datum.${FIRST_MARK_ID}` },
+});
 
 /**
  * If a popover, action bar, or hasOnClick exists on the mark, then set the cursor to a pointer.
@@ -106,10 +135,9 @@ export function getInspectEncoding(
   // skip annotations
   if (chartInspects.length) {
     const datumRef = nestedDatum ? 'datum.datum' : 'datum';
-    const componentInfo = `{'${COMPONENT_NAME}': '${name}'}`;
     const metaDataPart = metaData ? `, ${JSON.stringify(metaData)}` : '';
     const defaultInspectSignal = {
-      signal: `merge(${datumRef}, ${componentInfo}${metaDataPart})`,
+      signal: `inspectDatum(${datumRef}, '${name}'${metaDataPart})`,
     };
     // if the inspect has an excludeDataKey option, then disable the inspect where that key is present
     const excludeDataKeys = chartInspects[0].excludeDataKeys;
@@ -365,11 +393,11 @@ export const getPointsForVoronoi = (
     interactive: false,
     encode: {
       enter: {
-        y: getYProductionRule(metricAxis, metric),
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
       },
       update: {
+        y: getYProductionRule(metricAxis, metric),
         x: getXProductionRule(scaleType, dimension),
       },
     },
@@ -396,9 +424,9 @@ export const getVoronoiPath = (markOptions: LineMarkOptions | ScatterSpecOptions
         fill: { value: 'transparent' },
         stroke: { value: 'transparent' },
         isVoronoi: { value: true },
-        tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
       },
       update: {
+        tooltip: getInspectEncoding(chartInspects ?? [], markName, true),
         cursor: getCursor(chartPopovers ?? [], hasOnClick, chartActionBars),
       },
     },
@@ -445,13 +473,13 @@ export const getItemHoverArea = (
       encode: {
         enter: {
           shape: { value: HOVER_SHAPE },
-          y: yEncoding,
           fill: { value: 'transparent' },
           stroke: { value: 'transparent' },
-          tooltip: getInspectEncoding(chartInspects, name, false),
-          size: getHoverSizeSignal(size),
         },
         update: {
+          y: yEncoding,
+          tooltip: getInspectEncoding(chartInspects, name, false),
+          size: getHoverSizeSignal(size),
           x: getXProductionRule(scaleType, dimension),
         },
       },
@@ -474,12 +502,12 @@ const getHoverSizeSignal = (size: number): SignalRef => ({
 export const getMarkOpacity = (
   options: BarSpecOptions | DonutSpecOptions | VennSpecOptions
 ): ({ test?: string } & NumericValueRef)[] => {
-  const { highlightedItem, idKey, name: markName } = options;
+  const { idKey, name: markName } = options;
   const rules: ({ test?: string } & NumericValueRef)[] = [DEFAULT_OPACITY_RULE];
 
-  // if there aren't any interactive components, then we don't need to add special opacity rules
-  if (!isInteractive(options) && highlightedItem === undefined) {
-    return rules;
+  // without interactive components, only the controlled highlight can fade marks
+  if (!isInteractive(options)) {
+    return [getControlledHighlightedItemOpacityRule(idKey), ...rules];
   }
 
   addHoveredItemOpacityRules(rules, options);
@@ -516,7 +544,7 @@ export const getInteractiveMarkName = (
   name: string
 ): string | undefined => {
   // if the line has an interactive component, this line is the target for the interactive component
-  if (isInteractive(options) || options.highlightedItem !== undefined) {
+  if (isInteractive(options)) {
     return name;
   }
   // if there is a trendline with an interactive component on the line, then the trendline is the target for the interactive component

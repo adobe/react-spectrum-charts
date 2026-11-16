@@ -412,6 +412,7 @@ export const ScatterOpacityPlayground = () => (
 );
 
 const outlineControls: PlaygroundControl[] = [
+  { group: 'Scatter', name: 'outline', type: 'select', options: ['auto', 'always', 'never'], defaultValue: 'auto' },
   {
     group: 'Scatter',
     name: 'lineWidth',
@@ -439,7 +440,7 @@ export const ScatterOutlinePlayground = () => (
     previewSize={getScatterPreviewSize}
     controls={outlineControls}
     component="Scatter"
-    render={({ lineWidth, lineType, stroke, opacity }) => {
+    render={({ outline, lineWidth, lineType, stroke, opacity }) => {
       const width = String(lineWidth ?? '0');
       let lineWidthProp: string | { value: SymbolSize } | undefined;
       if (width === 'audience') lineWidthProp = 'audience';
@@ -460,6 +461,7 @@ export const ScatterOutlinePlayground = () => (
             color="channel"
             size={{ value: 'XL' }}
             opacity={{ value: (opacity ?? 0.4) as number }}
+            outline={outline as 'auto' | 'always' | 'never' | undefined}
             lineWidth={lineWidthProp}
             lineType={lineTypeProp}
             stroke={strokeProp}
@@ -1090,6 +1092,55 @@ export const ScatterHighlightPlayground = () => (
           idKey={items ? 'id' : undefined}
           highlightedItem={items && items.length === 1 ? items[0] : items}
         >
+          <Axis position="left" grid title="Revenue ($K)" />
+          <Axis position="bottom" grid title="Spend ($K)" />
+          <Scatter dimension="spend" metric="revenue" color="channel">
+            <ChartInspect>{inspectContent}</ChartInspect>
+          </Scatter>
+          <Legend highlight />
+        </Chart>
+      );
+    }}
+  />
+);
+
+type AnimationType = 'hover' | 'drawIn';
+
+const animationControls: PlaygroundControl[] = [
+  {
+    group: 'Chart',
+    name: 'drawIn',
+    label: "animationTypes 'drawIn'",
+    doc: 'Chart.animationTypes',
+    type: 'boolean',
+    defaultValue: true,
+  },
+  {
+    group: 'Chart',
+    name: 'hover',
+    label: "animationTypes 'hover'",
+    doc: 'Chart.animationTypes',
+    type: 'boolean',
+    defaultValue: true,
+  },
+];
+
+/**
+ * Playground for the Scatter draw-in and hover animations.
+ * @returns playground element
+ */
+export const ScatterAnimationPlayground = () => (
+  <PropPlayground
+    previewSize={getScatterPreviewSize}
+    replay
+    controls={animationControls}
+    render={({ drawIn = true, hover = true }) => {
+      const types: AnimationType[] = [];
+      if (hover) types.push('hover');
+      if (drawIn) types.push('drawIn');
+      const animationTypes = hover && drawIn ? undefined : types;
+      return (
+        <Chart data={scatterCampaignData} animationTypes={animationTypes}>
           <Axis position="left" grid title="Revenue ($K)" />
           <Axis position="bottom" grid title="Spend ($K)" />
           <Scatter dimension="spend" metric="revenue" color="channel">

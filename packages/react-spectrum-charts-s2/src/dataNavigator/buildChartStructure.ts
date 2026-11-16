@@ -99,7 +99,7 @@ export const buildChartStructure = (options: ChartStructureOptions): ChartStruct
 
   if (!options.xAxis) return content;
 
-  const xAxis = buildAxisStructure({ data: options.data, ...options.xAxis });
+  const xAxis = buildAxisStructure({ data: options.data, locale: options.locale, ...options.xAxis });
   // No navigable ticks (e.g. none of the axis's values are currently painted, or the region was wired
   // to a mismatched axis): skip the axis region rather than letting composeRegions throw on it.
   if (!xAxis.entryPoint) return content;

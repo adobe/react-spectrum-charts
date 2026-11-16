@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, GroupMark } from 'vega';
+import { Data, GroupMark, Mark } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -22,6 +22,7 @@ import {
   DEFAULT_OPACITY_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_ITEM,
   LINEAR_PADDING,
@@ -29,9 +30,11 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SELECTED_SERIES,
+  SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getSeriesFacet } from '../marks/markUtils.js';
 import { getGenericValueSignal } from '../signal/signalSpecBuilder.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
@@ -42,6 +45,7 @@ import {
   addData,
   addHighlightedItemEvents,
   addSignals,
+  getAreaHighlightedData,
   getHoverPointMetric,
   setScales,
 } from './areaSpecBuilder.js';
@@ -64,6 +68,33 @@ const defaultAreaOptions: AreaSpecOptions = {
   opacity: 0.8,
   scaleType: 'time',
 };
+
+const getDefaultHoverMarks = (x: { scale: string; field: string }): Mark[] => [
+  {
+    name: 'area0_rule',
+    type: 'rule',
+    from: { data: 'area0_highlightedData' },
+    interactive: false,
+    encode: {
+      enter: { y: { value: 0 }, strokeWidth: { value: 1 } },
+      update: { x, y2: { signal: 'height' }, opacity: { signal: `isValid(${CONTROLLED_HIGHLIGHTED_ITEM}) ? 1 : 0` } },
+    },
+  },
+  {
+    name: 'area0_point',
+    type: 'symbol',
+    from: { data: 'area0_highlightedData' },
+    interactive: false,
+    encode: {
+      update: {
+        x,
+        y: { field: `${DEFAULT_METRIC}1`, scale: 'yLinear' },
+        stroke: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
+        fill: { signal: BACKGROUND_COLOR },
+      },
+    },
+  },
+];
 
 const defaultSpec = initializeSpec({
   data: [
@@ -98,16 +129,15 @@ const defaultSpec = initializeSpec({
         },
       ],
     },
+    getAreaHighlightedData('area0', MARK_ID, false, false, false),
   ],
   marks: [
     {
-      from: {
-        facet: { data: FILTERED_TABLE, groupby: DEFAULT_COLOR, name: 'area0_facet' },
-      },
+      ...getSeriesFacet('area0_facet', FILTERED_TABLE, DEFAULT_COLOR),
       marks: [
         {
           encode: {
-            enter: {
+            update: {
               fill: { field: DEFAULT_COLOR, scale: COLOR_SCALE },
               y: { field: 'value0', scale: 'yLinear' },
               y2: { field: 'value1', scale: 'yLinear' },
@@ -116,12 +146,20 @@ const defaultSpec = initializeSpec({
               strokeJoin: { value: 'round' },
               tooltip: undefined,
               defined: { signal: 'isValid(datum["value0"]) || isValid(datum["value1"])' },
-            },
-            update: {
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
               cursor: undefined,
               fillOpacity: { value: 0.8 },
-              opacity: [DEFAULT_OPACITY_RULE],
+              opacity: [
+                {
+                  test: "length(data('area0_highlightedData'))",
+                  signal: `indexof(pluck(data('area0_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : ${FADE_FACTOR}`,
+                },
+                {
+                  test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+                  signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+                },
+                DEFAULT_OPACITY_RULE,
+              ],
             },
           },
           interactive: false,
@@ -134,6 +172,7 @@ const defaultSpec = initializeSpec({
       name: 'area0_group',
       type: 'group',
     },
+    ...getDefaultHoverMarks({ field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' }),
   ],
   scales: [
     {
@@ -260,10 +299,10 @@ describe('areaSpecBuilder', () => {
   });
 
   describe('addSignals() with highlightedItem and no children', () => {
-    test('should add the hovered item and controlled hovered id signals referenced by the area opacity', () => {
+    test('should not add the hovered item or controlled hovered id signals', () => {
       const signals = addSignals(defaultSignals, { ...defaultAreaOptions, highlightedItem: 'highlightedItem' });
-      expect(signals.find((signal) => signal.name === `area0_${HOVERED_ITEM}`)).toBeDefined();
-      expect(signals.find((signal) => signal.name === 'area0_controlledHoveredId')).toBeDefined();
+      expect(signals.find((signal) => signal.name === `area0_${HOVERED_ITEM}`)).toBeUndefined();
+      expect(signals.find((signal) => signal.name === 'area0_controlledHoveredId')).toBeUndefined();
     });
   });
 
@@ -339,6 +378,7 @@ describe('areaSpecBuilder', () => {
             },
           ],
         },
+        ...getDefaultHoverMarks({ scale: 'xLinear', field: DEFAULT_TIME_DIMENSION }),
       ]);
     });
   });
@@ -364,8 +404,8 @@ describe('areaSpecBuilder', () => {
       const groupMark = marks[0] as GroupMark;
       const anchorPoint = groupMark.marks?.find((mark) => mark.name === 'area0_anchorPoint');
       const hoverPoint = marks.find((mark) => mark.name === 'area0_point');
-      expect(anchorPoint?.encode?.enter).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
-      expect(hoverPoint?.encode?.enter).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
+      expect(anchorPoint?.encode?.update).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
+      expect(hoverPoint?.encode?.update).toHaveProperty('y', { scale: 'yLinear', field: 'high' });
     });
   });
 });

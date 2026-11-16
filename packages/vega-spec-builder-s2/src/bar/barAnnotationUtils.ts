@@ -127,6 +127,12 @@ const getAnnotationTextMark = ({
     zindex: 1,
     encode: {
       enter: {
+        fontSize: { value: ANNOTATION_FONT_SIZE },
+        fontWeight: { value: ANNOTATION_FONT_WEIGHT },
+        baseline: { value: 'middle' },
+        align: { value: 'center' },
+      },
+      update: {
         [dimensionAxis]: {
           scale: dimensionScaleName,
           field: dimensionField,
@@ -139,12 +145,8 @@ const getAnnotationTextMark = ({
             field: textKey,
           },
         ],
-        fontSize: { value: ANNOTATION_FONT_SIZE },
-        fontWeight: { value: ANNOTATION_FONT_WEIGHT },
-        baseline: { value: 'middle' },
-        align: { value: 'center' },
+        ...getDrawInRevealUpdate(barOptions),
       },
-      ...getDrawInRevealUpdate(barOptions),
     },
   };
 };
@@ -168,10 +170,12 @@ const getAnnotationBackgroundMark = ({
   interactive: false,
   encode: {
     enter: {
+      cornerRadius: { value: 4 },
+    },
+    update: {
       ...getAnnotationXEncode(padding, style?.width),
       y: { signal: `datum.bounds.y1  - ${padding}` },
       y2: { signal: `datum.bounds.y2  + ${padding}` },
-      cornerRadius: { value: 4 },
       fill: [
         {
           test: `datum.datum.${textKey} && bandwidth('${dimensionScaleName}') > ${getMinBandwidth(
@@ -181,18 +185,18 @@ const getAnnotationBackgroundMark = ({
           signal: BACKGROUND_COLOR,
         },
       ],
+      ...getDrawInRevealUpdate(barOptions),
     },
-    ...getDrawInRevealUpdate(barOptions),
   },
 });
 
 /**
- * Gets an update encoding that fades a mark in once its bar finishes drawing.
+ * Gets update encodings that fade a mark in once its bar finishes drawing.
  * @param barOptions
- * @returns update encode entry, or nothing when draw-in is off
+ * @returns opacity encoding, or nothing when draw-in is off
  */
 const getDrawInRevealUpdate = (barOptions: BarSpecOptions) =>
-  barOptions.isDrawInAnimate ? { update: { opacity: { signal: getBarDrawInLabelFadeExpr(barOptions, false) } } } : {};
+  barOptions.isDrawInAnimate ? { opacity: { signal: getBarDrawInLabelFadeExpr(barOptions, false) } } : {};
 
 /**
  * Gets the minimum band width needed to display the annotations based on the bar orientation

@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 const FEATURE_CATALOG_DIST = path.join(__dirname, '../packages/mcp/dist/src/featureCatalog.js');
-const SKILL_PATH = path.join(__dirname, '../llm/skills/chart-features/SKILL.md');
+const SKILL_PATH = path.join(__dirname, '../.agents/skills/chart-features/SKILL.md');
 const SKILL_DIR = path.dirname(SKILL_PATH);
 
 const CATEGORY_TITLES = {

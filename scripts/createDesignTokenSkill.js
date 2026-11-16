@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DESIGN_TOKENS_DIST = path.join(__dirname, '../packages/mcp/dist/src/designTokens.js');
-const SKILL_PATH = path.join(__dirname, '../llm/skills/s2-design-tokens/SKILL.md');
+const SKILL_PATH = path.join(__dirname, '../.agents/skills/s2-design-tokens/SKILL.md');
 const SKILL_DIR = path.dirname(SKILL_PATH);
 
 /**

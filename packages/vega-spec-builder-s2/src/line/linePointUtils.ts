@@ -22,10 +22,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { applyDrawInReveal, getLineDrawInRevealExpr } from '../marks/drawInAnimationUtils.js';
-import {
-  getColorProductionRule,
-  getXProductionRule,
-} from '../marks/markUtils.js';
+import { getColorProductionRule, getXProductionRule } from '../marks/markUtils.js';
 import { LineSpecOptions } from '../types/index.js';
 import { getLineDeemphasisOpacitySignal, getLineYEncoding } from './lineEncodingUtils.js';
 import { LineMarkOptions } from './lineUtils.js';
@@ -39,15 +36,7 @@ export const getPointSizeEncoding = (pointSize: number | undefined) =>
  * @returns SymbolMark
  */
 export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => {
-  const {
-    name,
-    metric,
-    color,
-    colorScheme,
-    scaleType,
-    dimension,
-    pointSize,
-  } = lineOptions;
+  const { name, metric, color, colorScheme, scaleType, dimension, pointSize } = lineOptions;
 
   return {
     name: `${name}_staticPoints`,
@@ -56,12 +45,10 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
     from: { data: `${name}_staticPointData` },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         size: getPointSizeEncoding(pointSize),
         fill: getColorProductionRule(color, colorScheme),
         y: getLineYEncoding(lineOptions, metric),
-      },
-      update: {
         x: getXProductionRule(scaleType, dimension),
         // not clipped like the line (the edge would cut points in half); each point pops in once the edge passes it
         opacity: lineOptions.isDrawInAnimate
@@ -73,16 +60,11 @@ export const getLineStaticPoint = (lineOptions: LineSpecOptions): SymbolMark => 
 };
 
 const getOpacity = (lineOptions: LineSpecOptions): ProductionRule<NumericValueRef> => {
-  const {
-    name,
-    interactiveMarkName,
-    isHoverAnimate,
-    isHighlightedByGroup,
-  } = lineOptions;
+  const { name, interactiveMarkName, isHoverAnimate, isHighlightedByGroup } = lineOptions;
 
   // Animated
   if (isHoverAnimate) return getLineDeemphasisOpacitySignal(name);
-  
+
   // Non-animated
   const opacityRules: ProductionRule<NumericValueRef> = [];
   if (interactiveMarkName) {
@@ -117,13 +99,11 @@ export const getLineStaticPointBackground = (lineOptions: LineSpecOptions): Symb
     from: { data: `${name}_staticPointData` },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         size: getPointSizeEncoding(pointSize),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
         y: getLineYEncoding(lineOptions, metric),
-      },
-      update: {
         x: getXProductionRule(scaleType, dimension),
         ...(lineOptions.isDrawInAnimate
           ? { opacity: { signal: getLineDrawInRevealExpr(name, scaleType, dimension) } }
@@ -147,13 +127,11 @@ export const getHighlightBackgroundPoint = (lineOptions: LineMarkOptions): Symbo
     from: { data: `${name}_highlightedData` },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         size: getPointSizeEncoding(pointSize),
         y: getLineYEncoding(lineOptions, metric),
         fill: { signal: BACKGROUND_COLOR },
         stroke: { signal: BACKGROUND_COLOR },
-      },
-      update: {
         x: getXProductionRule(scaleType, dimension),
       },
     },
@@ -169,14 +147,12 @@ const getHighlightOrSelectionPoint = (lineOptions: LineMarkOptions, useHighlight
     from: { data: `${name}${useHighlightedData ? '_highlightedData' : '_selectedData'}` },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         size: getPointSizeEncoding(pointSize),
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
         strokeWidth: { signal: CHART_SIZE_HOVER_STROKE_WIDTH },
         y: getLineYEncoding(lineOptions, metric),
-      },
-      update: {
         x: getXProductionRule(scaleType, dimension),
       },
     },
@@ -219,12 +195,10 @@ export const getSecondaryHighlightPoint = (
     from: { data: `${name}_highlightedData` },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         y: getLineYEncoding(lineOptions, secondaryHighlightedMetric),
         fill: { signal: BACKGROUND_COLOR },
         stroke: getColorProductionRule(color, colorScheme),
-      },
-      update: {
         x: getXProductionRule(scaleType, dimension),
       },
     },

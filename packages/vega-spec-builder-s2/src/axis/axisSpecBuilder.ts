@@ -57,8 +57,8 @@ import {
   getMatchingInteractiveBarDimensionFields,
 } from './axisLabelHoverUtils.js';
 import {
-  getAxisLabelsEncoding,
   getAxisLabelTooltipRule,
+  getAxisLabelsEncoding,
   getControlledLabelAnchorValues,
   getLabelValue,
 } from './axisLabelUtils.js';
@@ -316,18 +316,14 @@ export function applySecondaryMetricAxisEncodings(axis: Axis, interactiveMarks: 
 
   const encodings = {
     labels: {
-      enter: {
-        fill: secondaryAxisFillRules,
-      },
       update: {
+        fill: secondaryAxisFillRules,
         fillOpacity,
       },
     },
     title: {
-      enter: {
-        fill: secondaryAxisFillRules,
-      },
       update: {
+        fill: secondaryAxisFillRules,
         fillOpacity,
       },
     },
@@ -439,73 +435,80 @@ export const addAxes = produce<
       usermeta: UserMeta;
     }
   ]
->((
-  axes,
-  { scaleName, scaleField, opposingScaleType, opposingScaleName, divergingContext, dualMetricAxis, ...axisOptions }
-) => {
-  const newAxes: Axis[] = [];
-  // adds all the trellis axis options if this is a trellis axis
-  axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
-  const { baseline, labelFormat, position } = axisOptions;
+>(
+  (
+    axes,
+    { scaleName, scaleField, opposingScaleType, opposingScaleName, divergingContext, dualMetricAxis, ...axisOptions }
+  ) => {
+    const newAxes: Axis[] = [];
+    // adds all the trellis axis options if this is a trellis axis
+    axisOptions = { ...axisOptions, ...getTrellisAxisOptions(scaleName) };
+    const { baseline, labelFormat, position } = axisOptions;
 
-  if (labelFormat === 'time') {
-    // time axis actually needs two axes. A primary and secondary.
-    newAxes.push(...getTimeAxes(scaleName, axisOptions));
-  } else {
-    buildStandardAxes(newAxes, axisOptions, scaleName, scaleField, dualMetricAxis);
+    if (labelFormat === 'time') {
+      // time axis actually needs two axes. A primary and secondary.
+      newAxes.push(...getTimeAxes(scaleName, axisOptions));
+    } else {
+      buildStandardAxes(newAxes, axisOptions, scaleName, scaleField, dualMetricAxis);
+    }
+
+    // add baseline
+    if (opposingScaleType !== 'linear') {
+      newAxes[0] = setAxisBaseline(newAxes[0], baseline);
+    }
+
+    // moves the dimension axis to the zero line and flips its labels by sign (`divergingContext` only exists for `<Bar diverging>`)
+    if (divergingContext && opposingScaleType === 'linear' && opposingScaleName) {
+      const isNegativeTest = getDivergingTickIsNegativeTest(divergingContext);
+      const offset = getDivergingAxisOffset(position, opposingScaleName);
+      const alignOrBaselineKey = isVerticalAxis(position) ? 'align' : 'baseline';
+      const offsetKey = isVerticalAxis(position) ? 'dx' : 'dy';
+
+      // applies to every axis in the group (e.g. a time axis's primary + secondary rows), using each one's own labelPadding
+      newAxes.forEach((divergingAxis, index) => {
+        const labelPadding = typeof divergingAxis.labelPadding === 'number' ? divergingAxis.labelPadding : undefined;
+
+        // a static enter.dy (e.g. time axis row stacking) would be erased by our update, so fold it in as extraOutwardOffset instead
+        const existingEnterOffset = divergingAxis.encode?.labels?.enter?.[offsetKey];
+        const extraOutwardOffset =
+          existingEnterOffset && typeof existingEnterOffset === 'object' && 'value' in existingEnterOffset
+            ? Number(existingEnterOffset.value)
+            : 0;
+        const divergingLabelEncode = getDivergingLabelEncode(
+          position,
+          isNegativeTest,
+          labelPadding,
+          extraOutwardOffset
+        );
+
+        // merge by priority so an existing align/baseline override wins over diverging's flip, instead of deepmerge concatenating both
+        const existingAlignOrBaseline = divergingAxis.encode?.labels?.update?.[alignOrBaselineKey];
+        const alignOrBaseline = existingAlignOrBaseline
+          ? getPriorityMergedSignal(existingAlignOrBaseline, divergingLabelEncode.update[alignOrBaselineKey])
+          : divergingLabelEncode.update[alignOrBaselineKey];
+
+        const signFlipEncode: AxisEncode = {
+          labels: { update: { ...divergingLabelEncode.update, [alignOrBaselineKey]: alignOrBaseline } },
+        };
+
+        newAxes[index] = {
+          ...divergingAxis,
+          offset,
+          encode: divergingAxis.encode ? deepmerge(divergingAxis.encode, signFlipEncode) : signFlipEncode,
+        };
+      });
+    }
+
+    applyAxisThumbnailEncodings(newAxes, axisOptions, position, divergingContext, opposingScaleType, opposingScaleName);
+
+    const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
+    for (const axisAnnotation of axisAnnotations) {
+      addAxisAnnotationAxis(newAxes, axisAnnotation, scaleName);
+    }
+
+    axes.push(...newAxes);
   }
-
-  // add baseline
-  if (opposingScaleType !== 'linear') {
-    newAxes[0] = setAxisBaseline(newAxes[0], baseline);
-  }
-
-  // moves the dimension axis to the zero line and flips its labels by sign (`divergingContext` only exists for `<Bar diverging>`)
-  if (divergingContext && opposingScaleType === 'linear' && opposingScaleName) {
-    const isNegativeTest = getDivergingTickIsNegativeTest(divergingContext);
-    const offset = getDivergingAxisOffset(position, opposingScaleName);
-    const alignOrBaselineKey = isVerticalAxis(position) ? 'align' : 'baseline';
-    const offsetKey = isVerticalAxis(position) ? 'dx' : 'dy';
-
-    // applies to every axis in the group (e.g. a time axis's primary + secondary rows), using each one's own labelPadding
-    newAxes.forEach((divergingAxis, index) => {
-      const labelPadding = typeof divergingAxis.labelPadding === 'number' ? divergingAxis.labelPadding : undefined;
-
-      // a static enter.dy (e.g. time axis row stacking) would be erased by our update, so fold it in as extraOutwardOffset instead
-      const existingEnterOffset = divergingAxis.encode?.labels?.enter?.[offsetKey];
-      const extraOutwardOffset =
-        existingEnterOffset && typeof existingEnterOffset === 'object' && 'value' in existingEnterOffset
-          ? Number(existingEnterOffset.value)
-          : 0;
-      const divergingLabelEncode = getDivergingLabelEncode(position, isNegativeTest, labelPadding, extraOutwardOffset);
-
-      // merge by priority so an existing align/baseline override wins over diverging's flip, instead of deepmerge concatenating both
-      const existingAlignOrBaseline = divergingAxis.encode?.labels?.update?.[alignOrBaselineKey];
-      const alignOrBaseline = existingAlignOrBaseline
-        ? getPriorityMergedSignal(existingAlignOrBaseline, divergingLabelEncode.update[alignOrBaselineKey])
-        : divergingLabelEncode.update[alignOrBaselineKey];
-
-      const signFlipEncode: AxisEncode = {
-        labels: { update: { ...divergingLabelEncode.update, [alignOrBaselineKey]: alignOrBaseline } },
-      };
-
-      newAxes[index] = {
-        ...divergingAxis,
-        offset,
-        encode: divergingAxis.encode ? deepmerge(divergingAxis.encode, signFlipEncode) : signFlipEncode,
-      };
-    });
-  }
-
-  applyAxisThumbnailEncodings(newAxes, axisOptions, position, divergingContext, opposingScaleType, opposingScaleName);
-
-  const axisAnnotations = getAxisAnnotationsFromChildren(axisOptions);
-  for (const axisAnnotation of axisAnnotations) {
-    addAxisAnnotationAxis(newAxes, axisAnnotation, scaleName);
-  }
-
-  axes.push(...newAxes);
-});
+);
 
 /** Split out of `addAxes` to keep cognitive complexity down. */
 function buildStandardAxes(
@@ -590,7 +593,14 @@ function applyAxisLabelEncodings(
   const labels = axisOptions.labels;
   const signalName = `${name}_labels`;
   axis.values = labels.map((label) => getLabelValue(label));
-  const baseEncoding = getAxisLabelsEncoding(labelAlign, labelFontWeight, 'label', labelOrientation, position, signalName);
+  const baseEncoding = getAxisLabelsEncoding(
+    labelAlign,
+    labelFontWeight,
+    'label',
+    labelOrientation,
+    position,
+    signalName
+  );
   const encodingWithOptionalTooltip = hasTooltip
     ? { ...baseEncoding, update: { ...baseEncoding.update, tooltip: getAxisLabelTooltipRule(name) } }
     : baseEncoding;
@@ -699,8 +709,7 @@ export const addAxesMarks = produce<
     }
   ]
 >((marks, options) => {
-  const { baseline, baselineOffset, opposingScaleType, position, scaleField, scaleName, scaleType, usermeta } =
-    options;
+  const { baseline, baselineOffset, opposingScaleType, position, scaleField, scaleName, scaleType, usermeta } = options;
 
   // only add reference lines to linear or time scales
   if (scaleTypeSupportsReferenceLines(scaleType)) {

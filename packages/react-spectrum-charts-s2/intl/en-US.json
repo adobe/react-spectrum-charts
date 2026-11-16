@@ -1,0 +1,15 @@
+{
+  "actionBar.label": "Action bar",
+  "actionBar.dragHandle": "Drag to reposition action bar. Use arrow keys to move.",
+  "actionBar.moreActions": "More actions",
+  "chart.emptyState": "No data found",
+  "chart.loading": "Loading",
+  "navigation.axisDescription": "{axisName} axis. {count, plural, one {Contains # tick value.} other {Contains # tick values.}} Use the left and right arrow keys to browse.",
+  "navigation.barDescription": "{metricLabel} by {dimension} chart. {count, plural, one {# bar.} other {# bars.}}",
+  "navigation.barDescriptionWithoutCount": "{metricLabel} by {dimension} chart.",
+  "navigation.colorLabel": "Color",
+  "navigation.enter": "Enter navigation area",
+  "navigation.exit": "End of data structure.",
+  "navigation.region": "Accessible chart navigation",
+  "navigation.stackedBarDescription": "{metricLabel} by {dimension} chart, grouped by {color}. {count, plural, one {# group} other {# groups}}."
+}

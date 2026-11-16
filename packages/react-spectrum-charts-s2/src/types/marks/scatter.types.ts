@@ -14,7 +14,7 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { ScatterOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartPopoverElement, ChartInspectElement } from '../dialogs/index.js';
-import { Children } from '../util.types.js';
+import { Children, ContextMenuCallback, MarkCallback } from '../util.types.js';
 import { ScatterAnnotationElement } from './supplemental/scatterAnnotation.types.js';
 import { ScatterPathElement } from './supplemental/scatterPath.types.js';
 import { TrendlineElement } from './supplemental/trendline.types.js';
@@ -29,9 +29,20 @@ type ScatterChildElement =
 export interface ScatterProps
   extends Omit<
     ScatterOptions,
-    'chartPopovers' | 'chartInspects' | 'markType' | 'scatterAnnotations' | 'scatterPaths' | 'trendlines'
+    | 'chartPopovers'
+    | 'chartInspects'
+    | 'hasOnClick'
+    | 'hasOnContextMenu'
+    | 'markType'
+    | 'scatterAnnotations'
+    | 'scatterPaths'
+    | 'trendlines'
   > {
   children?: Children<ScatterChildElement>;
+  /** Called with the row's data when a point is clicked. */
+  onClick?: MarkCallback;
+  /** Called with the event and the row's data when a point is right-clicked. Use it to show a custom context menu. */
+  onContextMenu?: ContextMenuCallback;
 }
 
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;

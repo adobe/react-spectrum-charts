@@ -21,7 +21,12 @@ import {
   getEndDimensionExtentProductionRule,
   getStartDimensionExtentProductionRule,
 } from '../trendline/trendlineExtentUtils.js';
-import { ColorFacet, TrendlineAnnotationOptions, TrendlineAnnotationSpecOptions, TrendlineSpecOptions } from '../types/index.js';
+import {
+  ColorFacet,
+  TrendlineAnnotationOptions,
+  TrendlineAnnotationSpecOptions,
+  TrendlineSpecOptions,
+} from '../types/index.js';
 
 /**
  * Applies all trendline annotation defaults
@@ -121,6 +126,8 @@ const getTrendlineAnnotationPoints = (annotationOptions: TrendlineAnnotationSpec
       enter: {
         opacity: { value: 0 },
         size: { value: Math.pow(trendlineWidth, 2) },
+      },
+      update: {
         x: getTrendlineAnnotationPointX(annotationOptions),
         y: getTrendlineAnnotationPointY(annotationOptions),
       },
@@ -195,7 +202,7 @@ export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSp
     zindex: 1, // this will draw the text in front of the badge
     interactive: false,
     encode: {
-      enter: {
+      update: {
         text: { signal: `${textPrefix}format(datum.datum.${TRENDLINE_VALUE}, '${numberFormat}')` },
         fill,
       },
@@ -256,6 +263,8 @@ export const getTrendlineAnnotationBadgeMark = ({
       encode: {
         enter: {
           cornerRadius: { value: 2 },
+        },
+        update: {
           fill: getColorProductionRule(color, colorScheme),
           opacity: { field: 'opacity' },
           x: { signal: 'datum.bounds.x1 - 3' },

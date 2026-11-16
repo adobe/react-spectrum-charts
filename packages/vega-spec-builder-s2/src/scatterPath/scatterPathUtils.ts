@@ -23,7 +23,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { getXProductionRule } from '../marks/markUtils.js';
+import { getSeriesFacet, getXProductionRule } from '../marks/markUtils.js';
 import { addFieldToFacetScaleDomain } from '../scale/scaleSpecBuilder.js';
 import { getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils.js';
 import { LineWidthFacet, ScatterPathOptions, ScatterPathSpecOptions, ScatterSpecOptions } from '../types/index.js';
@@ -99,13 +99,7 @@ export const getScatterPathMarks = (scatterOptions: ScatterSpecOptions): GroupMa
     marks.push({
       name: `${name}_group`,
       type: 'group',
-      from: {
-        facet: {
-          name: `${name}_facet`,
-          data: FILTERED_TABLE,
-          groupby: groupBy,
-        },
-      },
+      ...getSeriesFacet(`${name}_facet`, FILTERED_TABLE, groupBy),
       marks: [getScatterPathTrailMark(path)],
     });
   }
@@ -133,9 +127,9 @@ export const getScatterPathTrailMark = ({
           value: getS2ColorValue(color, colorScheme),
         },
         fillOpacity: { value: opacity },
-        size: getPathWidth(pathWidth),
       },
       update: {
+        size: getPathWidth(pathWidth),
         opacity: getOpacity(),
         x: getXProductionRule(dimensionScaleType, dimension),
         y: { scale: 'yLinear', field: metric },

@@ -13,6 +13,7 @@ import { GroupMark, Mark, RectEncodeEntry, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR, FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
+import { getRowKeyField } from '../data/rowKeyUtils.js';
 import { getBarMarkDataSource } from '../marks/drawInAnimationUtils.js';
 import { isInteractive } from '../marks/markUtils.js';
 import { BarSpecOptions } from '../types/index.js';
@@ -22,11 +23,10 @@ import {
   getBarBackgroundDrawInUpdateEncodings,
   getBarDimensionHoverArea,
   getBarDrawInUpdateEncodings,
-  getBarEnterEncodings,
   getBarItemSelectionBackdrop,
   getBarItemSelectionRing,
   getBarUpdateEncodings,
-  getBaseBarEnterEncodings,
+  getBaseBarUpdateEncodings,
   getDodgedDimensionEncodings,
   getDodgedGroupMark,
   getOrientationProperties,
@@ -116,13 +116,12 @@ export const getStackedBackgroundBar = (options: BarSpecOptions): RectMark => {
     description: `${name}_background`,
     type: 'rect',
     from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBaseDataSourceName(options) },
+    key: getRowKeyField(options),
     interactive: false,
     encode: {
-      enter: {
-        ...getBaseBarEnterEncodings(options),
-        fill: { signal: BACKGROUND_COLOR },
-      },
       update: {
+        ...getBaseBarUpdateEncodings(options),
+        fill: { signal: BACKGROUND_COLOR },
         ...getStackedDimensionEncodings(options),
         ...getBarBackgroundDrawInUpdateEncodings(options),
       },
@@ -137,13 +136,11 @@ export const getStackedBar = (options: BarSpecOptions): RectMark => {
     description: name,
     type: 'rect',
     from: { data: isDodgedAndStacked(options) ? `${name}_facet` : getBarDataSourceName(options) },
+    key: getRowKeyField(options),
     interactive: isInteractive(options),
     encode: {
-      enter: {
-        ...getBaseBarEnterEncodings(options),
-        ...getBarEnterEncodings(options),
-      },
       update: {
+        ...getBaseBarUpdateEncodings(options),
         ...getStackedDimensionEncodings(options),
         ...getBarDrawInUpdateEncodings(options),
         ...getBarUpdateEncodings(options),

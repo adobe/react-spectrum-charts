@@ -20,9 +20,9 @@ describe('Line', () => {
     expect(await screen.findByText('Users')).toBeInTheDocument();
     expect(await screen.findByText('Nov')).toBeInTheDocument();
     const graphicsObjects = await screen.findAllByRole('graphics-object');
-    expect(graphicsObjects.length).toEqual(3);
-    const lineGroup = graphicsObjects[1];
-    const lines = await within(lineGroup).findAllByRole('graphics-symbol');
+    const lineGroup = graphicsObjects.find((object) => object.classList.contains('line0_group'));
+    expect(lineGroup).toBeDefined();
+    const lines = await within(lineGroup as HTMLElement).findAllByRole('graphics-symbol');
     expect(lines.length).toEqual(4);
     expect(lines[0]).toBeInTheDocument();
   });

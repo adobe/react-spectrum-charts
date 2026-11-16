@@ -93,7 +93,7 @@ describe('getTrendlineMarks()', () => {
 describe('getTrendlineRuleMark()', () => {
   test('should use series color if static color is not provided', () => {
     const mark = getTrendlineRuleMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'median' });
-    expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
+    expect(mark.encode?.update?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
   });
   test('should use static color if provided', () => {
     const mark = getTrendlineRuleMark(defaultLineOptions, {
@@ -101,7 +101,7 @@ describe('getTrendlineRuleMark()', () => {
       trendlineColor: { value: 'gray-500' },
       method: 'median',
     });
-    expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
+    expect(mark.encode?.update?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
   });
   test('should use round stroke caps so zero-length dotted dashes render', () => {
     const mark = getTrendlineRuleMark(defaultLineOptions, {
@@ -196,21 +196,21 @@ describe('getTrendlineLineMark()', () => {
     ).toEqual({ field: DEFAULT_TIME_DIMENSION, scale: 'xTime' });
     expect(
       getTrendlineLineMark(
-        { ...defaultLineOptions, scaleType: 'linear', dimension: 'count' },
+        { ...defaultLineOptions, scaleType: 'linear' as const, dimension: 'count' },
         { ...defaultTrendlineOptions, dimensionScaleType: 'linear', trendlineDimension: 'count' }
       ).encode?.update?.x
     ).toEqual({ field: 'count', scale: 'xLinear' });
   });
   test('should use series color if static color is not provided', () => {
     const mark = getTrendlineLineMark(defaultLineOptions, defaultTrendlineOptions);
-    expect(mark.encode?.enter?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
+    expect(mark.encode?.update?.stroke).toEqual({ field: 'series', scale: COLOR_SCALE });
   });
   test('should use static color if provided', () => {
     const mark = getTrendlineLineMark(defaultLineOptions, {
       ...defaultTrendlineOptions,
       trendlineColor: { value: 'gray-500' },
     });
-    expect(mark.encode?.enter?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
+    expect(mark.encode?.update?.stroke).toEqual({ value: spectrum2Colors.light['gray-500'] });
   });
   test('should use round stroke caps so zero-length dotted dashes render', () => {
     const mark = getTrendlineLineMark(defaultLineOptions, { ...defaultTrendlineOptions, lineType: 'dotted' });

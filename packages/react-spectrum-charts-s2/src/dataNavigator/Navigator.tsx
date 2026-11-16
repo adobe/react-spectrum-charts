@@ -15,6 +15,7 @@ import { View } from 'vega';
 
 import { Datum, MarkBounds, Orientation, SimpleData } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { useChartLocale } from '../intl/index.js';
 import { AxisRegionOptions, NavigableChartType } from './buildChartStructure.js';
 import { attachDataNavigator } from './dataNavigatorAdapter.js';
 
@@ -31,8 +32,6 @@ export interface NavigatorProps {
   type?: 'dodged' | 'stacked';
   /** Per-datum color override field used in accessible bar labels. */
   colorOverride?: string;
-  /** Locale used for accessible color names. */
-  locale?: string;
   /** Primary metric / y-axis field. */
   metric?: string;
   /** The stack sort field. When set on a stacked bar, determines which segment is reached first, mirroring Vega's own stack sort. */
@@ -76,7 +75,6 @@ export const Navigator = ({
   color,
   type,
   colorOverride,
-  locale,
   metric,
   order,
   orientation,
@@ -96,6 +94,7 @@ export const Navigator = ({
   onNodeClick,
   hasChartPopover,
 }: NavigatorProps): null => {
+  const locale = useChartLocale();
   useEffect(() => {
     const container = containerRef.current;
     if (!container || data.length === 0) {

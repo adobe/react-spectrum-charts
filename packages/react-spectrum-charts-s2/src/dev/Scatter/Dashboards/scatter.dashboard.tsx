@@ -403,6 +403,32 @@ const baseScatterVariations: Variation[] = [
     ),
   },
   {
+    id: 'outline-auto',
+    title: 'Auto outline',
+    description: 'Pale yellow points get a gray-1000/42 outline because they are under 3:1 against the background.',
+    dataset: 'standard',
+    coverage: ['outline=auto'],
+    render: () => <ScatterVariationChart scatterProps={{ color: { value: 'yellow-400' }, size: { value: 'L' } }} />,
+  },
+  {
+    id: 'outline-always',
+    title: 'Always outline',
+    description: 'Every series-colored point is outlined, whatever its contrast.',
+    dataset: 'standard',
+    coverage: ['outline=always'],
+    render: () => <ScatterVariationChart scatterProps={{ outline: 'always', size: { value: 'L' } }} />,
+  },
+  {
+    id: 'outline-never',
+    title: 'No outline',
+    description: 'Pale yellow points without an outline, for comparison with the auto outline.',
+    dataset: 'standard',
+    coverage: ['outline=never'],
+    render: () => (
+      <ScatterVariationChart scatterProps={{ color: { value: 'yellow-400' }, outline: 'never', size: { value: 'L' } }} />
+    ),
+  },
+  {
     id: 'stroke-key',
     title: 'Stroke by field',
     description: 'Gray points outlined in a color per segment.',
@@ -635,6 +661,41 @@ const interactionVariations: Variation[] = [
           <ScatterVariationChart>
             <ChartPopover onOpenChange={(isOpen) => log(`Popover open: ${isOpen}`)}>{popoverContent}</ChartPopover>
           </ScatterVariationChart>
+        )}
+      />
+    ),
+  },
+  {
+    id: 'on-click',
+    title: 'onClick',
+    description: 'Click near a point; the clicked datum is shown below the chart.',
+    dataset: 'standard',
+    coverage: ['onClick'],
+    render: () => (
+      <CallbackVariation
+        render={(log) => (
+          <ScatterVariationChart scatterProps={{ onClick: (datum) => log(`Clicked ${formatDatum(datum)}`) }} />
+        )}
+      />
+    ),
+  },
+  {
+    id: 'on-context-menu',
+    title: 'onContextMenu',
+    description: 'Right-click near a point; the datum is shown below the chart.',
+    dataset: 'standard',
+    coverage: ['onContextMenu'],
+    render: () => (
+      <CallbackVariation
+        render={(log) => (
+          <ScatterVariationChart
+            scatterProps={{
+              onContextMenu: (event, datum) => {
+                event.preventDefault();
+                log(`Context menu ${formatDatum(datum)}`);
+              },
+            }}
+          />
         )}
       />
     ),
@@ -1553,7 +1614,7 @@ export const ScatterDashboard = (): ReactElement => (
     initialFilter="all"
     initialViewMode="axes"
     sizePresets={scatterSizePresets}
-    animationControls={['hover']}
+    animationControls={['hover', 'drawIn']}
     viewModes={scatterViewModes}
   />
 );
@@ -1570,7 +1631,10 @@ const scatterCoverage: PropCoverage<ScatterProps> = {
   lineWidth: ['defaults', 'line-width-static', 'line-width-key', 'chart-line-widths'],
   metric: ['defaults', 'custom-keys'],
   name: ['defaults', 'named-interactive'],
+  onClick: ['on-click'],
+  onContextMenu: ['on-context-menu'],
   opacity: ['defaults', 'opacity-static', 'opacity-key', 'chart-opacities'],
+  outline: ['defaults', 'outline-auto', 'outline-always', 'outline-never'],
   size: ['defaults', 'size-key', 'size-static', 'size-pixels', 'chart-symbol-sizes'],
   stroke: ['stroke-static', 'stroke-key'],
 };

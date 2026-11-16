@@ -34,7 +34,7 @@ import {
   getBarDrawInData,
   getBarDrawInMetricExpr,
   getBarDrawInSettleProgressExpr,
-  getBarDrawInStackFields,
+  getBarStackTotalFields,
   getBarMarkDataSource,
   getCubicBezierExpr,
   getDrawInLabelFadeExpr,
@@ -264,9 +264,9 @@ describe('addDrawInDoneSignal()', () => {
   });
 });
 
-describe('getBarDrawInStackFields()', () => {
+describe('getBarStackTotalFields()', () => {
   test('prefixes the stack total fields with the bar name', () => {
-    expect(getBarDrawInStackFields('bar0')).toStrictEqual(['bar0_drawInStackMax', 'bar0_drawInStackMin']);
+    expect(getBarStackTotalFields('bar0')).toStrictEqual(['bar0_stackMax', 'bar0_stackMin']);
   });
 });
 
@@ -279,7 +279,7 @@ describe('getBarDrawInMetricExpr()', () => {
 
   test('fills stacked segments bottom to top', () => {
     const expr = getBarDrawInMetricExpr('bar0', 'value', true);
-    const stack = { bar0_drawInStackMax: 10, bar0_drawInStackMin: 0 };
+    const stack = { bar0_stackMax: 10, bar0_stackMin: 0 };
     const bottom = { ...stack, value0: 0, value1: 4 };
     const top = { ...stack, value0: 4, value1: 10 };
     // reach = 3: bottom segment is partially drawn, top has not started
@@ -292,7 +292,7 @@ describe('getBarDrawInMetricExpr()', () => {
 
   test('fills negative stacked segments toward the stack minimum', () => {
     const expr = getBarDrawInMetricExpr('bar0', 'value', true);
-    const segment = { bar0_drawInStackMax: 0, bar0_drawInStackMin: -10, value0: -4, value1: -10 };
+    const segment = { bar0_stackMax: 0, bar0_stackMin: -10, value0: -4, value1: -10 };
     expect(evalBarDrawInExpr(expr, 0.2, segment)).toBe(-4);
     expect(evalBarDrawInExpr(expr, 0.7, segment)).toBe(-7);
   });
@@ -322,9 +322,9 @@ describe('getBarDrawInSettleProgressExpr()', () => {
 
   test('settles stacked segments when the fill reaches their top', () => {
     const expr = getBarDrawInSettleProgressExpr('bar0', 'value', true);
-    const stack = { bar0_drawInStackMax: 10, bar0_drawInStackMin: -5 };
+    const stack = { bar0_stackMax: 10, bar0_stackMin: -5 };
     expect(evalBarDrawInExpr(expr, 0, { ...stack, value1: 4 })).toBeCloseTo(0.4);
     expect(evalBarDrawInExpr(expr, 0, { ...stack, value1: -5 })).toBe(1);
-    expect(evalBarDrawInExpr(expr, 0, { bar0_drawInStackMax: 0, bar0_drawInStackMin: 0, value1: 0 })).toBe(1);
+    expect(evalBarDrawInExpr(expr, 0, { bar0_stackMax: 0, bar0_stackMin: 0, value1: 0 })).toBe(1);
   });
 });

@@ -13,19 +13,19 @@ import { GroupMark, RectMark } from 'vega';
 
 import { BACKGROUND_COLOR } from '@spectrum-charts/core-s2/constants';
 
+import { getRowKeyField } from '../data/rowKeyUtils.js';
 import { isInteractive } from '../marks/markUtils.js';
 import { BarSpecOptions } from '../types/index.js';
-import { getBarFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils.js';
 import { getAnnotationMarks } from './barAnnotationUtils.js';
+import { getBarFocusRing, getDodgedGroupFocusRing } from './barFocusRingUtils.js';
 import {
-  getBarDimensionHoverArea,
   getBarBackgroundDrawInUpdateEncodings,
+  getBarDimensionHoverArea,
   getBarDrawInUpdateEncodings,
-  getBarEnterEncodings,
   getBarItemSelectionBackdrop,
   getBarItemSelectionRing,
   getBarUpdateEncodings,
-  getBaseBarEnterEncodings,
+  getBaseBarUpdateEncodings,
   getDodgedDimensionEncodings,
   getDodgedGroupMark,
   shouldShowItemSelectionRing,
@@ -49,13 +49,12 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
           name: `${name}_background`,
           from: { data: `${name}_facet` },
           type: 'rect',
+          key: getRowKeyField(options),
           interactive: false,
           encode: {
-            enter: {
-              ...getBaseBarEnterEncodings(options),
-              fill: { signal: BACKGROUND_COLOR },
-            },
             update: {
+              ...getBaseBarUpdateEncodings(options),
+              fill: { signal: BACKGROUND_COLOR },
               ...getDodgedDimensionEncodings(options),
               ...getBarBackgroundDrawInUpdateEncodings(options),
             },
@@ -66,13 +65,11 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
           name,
           from: { data: `${name}_facet` },
           type: 'rect',
+          key: getRowKeyField(options),
           interactive: isInteractive(options),
           encode: {
-            enter: {
-              ...getBaseBarEnterEncodings(options),
-              ...getBarEnterEncodings(options),
-            },
             update: {
+              ...getBaseBarUpdateEncodings(options),
               ...getDodgedDimensionEncodings(options),
               ...getBarDrawInUpdateEncodings(options),
               ...getBarUpdateEncodings(options),
@@ -81,9 +78,7 @@ export const getDodgedMarks = (options: BarSpecOptions): (GroupMark | RectMark)[
         },
         ...getAnnotationMarks(options, `${name}_facet`, `${name}_position`, `${name}_dodgeGroup`),
         // visible outline drawn on top of the bars so it is never occluded by adjacent marks
-        ...(showItemSelectionRing
-          ? [getBarItemSelectionRing(options, `${name}_facet`, ringDimensionEncodings)]
-          : []),
+        ...(showItemSelectionRing ? [getBarItemSelectionRing(options, `${name}_facet`, ringDimensionEncodings)] : []),
         // focus ring for keyboard navigation (experimental); inside the group so it can read the bar mark bounds
         ...(options.accessibleNavigation ? [getBarFocusRing(options)] : []),
       ],

@@ -9,6 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { MARK_ID } from '@spectrum-charts/core-s2/constants';
+
+import { getRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { BulletOptions, ScSpec } from '../types/index.js';
 import { addBullet, addData, addScales, addSignals } from './bulletSpecBuilder.js';
 import { sampleOptionsColumn, sampleOptionsRow, sampleOptionsWithInspect } from './bulletTestUtils.js';
@@ -223,6 +226,9 @@ describe('getBulletData', () => {
   test('Should return the correct data object in flexible scale mode', () => {
     const options = { ...sampleOptionsColumn, scaleType: 'flexible' as 'normal' | 'flexible' | 'fixed' };
     const data = addData([], options);
-    expect(data[0].transform).toHaveLength(2);
+    expect(data[0].transform).toHaveLength(4);
+    expect(data[0].transform?.slice(2)).toStrictEqual(
+      getRowKeyTransforms({ name: 'bullet0', idKey: MARK_ID, fields: ['graphLabel'] })
+    );
   });
 });

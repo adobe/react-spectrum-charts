@@ -27,11 +27,6 @@ jest.mock('./useChartInspects', () => ({
   default: jest.fn(() => []),
 }));
 
-jest.mock('./useLegend', () => ({
-  __esModule: true,
-  default: jest.fn(() => ({ descriptions: undefined })),
-}));
-
 const mockUseChartContext = jest.mocked(useChartContext);
 const mockUseChartInspects = jest.mocked(useChartInspects);
 
@@ -79,12 +74,12 @@ function makeContext(
 }
 
 function getFormatTooltip() {
-  const { result } = renderHook(() => useChartInspectInteractions(baseProps, []));
+  const { result } = renderHook(() => useChartInspectInteractions(baseProps, [], undefined));
   return result.current.inspectOptions.formatTooltip;
 }
 
 const callFormatTooltip = (value: Record<string, unknown>): string | undefined =>
-  getFormatTooltip()?.(value, (formattedValue) => String(formattedValue), 0, '');
+  getFormatTooltip()?.(value, String, 0, '');
 
 describe('useChartInspectInteractions - controlledHoveredIdSignal', () => {
   beforeEach(() => {

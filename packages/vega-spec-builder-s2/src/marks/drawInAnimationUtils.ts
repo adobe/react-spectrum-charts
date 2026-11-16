@@ -247,13 +247,13 @@ export const applyDrawInReveal = (
 };
 
 /**
- * Gets the field names a bar's draw-in reads for the totals of the positive and negative sides of each stack.
+ * Gets the field names for the totals of the positive and negative sides of each bar stack.
  * @param name - bar name
  * @returns [stackMaxField, stackMinField]
  */
-export const getBarDrawInStackFields = (name: string): [string, string] => [
-  `${name}_drawInStackMax`,
-  `${name}_drawInStackMin`,
+export const getBarStackTotalFields = (name: string): [string, string] => [
+  `${name}_stackMax`,
+  `${name}_stackMin`,
 ];
 
 /**
@@ -265,7 +265,7 @@ export const getBarDrawInStackFields = (name: string): [string, string] => [
  */
 export const getBarDrawInMetricExpr = (name: string, metric: string, stacked: boolean): string => {
   if (!stacked) return `datum.${metric} * ${DRAW_IN_ANIM_T_EASED}`;
-  const [stackMax, stackMin] = getBarDrawInStackFields(name);
+  const [stackMax, stackMin] = getBarStackTotalFields(name);
   const v0 = `datum.${metric}0`;
   const v1 = `datum.${metric}1`;
   // the stack's top grows toward its total; each segment shows only the part of that reach inside its own range
@@ -325,7 +325,7 @@ export const getBarDrawInSettleProgressExpr = (
   datum = 'datum'
 ): string => {
   if (!stacked) return '1';
-  const [stackMax, stackMin] = getBarDrawInStackFields(name);
+  const [stackMax, stackMin] = getBarStackTotalFields(name);
   const v1 = `${datum}.${metric}1`;
   const total = `(${v1} > 0 ? ${datum}.${stackMax} : ${datum}.${stackMin})`;
   return `(${total} ? ${v1} / ${total} : 1)`;

@@ -83,7 +83,7 @@ describe('SegmentLabel interactions', () => {
     ].flatMap((group) => group.marks ?? []);
     expect(marks).toHaveLength(7);
     marks.forEach((mark) => {
-      expect(mark.encode?.enter).toHaveProperty('tooltip', getArcMark(options).encode?.enter?.tooltip);
+      expect(mark.encode?.update).toHaveProperty('tooltip', getArcMark(options).encode?.update?.tooltip);
     });
   });
 
@@ -93,7 +93,7 @@ describe('SegmentLabel interactions', () => {
       ...getSegmentLabelMarks({ ...options, segmentLabels: [{ value: true }] }),
       ...getRichSegmentLabelMarks(options),
     ].flatMap((group) => group.marks ?? []);
-    marks.forEach((mark) => expect(mark.encode?.enter).toHaveProperty('cursor', { value: 'pointer' }));
+    marks.forEach((mark) => expect(mark.encode?.update).toHaveProperty('cursor', { value: 'pointer' }));
   });
 });
 
@@ -312,8 +312,14 @@ describe('getSegmentLabelSignals()', () => {
   test('should resolve name/value font sizes from the size tier', () => {
     const signals = getSegmentLabelSignals(defaultDonutOptionsWithSegmentLabel);
     expect(signals).toEqual([
-      { name: 'testName_segmentLabelNameFontSize', update: `[${DONUT_DIRECT_LABEL_NAME_FONT_SIZES.join(', ')}][testName_sizeTier]` },
-      { name: 'testName_segmentLabelValueFontSize', update: `[${DONUT_DIRECT_LABEL_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]` },
+      {
+        name: 'testName_segmentLabelNameFontSize',
+        update: `[${DONUT_DIRECT_LABEL_NAME_FONT_SIZES.join(', ')}][testName_sizeTier]`,
+      },
+      {
+        name: 'testName_segmentLabelValueFontSize',
+        update: `[${DONUT_DIRECT_LABEL_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]`,
+      },
     ]);
   });
 });
@@ -321,9 +327,18 @@ describe('getSegmentLabelSignals()', () => {
 describe('rich SegmentLabel', () => {
   test('should create font size signals for each rich label row', () => {
     expect(getRichSegmentLabelSignals(richDonutOptions)).toEqual([
-      { name: 'testName_richSegmentLabelNameFontSize', update: `[${DONUT_ADVANCED_LABEL_NAME_FONT_SIZES.join(', ')}][testName_sizeTier]` },
-      { name: 'testName_richSegmentLabelValueFontSize', update: `[${DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]` },
-      { name: 'testName_richSegmentLabelDetailFontSize', update: `[${DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES.join(', ')}][testName_sizeTier]` },
+      {
+        name: 'testName_richSegmentLabelNameFontSize',
+        update: `[${DONUT_ADVANCED_LABEL_NAME_FONT_SIZES.join(', ')}][testName_sizeTier]`,
+      },
+      {
+        name: 'testName_richSegmentLabelValueFontSize',
+        update: `[${DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]`,
+      },
+      {
+        name: 'testName_richSegmentLabelDetailFontSize',
+        update: `[${DONUT_ADVANCED_LABEL_DETAIL_FONT_SIZES.join(', ')}][testName_sizeTier]`,
+      },
     ]);
   });
 
@@ -396,11 +411,11 @@ describe('rich SegmentLabel', () => {
       'signal',
       expect.stringContaining("cos(datum['testName_arcTheta'])")
     );
-    expect(detail.encode?.enter?.text).toEqual([
+    expect(detail.encode?.update?.text).toEqual([
       { test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum']", value: '' },
       { test: "isNumber(datum['testMetric'])", signal: "format(datum['testMetric'], ',')" },
     ]);
-    expect(suffix.encode?.enter?.text).toEqual([
+    expect(suffix.encode?.update?.text).toEqual([
       { test: "length(data('filteredTable')) === 0 || !data('testName_sumData')[0]['sum']", value: '' },
       {
         signal: `" / " + format(data('testName_sumData')[0]['sum'], ',')`,
@@ -437,7 +452,10 @@ describe('rich SegmentLabel', () => {
       (transform) => 'as' in transform && transform.as === 'testName_richSegmentLabel_collisionBoxes'
     );
     expect(collisionBoxes).toHaveProperty('expr', expect.stringContaining('testName_richSegmentLabelDetailFontSize'));
-    expect(collisionBoxes).not.toHaveProperty('expr', expect.stringContaining('testName_richSegmentLabelValueFontSize'));
+    expect(collisionBoxes).not.toHaveProperty(
+      'expr',
+      expect.stringContaining('testName_richSegmentLabelValueFontSize')
+    );
     expect(candidates?.transform?.map((transform) => ('as' in transform ? transform.as : undefined))).not.toContain(
       'testName_richSegmentLabel_valueWidth'
     );
@@ -470,8 +488,7 @@ describe('label anchor x/y and dx (hemisphere offset)', () => {
       ...defaultDonutOptions,
       segmentLabels: [{ swatch: true }],
     });
-    const expected =
-      "(((datum['testName_arcTheta']) % (2 * PI)) + 2 * PI) % (2 * PI) <= PI ? 'right' : 'left'";
+    const expected = "(((datum['testName_arcTheta']) % (2 * PI)) + 2 * PI) % (2 * PI) <= PI ? 'right' : 'left'";
 
     expect(directData[0]?.transform?.[1]).toHaveProperty('expr', expected);
     expect(richData[0]?.transform?.[1]).toHaveProperty('expr', expected);

@@ -27,18 +27,12 @@ import {
   HOVER_TARGET_DATA,
   HOVER_TARGETS,
   ANIMATION_TIMER,
-  FADE_FACTOR,
-  S2_EASE_IN_OUT,
   SERIES_ID,
   TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
 import { hasSignalByName } from '../signal/signalSpecBuilder.js';
 import { addAnimationTimerSignal } from './animationTimerUtils.js';
-import { getCubicBezierExpr } from './drawInAnimationUtils.js';
-
-/** hoverFractionData field holding each item's animated deemphasis opacity. */
-export const HOVER_DEEMPHASIS_OPACITY = 'deemphasisOpacity';
 
 /** One hover condition. expr must evaluate to 1 | 0 | null. */
 export interface HoverMatchRule {
@@ -135,35 +129,21 @@ const getOnTriggerEntry = (name: string, i: number): OnTrigger => {
 };
 
 /**
- * Calculates the fraction of the animation for each hoverable item, easing quadratically in and out of the transition.
+ * Calculates the eased fraction of the animation for each hoverable item.
  * @param name - the name of the mark
  * @returns SourceData - the source data for the hover fraction data
  */
-export const getHoverFractionData = (name: string): SourceData => {
-  const easedProgress = getCubicBezierExpr(S2_EASE_IN_OUT, 'datum.progress');
-
-  return {
-    name: `${name}_${HOVER_FRACTION_DATA}`,
-    source: `${name}_${HOVER_ANIM_STATE_DATA}`,
-    transform: [
-      {
-        type: 'formula',
-        as: 'progress',
-        expr: `datum.target === datum.startValue ? 1 : clamp((${HOVER_ACTIVE_TIMER} - datum.startTime) / (${ANIMATION_HOVER_SPEED} * abs(datum.target - datum.startValue)), 0, 1)`,
-      },
-      {
-        type: 'formula',
-        as: 'fraction',
-        expr: `lerp([datum.startValue, datum.target], ${easedProgress})`,
-      },
-      {
-        type: 'formula',
-        as: HOVER_DEEMPHASIS_OPACITY,
-        expr: `${FADE_FACTOR} + (1 - ${FADE_FACTOR}) * ${getDeemphasisRamp('datum.fraction')}`,
-      },
-    ],
-  };
-};
+export const getHoverFractionData = (name: string): SourceData => ({
+  name: `${name}_${HOVER_FRACTION_DATA}`,
+  source: `${name}_${HOVER_ANIM_STATE_DATA}`,
+  transform: [
+    {
+      type: 'formula',
+      as: 'fraction',
+      expr: `hoverAnimFraction(datum.startValue, datum.target, datum.startTime, ${HOVER_ACTIVE_TIMER})`,
+    },
+  ],
+});
 
 /**
  * Aggregates a mark's `hoverFractionData` up to one row per series (max fraction) for legend use.
@@ -237,13 +217,13 @@ export const getHoverFractionSignal = (name: string, keyField: string = SERIES_I
 };
 
 /**
- * Returns a Vega expression for `datum`'s animated deemphasis opacity, computed once per item in hoverFractionData.
+ * Returns a Vega expression for `datum`'s animated deemphasis opacity.
  * @param name - the name of the mark
  * @param keyField - the identity field used to match the animation row (defaults to SERIES_ID)
  * @returns string
  */
 export const getHoverDeemphasisOpacitySignal = (name: string, keyField: string = SERIES_ID): string =>
-  `hoverFraction(data('${name}_${HOVER_FRACTION_DATA}'), '${keyField}', datum.${keyField}, 1, '${HOVER_DEEMPHASIS_OPACITY}')`;
+  `hoverDeemphasisOpacity(data('${name}_${HOVER_FRACTION_DATA}'), '${keyField}', datum.${keyField})`;
 
 /**
  * Reads emphasis level expression (0 = deemphasized, neutral in the middle, 1 = emphasized)

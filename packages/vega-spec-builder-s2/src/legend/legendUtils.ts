@@ -25,7 +25,6 @@ import {
 
 import {
   COLOR_SCALE,
-  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_LEGEND_COLUMN_PADDING,
@@ -49,6 +48,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
+import { getDeemphasisRamp } from '../marks/hoverAnimationUtils.js';
 import { getPathFromSymbolShape } from '../specUtils.js';
 import {
   ColorValueV6,
@@ -61,7 +61,6 @@ import {
   SecondaryFacetType,
   UserMeta,
 } from '../types/index.js';
-import { getDeemphasisRamp } from '../marks/hoverAnimationUtils.js';
 
 export interface Facet {
   facetType: FacetType | SecondaryFacetType;
@@ -150,29 +149,23 @@ const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | un
 };
 
 const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
-  const { highlight, highlightedSeries, name, hasMouseInteraction, descriptions, chartPopovers } = options;
-  if (highlight || highlightedSeries || descriptions || chartPopovers?.length || userMeta.interactiveMarks?.length) {
+  const { highlight, name, hasMouseInteraction, descriptions, chartPopovers } = options;
+  const opacity = getLegendOpacity(options, userMeta);
+  const opacityEncodings: LegendEncode = {
+    labels: { update: { opacity } },
+    symbols: { update: { opacity } },
+  };
+  if (highlight || descriptions || chartPopovers?.length || userMeta.interactiveMarks?.length) {
     return {
       entries: {
         name: `${name}_legendEntry`,
         interactive: true,
-        enter: {
-          tooltip: getLegendDescriptionEncoding(descriptions, name), // only add tooltip if descriptions exist
-        },
         update: {
           fill: { value: 'transparent' }, // need something here to trigger the tooltip
+          tooltip: getLegendDescriptionEncoding(descriptions, name), // only add tooltip if descriptions exist
         },
       },
-      labels: {
-        update: {
-          opacity: getLegendOpacity(options, userMeta),
-        },
-      },
-      symbols: {
-        update: {
-          opacity: getLegendOpacity(options, userMeta),
-        },
-      },
+      ...opacityEncodings,
     };
   } else if (hasMouseInteraction) {
     return {
@@ -183,13 +176,14 @@ const getHoverEncodings = (options: LegendSpecOptions, userMeta: UserMeta): Lege
           fill: { value: 'transparent' },
         },
       },
+      ...opacityEncodings,
     };
   }
 
-  return {};
+  return opacityEncodings;
 };
 
-export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> | undefined => {
+export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta): ProductionRule<NumericValueRef> => {
   const rules: ProductionRule<NumericValueRef> = [];
 
   for (const markName of userMeta.animatedMarks || []) {
@@ -214,11 +208,11 @@ export const getLegendOpacity = (options: LegendSpecOptions, userMeta: UserMeta)
 
   // Fall back to old rules if no animated marks are present (not using hover animation system)
   return getOpacityEncoding(options, userMeta);
-}
+};
 
 const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefined, name: string) => {
   if (descriptions?.length) {
-    return { signal: `merge(datum, {'${COMPONENT_NAME}': '${name}'})` };
+    return { signal: `inspectDatum(datum, '${name}')` };
   }
   return undefined;
 };
@@ -229,9 +223,9 @@ const getLegendDescriptionEncoding = (descriptions: LegendDescription[] | undefi
  * @returns opactiy encoding
  */
 export const getOpacityEncoding = (
-  { highlight, highlightedItem, highlightedSeries, keys, chartPopovers, name: legendName }: LegendSpecOptions,
+  { highlight, keys, chartPopovers, name: legendName }: LegendSpecOptions,
   userMeta: UserMeta
-): ProductionRule<NumericValueRef> | undefined => {
+): ProductionRule<NumericValueRef> => {
   const highlightSignalName = keys?.length ? HIGHLIGHTED_GROUP : CONTROLLED_HIGHLIGHTED_SERIES;
   const selectedSignalName = keys?.length ? SELECTED_GROUP : SELECTED_SERIES;
 
@@ -249,18 +243,16 @@ export const getOpacityEncoding = (
       signal: `${legendName}_${HOVERED_SERIES} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
   }
-  if (highlightedItem) {
-    rules.push({
+  rules.push(
+    {
       test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
       signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
-    });
-  }
-  if (highlightedSeries) {
-    rules.push({
+    },
+    {
       test: `isValid(${highlightSignalName})`,
       signal: `${highlightSignalName} === datum.value ? 1 : ${FADE_FACTOR}`,
-    });
-  }
+    }
+  );
   for (const { name: markName } of userMeta.interactiveMarks || []) {
     rules.push({
       test: `isValid(${markName}_${HOVERED_ITEM})`,
@@ -268,23 +260,30 @@ export const getOpacityEncoding = (
     });
   }
 
-  if (rules.length) {
-    return [...rules, DEFAULT_OPACITY_RULE];
-  }
-  return undefined;
+  return [...rules, DEFAULT_OPACITY_RULE];
+};
+
+/**
+ * Gets a Vega expression for a legend symbol's shape, defaulting to the rounded square.
+ * @param shape
+ * @returns vega expression string
+ */
+const getShapeExpression = (shape: BaseValueRef<string> | undefined): string => {
+  if (shape && 'signal' in shape) return shape.signal;
+  const value = shape && 'value' in shape ? shape.value : null;
+  return JSON.stringify(value ?? getPathFromSymbolShape('rounded-square'));
 };
 
 export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions): LegendEncode => {
-  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme, isToggleable, hiddenSeries, keys } = options;
+  const { color, lineType, lineWidth, name, opacity, symbolShape, colorScheme, isToggleable, keys } = options;
   const shapeFacetRef = getSymbolFacetEncoding<string>({
     facets,
     facetType: SYMBOL_SHAPE_SCALE,
     customValue: symbolShape,
     name,
   });
-  const enter: SymbolEncodeEntry = {
+  const facetEncodings: SymbolEncodeEntry = {
     fillOpacity: getSymbolFacetEncoding<number>({ facets, facetType: OPACITY_SCALE, customValue: opacity, name }),
-    shape: shapeFacetRef,
     size: getSymbolFacetEncoding<number>({ facets, facetType: SYMBOL_SIZE_SCALE, name }),
     strokeDash: getSymbolFacetEncoding<number[]>({
       facets,
@@ -304,7 +303,6 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
     value: spectrum2Colors[colorScheme]['categorical-100'],
   };
   // Hidden entries swap shape to the "eye off" icon, colored to match the legend label text (not the series color).
-  const isHidden = isToggleable || hiddenSeries.length > 0;
   const hiddenSeriesTest = keys?.length
     ? `indexof(pluck(data('${FILTERED_TABLE}'), '${name}_${GROUP_ID}'), datum.value) === -1`
     : 'indexof(hiddenSeries, datum.value) !== -1';
@@ -312,14 +310,23 @@ export const getSymbolEncodings = (facets: Facet[], options: LegendSpecOptions):
   const hiddenFillRule = { test: hiddenSeriesTest, value: hiddenIconColor };
   // Transparent, not zero-width: strokeWidth can't be conditional (see note above), and Vega's default 1.5px outline would bold the icon's fine linework.
   const hiddenStrokeRule = { test: hiddenSeriesTest, value: 'transparent' };
-  const hiddenShapeRule = { test: hiddenSeriesTest, value: getPathFromSymbolShape('visibility-off') };
+  const shapeExpression = getShapeExpression(shapeFacetRef);
+  const enter: SymbolEncodeEntry = {};
+  // Vega doesn't re-lay out legend entries after a signal update, so both icons must share bounds.
   const update: SymbolEncodeEntry = {
-    fill: isHidden ? [hiddenFillRule, colorRef] : [colorRef],
-    stroke: isHidden ? [hiddenStrokeRule, colorRef] : [colorRef],
-    shape: isHidden ? [hiddenShapeRule, shapeFacetRef ?? { value: getPathFromSymbolShape('rounded-square') }] : undefined,
+    fill: [hiddenFillRule, colorRef],
+    stroke: [hiddenStrokeRule, colorRef],
+    shape: { signal: `legendSymbolShape(${shapeExpression}, ${hiddenSeriesTest})` },
   };
-  // Remove undefined values
+  // constant facets stay in enter; scale/signal-driven ones must re-run on update
+  for (const [key, ref] of Object.entries(facetEncodings)) {
+    if (ref === undefined) continue;
+    const isConstant =
+      typeof ref === 'object' && !Array.isArray(ref) && Object.keys(ref).length === 1 && 'value' in ref;
+    Object.assign(isConstant ? enter : update, { [key]: ref });
+  }
   const symbols: GuideEncodeEntry<SymbolEncodeEntry> = JSON.parse(JSON.stringify({ enter, update }));
+  if (!Object.keys(enter).length) delete symbols.enter;
   return {
     entries: {
       name: `${name}_legendEntry`,
@@ -373,12 +380,11 @@ const getSymbolFacetEncoding = <T>({
 };
 
 export const getHiddenSeriesColorRule = (
-  { colorScheme, hiddenSeries, isToggleable, keys, name }: LegendSpecOptions,
+  { colorScheme, keys, name }: LegendSpecOptions,
   colorValue: ColorValueV6
 ): ({
   test?: string;
 } & ColorValueRef)[] => {
-  if (!isToggleable && !hiddenSeries.length) return [];
   if (keys?.length) {
     return [
       {

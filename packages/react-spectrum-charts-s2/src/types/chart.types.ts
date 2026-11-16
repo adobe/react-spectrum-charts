@@ -120,7 +120,7 @@ export interface SanitizedSpecProps
 export interface ChartProps extends SharedChartProps {
   /** Value for the chart container's `data-testid` attribute. */
   dataTestId?: string;
-  /** Text to display when the data set is empty and loading is complete. Defaults to `No data found`. */
+  /** Text to display when the data set is empty and loading is complete. Defaults to `No data found`, translated to the chart's `locale`. */
   emptyStateText?: string;
   /** Shows a loading spinner in place of the chart. Defaults to `false`. */
   loading?: boolean;

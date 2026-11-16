@@ -16,7 +16,7 @@ import { RenderModule, View, renderModule } from 'vega';
 import * as vegaEmbed from 'vega-embed';
 
 import { Provider } from '@react-spectrum/s2';
-import { ANIMATION_ACTIVE, DEFAULT_COLOR_SCHEME } from '@spectrum-charts/core-s2/constants';
+import { ANIMATION_ACTIVE, DEFAULT_COLOR_SCHEME, FIRST_MARK_ID, MARK_ID } from '@spectrum-charts/core-s2/constants';
 
 import { render } from './spectrumRender.js';
 
@@ -79,7 +79,9 @@ export const setupChartHarness = () => {
 
   const latestView = (): View => {
     const view = views.at(-1);
-    if (!view) throw new Error('No view rendered');
+    if (!view) {
+      throw new Error('No view rendered');
+    }
     return view;
   };
 
@@ -95,14 +97,20 @@ export const setupChartHarness = () => {
         await sleep(0);
         const view = views.at(-1);
         await view?.runAsync();
-        if (view && isAnimating(view)) await sleep(16);
+        if (view && isAnimating(view)) {
+          await sleep(16);
+        }
       });
       const view = views.at(-1);
       const snapshot = `${views.length}:${renderCount()}`;
       const busy = pendingEmbeds > 0 || (view !== undefined && isAnimating(view));
       stableChecks = snapshot === previous && !busy ? stableChecks + 1 : 0;
-      if (stableChecks === 2) return;
-      if (Date.now() > deadline) throw new Error('Chart did not settle');
+      if (stableChecks === 2) {
+        return;
+      }
+      if (Date.now() > deadline) {
+        throw new Error('Chart did not settle');
+      }
       previous = snapshot;
     }
   };
@@ -129,7 +137,9 @@ export const setupChartHarness = () => {
     const mounted = await mount(initial);
     const mountViews = views.length;
     const mountRenders = renderCount();
-    for (const element of updates) await update(mounted, element);
+    for (const element of updates) {
+      await update(mounted, element);
+    }
     mounted.unmount();
     return { mountViews, mountRenders, views: views.length - mountViews, renders: renderCount() - mountRenders };
   };
@@ -168,13 +178,36 @@ export const setupChartHarness = () => {
   return { views, onVegaViewReady, latestView, renderCount, settle, mount, update, countUpdates, compareUpdateToMount };
 };
 
-// back-references, renderer state and generated ids; vega's sceneToJSON is avoided because its key list drops gradients, cursors and data
-const OMITTED_KEYS = new Set(['mark', 'group', 'source', 'context', 'dirty', '_svg', '_bounds', 'clip_id']);
+// back-references, renderer state and generated ids (MARK_ID counts up across a view's dataflow runs);
+// vega's sceneToJSON is avoided because its key list drops gradients, cursors and data
+const OMITTED_KEYS = new Set([
+  'mark',
+  'group',
+  'source',
+  'context',
+  'dirty',
+  '_svg',
+  '_update',
+  '_bounds',
+  'clip_id',
+  MARK_ID,
+  FIRST_MARK_ID,
+]);
 
 const serialize = (value: unknown, path: Set<object>): unknown => {
-  if (typeof value === 'function' || typeof value === 'symbol') return undefined;
-  if (!value || typeof value !== 'object') return value;
-  if (path.has(value)) throw new Error('Scene graph contains a cycle');
+  if (typeof value === 'function' || typeof value === 'symbol') {
+    return undefined;
+  }
+  // in-place updates can differ from a fresh mount by float rounding error
+  if (typeof value === 'number') {
+    return Number(value.toPrecision(12));
+  }
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+  if (path.has(value)) {
+    throw new Error('Scene graph contains a cycle');
+  }
   path.add(value);
   const result = Array.isArray(value)
     ? value.map((entry) => serialize(entry, path))
@@ -183,11 +216,24 @@ const serialize = (value: unknown, path: Set<object>): unknown => {
           .filter(([key]) => !OMITTED_KEYS.has(key))
           // gradient ids come from a global counter
           .filter(([key]) => !(key === 'id' && 'gradient' in value))
+          // popover group ids default to MARK_ID
+          .filter(([key]) => !key.endsWith('_selectedGroupId'))
           .map(([key, entry]) => [key, serialize(entry, path)])
       );
   path.delete(value);
+  if ('role' in value && AXIS_ITEM_ROLES.has(value.role as string)) {
+    sortByTickValue((result as { items?: unknown[] }).items);
+  }
   return result;
 };
+
+// vega appends ticks that enter on a domain change, so axis item order isn't meaningful
+const AXIS_ITEM_ROLES = new Set(['axis-tick', 'axis-label', 'axis-grid']);
+
+const sortByTickValue = (items: unknown[] | undefined) =>
+  items?.sort((a, b) => getTickValue(a) - getTickValue(b));
+
+const getTickValue = (item: unknown): number => Number((item as { datum?: { value?: unknown } }).datum?.value);
 
 /**
  * Serializes a view's scene graph with back-references and nondeterministic fields removed.

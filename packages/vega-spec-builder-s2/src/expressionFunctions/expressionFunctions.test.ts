@@ -26,8 +26,12 @@ import {
   formatShortNumber,
   formatTimeDurationLabels,
   formatVerticalAxisTimeLabels,
+  hoverAnimFraction,
+  hoverDeemphasisOpacity,
   hoverFraction,
+  inspectDatum,
   isDonutLabelVisible,
+  toPlainInspectDatum,
 } from './expressionFunctions.js';
 
 describe('cubicBezier()', () => {
@@ -440,12 +444,6 @@ describe('hoverFraction()', () => {
     expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.1);
   });
 
-  test('reads the requested field instead of the fraction', () => {
-    const rows = [{ id: 'a', fraction: 0.2, deemphasisOpacity: 0.6 }];
-    expect(hoverFraction(rows, 'id', 'a', 1, 'deemphasisOpacity')).toBe(0.6);
-    expect(hoverFraction(rows, 'id', 'z', 1, 'deemphasisOpacity')).toBe(1);
-  });
-
   test('reads fractions live when rows are modified in place', () => {
     const rows = [{ id: 'a', fraction: 0.2 }];
     expect(hoverFraction(rows, 'id', 'a', 0.5)).toBe(0.2);
@@ -501,5 +499,64 @@ describe('hoverFraction()', () => {
       await view.change('fractions', changeset().insert({ id: 'c', fraction: 0.9 })).runAsync();
       expect(getOpacities(view)).toEqual([0.5, 0.1, 0.9]);
     });
+  });
+});
+
+describe('hoverAnimFraction()', () => {
+  test('returns the target when there is nothing to animate', () => {
+    expect(hoverAnimFraction(0.5, 0.5, 1000, 1000)).toBe(0.5);
+  });
+
+  test('starts exactly at startValue', () => {
+    expect(hoverAnimFraction(1, 0, 1000, 1000)).toBe(1);
+  });
+
+  test('eases between startValue and target', () => {
+    expect(hoverAnimFraction(0, 1, 0, 75)).toBe(cubicBezier(0.45, 0, 0.4, 1, 0.5));
+  });
+
+  test('lands exactly on the target once the distance-scaled duration elapses', () => {
+    expect(hoverAnimFraction(1, 0.3, 1000, 1000 + 150 * 0.7)).toBe(0.3);
+    expect(hoverAnimFraction(0.5, 1, 0, 75)).toBe(1);
+    expect(hoverAnimFraction(0.5, 1, 0, 5000)).toBe(1);
+  });
+});
+
+describe('hoverDeemphasisOpacity()', () => {
+  test('fades to the fade factor when deemphasized and stays opaque from neutral upward', () => {
+    const opacity = (fraction: number) => hoverDeemphasisOpacity([{ id: 'a', fraction }], 'id', 'a');
+    expect(opacity(0)).toBeCloseTo(0.2);
+    expect(opacity(0.25)).toBeCloseTo(0.6);
+    expect(opacity(0.5)).toBe(1);
+    expect(opacity(1)).toBe(1);
+  });
+
+  test('is fully opaque when the item has no animation row', () => {
+    expect(hoverDeemphasisOpacity(undefined, 'id', 'a')).toBe(1);
+    expect(hoverDeemphasisOpacity([{ id: 'a', fraction: 0 }], 'id', 'z')).toBe(1);
+  });
+});
+
+describe('inspectDatum()', () => {
+  test('should return the same object for the same datum and component', () => {
+    const datum = { value: 1 };
+    expect(inspectDatum(datum, 'bar0')).toBe(inspectDatum(datum, 'bar0'));
+    expect(inspectDatum(datum, 'bar0')).not.toBe(inspectDatum(datum, 'line0'));
+    expect(inspectDatum(datum, 'bar0', { metric: 'a' })).not.toBe(inspectDatum(datum, 'bar0', { metric: 'b' }));
+  });
+
+  test('should read the current values of a mutated datum', () => {
+    const datum: Record<string, unknown> = { value: 1 };
+    const value = inspectDatum(datum, 'bar0', { metric: 'value' });
+    datum.value = 2;
+    expect(toPlainInspectDatum(value)).toEqual({ value: 2, rscComponentName: 'bar0', metric: 'value' });
+  });
+});
+
+describe('toPlainInspectDatum()', () => {
+  test('should return plain objects and non-objects unchanged', () => {
+    const plain = { value: 1 };
+    expect(toPlainInspectDatum(plain)).toBe(plain);
+    expect(toPlainInspectDatum('text')).toBe('text');
   });
 });

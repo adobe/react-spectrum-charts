@@ -14,6 +14,7 @@ import { Axis, GroupMark, Mark, TextValueRef } from 'vega';
 
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
+import { getRowKeyField } from '../data/rowKeyUtils.js';
 import { getInspectEncoding } from '../marks/markUtils.js';
 import { getTextNumberFormat } from '../textUtils.js';
 import { BulletSpecOptions } from '../types/index.js';
@@ -98,18 +99,17 @@ export function getBulletMarkRect(bulletOptions: BulletSpecOptions): Mark {
     name: `${bulletOptions.name}Rect`,
     description: `${bulletOptions.name}Rect`,
     type: 'rect',
+    key: getRowKeyField(bulletOptions),
     from: { data: 'bulletGroups' },
     interactive: true,
     encode: {
-      enter: {
+      update: {
         cornerRadiusTopLeft: [{ test: `datum.${bulletOptions.metric} < 0`, value: 3 }],
         cornerRadiusBottomLeft: [{ test: `datum.${bulletOptions.metric} < 0`, value: 3 }],
         cornerRadiusTopRight: [{ test: `datum.${bulletOptions.metric} > 0`, value: 3 }],
         cornerRadiusBottomRight: [{ test: `datum.${bulletOptions.metric} > 0`, value: 3 }],
         fill: fillColor,
         tooltip: getInspectEncoding(bulletOptions.chartInspects, bulletOptions.name),
-      },
-      update: {
         x: { scale: 'xscale', value: 0 },
         x2: { scale: 'xscale', field: `${bulletOptions.metric}` },
         height: { signal: 'bulletHeight' },
@@ -145,9 +145,9 @@ export function getBulletMarkTarget(bulletOptions: BulletSpecOptions): Mark {
       enter: {
         stroke: { value: `${solidColor}` },
         strokeWidth: { value: 2 },
-        tooltip: getInspectEncoding(bulletOptions.chartInspects, bulletOptions.name),
       },
       update: {
+        tooltip: getInspectEncoding(bulletOptions.chartInspects, bulletOptions.name),
         x: { scale: 'xscale', field: `${bulletOptions.target}` },
         y: { signal: bulletMarkTargetEncodeUpdateY },
         y2: { signal: bulletMarkTargetEncodeUpdateY2 },
@@ -169,12 +169,11 @@ export function getBulletMarkLabel(bulletOptions: BulletSpecOptions): Mark {
     from: { data: 'bulletGroups' },
     encode: {
       enter: {
-        text: { signal: `datum.${bulletOptions.dimension}` },
         align: { value: 'left' },
         baseline: { value: 'top' },
         fill: { value: `${barLabelColor}` },
       },
-      update: { x: { value: 0 }, y: { value: 0 } },
+      update: { text: { signal: `datum.${bulletOptions.dimension}` }, x: { value: 0 }, y: { value: 0 } },
     },
   };
 
@@ -206,12 +205,11 @@ export function getBulletMarkValueLabel(bulletOptions: BulletSpecOptions): Mark 
     from: { data: 'bulletGroups' },
     encode: {
       enter: {
-        text: textValue,
         align: { value: 'right' },
         baseline: { value: 'top' },
         fill: { value: solidColor },
       },
-      update: { x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
+      update: { text: textValue, x: { signal: encodeUpdateSignalWidth }, y: { value: 0 } },
     },
   };
 
@@ -237,14 +235,14 @@ export function getBulletMarkTargetValueLabel(bulletOptions: BulletSpecOptions):
     from: { data: 'bulletGroups' },
     encode: {
       enter: {
-        text: {
-          signal: textSignal,
-        },
         align: { value: 'center' },
         baseline: { value: 'top' },
         fill: { value: `${solidColor}` },
       },
       update: {
+        text: {
+          signal: textSignal,
+        },
         x: { scale: 'xscale', field: `${bulletOptions.target}` },
         y: { signal: 'bulletGroupHeight - targetValueLabelHeight + 6' },
       },
@@ -271,14 +269,14 @@ export function getBulletMarkThreshold(bulletOptions: BulletSpecOptions): Mark {
     clip: true,
     encode: {
       enter: {
+        fillOpacity: { value: 0.2 },
+      },
+      update: {
         cornerRadiusTopLeft: [{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 }],
         cornerRadiusBottomLeft: [{ test: `!isDefined(datum.thresholdMin) && domain('xscale')[0] !== 0`, value: 3 }],
         cornerRadiusTopRight: [{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 }],
         cornerRadiusBottomRight: [{ test: `!isDefined(datum.thresholdMax) && domain('xscale')[1] !== 0`, value: 3 }],
         fill: { field: 'fill' },
-        fillOpacity: { value: 0.2 },
-      },
-      update: {
         x: {
           signal: "isDefined(datum.thresholdMin) ? scale('xscale', datum.thresholdMin) : 0",
         },
@@ -336,9 +334,9 @@ export function getBulletHoverArea(bulletOptions: BulletSpecOptions): Mark {
     encode: {
       enter: {
         fill: { value: 'transparent' },
-        tooltip: getInspectEncoding(bulletOptions.chartInspects, bulletOptions.name),
       },
       update: {
+        tooltip: getInspectEncoding(bulletOptions.chartInspects, bulletOptions.name),
         x: { value: 0 },
         x2: { signal: x2Signal },
         height: { signal: signals.height },
@@ -365,12 +363,12 @@ export function getBulletTrack(bulletOptions: BulletSpecOptions): Mark {
     encode: {
       enter: {
         fill: { value: trackColor },
+      },
+      update: {
         cornerRadiusTopRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
         cornerRadiusBottomRight: [{ test: "domain('xscale')[1] !== 0", value: 3 }],
         cornerRadiusTopLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
         cornerRadiusBottomLeft: [{ test: "domain('xscale')[0] !== 0", value: 3 }],
-      },
-      update: {
         x: { value: 0 },
         width: { signal: trackWidth },
         height: { signal: 'bulletHeight' },

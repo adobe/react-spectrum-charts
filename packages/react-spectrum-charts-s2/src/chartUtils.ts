@@ -30,7 +30,6 @@ type ChartPropsWithDefaults =
   | 'colors'
   | 'colorScheme'
   | 'debug'
-  | 'emptyStateText'
   | 'height'
   | 'hiddenSeries'
   | 'idKey'
@@ -53,7 +52,6 @@ const baseDefaults: Required<Pick<ChartProps, ChartPropsWithDefaults>> = {
   colors: 's2Categorical20', // S2-specific default color scheme
   colorScheme: DEFAULT_COLOR_SCHEME,
   debug: false,
-  emptyStateText: 'No data found',
   height: 300,
   hiddenSeries: DEFAULT_HIDDEN_SERIES,
   idKey: MARK_ID,

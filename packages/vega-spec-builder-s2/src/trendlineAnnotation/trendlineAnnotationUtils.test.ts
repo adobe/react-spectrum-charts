@@ -148,14 +148,14 @@ describe('getTrendlineAnnotationTextMark()', () => {
   test('should add the prefix if it is a valid string', () => {
     const prefix = 'Median times';
     const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationOptions, prefix });
-    expect(textMark.encode?.enter?.text).toHaveProperty(
+    expect(textMark.encode?.update?.text).toHaveProperty(
       'signal',
       `'${prefix} ' + format(datum.datum.${TRENDLINE_VALUE}, '')`
     );
   });
   test('should not add the prefix if it is not a valid string', () => {
     const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationOptions, prefix: '' });
-    expect(textMark.encode?.enter?.text).toHaveProperty('signal', `format(datum.datum.${TRENDLINE_VALUE}, '')`);
+    expect(textMark.encode?.update?.text).toHaveProperty('signal', `format(datum.datum.${TRENDLINE_VALUE}, '')`);
   });
 });
 

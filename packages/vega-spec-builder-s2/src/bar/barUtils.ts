@@ -13,6 +13,7 @@ import {
   ArrayValueRef,
   ColorValueRef,
   EncodeEntry,
+  FormulaTransform,
   GroupMark,
   NumericValueRef,
   ProductionRule,
@@ -34,16 +35,17 @@ import {
   SELECTED_GROUP,
   SELECTED_ITEM,
   SERIES_ID,
-  STACK_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { hasInspectWithDimensionAreaTarget } from '../chartInspect/chartInspectUtils.js';
 import { getPopovers } from '../chartPopover/chartPopoverUtils.js';
+import { RowKeyOptions } from '../data/rowKeyUtils.js';
 import {
   getBarDrawInSettleProgressExpr,
   getBarDrawInValueField,
   getBarMarkDataSource,
+  getBarStackTotalFields,
   getDrawInLabelFadeExpr,
 } from '../marks/drawInAnimationUtils.js';
 import { HoverMatchRule, getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
@@ -58,12 +60,23 @@ import {
   isInteractive,
 } from '../marks/markUtils.js';
 import { getBandPadding } from '../scale/scaleSpecBuilder.js';
-import { getLineWidthPixelsFromLineWidth } from '../specUtils.js';
+import { getFacetsFromOptions, getLineWidthPixelsFromLineWidth } from '../specUtils.js';
 import { BarSpecOptions, Orientation } from '../types/index.js';
 import { getTrellisProperties, isTrellised } from './trellisPropertyUtils.js';
 
 /** Per-mark-namespaced field name for the composite per-bar hover-animation identity (see `BarSpecOptions.barIds`). */
 export const getBarAnimIdField = (name: string): string => `${name}_${BAR_ANIM_ID}`;
+
+/**
+ * Gets the options that key each bar by its dimension, trellis and series facets.
+ * @param options
+ * @returns RowKeyOptions
+ */
+export const getBarRowKeyOptions = (options: BarSpecOptions): RowKeyOptions => {
+  const { dimension, idKey, name, trellis } = options;
+  const { facets, secondaryFacets } = getFacetsFromOptions(options);
+  return { name, idKey, fields: [dimension, ...(trellis ? [trellis] : []), ...facets, ...secondaryFacets] };
+};
 
 /**
  * checks to see if the bar is faceted in the stacked and dodged dimensions
@@ -119,7 +132,7 @@ export const getDodgedGroupMark = (options: BarSpecOptions): GroupMark => {
       },
     },
     encode: {
-      enter: {
+      update: {
         [dimensionAxis]: {
           scale: dimensionScaleKey,
           field: dimension,
@@ -163,6 +176,14 @@ export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEnc
 };
 
 /**
+ * Gets the channels for a bar's metric start (baseline side) and end, ordered so positive bars never need Vega's y/y2 swap.
+ * @param orientation
+ * @returns [startKey, endKey]
+ */
+const getMetricStartEndKeys = (orientation: Orientation): [string, string] =>
+  orientation === 'vertical' ? ['y2', 'y'] : ['x', 'x2'];
+
+/**
  * Gets the metric-axis encodings for a bar.
  * @param options
  * @param drawIn - read the animated draw-in value instead of the final metric
@@ -170,11 +191,8 @@ export const getTrellisedDimensionEncodings = (options: BarSpecOptions): RectEnc
  */
 export const getMetricEncodings = (options: BarSpecOptions, drawIn = false): RectEncodeEntry => {
   const { metric, name, type } = options;
-  const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
-    options.orientation,
-    options.metricAxis
-  );
-  const endKey = `${startKey}2`;
+  const { metricScaleKey: scaleKey } = getOrientationProperties(options.orientation, options.metricAxis);
+  const [startKey, endKey] = getMetricStartEndKeys(options.orientation);
 
   if (type === 'stacked' || isDodgedAndStacked(options)) {
     return getStackedMetricEncodings(options, drawIn);
@@ -222,11 +240,8 @@ export const getMetricEncodings = (options: BarSpecOptions, drawIn = false): Rec
  */
 export const getStackedMetricEncodings = (options: BarSpecOptions, drawIn = false): RectEncodeEntry => {
   const { metric, name, orientation } = options;
-  const { metricAxis: startKey, metricScaleKey: scaleKey } = getOrientationProperties(
-    options.orientation,
-    options.metricAxis
-  );
-  const endKey = `${startKey}2`;
+  const { metricScaleKey: scaleKey } = getOrientationProperties(options.orientation, options.metricAxis);
+  const [startKey, endKey] = getMetricStartEndKeys(orientation);
 
   const startValue = `datum.${metric}0`;
   const endField = drawIn ? getBarDrawInValueField(name) : `${metric}1`;
@@ -292,21 +307,51 @@ export const getCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEnt
   return rotateRectClockwiseIfNeeded(rectEncodeEntry, options);
 };
 
-export const getStackedCornerRadiusEncodings = ({
+/**
+ * Gets the data fields holding each stacked segment's top (positive end) and bottom (negative end) corner radius.
+ * @param name
+ * @returns [topField, bottomField]
+ */
+export const getStackedCornerRadiusFields = (name: string): [string, string] => [
+  `${name}_topCornerRadius`,
+  `${name}_bottomCornerRadius`,
+];
+
+/**
+ * Gets the formulas that precompute each stacked segment's corner radii, so encoding them is a field read.
+ * @param options
+ * @returns FormulaTransform[]
+ */
+export const getStackedCornerRadiusTransforms = ({
   name,
   metric,
   hasSquareCorners,
-}: BarSpecOptions): RectEncodeEntry => {
-  const topTestString = `datum.${metric}1 > 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].max_${metric}1 === datum.${metric}1`;
-  const bottomTestString = `datum.${metric}1 < 0 && data('${name}_stacks')[indexof(pluck(data('${name}_stacks'), '${STACK_ID}'), datum.${STACK_ID})].min_${metric}1 === datum.${metric}1`;
+}: BarSpecOptions): FormulaTransform[] => {
+  const [stackMax, stackMin] = getBarStackTotalFields(name);
+  const [topField, bottomField] = getStackedCornerRadiusFields(name);
   // S2 always uses 4px corner radius (or 0 if square corners requested)
   const cornerRadius = hasSquareCorners ? 0 : 4;
+  return [
+    {
+      type: 'formula',
+      as: topField,
+      expr: `datum.${metric}1 > 0 && datum.${stackMax} === datum.${metric}1 ? ${cornerRadius} : 0`,
+    },
+    {
+      type: 'formula',
+      as: bottomField,
+      expr: `datum.${metric}1 < 0 && datum.${stackMin} === datum.${metric}1 ? ${cornerRadius} : 0`,
+    },
+  ];
+};
 
+export const getStackedCornerRadiusEncodings = ({ name }: BarSpecOptions): RectEncodeEntry => {
+  const [topField, bottomField] = getStackedCornerRadiusFields(name);
   return {
-    cornerRadiusTopLeft: [{ test: topTestString, value: cornerRadius }, { value: 0 }],
-    cornerRadiusTopRight: [{ test: topTestString, value: cornerRadius }, { value: 0 }],
-    cornerRadiusBottomLeft: [{ test: bottomTestString, value: cornerRadius }, { value: 0 }],
-    cornerRadiusBottomRight: [{ test: bottomTestString, value: cornerRadius }, { value: 0 }],
+    cornerRadiusTopLeft: { field: topField },
+    cornerRadiusTopRight: { field: topField },
+    cornerRadiusBottomLeft: { field: bottomField },
+    cornerRadiusBottomRight: { field: bottomField },
   };
 };
 
@@ -323,7 +368,7 @@ export const rotateRectClockwiseIfNeeded = (
   };
 };
 
-export const getBaseBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
+export const getBaseBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   ...(options.isDrawInAnimate ? {} : getMetricEncodings(options)),
   ...getCornerRadiusEncodings(options),
 });
@@ -357,13 +402,10 @@ export const getBarFillEncoding = (options: BarSpecOptions): ColorValueRef => {
   return getColorProductionRule(color, colorScheme);
 };
 
-export const getBarEnterEncodings = (options: BarSpecOptions): EncodeEntry => ({
+export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   fill: getBarFillEncoding(options),
   fillOpacity: getOpacityProductionRule(options.opacity),
   tooltip: getInspectEncoding(options.chartInspects, options.name),
-});
-
-export const getBarUpdateEncodings = (options: BarSpecOptions): EncodeEntry => ({
   cursor: getCursor(options.chartPopovers, options.hasOnClick),
   opacity: getBarOpacity(options),
   stroke: getStroke(options),
@@ -496,13 +538,14 @@ const SELECTION_RING_PADDING = SELECTION_RING_GAP + SELECTION_RING_STROKE_WIDTH 
  */
 const getSelectionRingCornerRadiusEncodings = (options: BarSpecOptions): RectEncodeEntry => {
   const barCornerRadius = getCornerRadiusEncodings(options);
-  // every corner from getCornerRadiusEncodings is a conditional array of plain-numeric branches;
-  // widen each branch's value by the gap so the ring's corners stay concentric with the bar's
+  // bar corners are either a field read (stacked) or a conditional array of plain-numeric branches (dodged)
   const widen = (rule: ProductionRule<NumericValueRef>): ProductionRule<NumericValueRef> =>
-    (rule as ({ test?: string; value: number } & NumericValueRef)[]).map((branch) => ({
-      ...branch,
-      value: branch.value + SELECTION_RING_GAP,
-    })) as ProductionRule<NumericValueRef>;
+    Array.isArray(rule)
+      ? ((rule as ({ test?: string; value: number } & NumericValueRef)[]).map((branch) => ({
+          ...branch,
+          value: branch.value + SELECTION_RING_GAP,
+        })) as ProductionRule<NumericValueRef>)
+      : { ...rule, offset: SELECTION_RING_GAP };
   return {
     cornerRadiusTopLeft: widen(barCornerRadius.cornerRadiusTopLeft as ProductionRule<NumericValueRef>),
     cornerRadiusTopRight: widen(barCornerRadius.cornerRadiusTopRight as ProductionRule<NumericValueRef>),
@@ -559,9 +602,10 @@ const getSelectionRingUpdateEncodings = (
   const { metricAxis, dimensionAxis, dimensionSizeSignal } = getOrientationProperties(orientation);
   const metricEndKey = `${metricAxis}2`;
 
+  const [startKey, endKey] = getMetricStartEndKeys(orientation);
   const metricEncodings = getMetricEncodings(options);
-  const metricStartExpr = productionRuleToExpr(metricEncodings[metricAxis] as ProductionRule<NumericValueRef>);
-  const metricEndExpr = productionRuleToExpr(metricEncodings[metricEndKey] as ProductionRule<NumericValueRef>);
+  const metricStartExpr = productionRuleToExpr(metricEncodings[startKey] as ProductionRule<NumericValueRef>);
+  const metricEndExpr = productionRuleToExpr(metricEncodings[endKey] as ProductionRule<NumericValueRef>);
 
   const dimensionPosExpr = productionRuleToExpr(dimensionEncodings[dimensionAxis] as ProductionRule<NumericValueRef>);
   const dimensionSizeExpr = productionRuleToExpr(
@@ -595,11 +639,11 @@ export const getBarItemSelectionBackdrop = (
   from: { data: dataSource },
   interactive: false,
   encode: {
-    enter: {
+    update: {
       ...getSelectionRingCornerRadiusEncodings(options),
       fill: { signal: BACKGROUND_COLOR },
+      ...getSelectionRingUpdateEncodings(options, dimensionEncodings),
     },
-    update: getSelectionRingUpdateEncodings(options, dimensionEncodings),
   },
 });
 
@@ -621,12 +665,14 @@ export const getBarItemSelectionRing = (
   interactive: false,
   encode: {
     enter: {
-      ...getSelectionRingCornerRadiusEncodings(options),
       fill: { value: 'transparent' },
       stroke: { value: getS2ColorValue('blue-800', options.colorScheme) },
       strokeWidth: { value: SELECTION_RING_STROKE_WIDTH },
     },
-    update: getSelectionRingUpdateEncodings(options, dimensionEncodings),
+    update: {
+      ...getSelectionRingCornerRadiusEncodings(options),
+      ...getSelectionRingUpdateEncodings(options, dimensionEncodings),
+    },
   },
 });
 
@@ -765,11 +811,11 @@ export const getBarDimensionHoverArea = (options: BarSpecOptions, type: 'stacked
     encode: {
       enter: {
         fill: { value: 'transparent' },
+      },
+      update: {
         tooltip: hasInspectWithDimensionAreaTarget(options.chartInspects ?? [])
           ? getInspectEncoding(options.chartInspects ?? [], `${barName}_${DIMENSION_HOVER_AREA}`, false, { dimension })
           : undefined,
-      },
-      update: {
         ...getBarDimensionAreaPositionEncodings(options),
       },
     },

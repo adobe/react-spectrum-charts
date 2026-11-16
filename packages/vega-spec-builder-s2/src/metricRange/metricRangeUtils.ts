@@ -24,6 +24,7 @@ import {
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils.js';
 import { getLineMark } from '../line/lineMarkUtils.js';
 import { LineMarkOptions } from '../line/lineUtils.js';
+import { getSeriesFacet } from '../marks/markUtils.js';
 import { getFacetsFromOptions } from '../specUtils.js';
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types/index.js';
 
@@ -77,13 +78,7 @@ export const getMetricRangeGroupMarks = (lineMarkOptions: LineSpecOptions): Grou
       name: `${name}_group`,
       type: 'group',
       clip: true,
-      from: {
-        facet: {
-          name: `${name}_facet`,
-          data,
-          groupby: facets,
-        },
-      },
+      ...getSeriesFacet(`${name}_facet`, data, facets),
       marks: getMetricRangeMark(lineMarkOptions, metricRangeOptions),
     });
   }
@@ -146,7 +141,10 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
     const { displayOnHover, name } = metricRangeOptions;
     // if displayOnHover is true, add a data source for the highlighted data
     if (displayOnHover) {
-      const hoveredItem = `isValid(${markOptions.interactiveMarkName}_${HOVERED_ITEM}) && ${markOptions.interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
+      const { interactiveMarkName } = markOptions;
+      const hoveredItem =
+        interactiveMarkName &&
+        `isValid(${interactiveMarkName}_${HOVERED_ITEM}) && ${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID}`;
       const selectedSeries = `isValid(${SELECTED_SERIES}) && ${SELECTED_SERIES} === datum.${SERIES_ID}`;
       const controlledHighlightedItem = `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'),'${SERIES_ID}'), datum.${SERIES_ID}) > -1`;
       const controlledHighlightedSeries = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) && ${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID}`;
@@ -156,7 +154,9 @@ export const getMetricRangeData = (markOptions: LineSpecOptions): SourceData[] =
         transform: [
           {
             type: 'filter',
-            expr: [hoveredItem, selectedSeries, controlledHighlightedItem, controlledHighlightedSeries].join(' || '),
+            expr: [hoveredItem, selectedSeries, controlledHighlightedItem, controlledHighlightedSeries]
+              .filter(Boolean)
+              .join(' || '),
           },
         ],
       });

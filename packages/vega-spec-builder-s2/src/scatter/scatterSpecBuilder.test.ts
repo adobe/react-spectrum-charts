@@ -16,10 +16,13 @@ import {
   LINEAR_COLOR_SCALE,
   LINE_TYPE_SCALE,
   LINE_WIDTH_SCALE,
+  MARK_ID,
   OPACITY_SCALE,
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getRowKeyTransforms } from '../data/rowKeyUtils.js';
+import { getTableData } from '../data/dataUtils.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
 import { addData, addSignals, setScales } from './scatterSpecBuilder.js';
@@ -29,8 +32,18 @@ describe('addData()', () => {
   test('should add time transform is dimensionScaleType === "time"', () => {
     const data = addData(initializeSpec().data ?? [], { ...defaultScatterOptions, dimensionScaleType: 'time' });
     expect(data).toHaveLength(2);
-    expect(data[0].transform).toHaveLength(3);
+    expect(data[0].transform).toHaveLength(5);
     expect(data[0].transform?.[2].type).toBe('timeunit');
+    expect(data[0].transform?.slice(3)).toStrictEqual(
+      getRowKeyTransforms({ name: 'scatter0', idKey: MARK_ID, fields: [] })
+    );
+  });
+  test('should key rows by series facets and not by the dimension', () => {
+    const data = addData(initializeSpec().data ?? [], { ...defaultScatterOptions, color: DEFAULT_COLOR });
+    const transform = getTableData(data).transform ?? [];
+    expect(transform.slice(-2)).toStrictEqual(
+      getRowKeyTransforms({ name: 'scatter0', idKey: MARK_ID, fields: [DEFAULT_COLOR] })
+    );
   });
   test('should add additional filteredData if inspect exists', () => {
     const data = addData(initializeSpec().data ?? [], {
@@ -108,9 +121,9 @@ describe('addSignals()', () => {
 });
 
 describe('addSignals() with a controlled highlighted item', () => {
-  test('should add the hovered item signal when highlightedItem is set without interactive children', () => {
+  test('should not add the hovered item signal when highlightedItem is set without interactive children', () => {
     const signals = addSignals(defaultSignals, { ...defaultScatterOptions, highlightedItem: 'a' });
-    expect(signals.find((signal) => signal.name === `${defaultScatterOptions.name}_${HOVERED_ITEM}`)).toBeDefined();
+    expect(signals.find((signal) => signal.name === `${defaultScatterOptions.name}_${HOVERED_ITEM}`)).toBeUndefined();
   });
   test('should not add the hovered item signal when there is no interactivity or highlightedItem', () => {
     const signals = addSignals(defaultSignals, defaultScatterOptions);

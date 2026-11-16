@@ -84,6 +84,16 @@ describe('Chart', () => {
       expect(screen.getByText('Nov')).toBeInTheDocument();
       expect(screen.getByText('5,000.00')).toBeInTheDocument();
     });
+    test('Locale sets the language of the whole chart', async () => {
+      render(<Locale {...Locale.args} locale="fr-FR" />);
+      const chart = await findChart();
+      expect(chart.closest('[lang]')).toHaveAttribute('lang', 'fr-FR');
+    });
+    test('Locale object sets the language from its number locale', async () => {
+      render(<Locale {...Locale.args} locale={{ number: 'de-DE', time: 'fr-FR' }} />);
+      const chart = await findChart();
+      expect(chart.closest('[lang]')).toHaveAttribute('lang', 'de-DE');
+    });
   });
 
   test('Width renders properly', async () => {

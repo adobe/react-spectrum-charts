@@ -74,6 +74,8 @@ import {
   getSymbolWidthFromRscSymbolSize,
   getVegaSymbolSizeFromRscSymbolSize,
   initializeSpec,
+  moveConstantEncodingsToEnter,
+  removeInvisibleStrokes,
 } from './specUtils.js';
 import { addTitle } from './title/titleSpecBuilder.js';
 import {
@@ -190,7 +192,7 @@ export function buildSpec({
         return addLine(acc, { ...mark, ...specOptions, axes, index: lineCount, data });
       case 'scatter':
         scatterCount++;
-        return addScatter(acc, { ...mark, ...specOptions, index: scatterCount });
+        return addScatter(acc, { ...mark, ...specOptions, index: scatterCount, data });
       case 'venn':
         vennCount++;
         return addVenn(acc, { ...mark, ...specOptions, index: vennCount, data, chartWidth, chartHeight });
@@ -239,11 +241,9 @@ export function buildSpec({
     spec.axes = [...spec.axes].sort((a, b) => Number(isDivergingAxis(a)) - Number(isDivergingAxis(b)));
   }
 
-  // add signals and update marks for controlled highlighting if there isn't a legend with highlight enabled
-  if (highlightedSeries) {
-    setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
-    setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
-  }
+  // controlled highlightedSeries rules are always present so highlighting updates through signals alone
+  setHoverOpacityForMarks('', spec.marks ?? [], undefined, true);
+  setHoverStrokeWidthForMarks('', spec.marks ?? [], undefined, true);
 
   // Fit Line axes to visible series, falling back to all data only when every series is hidden.
   if (marks.length && marks.every(({ markType }) => markType === 'line')) {
@@ -255,6 +255,9 @@ export function buildSpec({
       }
     }
   }
+
+  moveConstantEncodingsToEnter(spec.marks);
+  removeInvisibleStrokes(spec.marks);
 
   // clear out all scales that don't have any fields on the domain
   spec = removeUnusedScales(spec);

@@ -53,18 +53,23 @@ describe('addData', () => {
     const functions = getExpressionFunctions('en-US');
     Object.entries(functions).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', (width: number) => width);
-    const data = [{ series: 'Complete', value: 0.7 }, { series: 'Remaining', value: 0.3 }];
+    const data = [
+      { series: 'Complete', value: 0.7 },
+      { series: 'Remaining', value: 0.3 },
+    ];
     const spec = buildSpec({
       data,
-      marks: [{
-        markType: 'donut',
-        name: 'centeredDonut',
-        color: 'series',
-        metric: 'value',
-        variant: 'semicircle',
-        isBoolean,
-        donutSummaries: [{ label: 'Total', delta }],
-      }],
+      marks: [
+        {
+          markType: 'donut',
+          name: 'centeredDonut',
+          color: 'series',
+          metric: 'value',
+          variant: 'semicircle',
+          isBoolean,
+          donutSummaries: [{ label: 'Total', delta }],
+        },
+      ],
     });
     const table = spec.data?.find(({ name }) => name === TABLE);
     if (!table || !('values' in table)) throw new Error('Expected inline table data');
@@ -84,7 +89,15 @@ describe('addData', () => {
       await view.runAsync();
       const initialArc = getMarkItems('centeredDonut')[0];
       expect(view.signal('centeredDonut_ringWidth')).toBe(40);
-      for (const [width, height] of [[1200, 420], [420, 420], [1000, 300], [140, 140], [80, 80], [220, 220], [1200, 420]]) {
+      for (const [width, height] of [
+        [1200, 420],
+        [420, 420],
+        [1000, 300],
+        [140, 140],
+        [80, 80],
+        [220, 220],
+        [1200, 420],
+      ]) {
         await view.width(width).height(height).runAsync();
         const outerRadius = view.signal('centeredDonut_outerRadius');
         const centerY = height - DONUT_SEMICIRCLE_BOTTOM_INSET;
@@ -102,7 +115,8 @@ describe('addData', () => {
             throw new Error('Expected resolved arc radii and stroke width');
           }
           expect(item.outerRadius - item.innerRadius - item.strokeWidth).toBeCloseTo(
-            view.signal('centeredDonut_ringWidth'), 10
+            view.signal('centeredDonut_ringWidth'),
+            10
           );
           expect(item.outerRadius - item.strokeWidth / 2).toBeCloseTo(outerRadius, 10);
         }
@@ -113,7 +127,10 @@ describe('addData', () => {
         if (summary.y === undefined || summary.dy === undefined || summary.fontSize === undefined) {
           throw new Error('Expected resolved summary position and font size');
         }
-        expect(summary.y + summary.dy + view.signal('centeredDonut_summaryLabelFontSize') / 2).toBeCloseTo(centerY - 2, 10);
+        expect(summary.y + summary.dy + view.signal('centeredDonut_summaryLabelFontSize') / 2).toBeCloseTo(
+          centerY - 2,
+          10
+        );
         if (delta !== undefined) {
           expect(getMarkItems(`${prefix}Delta`)[0].fontSize).toBe(
             deltaVisible ? view.signal('centeredDonut_summaryLabelFontSize') : 0
@@ -140,9 +157,7 @@ describe('addData', () => {
     ];
     const spec = buildSpec({
       data,
-      marks: [
-        { markType: 'donut', name: 'wideDonut', color: 'series', metric: 'value', segmentLabels: [label] },
-      ],
+      marks: [{ markType: 'donut', name: 'wideDonut', color: 'series', metric: 'value', segmentLabels: [label] }],
     });
     const table = spec.data?.find(({ name }) => name === TABLE);
     if (!table || !('values' in table)) throw new Error('Expected inline table data');
@@ -293,9 +308,7 @@ describe('addData', () => {
       const ringGap = 10;
       const outerRadius = (364 / 2 - 2 - ringGap) / (1 + DONUT_LABEL_MIN_SPACE_RATIO);
       const innerX =
-        datum[`${prefix}_hemisphere`] === 'right'
-          ? datum[`${prefix}_leftX`] - 182
-          : 182 - datum[`${prefix}_rightX`];
+        datum[`${prefix}_hemisphere`] === 'right' ? datum[`${prefix}_leftX`] - 182 : 182 - datum[`${prefix}_rightX`];
       const topY = datum[`${prefix}_topY`] - 182;
       const bottomY = datum[`${prefix}_bottomY`] - 182;
       const nearestY = topY <= 0 && bottomY >= 0 ? 0 : Math.min(Math.abs(topY), Math.abs(bottomY));
@@ -310,11 +323,9 @@ describe('addData', () => {
           labelBoxes.forEach(([left, right, top, bottom]) => {
             otherLabelBoxes.forEach(([otherLeft, otherRight, otherTop, otherBottom]) => {
               const withinHorizontalGap =
-                left < otherRight + DONUT_LABEL_COLLISION_GAP &&
-                right > otherLeft - DONUT_LABEL_COLLISION_GAP;
+                left < otherRight + DONUT_LABEL_COLLISION_GAP && right > otherLeft - DONUT_LABEL_COLLISION_GAP;
               const withinVerticalGap =
-                top < otherBottom + DONUT_LABEL_COLLISION_GAP &&
-                bottom > otherTop - DONUT_LABEL_COLLISION_GAP;
+                top < otherBottom + DONUT_LABEL_COLLISION_GAP && bottom > otherTop - DONUT_LABEL_COLLISION_GAP;
               expect(withinHorizontalGap && withinVerticalGap).toBe(false);
             });
           });
@@ -326,67 +337,70 @@ describe('addData', () => {
   test.each([
     ['direct', { value: true }, 'denseDonut_segmentLabel'],
     ['advanced', { percent: true, showValueRow: true, swatch: true, value: true }, 'denseDonut_richSegmentLabel'],
-  ])('hovering a segment reveals its hidden %s label and hides the labels it overlaps', async (_mode, label, prefix) => {
-    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
-    expressionFunction('rscContainerWidth', (width: number) => width);
-    // small chart + long names force direct-label collisions (jsdom measures text width as ~0)
-    const data = [
-      ...Array.from({ length: 18 }, (_, index) => ({ series: `Long category name ${index + 1}`, value: 10 })),
-      { series: 'Sliver', value: 1 },
-    ];
-    const spec = buildSpec({
-      data,
-      marks: [{ markType: 'donut', color: 'series', metric: 'value', name: 'denseDonut', segmentLabels: [label] }],
-    });
-    const table = spec.data?.find(({ name }) => name === TABLE);
-    if (!table || !('values' in table)) throw new Error('Expected inline table data');
-    table.values = data;
-    const view = new View(parse(spec), { renderer: 'none' }).width(240).height(240);
-    await view.runAsync();
+  ])(
+    'hovering a segment reveals its hidden %s label and hides the labels it overlaps',
+    async (_mode, label, prefix) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', (width: number) => width);
+      // small chart + long names force direct-label collisions (jsdom measures text width as ~0)
+      const data = [
+        ...Array.from({ length: 18 }, (_, index) => ({ series: `Long category name ${index + 1}`, value: 10 })),
+        { series: 'Sliver', value: 1 },
+      ];
+      const spec = buildSpec({
+        data,
+        marks: [{ markType: 'donut', color: 'series', metric: 'value', name: 'denseDonut', segmentLabels: [label] }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(240).height(240);
+      await view.runAsync();
 
-    const hoveredSignal = `denseDonut_${HOVERED_ITEM}`;
-    const getLabelIds = () =>
-      view
-        .data(`${prefix}Data`)
-        .map((datum) => datum[MARK_ID])
-        .sort((a, b) => a - b);
-    const expectNoCollisions = () => {
-      const labels = view.data(`${prefix}Data`);
-      labels.forEach((datum, index) => {
-        labels.slice(index + 1).forEach((other) => {
-          if (datum[`${prefix}_hemisphere`] !== other[`${prefix}_hemisphere`]) return;
-          datum[`${prefix}_collisionBoxes`].forEach(([left, right, top, bottom]) => {
-            other[`${prefix}_collisionBoxes`].forEach(([otherLeft, otherRight, otherTop, otherBottom]) => {
-              const overlaps =
-                left < otherRight + DONUT_LABEL_COLLISION_GAP &&
-                right > otherLeft - DONUT_LABEL_COLLISION_GAP &&
-                top < otherBottom + DONUT_LABEL_COLLISION_GAP &&
-                bottom > otherTop - DONUT_LABEL_COLLISION_GAP;
-              expect(overlaps).toBe(false);
+      const hoveredSignal = `denseDonut_${HOVERED_ITEM}`;
+      const getLabelIds = () =>
+        view
+          .data(`${prefix}Data`)
+          .map((datum) => datum[MARK_ID])
+          .sort((a, b) => a - b);
+      const expectNoCollisions = () => {
+        const labels = view.data(`${prefix}Data`);
+        labels.forEach((datum, index) => {
+          labels.slice(index + 1).forEach((other) => {
+            if (datum[`${prefix}_hemisphere`] !== other[`${prefix}_hemisphere`]) return;
+            datum[`${prefix}_collisionBoxes`].forEach(([left, right, top, bottom]) => {
+              other[`${prefix}_collisionBoxes`].forEach(([otherLeft, otherRight, otherTop, otherBottom]) => {
+                const overlaps =
+                  left < otherRight + DONUT_LABEL_COLLISION_GAP &&
+                  right > otherLeft - DONUT_LABEL_COLLISION_GAP &&
+                  top < otherBottom + DONUT_LABEL_COLLISION_GAP &&
+                  bottom > otherTop - DONUT_LABEL_COLLISION_GAP;
+                expect(overlaps).toBe(false);
+              });
             });
           });
         });
-      });
-    };
-    const defaultIds = getLabelIds();
-    const candidateIds = view.data(`${prefix}Candidates`).map((datum) => datum[MARK_ID]);
-    const collisionHiddenId = candidateIds.find((id) => !defaultIds.includes(id));
-    const belowMinAngleId = view
-      .data(FILTERED_TABLE)
-      .map((datum) => datum[MARK_ID])
-      .find((id) => !candidateIds.includes(id));
-    expect(collisionHiddenId).toBeDefined();
-    expect(belowMinAngleId).toBeDefined();
+      };
+      const defaultIds = getLabelIds();
+      const candidateIds = view.data(`${prefix}Candidates`).map((datum) => datum[MARK_ID]);
+      const collisionHiddenId = candidateIds.find((id) => !defaultIds.includes(id));
+      const belowMinAngleId = view
+        .data(FILTERED_TABLE)
+        .map((datum) => datum[MARK_ID])
+        .find((id) => !candidateIds.includes(id));
+      expect(collisionHiddenId).toBeDefined();
+      expect(belowMinAngleId).toBeDefined();
 
-    for (const hoveredId of [collisionHiddenId, belowMinAngleId]) {
-      await view.signal(hoveredSignal, { [MARK_ID]: hoveredId }).runAsync();
-      expect(getLabelIds()).toContain(hoveredId);
-      expectNoCollisions();
+      for (const hoveredId of [collisionHiddenId, belowMinAngleId]) {
+        await view.signal(hoveredSignal, { [MARK_ID]: hoveredId }).runAsync();
+        expect(getLabelIds()).toContain(hoveredId);
+        expectNoCollisions();
+      }
+
+      await view.signal(hoveredSignal, null).runAsync();
+      expect(getLabelIds()).toEqual(defaultIds);
     }
-
-    await view.signal(hoveredSignal, null).runAsync();
-    expect(getLabelIds()).toEqual(defaultIds);
-  });
+  );
 
   test('should add data correctly for boolean donut', () => {
     const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, isBoolean: true });
@@ -422,7 +436,7 @@ describe('addData', () => {
     const interactiveOptions = { ...defaultDonutOptions, segmentLabels: [{ value: true }] };
     const data = addData(initializeSpec().data ?? [], interactiveOptions);
     expect(data[1].transform).toHaveLength(6);
-    expect(data[1].transform?.[5]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+    expect(data[1].transform?.[5]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: 'datum.testColor' });
   });
 
   test('should add a SERIES_ID transform when paired with a highlighted legend', () => {
@@ -431,7 +445,7 @@ describe('addData', () => {
       legendHighlightSignals: ['legend0_hoveredSeries'],
     });
     expect(data[1].transform).toHaveLength(6);
-    expect(data[1].transform?.[5]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: "datum.testColor" });
+    expect(data[1].transform?.[5]).toEqual({ type: 'formula', as: 'rscSeriesId', expr: 'datum.testColor' });
   });
 
   test('should not add a SERIES_ID transform when not interactive', () => {
@@ -440,22 +454,28 @@ describe('addData', () => {
     expect(data[1].transform?.some((transform) => 'as' in transform && transform.as === 'rscSeriesId')).toBe(false);
   });
 
-  test.each(['circle', 'semicircle'] as const)('should sort a %s donut descending before computing slices', (variant) => {
-    const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, variant });
-    expect(data[1].transform).toHaveLength(5);
-    expect(data[1].transform?.[0]).toEqual({ type: 'collect', sort: { field: 'testMetric', order: 'descending' } });
-    expect(data[1].transform?.[1].type).toBe('pie');
-  });
+  test.each(['circle', 'semicircle'] as const)(
+    'should sort a %s donut descending before computing slices',
+    (variant) => {
+      const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, variant });
+      expect(data[1].transform).toHaveLength(5);
+      expect(data[1].transform?.[0]).toEqual({ type: 'collect', sort: { field: 'testMetric', order: 'descending' } });
+      expect(data[1].transform?.[1].type).toBe('pie');
+    }
+  );
 
-  test.each(['circle', 'semicircle'] as const)('should preserve source order for a %s donut when sortOrder is data', (variant) => {
-    const data = addData(initializeSpec().data ?? [], {
-      ...defaultDonutOptions,
-      sortOrder: 'data',
-      variant,
-    });
-    expect(data[1].transform).toHaveLength(4);
-    expect(data[1].transform?.[0].type).toBe('pie');
-  });
+  test.each(['circle', 'semicircle'] as const)(
+    'should preserve source order for a %s donut when sortOrder is data',
+    (variant) => {
+      const data = addData(initializeSpec().data ?? [], {
+        ...defaultDonutOptions,
+        sortOrder: 'data',
+        variant,
+      });
+      expect(data[1].transform).toHaveLength(4);
+      expect(data[1].transform?.[0].type).toBe('pie');
+    }
+  );
 
   test.each(['circle', 'semicircle'] as const)('should preserve source order for a boolean %s donut', (variant) => {
     const data = addData(initializeSpec().data ?? [], { ...defaultDonutOptions, isBoolean: true, variant });
@@ -598,7 +618,7 @@ describe('donutSpecBuilder', () => {
 
 describe('donutSpecBuilder', () => {
   test('should add donut correctly', () => {
-    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const spec = { data: [{ name: TABLE, values: [] }, { name: FILTERED_TABLE }], usermeta: {} };
     const options = { ...defaultDonutOptions, holeRatio: 0.85 };
     const result = addDonut(spec, { ...options, animationTypes: ['hover'] });
     const expectedSpec = {
@@ -621,18 +641,18 @@ describe('donutSpecBuilder', () => {
   });
 
   test('should start a semicircle donut at -PI/2', () => {
-    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const spec = { data: [{ name: TABLE, values: [] }, { name: FILTERED_TABLE }], usermeta: {} };
     const result = addDonut(spec, { ...defaultDonutOptions, variant: 'semicircle' });
     const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
     expect(emptyStateMark?.encode?.enter).toHaveProperty('startAngle', { value: -Math.PI / 2 });
-    expect(emptyStateMark?.encode?.enter).toHaveProperty('endAngle', { signal: `${-Math.PI / 2} + PI` });
+    expect(emptyStateMark?.encode?.update).toHaveProperty('endAngle', { signal: `${-Math.PI / 2} + PI` });
   });
 
   test('should start a circle donut at 0', () => {
-    const spec = { data: [{ name: FILTERED_TABLE }], usermeta: {} };
+    const spec = { data: [{ name: TABLE, values: [] }, { name: FILTERED_TABLE }], usermeta: {} };
     const result = addDonut(spec, defaultDonutOptions);
     const emptyStateMark = result.marks?.find((mark) => mark.name === 'testName_emptyState');
     expect(emptyStateMark?.encode?.enter).toHaveProperty('startAngle', { value: 0 });
-    expect(emptyStateMark?.encode?.enter).toHaveProperty('endAngle', { signal: '0 + 2 * PI' });
+    expect(emptyStateMark?.encode?.update).toHaveProperty('endAngle', { signal: '0 + 2 * PI' });
   });
 });

@@ -10,7 +10,11 @@
  * governing permissions and limitations under the License.
  */
 import {
+  CHART_SIZE_HOVER_STROKE_WIDTH,
+  CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
@@ -18,10 +22,13 @@ import {
   DEFAULT_STROKE_WIDTH_RULE,
   DEFAULT_TIME_DIMENSION,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  FADE_FACTOR,
   FILTERED_TABLE,
   MARK_ID,
+  SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getSeriesFacet } from '../marks/markUtils.js';
 import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types/index.js';
 import {
   applyMetricRangeOptionDefaults,
@@ -92,19 +99,39 @@ const basicMetricRangeMarks = [
     interactive: false,
     encode: {
       enter: {
-        y: [{ scale: 'yLinear', field: 'metric' }],
-        stroke: { scale: COLOR_SCALE, field: 'series' },
         strokeCap: { value: 'round' },
-        strokeDash: { value: [3, 4] },
-        strokeOpacity: DEFAULT_OPACITY_RULE,
       },
       update: {
+        y: [{ scale: 'yLinear', field: 'metric' }],
+        stroke: { scale: COLOR_SCALE, field: 'series' },
+        strokeDash: { value: [3, 4] },
+        strokeOpacity: DEFAULT_OPACITY_RULE,
         x: {
           scale: 'xTime',
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
-        opacity: [DEFAULT_OPACITY_RULE],
-        strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
+        opacity: [
+          {
+            test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+            signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : ${FADE_FACTOR}`,
+          },
+          {
+            test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+            signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+          },
+          DEFAULT_OPACITY_RULE,
+        ],
+        strokeWidth: [
+          {
+            test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,
+            signal: `indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+          },
+          {
+            test: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES})`,
+            signal: `${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? ${CHART_SIZE_HOVER_STROKE_WIDTH} : ${CHART_SIZE_STROKE_WIDTH}`,
+          },
+          DEFAULT_STROKE_WIDTH_RULE,
+        ],
       },
     },
   },
@@ -117,14 +144,12 @@ const basicMetricRangeMarks = [
     },
     interactive: false,
     encode: {
-      enter: {
+      update: {
         tooltip: undefined,
         y: { scale: 'yLinear', field: 'metricStart' },
         y2: { scale: 'yLinear', field: 'metricEnd' },
         fill: { scale: COLOR_SCALE, field: 'series' },
         defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
-      },
-      update: {
         cursor: undefined,
         x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
         fillOpacity: { value: 0.2 },
@@ -190,9 +215,7 @@ describe('getMetricRangeMark', () => {
       { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       defaultMetricRangeSpecOptions
     );
-    expect(Array.isArray((lineMark as { encode: { update: { opacity: unknown } } }).encode.update.opacity)).toBe(
-      true
-    );
+    expect(Array.isArray((lineMark as { encode: { update: { opacity: unknown } } }).encode.update.opacity)).toBe(true);
   });
 });
 
@@ -210,13 +233,7 @@ describe('getMetricRangeGroupMarks', () => {
         name: 'line0MetricRange0_group',
         type: 'group',
         clip: true,
-        from: {
-          facet: {
-            name: 'line0MetricRange0_facet',
-            data: FILTERED_TABLE,
-            groupby: ['series'],
-          },
-        },
+        ...getSeriesFacet('line0MetricRange0_facet', FILTERED_TABLE, ['series']),
         marks: basicMetricRangeMarks,
       },
     ]);

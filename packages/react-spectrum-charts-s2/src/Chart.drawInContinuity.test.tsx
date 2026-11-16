@@ -132,22 +132,35 @@ describe.each(['bar', 'line', 'donut'] satisfies MarkType[])('%s draw-in continu
   });
 
   test.each<[string, Partial<ChartProps>]>([
-    ['the same data in a new array', {}],
-    ['changed values', { data: data.map((row) => ({ ...row, count: 1, downloads: 1, value: 1 })) }],
-    ['an added row', { data: [...data, { ...data[0], series: 'c' }] }],
-    ['a removed row', { data: data.slice(1) }],
     ['a title', { title: 'Retitled' }],
     ['the dark color scheme', { colorScheme: 'dark' }],
     ['a controlled highlight', { highlightedSeries: 'a' }],
-    ['controlled hidden series', { hiddenSeries: ['a'] }],
     ['a locale', { locale: 'de-DE' }],
     ['padding', { padding: 12 }],
-    ['an explicit animationTypes default', { animationTypes: ['hover', 'drawIn'] }],
   ])('a rebuild mid draw-in from %s continues from the original start', async (_, props) => {
     const { rerender, start } = await mount(chart(markType));
 
     const view = await rebuild(rerender, chart(markType, props));
 
+    expect(startOf(view)).toBe(start);
+    expect(view.signal(DRAW_IN_ANIM_T)).toBeLessThan(1);
+  });
+
+  test.each<[string, Partial<ChartProps>]>([
+    ['the same data in a new array', {}],
+    ['changed values', { data: data.map((row) => ({ ...row, count: 1, downloads: 1, value: 1 })) }],
+    ['an added row', { data: [...data, { ...data[0], series: 'c' }] }],
+    ['a removed row', { data: data.slice(1) }],
+    ['controlled hidden series', { hiddenSeries: ['a'] }],
+    ['an explicit animationTypes default', { animationTypes: ['hover', 'drawIn'] }],
+  ])('an update mid draw-in from %s keeps the view and its start', async (_, props) => {
+    const { rerender, start } = await mount(chart(markType));
+    const view = latestView();
+
+    rerender(withProvider(chart(markType, props)));
+    await sleep(50);
+
+    expect(views).toEqual([view]);
     expect(startOf(view)).toBe(start);
     expect(view.signal(DRAW_IN_ANIM_T)).toBeLessThan(1);
   });

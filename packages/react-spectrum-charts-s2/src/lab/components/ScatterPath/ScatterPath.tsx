@@ -20,7 +20,12 @@ import { ScatterPathProps } from '../../../types/index.js';
  * Draws paths that connect the points of a scatter plot.
  * @experimental
  */
-const ScatterPath: FC<ScatterPathProps> = ({ color = 'gray-500', groupBy, pathWidth = { value: 'M' }, opacity = 0.5 }) => {
+const ScatterPath: FC<ScatterPathProps> = ({
+  color = 'gray-500',
+  groupBy,
+  pathWidth = { value: 'M' },
+  opacity = 0.5,
+}) => {
   return null;
 };
 
