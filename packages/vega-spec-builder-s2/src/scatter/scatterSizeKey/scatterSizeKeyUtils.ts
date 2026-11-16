@@ -28,7 +28,18 @@ export const getScatterSizeKeyLegends = ({ colorScheme, scatterSizeKeys, size }:
 };
 
 /**
- * Gets the size key: the min, middle, and max of the size scale as circles at their true size.
+ * Gets an expression for the midpoint of min and max, rounded to half of the range's order of magnitude.
+ * @param min - expression for the smallest value
+ * @param max - expression for the largest value
+ * @returns expression string
+ */
+export const getRoundedMidpointExpr = (min: string, max: string): string => {
+  const step = `pow(10, floor(log(${max} - ${min}) / LN10)) / 2`;
+  return `round((${min} + ${max}) / 2 / (${step})) * (${step})`;
+};
+
+/**
+ * Gets the size key: the min, a rounded middle, and the max of the size scale as circles at their true size.
  * @param options ScatterSizeKeyOptions
  * @param colorScheme ColorScheme
  * @returns Legend
@@ -46,7 +57,7 @@ export const getScatterSizeKeyLegend = (
     direction: direction ?? defaultDirection,
     ...(title !== undefined && { title }),
     symbolType: 'circle',
-    values: { signal: `${min} === ${max} ? [${min}] : [${min}, (${min} + ${max}) / 2, ${max}]` },
+    values: { signal: `${min} === ${max} ? [${min}] : [${min}, ${getRoundedMidpointExpr(min, max)}, ${max}]` },
     encode: {
       symbols: {
         update: {

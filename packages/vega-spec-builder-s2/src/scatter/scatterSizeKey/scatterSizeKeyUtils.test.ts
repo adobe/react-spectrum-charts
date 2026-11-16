@@ -9,11 +9,13 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { View, expressionFunction, parse } from 'vega';
+
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { buildSpec } from '../../chartSpecBuilder.js';
 import { defaultScatterOptions } from '../scatterTestUtils.js';
-import { getScatterSizeKeyLegend, getScatterSizeKeyLegends } from './scatterSizeKeyUtils.js';
+import { getRoundedMidpointExpr, getScatterSizeKeyLegend, getScatterSizeKeyLegends } from './scatterSizeKeyUtils.js';
 
 describe('getScatterSizeKeyLegend()', () => {
   test('shows the min, middle, and max of the size scale as circles', () => {
@@ -21,7 +23,10 @@ describe('getScatterSizeKeyLegend()', () => {
     expect(legend).toMatchObject({ size: 'symbolSize', orient: 'right', title: 'Revenue', symbolType: 'circle' });
     expect(legend.values).toHaveProperty(
       'signal',
-      "domain('symbolSize')[0] === peek(domain('symbolSize')) ? [domain('symbolSize')[0]] : [domain('symbolSize')[0], (domain('symbolSize')[0] + peek(domain('symbolSize'))) / 2, peek(domain('symbolSize'))]"
+      `domain('symbolSize')[0] === peek(domain('symbolSize')) ? [domain('symbolSize')[0]] : [domain('symbolSize')[0], ${getRoundedMidpointExpr(
+        "domain('symbolSize')[0]",
+        "peek(domain('symbolSize'))"
+      )}, peek(domain('symbolSize'))]`
     );
     expect(legend.encode?.labels?.update?.text).toHaveProperty('signal', 'formatShortNumber(datum.value)');
   });
@@ -77,5 +82,27 @@ describe('size key in a chart', () => {
       marks: [{ markType: 'scatter', color: 'series', size: 'weight' }],
     });
     expect(spec.legends?.some((legend) => legend.size)).toBe(false);
+  });
+});
+
+describe('getRoundedMidpointExpr()', () => {
+  const evaluate = async (min: number, max: number) => {
+    const view = new View(parse({ signals: [{ name: 'mid', update: getRoundedMidpointExpr(`${min}`, `${max}`) }] }), {
+      renderer: 'none',
+    });
+    await view.runAsync();
+    const mid = view.signal('mid');
+    view.finalize();
+    return mid;
+  };
+
+  test.each([
+    [2, 4.5, 3.5],
+    [0, 100, 50],
+    [12, 87, 50],
+    [1000, 9000, 5000],
+    [0.2, 0.9, 0.55],
+  ])('rounds the midpoint of %p and %p to %p', async (min, max, mid) => {
+    expect(await evaluate(min, max)).toBeCloseTo(mid);
   });
 });
