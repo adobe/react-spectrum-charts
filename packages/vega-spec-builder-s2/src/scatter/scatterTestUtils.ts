@@ -39,7 +39,7 @@ export const defaultScatterOptions: ScatterSpecOptions = {
   outline: 'auto',
   scatterAnnotations: [],
   scatterPaths: [],
-  scatterSizeKeys: [],
+  scatterSizeLegends: [],
   size: { value: 'M' },
   trendlines: [],
 };

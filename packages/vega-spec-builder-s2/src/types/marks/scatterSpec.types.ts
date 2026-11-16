@@ -25,7 +25,7 @@ import {
 } from '../specUtil.types.js';
 import { ScatterAnnotationOptions } from './supplemental/index.js';
 import { ScatterPathOptions } from './supplemental/scatterPathSpec.types.js';
-import { ScatterSizeKeyOptions } from './supplemental/scatterSizeKeySpec.types.js';
+import { ScatterSizeLegendOptions } from './supplemental/scatterSizeLegendSpec.types.js';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
 export type ScatterOutline = 'auto' | 'always' | 'never';
@@ -70,7 +70,7 @@ export interface ScatterOptions {
   chartInspects?: ChartInspectOptions[];
   scatterAnnotations?: ScatterAnnotationOptions[];
   scatterPaths?: ScatterPathOptions[];
-  scatterSizeKeys?: ScatterSizeKeyOptions[];
+  scatterSizeLegends?: ScatterSizeLegendOptions[];
   trendlines?: TrendlineOptions[];
   /** Outline color: a data key mapped to the color scale, or a static color. Defaults to `color`. */
   stroke?: ColorFacet;
@@ -94,7 +94,7 @@ type ScatterOptionsWithDefaults =
   | 'size'
   | 'scatterAnnotations'
   | 'scatterPaths'
-  | 'scatterSizeKeys'
+  | 'scatterSizeLegends'
   | 'trendlines';
 
 export interface ScatterSpecOptions extends PartiallyRequired<ScatterOptions, ScatterOptionsWithDefaults> {

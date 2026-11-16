@@ -14,17 +14,17 @@ import { Legend } from 'vega';
 import { SYMBOL_SIZE_SCALE } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
-import { ScatterSizeKeyOptions, ScatterSpecOptions } from '../../types/index.js';
+import { ScatterSizeLegendOptions, ScatterSpecOptions } from '../../types/index.js';
 import { SCATTER_OUTLINE_OPACITY } from '../scatterOutlineUtils.js';
 
 /**
- * Gets a size key legend for each ScatterSizeKey child, when the scatter sizes points by a data field.
+ * Gets a size legend legend for each ScatterSizeLegend child, when the scatter sizes points by a data field.
  * @param options ScatterSpecOptions
  * @returns Legend[]
  */
-export const getScatterSizeKeyLegends = ({ colorScheme, scatterSizeKeys, size }: ScatterSpecOptions): Legend[] => {
+export const getScatterSizeLegends = ({ colorScheme, scatterSizeLegends, size }: ScatterSpecOptions): Legend[] => {
   if (typeof size !== 'string') return [];
-  return scatterSizeKeys.map((key) => getScatterSizeKeyLegend(key, colorScheme));
+  return scatterSizeLegends.map((legend) => getScatterSizeLegend(legend, colorScheme));
 };
 
 /**
@@ -39,13 +39,13 @@ export const getRoundedMidpointExpr = (min: string, max: string): string => {
 };
 
 /**
- * Gets the size key: the min, a rounded middle, and the max of the size scale as circles at their true size.
- * @param options ScatterSizeKeyOptions
+ * Gets the size legend: the min, a rounded middle, and the max of the size scale as circles at their true size.
+ * @param options ScatterSizeLegendOptions
  * @param colorScheme ColorScheme
  * @returns Legend
  */
-export const getScatterSizeKeyLegend = (
-  { direction, position = 'right', title }: ScatterSizeKeyOptions,
+export const getScatterSizeLegend = (
+  { direction, position = 'right', title }: ScatterSizeLegendOptions,
   colorScheme: ScatterSpecOptions['colorScheme']
 ): Legend => {
   const domain = `domain('${SYMBOL_SIZE_SCALE}')`;

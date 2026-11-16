@@ -17,7 +17,7 @@ import {
   Scatter,
   ScatterAnnotation,
   ScatterPath,
-  ScatterSizeKey,
+  ScatterSizeLegend,
   Trendline,
   TrendlineAnnotation,
 } from '@spectrum-charts/react-spectrum-charts-s2/lab';
@@ -977,7 +977,7 @@ export const ScatterContinuousLegendPlayground = () => (
         <Axis position="bottom" grid title="Spend ($K)" />
         {facet === 'size' ? (
           <Scatter dimension="spend" metric="revenue" size="reach">
-            <ScatterSizeKey title="Reach (K)" />
+            <ScatterSizeLegend title="Reach (K)" />
           </Scatter>
         ) : (
           <Scatter
@@ -1176,17 +1176,17 @@ export const ScatterAnimationPlayground = () => (
   />
 );
 
-const sizeKeyControls: PlaygroundControl[] = [
-  { group: 'ScatterSizeKey', name: 'title', type: 'text', defaultValue: 'Reach (K)' },
+const sizeLegendControls: PlaygroundControl[] = [
+  { group: 'ScatterSizeLegend', name: 'title', type: 'text', defaultValue: 'Reach (K)' },
   {
-    group: 'ScatterSizeKey',
+    group: 'ScatterSizeLegend',
     name: 'position',
     type: 'select',
     options: ['right', 'left', 'top', 'bottom'],
     defaultValue: 'right',
   },
   {
-    group: 'ScatterSizeKey',
+    group: 'ScatterSizeLegend',
     name: 'direction',
     type: 'select',
     options: ['default', 'vertical', 'horizontal'],
@@ -1195,20 +1195,20 @@ const sizeKeyControls: PlaygroundControl[] = [
 ];
 
 /**
- * Playground for the scatter size key.
+ * Playground for the scatter size legend.
  * @returns playground element
  */
-export const ScatterSizeKeyPlayground = () => (
+export const ScatterSizeLegendPlayground = () => (
   <PropPlayground
     previewSize={getScatterPreviewSize}
-    controls={sizeKeyControls}
-    component="ScatterSizeKey"
+    controls={sizeLegendControls}
+    component="ScatterSizeLegend"
     render={({ title, position, direction }) => (
       <Chart data={scatterCampaignData}>
         <Axis position="left" grid title="Revenue ($K)" />
         <Axis position="bottom" grid title="Spend ($K)" />
         <Scatter dimension="spend" metric="revenue" color="channel" size="reach">
-          <ScatterSizeKey
+          <ScatterSizeLegend
             title={optional(title)}
             position={position as 'left' | 'right' | 'top' | 'bottom' | undefined}
             direction={direction === 'default' ? undefined : (direction as 'horizontal' | 'vertical')}

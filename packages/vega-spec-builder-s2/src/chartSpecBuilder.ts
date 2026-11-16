@@ -217,9 +217,9 @@ export function buildSpec({
     });
   }, spec);
 
-  // size keys come from marks, so they'd sit above the Legend; list them after it
+  // size legends come from marks, so they'd sit above the Legend; list them after it
   if (spec.legends?.length) {
-    spec = { ...spec, legends: [...spec.legends].sort((a, b) => Number(isSizeKey(a)) - Number(isSizeKey(b))) };
+    spec = { ...spec, legends: [...spec.legends].sort((a, b) => Number(isSizeLegend(a)) - Number(isSizeLegend(b))) };
   }
 
   spec = [...axes].reduce((acc: ScSpec, axis, index) => {
@@ -549,8 +549,8 @@ export const isSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is 
   return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
 };
 
-/** Whether a legend is a scatter size key. */
-const isSizeKey = (legend: Legend): boolean => legend.size === SYMBOL_SIZE_SCALE;
+/** Whether a legend is a scatter size legend. */
+const isSizeLegend = (legend: Legend): boolean => legend.size === SYMBOL_SIZE_SCALE;
 
 const safeClone = <T>(obj: T): T => {
   if (typeof structuredClone === 'function') {

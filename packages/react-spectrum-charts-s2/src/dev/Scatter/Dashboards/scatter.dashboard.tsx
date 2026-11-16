@@ -21,7 +21,7 @@ import {
   Scatter,
   ScatterAnnotation,
   ScatterPath,
-  ScatterSizeKey,
+  ScatterSizeLegend,
   Trendline,
   TrendlineAnnotation,
 } from '../../../lab/index.js';
@@ -35,7 +35,7 @@ import {
   ScatterAnnotationProps,
   ScatterPathProps,
   ScatterProps,
-  ScatterSizeKeyProps,
+  ScatterSizeLegendProps,
   TitleProps,
   TrendlineAnnotationProps,
   TrendlineProps,
@@ -311,43 +311,43 @@ const baseScatterVariations: Variation[] = [
     render: () => <ScatterVariationChart scatterProps={{ size: 'weight' }} />,
   },
   {
-    id: 'scatter-size-key-default',
-    title: 'Size key',
-    description: 'ScatterSizeKey with a title: min, middle, and max weight at true size, stacked on the right.',
+    id: 'scatter-size-legend-default',
+    title: 'Size legend',
+    description: 'ScatterSizeLegend with a title: min, middle, and max weight at true size, stacked on the right.',
     dataset: 'standard',
     coverage: [
-      'ScatterSizeKey',
-      'ScatterSizeKey.title',
-      'ScatterSizeKey.position=right',
-      'ScatterSizeKey.direction=vertical',
+      'ScatterSizeLegend',
+      'ScatterSizeLegend.title',
+      'ScatterSizeLegend.position=right',
+      'ScatterSizeLegend.direction=vertical',
     ],
     render: () => (
       <ScatterVariationChart scatterProps={{ size: 'weight' }}>
-        <ScatterSizeKey title="Weight" />
+        <ScatterSizeLegend title="Weight" />
       </ScatterVariationChart>
     ),
   },
   {
-    id: 'scatter-size-key-bottom',
-    title: 'Size key at the bottom',
-    description: 'The key below the plot runs horizontally by default.',
+    id: 'scatter-size-legend-bottom',
+    title: 'Size legend at the bottom',
+    description: 'The legend below the plot runs horizontally by default.',
     dataset: 'standard',
-    coverage: ['ScatterSizeKey.position=bottom'],
+    coverage: ['ScatterSizeLegend.position=bottom'],
     render: () => (
       <ScatterVariationChart scatterProps={{ size: 'weight' }}>
-        <ScatterSizeKey title="Weight" position="bottom" />
+        <ScatterSizeLegend title="Weight" position="bottom" />
       </ScatterVariationChart>
     ),
   },
   {
-    id: 'scatter-size-key-horizontal',
-    title: 'Horizontal size key',
+    id: 'scatter-size-legend-horizontal',
+    title: 'Horizontal size legend',
     description: 'A horizontal row on the right, under the series legend.',
     dataset: 'standard',
-    coverage: ['ScatterSizeKey.direction=horizontal'],
+    coverage: ['ScatterSizeLegend.direction=horizontal'],
     render: () => (
       <ScatterVariationChart scatterProps={{ size: 'weight' }}>
-        <ScatterSizeKey title="Weight" direction="horizontal" />
+        <ScatterSizeLegend title="Weight" direction="horizontal" />
       </ScatterVariationChart>
     ),
   },
@@ -1678,7 +1678,7 @@ const scatterCoverage: PropCoverage<ScatterProps> = {
     'trendline-default',
     'inspect-default',
     'popover-default',
-    'scatter-size-key-default',
+    'scatter-size-legend-default',
   ],
   clip: ['clip-off', 'clip-on'],
   color: ['defaults', 'color-series', 'color-static', 'color-linear'],
@@ -1697,10 +1697,10 @@ const scatterCoverage: PropCoverage<ScatterProps> = {
   stroke: ['stroke-static', 'stroke-key'],
 };
 
-const scatterSizeKeyCoverage: PropCoverage<ScatterSizeKeyProps> = {
-  direction: ['scatter-size-key-default', 'scatter-size-key-horizontal'],
-  position: ['scatter-size-key-default', 'scatter-size-key-bottom'],
-  title: ['scatter-size-key-default'],
+const scatterSizeLegendCoverage: PropCoverage<ScatterSizeLegendProps> = {
+  direction: ['scatter-size-legend-default', 'scatter-size-legend-horizontal'],
+  position: ['scatter-size-legend-default', 'scatter-size-legend-bottom'],
+  title: ['scatter-size-legend-default'],
 };
 
 const scatterPathCoverage: PropCoverage<ScatterPathProps> = {
@@ -1837,7 +1837,7 @@ export const dashboard: DashboardDefinition = {
   coverage: {
     Scatter: scatterCoverage,
     ScatterPath: scatterPathCoverage,
-    ScatterSizeKey: scatterSizeKeyCoverage,
+    ScatterSizeLegend: scatterSizeLegendCoverage,
     ScatterAnnotation: scatterAnnotationCoverage,
     Trendline: trendlineCoverage,
     TrendlineAnnotation: trendlineAnnotationCoverage,

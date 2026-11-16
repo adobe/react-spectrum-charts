@@ -9,17 +9,17 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ScatterSizeKey } from '../../../../lab/components/ScatterSizeKey/index.js';
+import { ScatterSizeLegend } from '../../../../lab/components/ScatterSizeLegend/index.js';
 import { findChart, render, screen } from '../../../../test-utils/index.js';
-import { Basic } from './ScatterSizeKey.story.js';
+import { Basic } from './ScatterSizeLegend.story.js';
 
-describe('ScatterSizeKey', () => {
-  // ScatterSizeKey is not a real React component. This is test just provides test coverage for sonarqube
-  test('ScatterSizeKey pseudo element', () => {
-    render(<ScatterSizeKey />);
+describe('ScatterSizeLegend', () => {
+  // ScatterSizeLegend is not a real React component. This is test just provides test coverage for sonarqube
+  test('ScatterSizeLegend pseudo element', () => {
+    render(<ScatterSizeLegend />);
   });
 
-  test('shows the size key with its own title', async () => {
+  test('shows the size legend with its own title', async () => {
     render(<Basic {...Basic.args} />);
     expect(await findChart()).toBeInTheDocument();
     expect(screen.getByText('Weight')).toBeInTheDocument();

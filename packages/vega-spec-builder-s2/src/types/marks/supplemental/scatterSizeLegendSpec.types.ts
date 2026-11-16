@@ -11,10 +11,10 @@
  */
 import { Position } from '../../specUtil.types.js';
 
-export interface ScatterSizeKeyOptions {
-  /** Heading shown above the size key, usually the name of the size field. */
+export interface ScatterSizeLegendOptions {
+  /** Heading shown above the size legend, usually the name of the size field. */
   title?: string;
-  /** Side of the plot the key is placed on. Defaults to `right`. */
+  /** Side of the plot the legend is placed on. Defaults to `right`. */
   position?: Position;
   /** Lays the circles out in a row or a column. Defaults to `vertical` on the left or right, `horizontal` on the top or bottom. */
   direction?: 'horizontal' | 'vertical';

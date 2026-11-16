@@ -11,8 +11,11 @@
  */
 import { JSXElementConstructor, ReactElement } from 'react';
 
-import { ScatterSizeKeyOptions } from '@spectrum-charts/vega-spec-builder-s2';
+import { ScatterSizeLegendOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
-export interface ScatterSizeKeyProps extends ScatterSizeKeyOptions {}
+export interface ScatterSizeLegendProps extends ScatterSizeLegendOptions {}
 
-export type ScatterSizeKeyElement = ReactElement<ScatterSizeKeyProps, JSXElementConstructor<ScatterSizeKeyProps>>;
+export type ScatterSizeLegendElement = ReactElement<
+  ScatterSizeLegendProps,
+  JSXElementConstructor<ScatterSizeLegendProps>
+>;

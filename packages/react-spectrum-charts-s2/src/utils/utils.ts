@@ -51,7 +51,7 @@ import {
   Scatter,
   ScatterAnnotation,
   ScatterPath,
-  ScatterSizeKey,
+  ScatterSizeLegend,
   Trendline,
   TrendlineAnnotation,
 } from '../lab/index.js';
@@ -78,7 +78,7 @@ import {
   ScatterAnnotationElement,
   ScatterElement,
   ScatterPathElement,
-  ScatterSizeKeyElement,
+  ScatterSizeLegendElement,
   SegmentLabelElement,
   TitleElement,
   TrendlineAnnotationElement,
@@ -95,7 +95,7 @@ type MarkChildElement =
   | LineDirectLabelElement
   | ScatterAnnotationElement
   | ScatterPathElement
-  | ScatterSizeKeyElement
+  | ScatterSizeLegendElement
   | SegmentLabelElement
   | TrendlineAnnotationElement
   | TrendlineElement;
@@ -169,7 +169,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Scatter.displayName,
     ScatterAnnotation.displayName,
     ScatterPath.displayName,
-    ScatterSizeKey.displayName,
+    ScatterSizeLegend.displayName,
     SegmentLabel.displayName,
     Title.displayName,
     Trendline.displayName,
@@ -212,7 +212,7 @@ export const sanitizeMarkChildren = (children: unknown): MarkChildElement[] => {
     LineDirectLabel.displayName,
     ScatterAnnotation.displayName,
     ScatterPath.displayName,
-    ScatterSizeKey.displayName,
+    ScatterSizeLegend.displayName,
     SegmentLabel.displayName,
     Trendline.displayName,
     TrendlineAnnotation.displayName,

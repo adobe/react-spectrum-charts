@@ -16,43 +16,43 @@ import { StoryFn } from '@storybook/react';
 import { Chart } from '../../../../Chart.js';
 import { Axis, Legend } from '../../../../components/index.js';
 import useChartProps from '../../../../hooks/useChartProps.js';
-import { Scatter, ScatterSizeKey } from '../../../../lab/index.js';
+import { Scatter, ScatterSizeLegend } from '../../../../lab/index.js';
 import { bindWithProps } from '../../../../test-utils/index.js';
-import { ScatterSizeKeyProps } from '../../../../types/index.js';
+import { ScatterSizeLegendProps } from '../../../../types/index.js';
 import { characterData } from '../../../data/marioKartData.js';
 
 export default {
-  title: 'React Spectrum Charts 2/Lab/Scatter/Features/Scatter Size Key',
+  title: 'React Spectrum Charts 2/Lab/Scatter/Features/Scatter Size Legend',
   tags: ['lab'],
-  component: ScatterSizeKey,
+  component: ScatterSizeLegend,
 };
 
-const ScatterSizeKeyStory: StoryFn<ScatterSizeKeyProps> = (args): ReactElement => {
+const ScatterSizeLegendStory: StoryFn<ScatterSizeLegendProps> = (args): ReactElement => {
   const chartProps = useChartProps({ data: characterData, height: 450, width: 600 });
   return (
     <Chart {...chartProps}>
       <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
       <Axis position="left" grid ticks baseline title="Handling (normal)" />
       <Scatter dimension="speedNormal" metric="handlingNormal" color="weightClass" size="weight">
-        <ScatterSizeKey {...args} />
+        <ScatterSizeLegend {...args} />
       </Scatter>
       <Legend highlight position="right" title="Weight class" />
     </Chart>
   );
 };
 
-const Basic = bindWithProps(ScatterSizeKeyStory);
+const Basic = bindWithProps(ScatterSizeLegendStory);
 Basic.args = { title: 'Weight' };
 Object.assign(Basic, { parameters: { controls: { include: ['title'] } } });
 
-const Position = bindWithProps(ScatterSizeKeyStory);
+const Position = bindWithProps(ScatterSizeLegendStory);
 Position.args = { title: 'Weight', position: 'bottom' };
 Object.assign(Position, { parameters: { controls: { include: ['position'] } } });
 Object.assign(Position, {
   argTypes: { position: { control: 'inline-radio', options: ['left', 'right', 'top', 'bottom'] } },
 });
 
-const Direction = bindWithProps(ScatterSizeKeyStory);
+const Direction = bindWithProps(ScatterSizeLegendStory);
 Direction.args = { title: 'Weight', direction: 'horizontal' };
 Object.assign(Direction, { parameters: { controls: { include: ['direction'] } } });
 Object.assign(Direction, { argTypes: { direction: { control: 'inline-radio', options: ['horizontal', 'vertical'] } } });

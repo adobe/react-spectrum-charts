@@ -62,7 +62,7 @@ import {
   getScatterDrawInBoundsData,
 } from './scatterAnimationUtils.js';
 import { addScatterMarks } from './scatterMarkUtils.js';
-import { getScatterSizeKeyLegends } from './scatterSizeKey/scatterSizeKeyUtils.js';
+import { getScatterSizeLegends } from './scatterSizeLegend/scatterSizeLegendUtils.js';
 
 /**
  * Adds all the necessary parts of a scatter to the spec
@@ -106,7 +106,7 @@ export const addScatter = produce<
       outline = 'auto',
       scatterAnnotations = [],
       scatterPaths = [],
-      scatterSizeKeys = [],
+      scatterSizeLegends = [],
       size = { value: 'M' },
       trendlines = [],
       stroke,
@@ -148,7 +148,7 @@ export const addScatter = produce<
       outline,
       scatterAnnotations,
       scatterPaths,
-      scatterSizeKeys,
+      scatterSizeLegends,
       size,
       trendlines,
       seriesIds: getUniqueSeriesIds(data, getFacetsFromOptions({ color, lineType, opacity }).facets),
@@ -172,7 +172,7 @@ export const addScatter = produce<
     spec.signals = addSignals(spec.signals ?? [], scatterOptions);
     spec.scales = setScales(spec.scales ?? [], scatterOptions);
     spec.marks = addScatterMarks(spec.marks ?? [], scatterOptions);
-    spec.legends = [...(spec.legends ?? []), ...getScatterSizeKeyLegends(scatterOptions)];
+    spec.legends = [...(spec.legends ?? []), ...getScatterSizeLegends(scatterOptions)];
   }
 );
 

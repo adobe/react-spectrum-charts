@@ -22,4 +22,4 @@ export * from './trendlineSpec.types.js';
 export * from './trendlineAnnotationSpec.types.js';
 export * from './linePointAnnotationSpec.types.js';
 export * from './lineForecastSpec.types.js';
-export * from './scatterSizeKeySpec.types.js';
+export * from './scatterSizeLegendSpec.types.js';

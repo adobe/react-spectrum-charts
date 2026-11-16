@@ -13,18 +13,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { FC } from 'react';
 
-import { ScatterSizeKeyProps } from '../../../types/index.js';
+import { ScatterSizeLegendProps } from '../../../types/index.js';
 
 // destructure props here and set defaults so that storybook can pick them up
 /**
- * Shows a key for a scatter's point sizes: the smallest, middle, and largest values at their true size.
+ * Shows a legend for a scatter's point sizes: the smallest and largest values and a rounded middle value at their true size.
  * @experimental
  */
-const ScatterSizeKey: FC<ScatterSizeKeyProps> = ({ direction, position = 'right', title }) => {
+const ScatterSizeLegend: FC<ScatterSizeLegendProps> = ({ direction, position = 'right', title }) => {
   return null;
 };
 
 // displayName is used to validate the component type in the spec builder
-ScatterSizeKey.displayName = 'ScatterSizeKey';
+ScatterSizeLegend.displayName = 'ScatterSizeLegend';
 
-export { ScatterSizeKey };
+export { ScatterSizeLegend };

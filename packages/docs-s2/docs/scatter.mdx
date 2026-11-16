@@ -22,7 +22,7 @@ import {
   ScatterOutlinePlayground,
   ScatterPathPlayground,
   ScatterPlayground,
-  ScatterSizeKeyPlayground,
+  ScatterSizeLegendPlayground,
   ScatterSizePlayground,
   ScatterStatesPlayground,
   ScatterTimePlayground,
@@ -249,18 +249,18 @@ text before the value. `badge` draws the label in a filled badge in the trendlin
 moving-average methods the chart fails to render.
 :::
 
-## ScatterSizeKey
+## ScatterSizeLegend
 
-When `size` is a data field, add `ScatterSizeKey` inside `Scatter` to explain the point sizes. It
+When `size` is a data field, add `ScatterSizeLegend` inside `Scatter` to explain the point sizes. It
 shows the smallest and largest values and a rounded middle value as circles at the same size as the points, so
 readers can compare them directly.
 
 - `title` names the size field, separately from the `Legend` title.
-- `position` places the key on a side of the plot (default `right`). It sits after the `Legend`.
+- `position` places the legend on a side of the plot (default `right`). It sits after the `Legend`.
 - `direction` stacks the circles (`vertical`, the default on the left or right) or lays them in
   a row (`horizontal`, the default on the top or bottom).
 
-<ScatterSizeKeyPlayground />
+<ScatterSizeLegendPlayground />
 
 ## Legend
 
@@ -280,7 +280,7 @@ combination.
 
 A linear `color` field gets a gradient legend. When points share one color and `opacity` is a
 field, set `opacity` on `Legend` to that field so the legend symbols match. `Legend` doesn't show
-point sizes; add [`ScatterSizeKey`](#scattersizekey) to `Scatter` for that.
+point sizes; add [`ScatterSizeLegend`](#scattersizelegend) to `Scatter` for that.
 
 <ScatterContinuousLegendPlayground />
 
@@ -370,9 +370,9 @@ animation. See [Animation](./guides/animation.mdx).
 
 <PropsTable component="ScatterAnnotation" />
 
-### ScatterSizeKey
+### ScatterSizeLegend
 
-<PropsTable component="ScatterSizeKey" />
+<PropsTable component="ScatterSizeLegend" />
 
 ### Trendline
 
