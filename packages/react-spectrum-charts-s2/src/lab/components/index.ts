@@ -17,5 +17,6 @@ export * from './Combo/index.js';
 export * from './Scatter/index.js';
 export * from './ScatterAnnotation/index.js';
 export * from './ScatterPath/index.js';
+export * from './ScatterSizeLegend/index.js';
 export * from './Trendline/index.js';
 export * from './TrendlineAnnotation/index.js';

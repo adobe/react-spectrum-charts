@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { produce } from 'immer';
-import { Axis, Data, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
+import { Axis, Data, Legend, LinearScale, OrdinalScale, PointScale, Scale, Signal } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -216,6 +216,11 @@ export function buildSpec({
       highlightedSeries,
     });
   }, spec);
+
+  // size legends come from marks, so they'd sit above the Legend; list them after it
+  if (spec.legends?.length) {
+    spec = { ...spec, legends: [...spec.legends].sort((a, b) => Number(isSizeLegend(a)) - Number(isSizeLegend(b))) };
+  }
 
   spec = [...axes].reduce((acc: ScSpec, axis, index) => {
     return addAxis(acc, {
@@ -543,6 +548,9 @@ export const isNumberArray = (opacities: Opacities): opacities is number[] => {
 export const isSymbolShapeArray = (symbolShapes: SymbolShapes): symbolShapes is ChartSymbolShape[] => {
   return !symbolShapes.some((symbolShape) => Array.isArray(symbolShape));
 };
+
+/** Whether a legend is a scatter size legend. */
+const isSizeLegend = (legend: Legend): boolean => legend.size === SYMBOL_SIZE_SCALE;
 
 const safeClone = <T>(obj: T): T => {
   if (typeof structuredClone === 'function') {

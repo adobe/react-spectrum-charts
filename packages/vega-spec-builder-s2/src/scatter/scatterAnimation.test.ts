@@ -14,6 +14,7 @@ import { GroupMark, Mark, View, expressionFunction, parse } from 'vega';
 import {
   ANIMATION_HOVER_SPEED,
   ANIMATION_TIMER,
+  DRAW_IN_PAINT_FADE_MS,
   DRAW_IN_SWEEP_DURATION_MS,
   FADE_FACTOR,
   TABLE,
@@ -27,8 +28,11 @@ import { defaultScatterOptions } from './scatterTestUtils.js';
 
 interface SceneNode {
   name?: string;
+  x?: number;
+  y?: number;
   items?: SceneNode[];
   opacity?: number;
+  fillOpacity?: number;
   size?: number;
   strokeWidth?: number;
   datum?: { id?: string };
@@ -109,6 +113,63 @@ describe('scatter animations', () => {
       expect(staggered).toBe(true);
       await tick(chart, DRAW_IN_SWEEP_DURATION_MS);
       expect(new Set(sizes(chart)).size).toBe(1);
+    });
+
+    test('keeps the chart bounds fixed while points grow', async () => {
+      const chart = await createView({ marks: [{ ...scatter, size: 'weight' }] });
+      const bounds = () => JSON.stringify((chart.scenegraph() as unknown as { root: { bounds: object } }).root.bounds);
+      const start = bounds();
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS / 2);
+      expect(bounds()).toBe(start);
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS);
+      expect(bounds()).toBe(start);
+    });
+
+    test('keeps the chart bounds fixed with thick borders', async () => {
+      const chart = await createView({ marks: [{ ...scatter, size: 'weight', lineWidth: { value: 6 } }] });
+      const bounds = () => JSON.stringify((chart.scenegraph() as unknown as { root: { bounds: object } }).root.bounds);
+      const start = bounds();
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 2);
+      expect(bounds()).toBe(start);
+    });
+
+    test('fades annotation labels in together once the points finish', async () => {
+      const chart = await createView({ marks: [{ ...scatter, scatterAnnotations: [{ textKey: 'id' }] }] });
+      const fades = () => getMarkItems(chart, /Annotation/).map((item) => item.fillOpacity ?? 0);
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.9);
+      expect(fades().every((fade) => fade === 0)).toBe(true);
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.1 + DRAW_IN_PAINT_FADE_MS / 2);
+      expect(new Set(fades()).size).toBe(1);
+      expect(fades()[0]).toBeGreaterThan(0);
+      expect(fades()[0]).toBeLessThan(1);
+      await tick(chart, DRAW_IN_PAINT_FADE_MS);
+      expect(fades().every((fade) => fade === 1)).toBe(true);
+    });
+
+    test('reserves only the edge points', async () => {
+      const chart = await createView({ marks: [{ ...scatter, size: 'weight' }] });
+      expect(getMarkItems(chart, 'scatter_drawInBounds').length).toBeLessThanOrEqual(4);
+    });
+
+    test('places annotation labels the same as without draw-in', async () => {
+      const marks = [{ ...scatter, scatterAnnotations: [{ textKey: 'id' }] }];
+      const labels = (chart: View) =>
+        getMarkItems(chart, /Annotation/).map((item) => JSON.stringify([item.x, item.y, item.opacity]));
+      const animated = await createView({ marks });
+      await tick(animated, DRAW_IN_SWEEP_DURATION_MS * 2);
+      const placed = labels(animated);
+      const still = await createView({ marks, animationTypes: ['hover'] });
+      expect(placed).toEqual(labels(still));
+    });
+
+    test('sweeps across the points, not the whole plot', async () => {
+      // every point sits at the far right of a plot that starts at 0
+      const rightData = data.map((row, i) => ({ ...row, x: 98 + i }));
+      const chart = await createView({ data: rightData, marks: [{ ...scatter, size: undefined }] });
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.4);
+      const [left, , right] = sizes(chart);
+      expect(left).toBeGreaterThan(0);
+      expect(right).toBe(0);
     });
 
     test('settles sized points at their own sizes', async () => {

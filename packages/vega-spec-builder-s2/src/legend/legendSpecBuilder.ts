@@ -146,8 +146,8 @@ export const addLegend = produce<
       legends.push(getCategoricalLegend(ordinalFacets, legendOptions, spec.usermeta));
     }
 
-    // continuous legends cannot be combined with any other legends
-    for (const facet of continuousFacets) {
+    // continuous legends cannot be combined with any other legends; the size scale's legend is ScatterSizeLegend
+    for (const facet of continuousFacets.filter(({ facetType }) => facetType !== SYMBOL_SIZE_SCALE)) {
       // add the legend
       legends.push(getContinuousLegend(facet, legendOptions));
     }

@@ -19,7 +19,14 @@ import { action } from 'storybook/actions';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Scatter, ScatterAnnotation, ScatterPath, Trendline, TrendlineAnnotation } from '../../../lab/index.js';
+import {
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  ScatterSizeLegend,
+  Trendline,
+  TrendlineAnnotation,
+} from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ScatterProps } from '../../../types/index.js';
 import { ScatterDataPreset, getScatterData } from '../../playgroundData.js';
@@ -62,6 +69,8 @@ interface ScatterPlaygroundArgs extends ScatterProps {
   popoverRightClick: boolean;
   popoverHighlightBy: 'item' | 'series' | 'dimension';
   showAnnotation: boolean;
+  showSizeLegend: boolean;
+  sizeLegendTitle: string;
   annotationTextKey: string;
   annotationAnchor: 'top' | 'bottom' | 'left' | 'right';
   showPath: boolean;
@@ -111,6 +120,8 @@ export default {
       options: [undefined, 'normal', 'multiply', 'screen', 'overlay'],
       table: { category: 'Scatter' },
     },
+    showSizeLegend: { control: 'boolean', table: { category: 'Size legend' } },
+    sizeLegendTitle: { control: 'text', table: { category: 'Size legend' } },
     showAnnotation: { control: 'boolean', table: { category: 'Annotation' } },
     annotationTextKey: { control: 'text', table: { category: 'Annotation' } },
     annotationAnchor: {
@@ -164,6 +175,8 @@ const ScatterPlaygroundStory: StoryFn<ScatterPlaygroundArgs> = ({
   popoverRightClick,
   popoverHighlightBy,
   showAnnotation,
+  showSizeLegend,
+  sizeLegendTitle,
   annotationTextKey,
   annotationAnchor,
   showPath,
@@ -206,6 +219,7 @@ const ScatterPlaygroundStory: StoryFn<ScatterPlaygroundArgs> = ({
             {renderPopoverContent(['name', 'weightClass', 'speedNormal', 'handlingNormal'])}
           </ChartPopover>
         ) : undefined}
+        {showSizeLegend ? <ScatterSizeLegend title={sizeLegendTitle} /> : undefined}
         {showAnnotation ? <ScatterAnnotation textKey={annotationTextKey} anchor={annotationAnchor} /> : undefined}
         {showPath ? (
           <ScatterPath
@@ -260,6 +274,8 @@ Playground.args = {
   axisGrid: true,
   axisBaseline: false,
   showLegend: true,
+  showSizeLegend: true,
+  sizeLegendTitle: 'Size',
   legendPosition: 'bottom',
   legendTitle: 'Weight class',
   legendHighlight: true,
