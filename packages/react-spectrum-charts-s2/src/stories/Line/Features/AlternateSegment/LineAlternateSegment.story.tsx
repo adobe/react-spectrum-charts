@@ -62,6 +62,10 @@ const AlternateSegmentKey = bindWithProps(AlternateSegmentStory);
 AlternateSegmentKey.args = { ...segmentProps };
 setControls(AlternateSegmentKey, ['alternateSegmentKey']);
 
+const DisconnectedSegments = bindWithProps(AlternateSegmentStory);
+DisconnectedSegments.args = { ...segmentProps, connectAlternateSegments: false };
+setControls(DisconnectedSegments, ['connectAlternateSegments']);
+
 const AlternateSegmentLineType = bindWithProps(AlternateSegmentStory);
 AlternateSegmentLineType.args = { ...segmentProps, alternateSegmentLineType: 'dashed' };
 setControls(AlternateSegmentLineType, ['alternateSegmentLineType']);
@@ -70,4 +74,4 @@ const AlternateSegmentLabel = bindWithProps(AlternateSegmentStory);
 AlternateSegmentLabel.args = { ...segmentProps, alternateSegmentLabel: '(Preliminary)' };
 setControls(AlternateSegmentLabel, ['alternateSegmentLabel']);
 
-export { AlternateSegmentKey, AlternateSegmentLineType, AlternateSegmentLabel };
+export { AlternateSegmentKey, DisconnectedSegments, AlternateSegmentLineType, AlternateSegmentLabel };
