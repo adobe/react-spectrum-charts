@@ -49,6 +49,8 @@ export interface ScatterOptions {
   hasOnClick?: boolean;
   /** `true` if ScatterProps has an onContextMenu callback. Ensures interactive marks are generated even without inspect. */
   hasOnContextMenu?: boolean;
+  /** `true` if ScatterProps has an onMouseOver or onMouseOut callback. Ensures interactive marks are generated even without inspect. */
+  hasMouseInteraction?: boolean;
   /** Scale type for the x position; use `time` for timestamps. Defaults to `linear`. */
   dimensionScaleType?: ScaleType;
   /** Outline dash pattern: a data key mapped to the chart's `lineTypes`, or a static line type. Defaults to `{ value: 'solid' }`. */

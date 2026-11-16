@@ -15,7 +15,7 @@ import { ScatterProps } from '../types/index.js';
 import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getScatterOptions = (
-  { children, onClick, onContextMenu, ...scatterProps }: ScatterProps,
+  { children, onClick, onContextMenu, onMouseOut, onMouseOver, ...scatterProps }: ScatterProps,
   childrenToOptions: ChildrenToOptions
 ): ScatterOptions => {
   const { chartInspects, chartPopovers, scatterAnnotations, scatterPaths, scatterSizeLegends, trendlines } =
@@ -26,6 +26,7 @@ export const getScatterOptions = (
     chartPopovers,
     hasOnClick: Boolean(onClick),
     hasOnContextMenu: Boolean(onContextMenu),
+    hasMouseInteraction: Boolean(onMouseOver || onMouseOut),
     markType: 'scatter',
     scatterAnnotations,
     scatterPaths,

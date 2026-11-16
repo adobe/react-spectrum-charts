@@ -35,6 +35,7 @@ export interface ScatterProps
     | 'chartInspects'
     | 'hasOnClick'
     | 'hasOnContextMenu'
+    | 'hasMouseInteraction'
     | 'markType'
     | 'scatterAnnotations'
     | 'scatterPaths'
@@ -46,6 +47,10 @@ export interface ScatterProps
   onClick?: MarkCallback;
   /** Called with the event and the row's data when a point is right-clicked. Use it to show a custom context menu. */
   onContextMenu?: ContextMenuCallback;
+  /** Called with the row's data when the pointer moves onto a point. */
+  onMouseOver?: MarkCallback;
+  /** Called with the row's data when the pointer leaves a point. */
+  onMouseOut?: MarkCallback;
 }
 
 export type ScatterElement = ReactElement<ScatterProps, JSXElementConstructor<ScatterProps>>;
