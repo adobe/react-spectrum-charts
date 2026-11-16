@@ -816,9 +816,7 @@ The interactive example has these controls. The code above uses the shown values
 />
 ```
 
-> **Note:**
-> 
-> `Scatter` doesn't support `onMouseOver` or `onMouseOut` yet.
+`onMouseOver` and `onMouseOut` are called with a point's row as the pointer moves onto and off it, using the same nearest-point targeting.
 
 ### Highlighting
 
@@ -911,6 +909,8 @@ Draw-in plays once when the chart mounts; re-renders, data updates, and resizing
 | `name` — Sets the name of the component. | `string` | – |
 | `onClick` — Called with the row's data when a point is clicked. | `MarkCallback` | – |
 | `onContextMenu` — Called with the event and the row's data when a point is right-clicked. Use it to show a custom context menu. | `ContextMenuCallback` | – |
+| `onMouseOut` — Called with the row's data when the pointer leaves a point. | `MarkCallback` | – |
+| `onMouseOver` — Called with the row's data when the pointer moves onto a point. | `MarkCallback` | – |
 | `opacity` — Point opacity: a data key mapped to the chart's `opacities`, or a static value. | `OpacityFacet` | `{ value: 1 }` |
 | `outline` — Thin border around points: `auto` only where a point's fill has under 3:1 contrast with the background, `always`, or `never`. `stroke` and `lineWidth` take precedence. | `"auto" \| "always" \| "never"` | `'auto'` |
 | `size` — Point width: a numeric data key scaled between the chart's `symbolSizes`, or a static size. | `SymbolSizeFacet` | `{ value: DEFAULT_SYMBOL_SIZE }` |
