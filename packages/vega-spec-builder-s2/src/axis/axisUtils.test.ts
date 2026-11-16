@@ -44,15 +44,9 @@ describe('getBaselineRule', () => {
   describe('baselineOffset', () => {
     test('should apply offset', () => {
       for (const offset of [1, 100, -100]) {
-        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty(
-          'scale',
-          'yLinear'
-        );
+        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('scale', 'yLinear');
         expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('value', offset);
-        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty(
-          'scale',
-          'xLinear'
-        );
+        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('scale', 'xLinear');
         expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('value', offset);
       }
     });
@@ -122,6 +116,41 @@ describe('getBaselineRule', () => {
 });
 
 describe('getDefaultAxis()', () => {
+  test('uses exact metric tick positions without changing automatic spacing when omitted', () => {
+    const values = [0, 20000, 40000, 60000, 80000, 100000];
+    const axis = getDefaultAxis(
+      {
+        ...defaultAxisOptions,
+        tickValues: values,
+        tickCountLimit: 2,
+        tickMinStep: 40000,
+      },
+      'yLinear'
+    );
+    expect(axis).toHaveProperty('values', values);
+    expect(axis.tickCount).toBeUndefined();
+    expect(axis.tickMinStep).toBeUndefined();
+    expect(getDefaultAxis(defaultAxisOptions, 'yLinear')).not.toHaveProperty('values');
+    expect(getDefaultAxis({ ...defaultAxisOptions, tickValues: [] }, 'yLinear')).toHaveProperty('values', []);
+  });
+
+  test('uses the same exact calendar ticks on both time-label rows', () => {
+    const values = [Date.UTC(2026, 10, 1), Date.UTC(2026, 10, 6), Date.UTC(2026, 10, 11)];
+    for (const axis of getTimeAxes('xTime', {
+      ...defaultAxisOptions,
+      position: 'bottom',
+      scaleType: 'time',
+      tickValues: values,
+      tickCountLimit: 2,
+    })) {
+      expect(axis).toHaveProperty('values', values);
+      expect(axis.tickCount).toBeUndefined();
+    }
+    for (const axis of getTimeAxes('xTime', { ...defaultAxisOptions, position: 'bottom', scaleType: 'time' })) {
+      expect(axis).not.toHaveProperty('values');
+    }
+  });
+
   test('tickMinStep: linear scale', () => {
     expect(
       getDefaultAxis(

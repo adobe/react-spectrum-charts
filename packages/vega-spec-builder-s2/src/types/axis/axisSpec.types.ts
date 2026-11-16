@@ -89,6 +89,8 @@ export interface AxisOptions {
   tickCountMinimum?: number;
   /** Maximum number of ticks, not counting the base tick; on time axes it replaces the granularity interval and can repeat labels. */
   tickCountLimit?: number;
+  /** Exact, finite increasing positions (epoch milliseconds for time axes). Overrides tick-count/minimum-step hints; omitted uses automatic spacing. */
+  tickValues?: number[];
   /** Format for `linear` labels: `shortNumber`, `standardNumber`, `currency`, `shortCurrency`, or a d3-format specifier. Defaults to `shortNumber`. */
   numberFormat?: NumberFormat;
   /** Fixed minimum and maximum axis values, such as `[-10, 10]`; only for linear and time scales. */

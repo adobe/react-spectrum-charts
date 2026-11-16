@@ -125,6 +125,17 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     const scaleName = name || scale.name;
     const scaleType = scale.type;
     const scaleField = getScaleField(scale);
+    if (
+      options.tickValues !== undefined &&
+      ((scaleType !== 'linear' && scaleType !== 'time') ||
+        labels.length > 0 ||
+        !Array.isArray(options.tickValues) ||
+        options.tickValues.some(
+          (value, index, values) => !Number.isFinite(value) || (index > 0 && value <= values[index - 1])
+        ))
+    ) {
+      throw new Error('Axis tickValues require finite increasing positions on a linear or time scale without labels.');
+    }
 
     // get the opposing scale
     const opposingScaleType = getOpposingScaleType(spec.scales ?? [], position);
