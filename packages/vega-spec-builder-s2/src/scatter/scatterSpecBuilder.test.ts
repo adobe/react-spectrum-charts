@@ -21,8 +21,8 @@ import {
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
 
-import { getRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { getTableData } from '../data/dataUtils.js';
+import { getRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
 import { addData, addSignals, setScales } from './scatterSpecBuilder.js';

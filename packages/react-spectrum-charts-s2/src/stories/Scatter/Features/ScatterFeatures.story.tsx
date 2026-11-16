@@ -18,7 +18,7 @@ import { ChartColors, Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Scatter } from '../../../lab/index.js';
+import { Scatter, ScatterSizeLegend } from '../../../lab/index.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps, ScatterProps } from '../../../types/index.js';
 import { characterData, overlappingPointsData } from '../../data/marioKartData.js';
@@ -146,7 +146,7 @@ Opacity.args = { ...defaultArgs, opacity: { value: 0.5 } };
 Object.assign(Opacity, { parameters: { controls: { include: ['opacity'] } } });
 
 const Size = bindWithProps(ScatterStory);
-Size.args = { ...defaultArgs, size: 'weight' };
+Size.args = { ...defaultArgs, size: 'weight', children: <ScatterSizeLegend title="Weight" /> };
 Object.assign(Size, { parameters: { controls: { include: ['size'] } } });
 
 // scatter points have no outline by default, so lineWidth is needed to see the stroke

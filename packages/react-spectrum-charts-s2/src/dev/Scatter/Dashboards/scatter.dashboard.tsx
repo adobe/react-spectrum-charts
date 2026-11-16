@@ -17,7 +17,14 @@ import { Datum } from '@spectrum-charts/vega-spec-builder-s2';
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartInspect, ChartPopover, Legend, ReferenceLine, Title } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Scatter, ScatterAnnotation, ScatterPath, Trendline, TrendlineAnnotation } from '../../../lab/index.js';
+import {
+  Scatter,
+  ScatterAnnotation,
+  ScatterPath,
+  ScatterSizeLegend,
+  Trendline,
+  TrendlineAnnotation,
+} from '../../../lab/index.js';
 import {
   AxisProps,
   ChartInspectProps,
@@ -28,6 +35,7 @@ import {
   ScatterAnnotationProps,
   ScatterPathProps,
   ScatterProps,
+  ScatterSizeLegendProps,
   TitleProps,
   TrendlineAnnotationProps,
   TrendlineProps,
@@ -301,6 +309,47 @@ const baseScatterVariations: Variation[] = [
     dataset: 'standard',
     coverage: ['size=weight'],
     render: () => <ScatterVariationChart scatterProps={{ size: 'weight' }} />,
+  },
+  {
+    id: 'scatter-size-legend-default',
+    title: 'Size legend',
+    description: 'ScatterSizeLegend with a title: min, middle, and max weight at true size, stacked on the right.',
+    dataset: 'standard',
+    coverage: [
+      'ScatterSizeLegend',
+      'ScatterSizeLegend.title',
+      'ScatterSizeLegend.position=right',
+      'ScatterSizeLegend.direction=vertical',
+    ],
+    render: () => (
+      <ScatterVariationChart scatterProps={{ size: 'weight' }}>
+        <ScatterSizeLegend title="Weight" />
+      </ScatterVariationChart>
+    ),
+  },
+  {
+    id: 'scatter-size-legend-bottom',
+    title: 'Size legend at the bottom',
+    description: 'The legend below the plot runs horizontally by default.',
+    dataset: 'standard',
+    coverage: ['ScatterSizeLegend.position=bottom'],
+    render: () => (
+      <ScatterVariationChart scatterProps={{ size: 'weight' }}>
+        <ScatterSizeLegend title="Weight" position="bottom" />
+      </ScatterVariationChart>
+    ),
+  },
+  {
+    id: 'scatter-size-legend-horizontal',
+    title: 'Horizontal size legend',
+    description: 'A horizontal row on the right, under the series legend.',
+    dataset: 'standard',
+    coverage: ['ScatterSizeLegend.direction=horizontal'],
+    render: () => (
+      <ScatterVariationChart scatterProps={{ size: 'weight' }}>
+        <ScatterSizeLegend title="Weight" direction="horizontal" />
+      </ScatterVariationChart>
+    ),
   },
   {
     id: 'size-static',
@@ -1623,7 +1672,14 @@ export const ScatterDashboard = (): ReactElement => (
 
 const scatterCoverage: PropCoverage<ScatterProps> = {
   blend: ['blend-default', 'blend-normal', 'blend-darken', 'dark-background'],
-  children: ['path-default', 'annotation-default', 'trendline-default', 'inspect-default', 'popover-default'],
+  children: [
+    'path-default',
+    'annotation-default',
+    'trendline-default',
+    'inspect-default',
+    'popover-default',
+    'scatter-size-legend-default',
+  ],
   clip: ['clip-off', 'clip-on'],
   color: ['defaults', 'color-series', 'color-static', 'color-linear'],
   colorScaleType: ['defaults', 'color-linear'],
@@ -1639,6 +1695,12 @@ const scatterCoverage: PropCoverage<ScatterProps> = {
   outline: ['defaults', 'outline-auto', 'outline-always', 'outline-never'],
   size: ['defaults', 'size-key', 'size-static', 'size-pixels', 'chart-symbol-sizes'],
   stroke: ['stroke-static', 'stroke-key'],
+};
+
+const scatterSizeLegendCoverage: PropCoverage<ScatterSizeLegendProps> = {
+  direction: ['scatter-size-legend-default', 'scatter-size-legend-horizontal'],
+  position: ['scatter-size-legend-default', 'scatter-size-legend-bottom'],
+  title: ['scatter-size-legend-default'],
 };
 
 const scatterPathCoverage: PropCoverage<ScatterPathProps> = {
@@ -1776,6 +1838,7 @@ export const dashboard: DashboardDefinition = {
   coverage: {
     Scatter: scatterCoverage,
     ScatterPath: scatterPathCoverage,
+    ScatterSizeLegend: scatterSizeLegendCoverage,
     ScatterAnnotation: scatterAnnotationCoverage,
     Trendline: trendlineCoverage,
     TrendlineAnnotation: trendlineAnnotationCoverage,

@@ -11,6 +11,8 @@
  */
 import { TextMark } from 'vega';
 
+import { DRAW_IN_DONE } from '@spectrum-charts/core-s2/constants';
+
 import { ScatterAnnotationOptions, ScatterAnnotationSpecOptions, ScatterSpecOptions } from '../../types/index.js';
 
 export const getScatterAnnotationSpecOptions = (
@@ -56,7 +58,12 @@ export const getScatterAnnotationMarks = (scatterOptions: ScatterSpecOptions): T
       transform: [
         {
           type: 'label',
-          size: { signal: '[width, height]' },
+          // places labels once points reach full size, so they never reframe during draw-in
+          size: {
+            signal: scatterOptions.isDrawInAnimate
+              ? `${DRAW_IN_DONE} ? [width, height] : [width, height]`
+              : '[width, height]',
+          },
           anchor: Array.isArray(anchor) ? anchor : [anchor],
         },
       ],

@@ -33,10 +33,11 @@ import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils.js';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils.js';
 import { addRowKeyTransforms } from '../data/rowKeyUtils.js';
-import { addDrawInClockSignals, addDrawInDoneSignal, addDrawInLabelFadeTimer } from '../marks/drawInAnimationUtils.js';
+import { addDrawInClockSignals, addDrawInDoneSignal } from '../marks/drawInAnimationUtils.js';
 import { addHoverAnimationSignals } from '../marks/hoverAnimationUtils.js';
 import {
   getInteractiveMarkName,
+  getSymbolSizeProductionRule,
   hasPopover,
   isDrawInAnimationEnabled,
   isHoverAnimationEnabled,
@@ -53,8 +54,15 @@ import {
 } from '../specUtils.js';
 import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../trendline/index.js';
 import { ChartData, ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
-import { addScatterHoverAnimationData, addScatterItemHighlightSignals } from './scatterAnimationUtils.js';
+import {
+  addScatterDrawInExtentSignal,
+  addScatterFollowerFadeTimer,
+  addScatterHoverAnimationData,
+  addScatterItemHighlightSignals,
+  getScatterDrawInBoundsData,
+} from './scatterAnimationUtils.js';
 import { addScatterMarks } from './scatterMarkUtils.js';
+import { getScatterSizeLegends } from './scatterSizeLegend/scatterSizeLegendUtils.js';
 
 /**
  * Adds all the necessary parts of a scatter to the spec
@@ -98,6 +106,7 @@ export const addScatter = produce<
       outline = 'auto',
       scatterAnnotations = [],
       scatterPaths = [],
+      scatterSizeLegends = [],
       size = { value: 'M' },
       trendlines = [],
       stroke,
@@ -139,6 +148,7 @@ export const addScatter = produce<
       outline,
       scatterAnnotations,
       scatterPaths,
+      scatterSizeLegends,
       size,
       trendlines,
       seriesIds: getUniqueSeriesIds(data, getFacetsFromOptions({ color, lineType, opacity }).facets),
@@ -162,6 +172,7 @@ export const addScatter = produce<
     spec.signals = addSignals(spec.signals ?? [], scatterOptions);
     spec.scales = setScales(spec.scales ?? [], scatterOptions);
     spec.marks = addScatterMarks(spec.marks ?? [], scatterOptions);
+    spec.legends = [...(spec.legends ?? []), ...getScatterSizeLegends(scatterOptions)];
   }
 );
 
@@ -194,6 +205,9 @@ export const addData = produce<Data[], [ScatterSpecOptions]>((data, scatterOptio
   addInspectData(data, scatterOptions);
   addTrendlineData(data, scatterOptions);
   if (scatterOptions.isHoverAnimate) addScatterHoverAnimationData(data, scatterOptions);
+  if (scatterOptions.isDrawInAnimate) {
+    data.push(getScatterDrawInBoundsData(scatterOptions, getSymbolSizeProductionRule(scatterOptions.size)));
+  }
 });
 
 /**
@@ -208,8 +222,9 @@ export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scat
 
   if (isDrawInAnimate) {
     addDrawInClockSignals(signals, DRAW_IN_SWEEP_DURATION_MS);
+    addScatterDrawInExtentSignal(signals, scatterOptions);
     addDrawInDoneSignal(signals);
-    if (hasDrawInFollowers(scatterOptions)) addDrawInLabelFadeTimer(signals);
+    if (hasDrawInFollowers(scatterOptions)) addScatterFollowerFadeTimer(signals);
   }
   if (isHoverAnimate) {
     addHoverAnimationSignals(signals, scatterName);

@@ -9,14 +9,15 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Content, Heading, Text } from '@react-spectrum/s2';
 import React, { Children, ReactElement, ReactNode, isValidElement } from 'react';
 
+import { Content, Heading, Text } from '@react-spectrum/s2';
 import { Axis, ChartInspect, ChartPopover, Legend, Title } from '@spectrum-charts/react-spectrum-charts-s2';
 import {
   Scatter,
   ScatterAnnotation,
   ScatterPath,
+  ScatterSizeLegend,
   Trendline,
   TrendlineAnnotation,
 } from '@spectrum-charts/react-spectrum-charts-s2/lab';
@@ -123,7 +124,9 @@ const popoverContent = withSource(
     <>
       <Heading level={4}>{String(datum.campaign)}</Heading>
       <Content>
-        <Text>{String(datum.channel)}, {String(datum.reach)}K reach</Text>
+        <Text>
+          {String(datum.channel)}, {String(datum.reach)}K reach
+        </Text>
       </Content>
     </>
   ),
@@ -628,7 +631,13 @@ const trendlineControls: PlaygroundControl[] = [
     options: ['linear', 'average', 'median', 'quadratic', 'exponential', 'logarithmic', 'power'],
     defaultValue: 'linear',
   },
-  { group: 'Trendline', name: 'lineType', type: 'select', options: ['dashed', 'solid', 'dotted'], defaultValue: 'dashed' },
+  {
+    group: 'Trendline',
+    name: 'lineType',
+    type: 'select',
+    options: ['dashed', 'solid', 'dotted'],
+    defaultValue: 'dashed',
+  },
   { group: 'Trendline', name: 'lineWidth', type: 'select', options: ['M', 'XS', 'S', 'L', 'XL'], defaultValue: 'M' },
   { group: 'Trendline', name: 'opacity', type: 'number', min: 0, max: 1, step: 0.1, defaultValue: 1 },
   { group: 'Trendline', name: 'color', type: 'select', options: ['series', 'gray-700'], defaultValue: 'series' },
@@ -944,7 +953,13 @@ export const ScatterLegendPlayground = () => (
 );
 
 const continuousLegendControls: PlaygroundControl[] = [
-  { name: 'facet', label: 'Scatter facet', type: 'select', options: ['size', 'color', 'opacity'], defaultValue: 'size' },
+  {
+    name: 'facet',
+    label: 'Scatter facet',
+    type: 'select',
+    options: ['size', 'color', 'opacity'],
+    defaultValue: 'size',
+  },
 ];
 
 /**
@@ -960,19 +975,27 @@ export const ScatterContinuousLegendPlayground = () => (
       <Chart data={scatterCampaignData} colors={facet === 'color' ? 'sequentialViridis5' : undefined}>
         <Axis position="left" grid title="Revenue ($K)" />
         <Axis position="bottom" grid title="Spend ($K)" />
-        <Scatter
-          dimension="spend"
-          metric="revenue"
-          size={facet === 'size' ? 'reach' : { value: 'L' }}
-          color={facet === 'color' ? 'roi' : undefined}
-          colorScaleType={facet === 'color' ? 'linear' : undefined}
-          opacity={facet === 'opacity' ? 'audience' : undefined}
-        />
-        <Legend
-          position="right"
-          title={{ size: 'Reach (K)', color: 'ROI', opacity: 'Audience' }[String(facet)]}
-          opacity={facet === 'opacity' ? 'audience' : undefined}
-        />
+        {facet === 'size' ? (
+          <Scatter dimension="spend" metric="revenue" size="reach">
+            <ScatterSizeLegend title="Reach (K)" />
+          </Scatter>
+        ) : (
+          <Scatter
+            dimension="spend"
+            metric="revenue"
+            size={{ value: 'L' }}
+            color={facet === 'color' ? 'roi' : undefined}
+            colorScaleType={facet === 'color' ? 'linear' : undefined}
+            opacity={facet === 'opacity' ? 'audience' : undefined}
+          />
+        )}
+        {facet === 'size' ? null : (
+          <Legend
+            position="right"
+            title={{ color: 'ROI', opacity: 'Audience' }[String(facet)]}
+            opacity={facet === 'opacity' ? 'audience' : undefined}
+          />
+        )}
       </Chart>
     )}
   />
@@ -1150,5 +1173,49 @@ export const ScatterAnimationPlayground = () => (
         </Chart>
       );
     }}
+  />
+);
+
+const sizeLegendControls: PlaygroundControl[] = [
+  { group: 'ScatterSizeLegend', name: 'title', type: 'text', defaultValue: 'Reach (K)' },
+  {
+    group: 'ScatterSizeLegend',
+    name: 'position',
+    type: 'select',
+    options: ['right', 'left', 'top', 'bottom'],
+    defaultValue: 'right',
+  },
+  {
+    group: 'ScatterSizeLegend',
+    name: 'direction',
+    type: 'select',
+    options: ['default', 'vertical', 'horizontal'],
+    defaultValue: 'default',
+  },
+];
+
+/**
+ * Playground for the scatter size legend.
+ * @returns playground element
+ */
+export const ScatterSizeLegendPlayground = () => (
+  <PropPlayground
+    previewSize={getScatterPreviewSize}
+    controls={sizeLegendControls}
+    component="ScatterSizeLegend"
+    render={({ title, position, direction }) => (
+      <Chart data={scatterCampaignData}>
+        <Axis position="left" grid title="Revenue ($K)" />
+        <Axis position="bottom" grid title="Spend ($K)" />
+        <Scatter dimension="spend" metric="revenue" color="channel" size="reach">
+          <ScatterSizeLegend
+            title={optional(title)}
+            position={position as 'left' | 'right' | 'top' | 'bottom' | undefined}
+            direction={direction === 'default' ? undefined : (direction as 'horizontal' | 'vertical')}
+          />
+        </Scatter>
+        <Legend title="Channel" />
+      </Chart>
+    )}
   />
 );
