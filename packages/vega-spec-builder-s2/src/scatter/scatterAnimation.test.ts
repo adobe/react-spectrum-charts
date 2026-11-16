@@ -27,8 +27,11 @@ import { defaultScatterOptions } from './scatterTestUtils.js';
 
 interface SceneNode {
   name?: string;
+  x?: number;
+  y?: number;
   items?: SceneNode[];
   opacity?: number;
+  fillOpacity?: number;
   size?: number;
   strokeWidth?: number;
   datum?: { id?: string };
@@ -121,9 +124,37 @@ describe('scatter animations', () => {
       expect(bounds()).toBe(start);
     });
 
+    test('keeps the chart bounds fixed with thick borders', async () => {
+      const chart = await createView({ marks: [{ ...scatter, size: 'weight', lineWidth: { value: 6 } }] });
+      const bounds = () => JSON.stringify((chart.scenegraph() as unknown as { root: { bounds: object } }).root.bounds);
+      const start = bounds();
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 2);
+      expect(bounds()).toBe(start);
+    });
+
+    test('fades annotation labels in from left to right as their points finish', async () => {
+      const chart = await createView({ marks: [{ ...scatter, scatterAnnotations: [{ textKey: 'id' }] }] });
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS * 0.75);
+      const shown = getMarkItems(chart, /Annotation/).map((item) => item.fillOpacity ?? 0);
+      expect(shown[0]).toBeGreaterThan(shown[2]);
+      await tick(chart, DRAW_IN_SWEEP_DURATION_MS);
+      expect(getMarkItems(chart, /Annotation/).every((item) => (item.fillOpacity ?? 0) > 0)).toBe(true);
+    });
+
     test('reserves only the edge points', async () => {
       const chart = await createView({ marks: [{ ...scatter, size: 'weight' }] });
       expect(getMarkItems(chart, 'scatter_drawInBounds').length).toBeLessThanOrEqual(4);
+    });
+
+    test('places annotation labels the same as without draw-in', async () => {
+      const marks = [{ ...scatter, scatterAnnotations: [{ textKey: 'id' }] }];
+      const labels = (chart: View) =>
+        getMarkItems(chart, /Annotation/).map((item) => JSON.stringify([item.x, item.y, item.opacity]));
+      const animated = await createView({ marks });
+      await tick(animated, DRAW_IN_SWEEP_DURATION_MS * 2);
+      const placed = labels(animated);
+      const still = await createView({ marks, animationTypes: ['hover'] });
+      expect(placed).toEqual(labels(still));
     });
 
     test('settles sized points at their own sizes', async () => {

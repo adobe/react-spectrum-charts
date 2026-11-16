@@ -44,6 +44,7 @@ import { getTrendlineMarks } from '../trendline/index.js';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types/index.js';
 import {
   fadeInAfterScatterDrawIn,
+  fadeInLabelsAfterScatterDrawIn,
   getScatterAnimatedOpacity,
   getScatterDrawInBoundsMark,
   getScatterDrawInSize,
@@ -56,7 +57,8 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
   const pathMarks = getScatterPathMarks(options);
   const trendlineMarks = getTrendlineMarks(options);
   if (isDrawInAnimate) {
-    fadeInAfterScatterDrawIn([...annotationMarks, ...pathMarks, ...trendlineMarks]);
+    fadeInAfterScatterDrawIn([...pathMarks, ...trendlineMarks]);
+    fadeInLabelsAfterScatterDrawIn(annotationMarks, options);
   }
 
   const scatterGroup: GroupMark = {

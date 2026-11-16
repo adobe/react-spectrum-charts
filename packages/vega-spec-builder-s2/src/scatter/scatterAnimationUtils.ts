@@ -37,9 +37,10 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { hasPopover } from '../marks/markUtils.js';
+import { getLineWidthProductionRule, hasPopover } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { ScatterSpecOptions } from '../types/index.js';
+import { getScatterOutlineEncoding } from './scatterMarkUtils.js';
 
 /** Fraction of the draw-in each point spends growing; the rest staggers their starts from left to right. */
 export const SCATTER_DRAW_IN_GROW_WINDOW = 0.3;
@@ -197,15 +198,35 @@ export const addScatterHoverAnimationData = (data: Data[], options: ScatterSpecO
  * @param options
  * @returns expression string
  */
-export const getScatterDrawInProgressExpr = ({ dimension, dimensionScaleType }: ScatterSpecOptions): string => {
-  const scaleName = getScaleName('x', dimensionScaleType);
+export const getScatterDrawInProgressExpr = (options: ScatterSpecOptions): string => {
+  const { dimension, dimensionScaleType } = options;
   const field = dimensionScaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
-  const [start, end] = [`range('${scaleName}')[0]`, `range('${scaleName}')[1]`];
-  const position = `clamp((scale('${scaleName}', datum.${field}) - ${start}) / max(${end} - ${start}, 1), 0, 1)`;
-  const delay = `${position} * ${1 - SCATTER_DRAW_IN_GROW_WINDOW}`;
+  const x = `scale('${getScaleName('x', dimensionScaleType)}', datum.${field})`;
+  const delay = `${getScatterDrawInPositionExpr(options, x)} * ${1 - SCATTER_DRAW_IN_GROW_WINDOW}`;
   const linear = `clamp((${DRAW_IN_ANIM_T_EASED} - ${delay}) / ${SCATTER_DRAW_IN_GROW_WINDOW}, 0, 1)`;
   return getCubicBezierExpr(S2_EASE_OUT, linear);
 };
+
+/**
+ * Gets an expression for a point's 0-1 position across the x range, which sets when it starts growing.
+ * @param options
+ * @param x - expression for the point's x in pixels
+ * @returns expression string
+ */
+const getScatterDrawInPositionExpr = ({ dimensionScaleType }: ScatterSpecOptions, x: string): string => {
+  const scaleName = getScaleName('x', dimensionScaleType);
+  const [start, end] = [`range('${scaleName}')[0]`, `range('${scaleName}')[1]`];
+  return `clamp((${x} - ${start}) / max(${end} - ${start}, 1), 0, 1)`;
+};
+
+/**
+ * Gets the eased draw-in progress at which a point finishes growing.
+ * @param options
+ * @param x - expression for the point's x in pixels
+ * @returns expression string
+ */
+export const getScatterSettleProgressExpr = (options: ScatterSpecOptions, x: string): string =>
+  `${getScatterDrawInPositionExpr(options, x)} * ${1 - SCATTER_DRAW_IN_GROW_WINDOW} + ${SCATTER_DRAW_IN_GROW_WINDOW}`;
 
 /**
  * Grows a point's size during the draw-in; the radius grows with the progress.
@@ -253,11 +274,9 @@ export const fadeInAfterScatterDrawIn = (marks: Mark[]): void => {
 export const getScatterDrawInBoundsData = (options: ScatterSpecOptions, size: NumericValueRef): SourceData => {
   const { dimension, dimensionScaleType, metric, name } = options;
   const xField = dimensionScaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
-  const sizeExpr =
-    'scale' in size && 'field' in size
-      ? `scale('${size.scale as string}', datum.${size.field as string})`
-      : `${(size as { value: number }).value}`;
+  const sizeExpr = getRefExpr(size);
   const edges = ['Left', 'Right', 'Top', 'Bottom'].map((edge) => `rscBounds${edge}`);
+  const strokeExpr = getRefExpr(getScatterStrokeWidthRule(options));
   return {
     name: `${name}_drawInBounds`,
     source: FILTERED_TABLE,
@@ -265,7 +284,11 @@ export const getScatterDrawInBoundsData = (options: ScatterSpecOptions, size: Nu
       { type: 'formula', as: 'rscBoundsX', expr: `scale('${getScaleName('x', dimensionScaleType)}', datum.${xField})` },
       { type: 'formula', as: 'rscBoundsY', expr: `scale('yLinear', datum.${metric})` },
       { type: 'formula', as: 'rscBoundsSize', expr: sizeExpr },
-      { type: 'formula', as: 'rscBoundsR', expr: 'sqrt(datum.rscBoundsSize) / 2' },
+      {
+        type: 'formula',
+        as: 'rscBoundsR', // Vega pads stroked bounds by the full stroke width
+        expr: `sqrt(datum.rscBoundsSize) / 2 + (${strokeExpr})`,
+      },
       { type: 'formula', as: edges[0], expr: 'datum.rscBoundsX - datum.rscBoundsR' },
       { type: 'formula', as: edges[1], expr: 'datum.rscBoundsX + datum.rscBoundsR' },
       { type: 'formula', as: edges[2], expr: 'datum.rscBoundsY - datum.rscBoundsR' },
@@ -287,11 +310,50 @@ export const getScatterDrawInBoundsMark = ({ name }: ScatterSpecOptions): Symbol
   from: { data: `${name}_drawInBounds` },
   interactive: false,
   encode: {
-    enter: { shape: { value: 'circle' }, opacity: { value: 0 }, strokeWidth: { value: 1 } },
+    enter: { shape: { value: 'circle' }, opacity: { value: 0 } },
     update: {
       x: { signal: 'datum.value.rscBoundsX' },
       y: { signal: 'datum.value.rscBoundsY' },
-      size: { signal: 'datum.value.rscBoundsSize' },
+      // the diameter including the border, since the placeholder has no stroke of its own
+      size: { signal: 'pow(2 * datum.value.rscBoundsR, 2)' },
     },
   },
 });
+
+/**
+ * Fades label marks in after the points finish drawing in, through fillOpacity so the label transform can still hide labels.
+ * @param marks
+ */
+export const fadeInLabelsAfterScatterDrawIn = (marks: Mark[], options: ScatterSpecOptions): void => {
+  // a label's datum is its point's scene item, so it fades in as its own point finishes growing
+  const reveal = getDrawInLabelFadeExpr(getScatterSettleProgressExpr(options, 'datum.x'));
+  for (const mark of marks) {
+    const update = mark.encode?.update;
+    const fillOpacity = update?.fillOpacity;
+    if (!update || !fillOpacity || Array.isArray(fillOpacity)) continue;
+    update.fillOpacity = applyDrawInReveal(fillOpacity, reveal) as typeof fillOpacity;
+  }
+};
+
+/**
+ * Gets a Vega expression for a numeric value ref (a static value, a scaled field, or a signal).
+ * @param ref
+ * @returns expression string
+ */
+const getRefExpr = (ref: NumericValueRef): string => {
+  if ('signal' in ref && typeof ref.signal === 'string') return ref.signal;
+  if ('scale' in ref && 'field' in ref) return `scale('${ref.scale as string}', datum.${ref.field as string})`;
+  if ('value' in ref && typeof ref.value === 'number') return `${ref.value}`;
+  return '0';
+};
+
+/**
+ * Gets the points' final border width: the outline's, or the scatter's lineWidth when it's set.
+ * @param options
+ * @returns NumericValueRef
+ */
+const getScatterStrokeWidthRule = (options: ScatterSpecOptions): NumericValueRef => {
+  const outline = getScatterOutlineEncoding(options).strokeWidth;
+  if (outline) return 'value' in outline ? outline : { value: 1 };
+  return getLineWidthProductionRule(options.lineWidth) ?? { value: 0 };
+};
