@@ -19,14 +19,10 @@ import {
   SERIES_ID,
   TRENDLINE_VALUE,
 } from '@spectrum-charts/core-s2/constants';
-import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { defaultTrendlineOptions } from '../trendline/trendlineTestUtils.js';
 import { TrendlineAnnotationSpecOptions } from '../types/index.js';
 import {
-  getColorKey,
-  getTextFill,
-  getTrendlineAnnotationBadgeMark,
   getTrendlineAnnotationMarks,
   getTrendlineAnnotationPointX,
   getTrendlineAnnotationPointY,
@@ -36,7 +32,6 @@ import {
 } from './trendlineAnnotationUtils.js';
 
 const defaultAnnotationOptions: TrendlineAnnotationSpecOptions = {
-  badge: false,
   colorScheme: DEFAULT_COLOR_SCHEME,
   displayOnHover: false,
   dimensionValue: 'end',
@@ -52,8 +47,6 @@ const defaultAnnotationOptions: TrendlineAnnotationSpecOptions = {
   trendlineOrientation: 'horizontal',
   trendlineWidth: 1.5,
 };
-
-const colors = spectrum2Colors.light;
 
 describe('applyTrendlineAnnotationDefaults()', () => {
   test('should apply all defaults', () => {
@@ -172,45 +165,9 @@ describe('getTrendlineAnnotationTextMarks()', () => {
     });
     expect(background.encode?.update).toHaveProperty('fillOpacity', fade('datum.datum'));
     expect(foreground.encode?.update).toHaveProperty('fillOpacity', fade('datum.datum.datum'));
-    const [badge] = getTrendlineAnnotationBadgeMark({ ...defaultAnnotationOptions, badge: true, seriesFadeData });
-    expect(badge.encode?.update).toHaveProperty('fillOpacity', fade('datum.datum.datum.datum'));
   });
   test('should not fade without series fade data', () => {
     const [background] = getTrendlineAnnotationTextMarks(defaultAnnotationOptions);
     expect(background.encode?.update).not.toHaveProperty('fillOpacity');
-  });
-});
-
-describe('getTextFill()', () => {
-  test('should return the correct fill for the text', () => {
-    expect(getTextFill({ ...defaultAnnotationOptions, badge: true })).toEqual([
-      {
-        test: `contrast(scale('color', datum.datum.datum.${DEFAULT_COLOR}), '${colors['gray-50']}') >= 4.5`,
-        value: colors['gray-50'],
-      },
-      { value: colors['gray-900'] },
-    ]);
-  });
-  test('should return undefined if badge is false', () => {
-    expect(getTextFill(defaultAnnotationOptions)).toBeUndefined();
-  });
-});
-
-describe('getTrendlineAnnotationBadgeMark()', () => {
-  test('should return the badge mark', () => {
-    const badgeMark = getTrendlineAnnotationBadgeMark({ ...defaultAnnotationOptions, badge: true });
-    expect(badgeMark).toHaveLength(1);
-    expect(badgeMark[0]).toHaveProperty('type', 'rect');
-  });
-  test('should return empty array if badge is false', () => {
-    expect(getTrendlineAnnotationBadgeMark(defaultAnnotationOptions)).toHaveLength(0);
-  });
-});
-
-describe('getColorKey()', () => {
-  test('should return the correct color key', () => {
-    expect(getColorKey(DEFAULT_COLOR)).toEqual(`datum.${DEFAULT_COLOR}`);
-    expect(getColorKey(DEFAULT_COLOR, 2)).toEqual(`datum.datum.${DEFAULT_COLOR}`);
-    expect(getColorKey({ value: 'red-500' })).toEqual({ value: 'red-500' });
   });
 });

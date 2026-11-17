@@ -1137,7 +1137,6 @@ const trendlineVariations: Variation[] = [
     dataset: 'standard',
     coverage: [
       'TrendlineAnnotation.dimensionValue=end',
-      'TrendlineAnnotation.badge=false',
       'TrendlineAnnotation.prefix=',
       'TrendlineAnnotation.numberFormat=',
     ],
@@ -1150,15 +1149,15 @@ const trendlineVariations: Variation[] = [
     ),
   },
   {
-    id: 'trendline-annotation-badge',
-    title: 'Badged trendline annotation',
-    description: 'Adds a badge, a prefix, and a one-decimal format.',
+    id: 'trendline-annotation-prefix',
+    title: 'Trendline annotation prefix and format',
+    description: 'Adds a prefix and a one-decimal format.',
     dataset: 'standard',
-    coverage: ['TrendlineAnnotation.badge=true', 'TrendlineAnnotation.prefix', 'TrendlineAnnotation.numberFormat=.1f'],
+    coverage: ['TrendlineAnnotation.prefix', 'TrendlineAnnotation.numberFormat=.1f'],
     render: () => (
       <ScatterVariationChart>
         <Trendline method="average">
-          <TrendlineAnnotation badge numberFormat=".1f" prefix="Trend:" />
+          <TrendlineAnnotation numberFormat=".1f" prefix="Trend:" />
         </Trendline>
       </ScatterVariationChart>
     ),
@@ -1186,7 +1185,7 @@ const trendlineVariations: Variation[] = [
     render: () => (
       <ScatterVariationChart>
         <Trendline method="average">
-          <TrendlineAnnotation badge dimensionValue={6} numberFormat=".0f" />
+          <TrendlineAnnotation dimensionValue={6} numberFormat=".0f" />
         </Trendline>
       </ScatterVariationChart>
     ),
@@ -1194,13 +1193,13 @@ const trendlineVariations: Variation[] = [
   {
     id: 'trendline-annotation-median',
     title: 'Median annotation across the domain',
-    description: 'A badged median label on a trendline extended to the domain.',
+    description: 'A median label on a trendline extended to the domain.',
     dataset: 'standard',
     coverage: ['Trendline.method=median', 'Trendline.dimensionExtent=[domain,domain]', 'TrendlineAnnotation'],
     render: () => (
       <ScatterVariationChart>
         <Trendline dimensionExtent={['domain', 'domain']} method="median">
-          <TrendlineAnnotation badge numberFormat=".0f" prefix="Median:" />
+          <TrendlineAnnotation numberFormat=".0f" prefix="Median:" />
         </Trendline>
       </ScatterVariationChart>
     ),
@@ -1214,7 +1213,7 @@ const trendlineVariations: Variation[] = [
     render: () => (
       <ScatterVariationChart>
         <Trendline displayOnHover method="average">
-          <TrendlineAnnotation badge numberFormat=".0f" />
+          <TrendlineAnnotation numberFormat=".0f" />
         </Trendline>
         <ChartInspect>{inspectContent}</ChartInspect>
       </ScatterVariationChart>
@@ -1232,7 +1231,7 @@ const trendlineVariations: Variation[] = [
         <ScatterPath groupBy={['series']} />
         <ScatterAnnotation textKey="label" />
         <Trendline method="average">
-          <TrendlineAnnotation badge numberFormat=".0f" />
+          <TrendlineAnnotation numberFormat=".0f" />
         </Trendline>
         <ChartInspect>{inspectContent}</ChartInspect>
         <ChartPopover width="auto">{popoverContent}</ChartPopover>
@@ -1568,7 +1567,7 @@ const chartVariations: Variation[] = [
       <ScatterVariationChart chartProps={{ backgroundColor: 'gray-25', colorScheme: 'dark' }}>
         <ScatterAnnotation textKey="label" />
         <Trendline method="average">
-          <TrendlineAnnotation badge numberFormat=".0f" />
+          <TrendlineAnnotation numberFormat=".0f" />
         </Trendline>
       </ScatterVariationChart>
     ),
@@ -1600,7 +1599,7 @@ const chartVariations: Variation[] = [
         data={singleData}
       >
         <Trendline method="average">
-          <TrendlineAnnotation badge numberFormat=",.2f" />
+          <TrendlineAnnotation numberFormat=",.2f" />
         </Trendline>
       </ScatterVariationChart>
     ),
@@ -1736,10 +1735,9 @@ const trendlineCoverage: PropCoverage<TrendlineProps> = {
 };
 
 const trendlineAnnotationCoverage: PropCoverage<TrendlineAnnotationProps> = {
-  badge: ['trendline-annotation-default', 'trendline-annotation-badge'],
   dimensionValue: ['trendline-annotation-default', 'trendline-annotation-start', 'trendline-annotation-value'],
-  numberFormat: ['trendline-annotation-default', 'trendline-annotation-badge', 'locale'],
-  prefix: ['trendline-annotation-default', 'trendline-annotation-badge'],
+  numberFormat: ['trendline-annotation-default', 'trendline-annotation-prefix', 'locale'],
+  prefix: ['trendline-annotation-default', 'trendline-annotation-prefix'],
 };
 
 const chartInspectCoverage: PropCoverage<ChartInspectProps> = {

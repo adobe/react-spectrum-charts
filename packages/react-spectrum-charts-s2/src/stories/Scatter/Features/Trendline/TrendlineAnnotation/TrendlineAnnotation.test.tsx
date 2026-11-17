@@ -11,7 +11,7 @@
  */
 import { TrendlineAnnotation } from '../../../../../lab/components/TrendlineAnnotation/index.js';
 import { findAllMarksByGroupName, findChart, render } from '../../../../../test-utils/index.js';
-import { Badge, Basic } from './TrendlineAnnotation.story.js';
+import { Basic } from './TrendlineAnnotation.story.js';
 
 describe('TrendlineAnnotation', () => {
   // TrendlineAnnotation is not a real React component. This is test just provides test coverage for sonarqube
@@ -19,23 +19,12 @@ describe('TrendlineAnnotation', () => {
     render(<TrendlineAnnotation />);
   });
 
-  test('Badge renders a badged label for each trendline', async () => {
-    render(<Badge {...Badge.args} />);
-    const chart = await findChart();
-    expect(chart).toBeInTheDocument();
-
-    // one label is drawn per weightClass facet trendline
-    const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
-    expect(labels.length).toBeGreaterThan(0);
-    expect(chart.querySelector('.scatter0Trendline0Annotation0_badge')).toBeInTheDocument();
-  });
-
-  test('renders labels without badges when badge is false', async () => {
+  test('renders a halo and a label for each trendline', async () => {
     render(<Basic {...Basic.args} />);
     const chart = await findChart();
 
     const labels = await findAllMarksByGroupName(chart, 'scatter0Trendline0Annotation0', 'text');
     expect(labels.length).toBeGreaterThan(0);
-    expect(chart.querySelector('.scatter0Trendline0Annotation0_badge')).not.toBeInTheDocument();
+    expect(chart.querySelector('.scatter0Trendline0Annotation0_background')).toBeInTheDocument();
   });
 });

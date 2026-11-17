@@ -848,7 +848,6 @@ const trendlineAnnotationControls: PlaygroundControl[] = [
     options: ['average', 'median'],
     defaultValue: 'average',
   },
-  { group: 'TrendlineAnnotation', name: 'badge', type: 'boolean', defaultValue: false },
   {
     group: 'TrendlineAnnotation',
     name: 'dimensionValue',
@@ -876,7 +875,7 @@ export const TrendlineAnnotationPlayground = () => (
     previewSize={getScatterPreviewSize}
     controls={trendlineAnnotationControls}
     component="TrendlineAnnotation"
-    render={({ method = 'average', badge, dimensionValue, numberFormat = ',.1f', prefix, locale }) => {
+    render={({ method = 'average', dimensionValue, numberFormat = ',.1f', prefix, locale }) => {
       let dimensionValueProp: 'start' | 'end' | number | undefined;
       if (dimensionValue === 'start') dimensionValueProp = 'start';
       else if (dimensionValue) dimensionValueProp = Number(dimensionValue);
@@ -887,7 +886,6 @@ export const TrendlineAnnotationPlayground = () => (
           <Scatter dimension="spend" metric="revenue">
             <Trendline method={method as 'average' | 'median'} dimensionExtent={['domain', 'domain']}>
               <TrendlineAnnotation
-                badge={badge as boolean | undefined}
                 dimensionValue={dimensionValueProp}
                 numberFormat={optional(numberFormat)}
                 prefix={optional(prefix)}
