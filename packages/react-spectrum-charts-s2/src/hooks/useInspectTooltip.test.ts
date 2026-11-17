@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { renderHook } from '@testing-library/react';
-import { Item, View } from 'vega';
+import { Item, View, parse } from 'vega';
 import { Handler, Options as TooltipOptions } from 'vega-tooltip';
 
 import { TOOLTIP_DELAY } from '@spectrum-charts/core-s2/constants';
@@ -29,6 +29,7 @@ jest.mock('vega-tooltip', () => ({
 const mockUseChartContext = jest.mocked(useChartContext);
 const MockHandler = jest.mocked(Handler);
 const mockSetHoveredAxisLabel = jest.fn();
+const chartView: { current: View | undefined } = { current: undefined };
 const view = {} as View;
 
 const axisLabelItem = {
@@ -47,7 +48,9 @@ const getInspectCall = (index = 0) => MockHandler.mock.results[index].value.call
 describe('useInspectTooltip', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    chartView.current = undefined;
     mockUseChartContext.mockReturnValue({
+      chartView,
       setHoveredAxisLabel: mockSetHoveredAxisLabel,
     } as unknown as ReturnType<typeof useChartContext>);
   });
@@ -72,6 +75,28 @@ describe('useInspectTooltip', () => {
 
     expect(mockSetHoveredAxisLabel).toHaveBeenCalledWith(null);
     expect(getInspectCall()).toHaveBeenCalledWith(view, event, barItem, 'value');
+  });
+
+  test('reads adaptive inspect after the pointer dataflow and cancels pending inspect on leave', async () => {
+    const activeView = new View(parse({}), { renderer: 'none' });
+    chartView.current = activeView;
+    const { result } = renderTooltip();
+    const event = new MouseEvent('pointermove');
+    const item = { ...barItem, adaptiveHover: {}, tooltip: { id: 'previous' } };
+    try {
+      result.current(view, event, item, item.tooltip);
+      expect(getInspectCall()).not.toHaveBeenCalled();
+      item.tooltip = { id: 'current' };
+      await activeView.runAsync();
+      expect(getInspectCall()).toHaveBeenLastCalledWith(view, event, item, { id: 'current' });
+      result.current(view, event, item, item.tooltip);
+      result.current(view, new MouseEvent('pointerout'), item, null);
+      await activeView.runAsync();
+      expect(getInspectCall()).toHaveBeenCalledTimes(2);
+      expect(getInspectCall()).toHaveBeenLastCalledWith(view, expect.anything(), item, null);
+    } finally {
+      activeView.finalize();
+    }
   });
 
   test('delays legend item tooltips on pointermove', () => {

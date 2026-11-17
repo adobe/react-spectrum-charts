@@ -13,8 +13,8 @@ import { INTERACTION_MODE } from '@spectrum-charts/core-s2/constants';
 
 import { ChartData, ColorScheme, HighlightedItem } from '../chartSpec.types.js';
 import { ChartActionBarOptions } from '../dialogs/chartActionBarSpec.types.js';
-import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
 import { ChartInspectOptions } from '../dialogs/chartInspectSpec.types.js';
+import { ChartPopoverOptions } from '../dialogs/chartPopoverSpec.types.js';
 import {
   ColorFacet,
   FacetRef,
@@ -25,14 +25,24 @@ import {
   PartiallyRequired,
   ScaleType,
 } from '../specUtil.types.js';
-import { LineForecastOptions } from './supplemental/lineForecastSpec.types.js';
 import { LineDirectLabelOptions } from './supplemental/lineDirectLabelSpec.types.js';
+import { LineForecastOptions } from './supplemental/lineForecastSpec.types.js';
 import { LinePointAnnotationOptions } from './supplemental/linePointAnnotationSpec.types.js';
 import { MetricRangeOptions } from './supplemental/metricRangeSpec.types.js';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
-export type InterpolationType = 'basis' | 'cardinal' | 'catmull-rom' | 'linear' | 'monotone' | 'natural' | 'step' | 'step-after' | 'step-before';
+export type LineInteractionMode = InteractionMode | 'adaptive';
+export type InterpolationType =
+  | 'basis'
+  | 'cardinal'
+  | 'catmull-rom'
+  | 'linear'
+  | 'monotone'
+  | 'natural'
+  | 'step'
+  | 'step-after'
+  | 'step-before';
 export type LineCap = 'round' | 'square';
 
 export interface LineOptions {
@@ -66,8 +76,12 @@ export interface LineOptions {
   scaleType?: ScaleType;
   /** Data field that marks rows to highlight; a point is drawn on the line for each row where it's true. */
   staticPoint?: string;
-  /** Sets how hovering picks a point: `'nearest'` uses the closest point, `'item'` only the point under the pointer. */
-  interactionMode?: InteractionMode;
+  /**
+   * `'nearest'` uses the closest point; `'item'` only a point under the pointer.
+   * `'adaptive'` picks a series within 4px of its rendered curve, otherwise all series at the nearest date.
+   * Adaptive inspect data includes `rscHoverTarget: 'item' | 'dimension'`.
+   */
+  interactionMode?: LineInteractionMode;
   /** Axis that the metric is trended against (y-axis) */
   metricAxis?: string;
   /** Enables dual metric axis mode where the last series uses a secondary axis with independent scale */
@@ -171,6 +185,6 @@ export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOpti
   legendHighlightSignals?: string[];
   lineWidth?: FacetRef<LineWidth>;
   popoverMarkName: string | undefined;
-  interactionMode?: InteractionMode;
+  interactionMode?: LineInteractionMode;
   interpolate?: InterpolationType;
 }

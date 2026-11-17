@@ -98,6 +98,58 @@ describe('null metric gaps', () => {
 });
 
 describe('fixed metric axis hover', () => {
+  test.each(['linear', 'monotone'] as const)(
+    'switches adaptive highlights between date and item with %s curves',
+    async (interpolate) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 360);
+      const data = [
+        { id: 'a', datetime: Date.UTC(2026, 0, 1), value: 20, series: 'a' },
+        { id: 'b', datetime: Date.UTC(2026, 0, 1), value: 70, series: 'b' },
+        { id: 'a-next', datetime: Date.UTC(2026, 0, 2), value: 30, series: 'a' },
+        { id: 'b-next', datetime: Date.UTC(2026, 0, 2), value: 200, series: 'b' },
+      ];
+      const spec = buildSpec({
+        animations: false,
+        idKey: 'id',
+        data,
+        axes: [{ position: 'left', range: [0, 100] }],
+        marks: [{ markType: 'line', color: 'series', interactionMode: 'adaptive', interpolate, chartInspects: [{}] }],
+        legends: [{ position: 'bottom', highlight: true }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data.');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        const point = view.data(TABLE).find((datum) => datum.id === 'a');
+        await view.signal('line0_hoveredItem', { ...point, rscHoverTarget: 'dimension' }).runAsync();
+        expect(view.data('line0_highlightedData').map((datum) => datum.id)).toEqual(['a', 'b']);
+        const grouped = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        expect(
+          Array.from(grouped.querySelectorAll('.role-legend-label text'), (label) =>
+            Number(label.getAttribute('opacity'))
+          )
+        ).toEqual([1, 1]);
+        await view.signal('line0_hoveredItem', { ...point, rscHoverTarget: 'item' }).runAsync();
+        expect(view.data('line0_highlightedData').map((datum) => datum.id)).toEqual(['a']);
+        const single = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        expect(
+          Array.from(single.querySelectorAll('.role-legend-label text'), (label) =>
+            Number(label.getAttribute('opacity'))
+          )
+        ).toEqual([1, 0.2]);
+        await view.signal('line0_hoveredItem', null).runAsync();
+        expect(view.data('line0_highlightedData')).toHaveLength(0);
+        expect(view.data('line0_visibleHoverData').some((datum) => datum.id === 'b-next')).toBe(false);
+        expect(view.scale('yLinear').domain()).toEqual([0, 100]);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
   test.each<[string, number[], Partial<LineOptions>, boolean, [number, number]?]>([
     [
       'sparse data above the range',

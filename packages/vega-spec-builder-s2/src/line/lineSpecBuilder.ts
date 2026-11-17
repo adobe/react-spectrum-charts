@@ -469,6 +469,21 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     getPrimarySeriesExcludeCondition(primarySeries, 'datum.datum')
   );
   addHoverSignals(signals, options);
+  if (options.interactionMode === 'adaptive') {
+    const hover = signals.find((signal) => signal.name === `${name}_hoveredItem`);
+    if (!hover) throw new Error('Adaptive Line hover requires a hovered-item signal.');
+    const primary = options.primarySeries;
+    const primaryIds = typeof primary === 'number' ? `slice(domain('color'), 0, ${primary})` : JSON.stringify(primary);
+    hover.on = [
+      {
+        events: `@${name}_voronoi:pointermove, @${name}_voronoi:mouseover`,
+        update: `rscLineHover(group(), x(), y(), '${name}', data('${getLineHoverDataSource(options)}'), '${
+          options.idKey
+        }', ${primaryIds ?? 'null'})`,
+      },
+      { events: `@${name}_voronoi:mouseout`, update: 'null' },
+    ];
+  }
   addInspectSignals(signals, options);
 });
 

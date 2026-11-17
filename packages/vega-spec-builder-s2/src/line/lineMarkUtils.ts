@@ -25,6 +25,7 @@ import {
   CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTH,
   COLOR_SCALE,
+  COMPONENT_NAME,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
   DEFAULT_INTERACTION_MODE,
@@ -261,8 +262,15 @@ export const getLineOpacityRules = ({
   interactiveMarkName,
   popoverMarkName,
   isHighlightedByGroup,
+  interactionMode,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
   const strokeOpacityRules: ProductionRule<NumericValueRef> = [];
+  if (interactionMode === 'adaptive') {
+    strokeOpacityRules.push({
+      test: `${interactiveMarkName}_${HOVERED_ITEM} && ${interactiveMarkName}_${HOVERED_ITEM}.rscHoverTarget === 'dimension'`,
+      value: 1,
+    });
+  }
 
   if (interactiveMarkName) {
     if (isHighlightedByGroup) {
@@ -336,11 +344,18 @@ export const getLineStrokeWidth = ({
   popoverMarkName,
   isHighlightedByGroup,
   seriesIds,
+  interactionMode,
 }: LineMarkOptions): ProductionRule<NumericValueRef> => {
   // Thickening emphasizes one series over others, so a single series never thickens
   if (seriesIds && seriesIds.length <= 1) return [DEFAULT_STROKE_WIDTH_RULE];
   const highlightsByDimension = isLineHighlightedByDimension({ chartInspects, chartPopovers, dimensionHover });
   const strokeWidthRules: ProductionRule<NumericValueRef> = [];
+  if (interactionMode === 'adaptive') {
+    strokeWidthRules.push({
+      test: `${interactiveMarkName}_${HOVERED_ITEM} && ${interactiveMarkName}_${HOVERED_ITEM}.rscHoverTarget === 'dimension'`,
+      signal: CHART_SIZE_STROKE_WIDTH,
+    });
+  }
 
   if (interactiveMarkName && !displayOnHover && !highlightsByDimension) {
     if (isHighlightedByGroup) {
@@ -491,6 +506,7 @@ const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): 
   const inspectMarks = {
     nearest: () => getVoronoiMarks(lineOptions, dataSource),
     item: () => getItemHoverMarks(lineOptions, dataSource),
+    adaptive: () => getVoronoiMarks(lineOptions, dataSource),
   };
 
   return inspectMarks[interactionMode]();
@@ -498,12 +514,25 @@ const getInteractiveMarks = (dataSource: string, lineOptions: LineMarkOptions): 
 
 const getVoronoiMarks = (lineOptions: LineMarkOptions, dataSource: string): Mark[] => {
   const { name } = lineOptions;
+  const voronoi = getVoronoiPath(lineOptions, `${name}_pointsForVoronoi`);
+  if (lineOptions.interactionMode === 'adaptive') {
+    voronoi.encode = {
+      ...voronoi.encode,
+      update: {
+        ...voronoi.encode?.update,
+        adaptiveHover: { signal: `${name}_${HOVERED_ITEM}` },
+        tooltip: {
+          signal: `${name}_${HOVERED_ITEM} ? merge(${name}_${HOVERED_ITEM}, {${COMPONENT_NAME}: '${name}'}) : null`,
+        },
+      },
+    };
+  }
 
   return [
     // points used for the voronoi transform
     getLinePointsForVoronoi(lineOptions, dataSource),
     // voronoi transform used to get nearest point paths
-    getVoronoiPath(lineOptions, `${name}_pointsForVoronoi`),
+    voronoi,
   ];
 };
 
@@ -565,9 +594,18 @@ export const getHighlightedSeriesOpacityRules = (markOptions: {
   interactiveMarkName?: string;
   isHighlightedByGroup?: boolean;
   legendHighlightSignals?: string[];
+  interactionMode?: LineMarkOptions['interactionMode'];
 }): ProductionRule<NumericValueRef> => {
   const { interactiveMarkName, isHighlightedByGroup, legendHighlightSignals } = markOptions;
   return [
+    ...(markOptions.interactionMode === 'adaptive' && interactiveMarkName
+      ? [
+          {
+            test: `${interactiveMarkName}_${HOVERED_ITEM} && ${interactiveMarkName}_${HOVERED_ITEM}.rscHoverTarget === 'dimension'`,
+            value: 1,
+          },
+        ]
+      : []),
     ...(interactiveMarkName
       ? [
           isHighlightedByGroup

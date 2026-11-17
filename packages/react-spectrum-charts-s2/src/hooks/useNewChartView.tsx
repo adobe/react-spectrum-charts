@@ -65,13 +65,17 @@ const useNewChartView = (
     }),
     [actionBars, markClickDetails, popovers]
   );
+  const onMouseInput = useMemo(
+    () => getOnMouseInputCallback(legendProps.onMouseOver, markMouseInputDetails, legendProps.onMouseOut),
+    [legendProps.onMouseOver, legendProps.onMouseOut, markMouseInputDetails]
+  );
 
   const latestInputs = {
     idKey,
     legendProps,
     markClickDetails,
     axisLabelOnClickDetails,
-    markMouseInputDetails,
+    onMouseInput,
     ...derived,
   };
   const latest = useRef(latestInputs);
@@ -148,16 +152,13 @@ const useNewChartView = (
         getOnAxisLabelClickCallback(latest.current.axisLabelOnClickDetails)(event, item)
       );
       view.addEventListener('mouseover', (event: ScenegraphEvent, item: ActionItem) =>
-        getOnMouseInputCallback(latest.current.legendProps.onMouseOver, latest.current.markMouseInputDetails)(
-          event,
-          item
-        )
+        latest.current.onMouseInput(event, item)
+      );
+      view.addEventListener('mousemove', (event: ScenegraphEvent, item: ActionItem) =>
+        latest.current.onMouseInput(event, item)
       );
       view.addEventListener('mouseout', (event: ScenegraphEvent, item: ActionItem) =>
-        getOnMouseInputCallback(latest.current.legendProps.onMouseOut, latest.current.markMouseInputDetails)(
-          event,
-          item
-        )
+        latest.current.onMouseInput(event, item)
       );
     },
     [chartId, chartView, selectedData, selectedDataBounds, selectedDataName]
