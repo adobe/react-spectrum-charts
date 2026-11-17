@@ -15,8 +15,8 @@ import { FILTERED_TABLE } from '@spectrum-charts/core-s2/constants';
 
 import { AxisSpecOptions, DivergingBarMark, Granularity, Orientation, Position } from '../types/index.js';
 import {
-  getAxisLabelsEncoding,
   getAxisLabelTooltipRule,
+  getAxisLabelsEncoding,
   getLabelAnchorValues,
   getLabelAngle,
   getLabelFormat,
@@ -87,7 +87,8 @@ export const getDefaultAxis = (axisOptions: AxisSpecOptions, scaleName: string):
  * @returns axes
  */
 export const getTimeAxes = (scaleName: string, axisOptions: AxisSpecOptions): Axis[] => {
-  return [getSecondaryTimeAxis(scaleName, axisOptions), ...getPrimaryTimeAxis(scaleName, axisOptions)];
+  const axes = [getSecondaryTimeAxis(scaleName, axisOptions), ...getPrimaryTimeAxis(scaleName, axisOptions)];
+  return axisOptions.hideDefaultLabels ? axes.map((axis) => ({ ...axis, labels: false })) : axes;
 };
 
 /**
@@ -379,20 +380,11 @@ export const getDivergingLabelEncode = (
     const flippedOffset = position === 'left' ? gapCompensation : -gapCompensation;
     return {
       update: {
-        align: [
-          { test: isNegativeTest, value: 'left' as const },
-          { value: 'right' as const },
-        ],
+        align: [{ test: isNegativeTest, value: 'left' as const }, { value: 'right' as const }],
         dx:
           position === 'left'
-            ? [
-                { test: isNegativeTest, value: flippedOffset - extraOutwardOffset },
-                { value: extraOutwardOffset },
-              ]
-            : [
-                { test: isNegativeTest, value: extraOutwardOffset },
-                { value: flippedOffset - extraOutwardOffset },
-              ],
+            ? [{ test: isNegativeTest, value: flippedOffset - extraOutwardOffset }, { value: extraOutwardOffset }]
+            : [{ test: isNegativeTest, value: extraOutwardOffset }, { value: flippedOffset - extraOutwardOffset }],
       },
     };
   }
@@ -400,20 +392,11 @@ export const getDivergingLabelEncode = (
   const flippedOffset = position === 'top' ? gapCompensation : -gapCompensation;
   return {
     update: {
-      baseline: [
-        { test: isNegativeTest, value: 'bottom' as const },
-        { value: 'top' as const },
-      ],
+      baseline: [{ test: isNegativeTest, value: 'bottom' as const }, { value: 'top' as const }],
       dy:
         position === 'top'
-          ? [
-              { test: isNegativeTest, value: extraOutwardOffset },
-              { value: flippedOffset - extraOutwardOffset },
-            ]
-          : [
-              { test: isNegativeTest, value: flippedOffset - extraOutwardOffset },
-              { value: extraOutwardOffset },
-            ],
+          ? [{ test: isNegativeTest, value: extraOutwardOffset }, { value: flippedOffset - extraOutwardOffset }]
+          : [{ test: isNegativeTest, value: flippedOffset - extraOutwardOffset }, { value: extraOutwardOffset }],
     },
   };
 };
@@ -477,7 +460,12 @@ const getDefaultOpposingScaleNameFromPosition = (position: Position) => {
  * @param grid Whether grid lines are enabled
  * @returns tickCount production rule for Vega
  */
-export const getTickCount = (position: Position, tickCountMinimum?: number, tickCountLimit?: number, grid?: boolean): SignalRef | undefined => {
+export const getTickCount = (
+  position: Position,
+  tickCountMinimum?: number,
+  tickCountLimit?: number,
+  grid?: boolean
+): SignalRef | undefined => {
   const range = ['top', 'bottom'].includes(position) ? 'width' : 'height';
 
   // 0 is a valid tickCountLimit value.
@@ -527,7 +515,6 @@ export const getBaselineRule = (baselineOffset: number, position: Position): Mar
       y2: { signal: 'height' },
     },
   };
-
 
   return {
     name: `${orientation}Baseline`,
