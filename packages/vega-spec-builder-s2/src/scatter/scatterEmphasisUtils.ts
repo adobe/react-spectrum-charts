@@ -27,7 +27,7 @@ import { ScatterSpecOptions, TrendlineEmphasis, TrendlineOptions } from '../type
  * @param trendline
  * @returns TrendlineEmphasis
  */
-export const getTrendlineEmphasis = ({ displayOnHover, emphasis = 'trendline' }: TrendlineOptions): TrendlineEmphasis =>
+export const getTrendlineEmphasis = ({ displayOnHover, emphasis = 'none' }: TrendlineOptions): TrendlineEmphasis =>
   displayOnHover ? 'none' : emphasis;
 
 /**

@@ -45,7 +45,7 @@ export interface TrendlineOptions {
   dimensionRange?: [number | null, number | null];
   /** Whether the trendline should only be visible when hovering over the parent line */
   displayOnHover?: boolean;
-  /** On a scatter, fades the points (`trendline`) or the trendline (`points`) so the other stands out; `none` fades neither. Ignored with `displayOnHover`. Defaults to `trendline`. */
+  /** On a scatter, fades the points (`trendline`) or the trendline (`points`) so the other stands out; `none` fades neither. Ignored with `displayOnHover`. Defaults to `none`. */
   emphasis?: TrendlineEmphasis;
   /** Data points where these keys have truthy values will not be included in the trendline calculation */
   excludeDataKeys?: string[];

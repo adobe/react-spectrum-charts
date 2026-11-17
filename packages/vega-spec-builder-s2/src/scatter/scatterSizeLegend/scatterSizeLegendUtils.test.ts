@@ -43,7 +43,7 @@ describe('getScatterSizeLegend()', () => {
     expect(getScatterSizeLegend({}, 'light')).not.toHaveProperty('title');
   });
 
-  test('draws neutral gray circles with the scatter outline in each color scheme', () => {
+  test('draws neutral gray circles with a gray border in each color scheme', () => {
     const symbols = getScatterSizeLegend({}, 'dark').encode?.symbols?.update;
     expect(symbols?.fill).toHaveProperty('value', getS2ColorValue('gray-500', 'dark'));
     expect(symbols?.stroke).toHaveProperty('value', getS2ColorValue('gray-1000', 'dark'));

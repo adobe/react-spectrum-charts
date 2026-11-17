@@ -41,7 +41,6 @@ import {
 import { getLineWidthProductionRule, hasInspect, hasPopover } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { ScatterSpecOptions } from '../types/index.js';
-import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
 
 /** Fraction of the draw-in each point spends growing; the rest staggers their starts from left to right. */
 export const SCATTER_DRAW_IN_GROW_WINDOW = 0.3;
@@ -360,15 +359,12 @@ const getRefExpr = (ref: NumericValueRef): string => {
 };
 
 /**
- * Gets the points' final border width: the outline's, or the scatter's lineWidth when it's set.
+ * Gets the points' final border width from the scatter's lineWidth.
  * @param options
  * @returns NumericValueRef
  */
-const getScatterStrokeWidthRule = (options: ScatterSpecOptions): NumericValueRef => {
-  const outline = getScatterOutlineEncoding(options).strokeWidth;
-  if (outline) return 'value' in outline ? outline : { value: 1 };
-  return getLineWidthProductionRule(options.lineWidth) ?? { value: 0 };
-};
+const getScatterStrokeWidthRule = (options: ScatterSpecOptions): NumericValueRef =>
+  getLineWidthProductionRule(options.lineWidth) ?? { value: 0 };
 
 /**
  * Whether any of the scatter's trendlines has a ChartInspect, which makes hovering it highlight its series.

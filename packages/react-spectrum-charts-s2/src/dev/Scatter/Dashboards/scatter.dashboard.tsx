@@ -237,7 +237,7 @@ const baseScatterVariations: Variation[] = [
   {
     id: 'defaults',
     title: 'Defaults',
-    description: 'Every Scatter default: one static color, medium points, no outline, multiply blend.',
+    description: 'Every Scatter default: one static color, medium points, no border, multiply blend.',
     dataset: 'standard',
     coverage: [
       'color={value:categorical-100}',
@@ -385,8 +385,8 @@ const baseScatterVariations: Variation[] = [
   },
   {
     id: 'line-width-static',
-    title: 'Outlined points',
-    description: 'Translucent fill with a medium outline in the series color.',
+    title: 'Bordered points',
+    description: 'Translucent fill with a medium border in the series color.',
     dataset: 'standard',
     coverage: ['lineWidth={value:M}', 'opacity={value:0.3}'],
     render: () => (
@@ -397,8 +397,8 @@ const baseScatterVariations: Variation[] = [
   },
   {
     id: 'line-width-key',
-    title: 'Outline width by field',
-    description: 'New and Returning points get different outline widths.',
+    title: 'Border width by field',
+    description: 'New and Returning points get different border widths.',
     dataset: 'standard',
     coverage: ['lineWidth=segment'],
     render: () => (
@@ -407,8 +407,8 @@ const baseScatterVariations: Variation[] = [
   },
   {
     id: 'line-type-static',
-    title: 'Dotted outline',
-    description: 'Large points with a dark dotted outline.',
+    title: 'Dotted border',
+    description: 'Large points with a dark dotted border.',
     dataset: 'standard',
     coverage: ['lineType={value:dotted}', 'lineWidth={value:M}'],
     render: () => (
@@ -424,7 +424,7 @@ const baseScatterVariations: Variation[] = [
   },
   {
     id: 'line-type-key',
-    title: 'Outline type by field',
+    title: 'Border type by field',
     description: 'New points are solid and Returning points are dashed.',
     dataset: 'standard',
     coverage: ['lineType=segment', 'lineWidth={value:S}'],
@@ -442,7 +442,7 @@ const baseScatterVariations: Variation[] = [
   {
     id: 'stroke-static',
     title: 'Static stroke',
-    description: 'Series-colored points with a dark outline.',
+    description: 'Series-colored points with a dark border.',
     dataset: 'standard',
     coverage: ['stroke={value:gray-900}', 'lineWidth={value:S}'],
     render: () => (
@@ -451,38 +451,11 @@ const baseScatterVariations: Variation[] = [
       />
     ),
   },
-  {
-    id: 'outline-auto',
-    title: 'Auto outline',
-    description: 'Pale yellow points get a gray-1000/42 outline because they are under 3:1 against the background.',
-    dataset: 'standard',
-    coverage: ['outline=auto'],
-    render: () => <ScatterVariationChart scatterProps={{ color: { value: 'yellow-400' }, size: { value: 'L' } }} />,
-  },
-  {
-    id: 'outline-always',
-    title: 'Always outline',
-    description: 'Every series-colored point is outlined, whatever its contrast.',
-    dataset: 'standard',
-    coverage: ['outline=always'],
-    render: () => <ScatterVariationChart scatterProps={{ outline: 'always', size: { value: 'L' } }} />,
-  },
-  {
-    id: 'outline-never',
-    title: 'No outline',
-    description: 'Pale yellow points without an outline, for comparison with the auto outline.',
-    dataset: 'standard',
-    coverage: ['outline=never'],
-    render: () => (
-      <ScatterVariationChart
-        scatterProps={{ color: { value: 'yellow-400' }, outline: 'never', size: { value: 'L' } }}
-      />
-    ),
-  },
+
   {
     id: 'stroke-key',
     title: 'Stroke by field',
-    description: 'Gray points outlined in a color per segment.',
+    description: 'Gray points bordered in a color per segment.',
     dataset: 'standard',
     coverage: ['stroke=segment', 'lineWidth={value:M}'],
     render: () => (
@@ -920,14 +893,13 @@ const trendlineVariations: Variation[] = [
   {
     id: 'trendline-default',
     title: 'Trendline',
-    description:
-      'A dashed linear regression per series in the series color; the points fade so the trendline stands out.',
+    description: 'A dashed linear regression per series in the series color.',
     dataset: 'standard',
     coverage: [
       'Trendline.method=linear',
       'Trendline.lineType=dashed',
       'Trendline.size=auto',
-      'Trendline.emphasis=trendline',
+      'Trendline.emphasis=none',
       'Trendline.orientation=horizontal',
       'Trendline.dimensionRange=[null,null]',
     ],
@@ -950,14 +922,14 @@ const trendlineVariations: Variation[] = [
     ),
   },
   {
-    id: 'trendline-emphasis-none',
-    title: 'Trendline without emphasis',
-    description: 'Neither the points nor the trendline fade.',
+    id: 'trendline-emphasis-trendline',
+    title: 'Trendline emphasizing itself',
+    description: 'The points fade, border included, so the trendline stands out; hovering restores them.',
     dataset: 'standard',
-    coverage: ['Trendline.emphasis=none'],
+    coverage: ['Trendline.emphasis=trendline'],
     render: () => (
       <ScatterVariationChart>
-        <Trendline emphasis="none" />
+        <Trendline emphasis="trendline" />
       </ScatterVariationChart>
     ),
   },
@@ -1545,7 +1517,7 @@ const chartVariations: Variation[] = [
   {
     id: 'chart-line-types',
     title: 'Chart line types',
-    description: 'Custom dash patterns for the outline lineType facet.',
+    description: 'Custom dash patterns for the border lineType facet.',
     dataset: 'standard',
     coverage: ['Chart.lineTypes', 'lineType=segment'],
     render: () => (
@@ -1563,7 +1535,7 @@ const chartVariations: Variation[] = [
   {
     id: 'chart-line-widths',
     title: 'Chart line widths',
-    description: 'Custom outline widths for the lineWidth facet.',
+    description: 'Custom border widths for the lineWidth facet.',
     dataset: 'standard',
     coverage: ['Chart.lineWidths', 'lineWidth=segment'],
     render: () => (
@@ -1712,7 +1684,6 @@ const scatterCoverage: PropCoverage<ScatterProps> = {
   onClick: ['on-click'],
   onContextMenu: ['on-context-menu'],
   opacity: ['defaults', 'opacity-static', 'opacity-key', 'chart-opacities'],
-  outline: ['defaults', 'outline-auto', 'outline-always', 'outline-never'],
   size: ['defaults', 'size-key', 'size-static', 'size-pixels', 'chart-symbol-sizes'],
   stroke: ['stroke-static', 'stroke-key'],
 };
@@ -1740,7 +1711,7 @@ const trendlineCoverage: PropCoverage<TrendlineProps> = {
   color: ['trendline-default', 'trendline-style'],
   dimensionExtent: ['trendline-default', 'trendline-extent-domain', 'trendline-extent-fixed', 'trendline-range-extent'],
   dimensionRange: ['trendline-default', 'trendline-range', 'trendline-range-extent'],
-  emphasis: ['trendline-default', 'trendline-emphasis-points', 'trendline-emphasis-none'],
+  emphasis: ['trendline-default', 'trendline-emphasis-trendline', 'trendline-emphasis-points'],
   displayOnHover: ['trendline-display-on-hover', 'trendline-annotation-display-on-hover'],
   excludeDataKeys: ['trendline-exclude-keys'],
   hidePartialWindows: ['trendline-moving-average', 'trendline-hide-partial-windows'],

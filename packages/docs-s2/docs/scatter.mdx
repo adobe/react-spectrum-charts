@@ -19,7 +19,7 @@ import {
   ScatterInteractionPlayground,
   ScatterLegendPlayground,
   ScatterOpacityPlayground,
-  ScatterOutlinePlayground,
+  ScatterBorderPlayground,
   ScatterPathPlayground,
   ScatterPlayground,
   ScatterSizeLegendPlayground,
@@ -38,7 +38,7 @@ import {
 <StageBadge />
 
 Scatter plots show how two numeric values relate. Each data point becomes a point positioned by
-its `dimension` (x) and `metric` (y) values. Color, size, opacity, and outline can each encode
+its `dimension` (x) and `metric` (y) values. Color, size, opacity, and border can each encode
 another field.
 
 <ScatterPlayground />
@@ -122,29 +122,20 @@ its own opacity. Opacities are evenly spaced unless you list them in `opacities`
 
 <ScatterOpacityPlayground />
 
-### Outline
+### Border
 
-`outline` adds a thin border so pale points stay visible. The border is `gray-1000` at 42% opacity,
-1px wide, like the border on a Spectrum 2 color swatch.
-
-- `auto` (default) outlines only points whose fill has less than 3:1 contrast with the chart
-  background, so pale colors get a border and strong ones don't.
-- `always` outlines every point.
-- `never` turns the border off.
-
-For a custom outline, set `lineWidth` and `stroke` instead; they take precedence over `outline`.
-`lineWidth` takes `XS` (1px), `S` (1.5px),
-`M` (2px), `L` (3px), `XL` (4px), or a number of pixels. `lineType` sets the outline dash pattern,
-and `stroke` sets its color, which defaults to the point's `color`. A translucent fill with a solid
-outline keeps overlapping points readable.
+Points have no border by default. `lineWidth` adds one: `XS` (1px), `S` (1.5px), `M` (2px), `L`
+(3px), `XL` (4px), or a number of pixels. `stroke` sets its color, which defaults to the point's
+`color`, and `lineType` sets its dash pattern. A translucent fill with a solid border keeps
+overlapping points readable.
 
 Each of these can also be a field name. A `lineWidth` field maps through `lineWidths` on `Chart`, a
 `lineType` field through `lineTypes`, and a `stroke` field through the color scale.
 
-<ScatterOutlinePlayground />
+<ScatterBorderPlayground />
 
 :::note
-`lineWidths` defaults to `['M']`, so a `lineWidth` field gives every point the same 2px outline
+`lineWidths` defaults to `['M']`, so a `lineWidth` field gives every point the same 2px border
 until you set `lineWidths` on `Chart`.
 :::
 
@@ -203,10 +194,12 @@ series lines. `lineType` and `color` change the style; `size` (`XS`, `S`, `M`, o
 width, matching `ReferenceLine`. A trendline fades with its series when another series is
 highlighted, and fades in once the points finish drawing in.
 
-`emphasis` sets which stands out. By default (`trendline`), the points' fill fades to 50% and they
-get an outline so their edges stay visible. `points` fades the trendline instead, and `none` fades
-neither. Hovering or highlighting a point, series, or trendline lifts the fade. `emphasis` is ignored
-when `displayOnHover` is set. `orientation="vertical"` calculates the trend of the dimension
+`emphasis` makes one part stand out by fading the other. `trendline` fades the points to 70%
+opacity, border included, and `points` fades the trendline instead. The default, `none`, fades
+neither. Hovering or highlighting a
+point, series, or trendline lifts the fade. `emphasis` is ignored when `displayOnHover` is set.
+
+`orientation="vertical"` calculates the trend of the dimension
 across the metric instead, for example a vertical line at the average x.
 
 `dimensionRange` limits the calculation to points between two dimension values; `null` leaves a

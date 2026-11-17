@@ -414,14 +414,13 @@ export const ScatterOpacityPlayground = () => (
   />
 );
 
-const outlineControls: PlaygroundControl[] = [
-  { group: 'Scatter', name: 'outline', type: 'select', options: ['auto', 'always', 'never'], defaultValue: 'auto' },
+const borderControls: PlaygroundControl[] = [
   {
     group: 'Scatter',
     name: 'lineWidth',
     type: 'select',
     options: ['0', 'XS', 'S', 'M', 'L', 'XL', 'audience'],
-    defaultValue: '0',
+    defaultValue: 'M',
   },
   {
     group: 'Scatter',
@@ -435,15 +434,15 @@ const outlineControls: PlaygroundControl[] = [
 ];
 
 /**
- * Playground for point outlines.
+ * Playground for point borders.
  * @returns playground element
  */
-export const ScatterOutlinePlayground = () => (
+export const ScatterBorderPlayground = () => (
   <PropPlayground
     previewSize={getScatterPreviewSize}
-    controls={outlineControls}
+    controls={borderControls}
     component="Scatter"
-    render={({ outline, lineWidth, lineType, stroke, opacity }) => {
+    render={({ lineWidth, lineType, stroke, opacity }) => {
       const width = String(lineWidth ?? '0');
       let lineWidthProp: string | { value: SymbolSize } | undefined;
       if (width === 'audience') lineWidthProp = 'audience';
@@ -464,7 +463,6 @@ export const ScatterOutlinePlayground = () => (
             color="channel"
             size={{ value: 'XL' }}
             opacity={{ value: (opacity ?? 0.4) as number }}
-            outline={outline as 'auto' | 'always' | 'never' | undefined}
             lineWidth={lineWidthProp}
             lineType={lineTypeProp}
             stroke={strokeProp}
@@ -642,8 +640,8 @@ const trendlineControls: PlaygroundControl[] = [
     group: 'Trendline',
     name: 'emphasis',
     type: 'select',
-    options: ['trendline', 'points', 'none'],
-    defaultValue: 'trendline',
+    options: ['none', 'trendline', 'points'],
+    defaultValue: 'none',
   },
   { group: 'Trendline', name: 'size', type: 'select', options: ['auto', 'XS', 'S', 'M', 'L'], defaultValue: 'auto' },
   { group: 'Trendline', name: 'color', type: 'select', options: ['series', 'gray-700'], defaultValue: 'series' },

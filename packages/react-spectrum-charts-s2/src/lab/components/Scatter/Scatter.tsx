@@ -40,7 +40,6 @@ const Scatter: FC<ScatterProps> = ({
   onClick,
   onContextMenu,
   opacity = { value: 1 },
-  outline = 'auto',
   size = { value: DEFAULT_SYMBOL_SIZE },
   stroke,
 }) => {

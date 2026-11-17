@@ -52,7 +52,6 @@ import {
 } from './scatterAnimationUtils.js';
 import { getScatterAnnotationMarks } from './scatterAnnotation/index.js';
 import { getScatterPointsEmphasisExpr, isScatterPointsDeemphasized } from './scatterEmphasisUtils.js';
-import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
   const { isDrawInAnimate, name } = options;
@@ -145,7 +144,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeWidth: getLineWidthProductionRule(lineWidth),
         stroke: getColorProductionRule(stroke ?? color, colorScheme, colorScaleType),
-        ...getScatterOutlineEncoding(options),
+        ...getScatterStrokeOpacity(options),
         opacity: options.isHoverAnimate ? getScatterAnimatedOpacity(options) : getOpacity(options),
         x: getXProductionRule(dimensionScaleType, dimension),
         y: { scale: 'yLinear', field: metric },
@@ -259,3 +258,11 @@ export const getScatterFillOpacity = (options: ScatterSpecOptions): NumericValue
   const baseExpr = 'signal' in base ? base.signal : `${base.value}`;
   return { signal: `(${baseExpr}) * (${getScatterPointsEmphasisExpr(options)})` };
 };
+
+/**
+ * Fades the points' border along with their fill when a trendline emphasizes itself over the points.
+ * @param options
+ * @returns strokeOpacity encoding, or none
+ */
+export const getScatterStrokeOpacity = (options: ScatterSpecOptions): { strokeOpacity?: NumericValueRef } =>
+  isScatterPointsDeemphasized(options) ? { strokeOpacity: { signal: getScatterPointsEmphasisExpr(options) } } : {};

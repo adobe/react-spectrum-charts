@@ -15,7 +15,9 @@ import { SYMBOL_SIZE_SCALE } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { ScatterSizeLegendOptions, ScatterSpecOptions } from '../../types/index.js';
-import { SCATTER_OUTLINE_OPACITY } from '../scatterOutlineUtils.js';
+
+/** Opacity of the size legend circles' gray-1000 border (the Spectrum 2 color swatch border). */
+const SIZE_LEGEND_STROKE_OPACITY = 0.42;
 
 /**
  * Gets a size legend legend for each ScatterSizeLegend child, when the scatter sizes points by a data field.
@@ -63,7 +65,7 @@ export const getScatterSizeLegend = (
         update: {
           fill: { value: getS2ColorValue('gray-500', colorScheme) },
           stroke: { value: getS2ColorValue('gray-1000', colorScheme) },
-          strokeOpacity: { value: SCATTER_OUTLINE_OPACITY },
+          strokeOpacity: { value: SIZE_LEGEND_STROKE_OPACITY },
           strokeWidth: { value: 1 },
         },
       },

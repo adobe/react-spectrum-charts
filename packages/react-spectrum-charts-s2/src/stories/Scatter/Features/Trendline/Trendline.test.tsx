@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { TRENDLINE_EMPHASIS_FADE_OPACITY } from '@spectrum-charts/core-s2/constants';
+
 import { Trendline } from '../../../../lab/components/Trendline/index.js';
 import { findAllMarksByGroupName, findChart, render } from '../../../../test-utils/index.js';
 import { Basic, Emphasis } from './TrendlineFeatures.story.js';
@@ -29,10 +31,17 @@ describe('Trendline', () => {
     expect(trendlines.length).toBeGreaterThan(0);
   });
 
-  test('Emphasis renders the trendline faded behind the points', async () => {
+  test('Emphasis fades the points behind the trendline', async () => {
     render(<Emphasis {...Emphasis.args} />);
     const chart = await findChart();
+    const points = await findAllMarksByGroupName(chart, 'scatter0');
+    expect(points[0]).toHaveAttribute('fill-opacity', String(TRENDLINE_EMPHASIS_FADE_OPACITY));
+  });
+
+  test('Emphasis with points fades the trendline', async () => {
+    render(<Emphasis {...Emphasis.args} emphasis="points" />);
+    const chart = await findChart();
     const trendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0');
-    expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0.5');
+    expect(trendlines[0]).toHaveAttribute('stroke-opacity', String(TRENDLINE_EMPHASIS_FADE_OPACITY));
   });
 });

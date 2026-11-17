@@ -28,8 +28,6 @@ import { ScatterPathOptions } from './supplemental/scatterPathSpec.types.js';
 import { ScatterSizeLegendOptions } from './supplemental/scatterSizeLegendSpec.types.js';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
-export type ScatterOutline = 'auto' | 'always' | 'never';
-
 export interface ScatterOptions {
   markType: 'scatter';
 
@@ -57,11 +55,6 @@ export interface ScatterOptions {
   lineWidth?: LineWidthFacet;
   /** Point opacity: a data key mapped to the chart's `opacities`, or a static value. Defaults to `{ value: 1 }`. */
   opacity?: OpacityFacet;
-  /**
-   * Thin border around points: `auto` only where a point's fill has under 3:1 contrast with the background, `always`, or `never`.
-   * `stroke` and `lineWidth` take precedence. Defaults to `auto`.
-   */
-  outline?: ScatterOutline;
   /** Point width: a numeric data key scaled between the chart's `symbolSizes`, or a static size. Defaults to `{ value: 'M' }`. */
   size?: SymbolSizeFacet;
 
@@ -90,7 +83,6 @@ type ScatterOptionsWithDefaults =
   | 'metric'
   | 'name'
   | 'opacity'
-  | 'outline'
   | 'size'
   | 'scatterAnnotations'
   | 'scatterPaths'

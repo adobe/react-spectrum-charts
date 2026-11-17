@@ -21,7 +21,6 @@ import {
   SELECTED_ITEM,
   SYMBOL_SIZE_SCALE,
 } from '@spectrum-charts/core-s2/constants';
-import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import {
   addScatterMarks,
@@ -30,7 +29,6 @@ import {
   getScatterMark,
   getSelectRingSize,
 } from './scatterMarkUtils.js';
-import { SCATTER_OUTLINE_OPACITY, getScatterOutlineEncoding } from './scatterOutlineUtils.js';
 import { defaultScatterOptions } from './scatterTestUtils.js';
 
 describe('addScatterMarks()', () => {
@@ -140,8 +138,8 @@ describe('getScatterSelectMarks()', () => {
 });
 
 describe('getScatterMark() stroke', () => {
-  test('should use color for stroke when stroke is not provided and there is no outline', () => {
-    const mark = getScatterMark({ ...defaultScatterOptions, color: 'category', outline: 'never' });
+  test('should use color for stroke when stroke is not provided', () => {
+    const mark = getScatterMark({ ...defaultScatterOptions, color: 'category' });
     expect(mark.encode?.update?.stroke).toEqual({ scale: COLOR_SCALE, field: 'category' });
     expect(mark.encode?.update?.fill).toEqual({ scale: COLOR_SCALE, field: 'category' });
   });
@@ -208,44 +206,18 @@ describe('getScatterMark() blend', () => {
   });
 });
 
-describe('getScatterOutlineEncoding()', () => {
-  test('outlines only low-contrast points by default', () => {
-    const encoding = getScatterOutlineEncoding(defaultScatterOptions);
-    expect(encoding.stroke).toHaveProperty('value', getS2ColorValue('gray-1000', 'light'));
-    expect(encoding.strokeOpacity).toHaveProperty('value', SCATTER_OUTLINE_OPACITY);
-    expect(encoding.strokeWidth).toHaveProperty(
-      'signal',
-      `contrast('${getS2ColorValue('categorical-100', 'light')}', chartBackgroundColor) < 3 ? 1 : 0`
+describe('getScatterMark() border', () => {
+  test('draws no border by default', () => {
+    const update = getScatterMark(defaultScatterOptions).encode?.update;
+    expect(update?.strokeWidth).toEqual({ value: 0 });
+    expect(update).not.toHaveProperty('strokeOpacity');
+  });
+
+  test('fades the border with the fill when a trendline emphasizes itself', () => {
+    const update = getScatterMark({ ...defaultScatterOptions, trendlines: [{ emphasis: 'trendline' }] }).encode?.update;
+    expect(update?.strokeOpacity).toHaveProperty('signal');
+    expect((update?.fillOpacity as { signal: string }).signal).toContain(
+      (update?.strokeOpacity as { signal: string }).signal
     );
-  });
-
-  test('compares the scale color when color is a data key', () => {
-    const encoding = getScatterOutlineEncoding({ ...defaultScatterOptions, color: 'series' });
-    expect(encoding.strokeWidth).toHaveProperty(
-      'signal',
-      "contrast(scale('color', datum.series), chartBackgroundColor) < 3 ? 1 : 0"
-    );
-  });
-
-  test('outlines every point with outline="always"', () => {
-    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, outline: 'always' }).strokeWidth).toHaveProperty(
-      'value',
-      1
-    );
-  });
-
-  test('adds no outline with outline="never"', () => {
-    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, outline: 'never' })).toEqual({});
-  });
-
-  test('leaves custom stroke and lineWidth alone', () => {
-    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, stroke: 'series' })).toEqual({});
-    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, lineWidth: { value: 2 } })).toEqual({});
-    expect(getScatterOutlineEncoding({ ...defaultScatterOptions, lineWidth: 'weight' })).toEqual({});
-  });
-
-  test('uses the dark gray-1000 in dark mode', () => {
-    const encoding = getScatterOutlineEncoding({ ...defaultScatterOptions, colorScheme: 'dark', outline: 'always' });
-    expect(encoding.stroke).toHaveProperty('value', getS2ColorValue('gray-1000', 'dark'));
   });
 });

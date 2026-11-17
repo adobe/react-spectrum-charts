@@ -57,7 +57,7 @@ export const applyTrendlinePropDefaults = (
     dimensionExtent,
     dimensionRange = [null, null],
     displayOnHover = false,
-    emphasis = 'trendline',
+    emphasis = 'none',
     hidePartialWindows = false,
     highlightRawPoint = false,
     lineType = 'dashed',

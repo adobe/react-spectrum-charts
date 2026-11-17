@@ -19,6 +19,7 @@ import {
   DRAW_IN_SWEEP_DURATION_MS,
   FADE_FACTOR,
   TABLE,
+  TRENDLINE_EMPHASIS_FADE_OPACITY,
 } from '@spectrum-charts/core-s2/constants';
 
 import { buildSpec } from '../chartSpecBuilder.js';
@@ -306,15 +307,27 @@ describe('trendline emphasis', () => {
   const trendlineStrokes = (chart: View) =>
     getMarkItems(chart, 'scatterTrendline0').map((item) => (item as { strokeOpacity?: number }).strokeOpacity);
 
-  test.each([false, true])('fades the points by default (animations %s)', async (animations) => {
-    const chart = await render({}, animations);
-    expect(fills(chart)).toEqual([0.5, 0.5, 0.5]);
-    expect(getMarkItems(chart, 'scatter').every((item) => item.strokeWidth === 1)).toBe(true);
+  test('fades nothing by default', async () => {
+    const chart = await render({});
+    expect(fills(chart)).toEqual([1, 1, 1]);
   });
+  test.each([false, true])(
+    'fades the points and their border with trendline emphasis (animations %s)',
+    async (animations) => {
+      const chart = await render({ emphasis: 'trendline' }, animations);
+      const fade = TRENDLINE_EMPHASIS_FADE_OPACITY;
+      expect(fills(chart)).toEqual([fade, fade, fade]);
+      expect(getMarkItems(chart, 'scatter').map((item) => (item as { strokeOpacity?: number }).strokeOpacity)).toEqual([
+        fade,
+        fade,
+        fade,
+      ]);
+    }
+  );
   test.each([false, true])('fades the trendline instead with points emphasis (animations %s)', async (animations) => {
     const chart = await render({ emphasis: 'points' }, animations);
     expect(fills(chart)).toEqual([1, 1, 1]);
-    expect(trendlineStrokes(chart).every((opacity) => opacity === 0.5)).toBe(true);
+    expect(trendlineStrokes(chart).every((opacity) => opacity === TRENDLINE_EMPHASIS_FADE_OPACITY)).toBe(true);
   });
   test('fades neither with none', async () => {
     const chart = await render({ emphasis: 'none' });
@@ -322,46 +335,13 @@ describe('trendline emphasis', () => {
     expect(trendlineStrokes(chart).every((opacity) => opacity === undefined)).toBe(true);
   });
   test('ignores emphasis on display-on-hover trendlines', async () => {
-    const chart = await render({ displayOnHover: true });
+    const chart = await render({ emphasis: 'trendline', displayOnHover: true });
     expect(fills(chart)).toEqual([1, 1, 1]);
   });
   test('lifts the fade while a series is highlighted', async () => {
-    const chart = await render({});
+    const chart = await render({ emphasis: 'trendline' });
     await chart.signal(CONTROLLED_HIGHLIGHTED_SERIES, 'A').runAsync();
     expect(fills(chart)).toEqual([1, 1, 1]);
-  });
-});
-
-describe('scatter outline', () => {
-  beforeEach(() => {
-    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
-    expressionFunction('rscContainerWidth', (width: number) => width);
-  });
-
-  const strokeWidths = async (color: string, outline?: ScatterOptions['outline']) => {
-    const spec = buildSpec({
-      ...chartOptions,
-      animations: false,
-      marks: [{ ...scatter, color: { value: color }, outline }],
-    });
-    const table = spec.data?.find(({ name }) => name === TABLE);
-    if (!table || !('values' in table)) throw new Error('Expected inline table data');
-    table.values = data;
-    const view = new View(parse(spec), { renderer: 'none' }).width(600).height(400);
-    await view.runAsync();
-    const widths = getMarkItems(view, 'scatter').map((item) => item.strokeWidth);
-    view.finalize();
-    return widths;
-  };
-
-  test('auto outlines pale points and leaves strong ones alone', async () => {
-    expect(await strokeWidths('yellow-400')).toEqual([1, 1, 1]);
-    expect(await strokeWidths('indigo-900')).toEqual([0, 0, 0]);
-  });
-
-  test('always and never ignore contrast', async () => {
-    expect(await strokeWidths('indigo-900', 'always')).toEqual([1, 1, 1]);
-    expect(await strokeWidths('yellow-400', 'never')).toEqual([0, 0, 0]);
   });
 });
 

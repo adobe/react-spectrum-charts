@@ -132,7 +132,7 @@ DimensionScaleType.args = {
 };
 Object.assign(DimensionScaleType, { parameters: { controls: { include: ['dimensionScaleType'] } } });
 
-// scatter points have no outline by default, so lineWidth is needed to see the line type
+// scatter points have no border by default, so lineWidth is needed to see the line type
 const LineType = bindWithProps(ScatterStory);
 LineType.args = { ...defaultArgs, lineType: { value: 'dotted' }, lineWidth: { value: 'S' }, opacity: { value: 0.6 } };
 Object.assign(LineType, { parameters: { controls: { include: ['lineType'] } } });
@@ -149,15 +149,10 @@ const Size = bindWithProps(ScatterStory);
 Size.args = { ...defaultArgs, size: 'weight', children: <ScatterSizeLegend title="Weight" /> };
 Object.assign(Size, { parameters: { controls: { include: ['size'] } } });
 
-// scatter points have no outline by default, so lineWidth is needed to see the stroke
+// scatter points have no border by default, so lineWidth is needed to see the stroke
 const Stroke = bindWithProps(ScatterStory);
 Stroke.args = { ...defaultArgs, stroke: { value: 'gray-900' }, lineWidth: { value: 'S' } };
 Object.assign(Stroke, { parameters: { controls: { include: ['stroke'] } } });
-
-// pale points show the auto outline; switch to always or never to compare
-const Outline = bindWithProps(ScatterStory);
-Outline.args = { ...defaultArgs, color: { value: 'yellow-400' }, size: { value: 'L' }, outline: 'auto' };
-Object.assign(Outline, { parameters: { controls: { include: ['outline'] } } });
 
 const ChartInspectStory = bindWithProps(ScatterStory);
 ChartInspectStory.args = { ...defaultArgs, children: <ChartInspect>{characterDialogContent}</ChartInspect> };
@@ -181,7 +176,6 @@ export {
   Opacity,
   Size,
   Stroke,
-  Outline,
   ChartInspectStory as ChartInspect,
   ChartPopoverStory as ChartPopover,
 };

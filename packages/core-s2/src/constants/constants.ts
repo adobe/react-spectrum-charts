@@ -335,7 +335,7 @@ export const DEFAULT_VENN_LABEL = 'label';
 
 export const FADE_FACTOR = 0.2;
 /** Fill or stroke opacity of the part a trendline's `emphasis` de-emphasizes. */
-export const TRENDLINE_EMPHASIS_FADE_OPACITY = 0.5;
+export const TRENDLINE_EMPHASIS_FADE_OPACITY = 0.7;
 
 // legend tooltips
 export const TOOLTIP_DELAY = 350;

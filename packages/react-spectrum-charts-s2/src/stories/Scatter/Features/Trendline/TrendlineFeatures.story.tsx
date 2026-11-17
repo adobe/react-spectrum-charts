@@ -120,10 +120,10 @@ Object.assign(HidePartialWindows, { parameters: { controls: { include: ['hidePar
 
 // needs a ChartInspect on the trendline to have a hovered point to highlight
 const Emphasis = bindWithProps(TrendlineStory);
-Emphasis.args = { emphasis: 'points' };
+Emphasis.args = { emphasis: 'trendline' };
 Object.assign(Emphasis, {
   parameters: { controls: { include: ['emphasis'] } },
-  argTypes: { emphasis: { control: 'select', options: ['trendline', 'points', 'none'] } },
+  argTypes: { emphasis: { control: 'select', options: ['none', 'trendline', 'points'] } },
 });
 
 const HighlightRawPoint = bindWithProps(TrendlineInspectStory);
