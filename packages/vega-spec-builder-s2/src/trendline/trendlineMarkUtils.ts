@@ -25,6 +25,7 @@ import { LineMarkOptions } from '../line/lineUtils.js';
 import { fadeInAfterDrawIn } from '../marks/drawInAnimationUtils.js';
 import { getColorProductionRule, getSeriesFacet, getStrokeDashProductionRule, hasInspect } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
+import { getScatterTrendlineEmphasisExpr, getTrendlineEmphasis } from '../scatter/scatterEmphasisUtils.js';
 import { getFacetsFromOptions } from '../specUtils.js';
 import { getTrendlineAnnotationMarks } from '../trendlineAnnotation/index.js';
 import { Orientation, ScaleType, TrendlineMethod, TrendlineSpecOptions } from '../types/index.js';
@@ -131,6 +132,7 @@ export const getTrendlineRuleMark = (
         stroke: getColorProductionRule(trendlineColor, colorScheme),
         ...getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation),
         opacity: getTrendlineOpacity(markOptions, trendlineOptions),
+        ...getTrendlineEmphasisEncoding(markOptions, trendlineOptions),
       },
     },
   };
@@ -219,6 +221,7 @@ export const getTrendlineLineMark = (
         stroke: getColorProductionRule(trendlineColor, colorScheme),
         x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
         opacity: getTrendlineOpacity(markOptions, trendlineOptions),
+        ...getTrendlineEmphasisEncoding(markOptions, trendlineOptions),
       },
     },
   };
@@ -341,3 +344,18 @@ const getTrendlineSeriesFadeData = (
   { displayOnHover }: TrendlineSpecOptions
 ): string | undefined =>
   markOptions.isHoverAnimate && !displayOnHover ? `${markOptions.name}_${HOVER_SERIES_FRACTION_DATA}` : undefined;
+
+/**
+ * Fades a scatter trendline's stroke when it emphasizes the points.
+ * @param markOptions
+ * @param trendlineOptions
+ * @returns strokeOpacity encoding, or none
+ */
+export const getTrendlineEmphasisEncoding = (
+  markOptions: TrendlineParentOptions,
+  trendlineOptions: TrendlineSpecOptions
+): { strokeOpacity?: NumericValueRef } => {
+  if (markOptions.markType !== 'scatter' || getTrendlineEmphasis(trendlineOptions) !== 'points') return {};
+  const fadeData = getTrendlineSeriesFadeData(markOptions, trendlineOptions);
+  return { strokeOpacity: { signal: getScatterTrendlineEmphasisExpr(markOptions, fadeData) } };
+};

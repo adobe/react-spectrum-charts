@@ -14,6 +14,7 @@ import { Data, GroupMark, Mark, View, expressionFunction, parse } from 'vega';
 import {
   ANIMATION_HOVER_SPEED,
   ANIMATION_TIMER,
+  CONTROLLED_HIGHLIGHTED_SERIES,
   DRAW_IN_PAINT_FADE_MS,
   DRAW_IN_SWEEP_DURATION_MS,
   FADE_FACTOR,
@@ -272,6 +273,62 @@ describe('scatter animations', () => {
     expect(opacities(chart)[2]).toBeGreaterThan(FADE_FACTOR);
     await tick(chart, ANIMATION_HOVER_SPEED);
     expect(opacities(chart)).toEqual([1, 1, FADE_FACTOR]);
+  });
+});
+
+describe('trendline emphasis', () => {
+  let view: View | undefined;
+
+  beforeEach(() => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+  });
+
+  afterEach(() => {
+    view?.finalize();
+    view = undefined;
+  });
+
+  const render = async (trendline: Record<string, unknown>, animations = false) => {
+    const spec = buildSpec({
+      ...chartOptions,
+      animations,
+      marks: [{ ...scatter, trendlines: [{ method: 'average', ...trendline }] }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    view = new View(parse(spec), { renderer: 'none' }).width(600).height(400);
+    await view.runAsync();
+    return view;
+  };
+  const fills = (chart: View) => getMarkItems(chart, 'scatter').map((item) => item.fillOpacity);
+  const trendlineStrokes = (chart: View) =>
+    getMarkItems(chart, 'scatterTrendline0').map((item) => (item as { strokeOpacity?: number }).strokeOpacity);
+
+  test.each([false, true])('fades the points by default (animations %s)', async (animations) => {
+    const chart = await render({}, animations);
+    expect(fills(chart)).toEqual([0.5, 0.5, 0.5]);
+    expect(getMarkItems(chart, 'scatter').every((item) => item.strokeWidth === 1)).toBe(true);
+  });
+  test.each([false, true])('fades the trendline instead with points emphasis (animations %s)', async (animations) => {
+    const chart = await render({ emphasis: 'points' }, animations);
+    expect(fills(chart)).toEqual([1, 1, 1]);
+    expect(trendlineStrokes(chart).every((opacity) => opacity === 0.5)).toBe(true);
+  });
+  test('fades neither with none', async () => {
+    const chart = await render({ emphasis: 'none' });
+    expect(fills(chart)).toEqual([1, 1, 1]);
+    expect(trendlineStrokes(chart).every((opacity) => opacity === undefined)).toBe(true);
+  });
+  test('ignores emphasis on display-on-hover trendlines', async () => {
+    const chart = await render({ displayOnHover: true });
+    expect(fills(chart)).toEqual([1, 1, 1]);
+  });
+  test('lifts the fade while a series is highlighted', async () => {
+    const chart = await render({});
+    await chart.signal(CONTROLLED_HIGHLIGHTED_SERIES, 'A').runAsync();
+    expect(fills(chart)).toEqual([1, 1, 1]);
   });
 });
 

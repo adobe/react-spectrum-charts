@@ -11,7 +11,7 @@
  */
 import { Trendline } from '../../../../lab/components/Trendline/index.js';
 import { findAllMarksByGroupName, findChart, render } from '../../../../test-utils/index.js';
-import { Basic } from './TrendlineFeatures.story.js';
+import { Basic, Emphasis } from './TrendlineFeatures.story.js';
 
 describe('Trendline', () => {
   // Trendline is not a real React component. This is test just provides test coverage for sonarqube
@@ -27,5 +27,12 @@ describe('Trendline', () => {
     // one line mark is drawn per weightClass facet (light, medium, heavy)
     const trendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0');
     expect(trendlines.length).toBeGreaterThan(0);
+  });
+
+  test('Emphasis renders the trendline faded behind the points', async () => {
+    render(<Emphasis {...Emphasis.args} />);
+    const chart = await findChart();
+    const trendlines = await findAllMarksByGroupName(chart, 'scatter0Trendline0');
+    expect(trendlines[0]).toHaveAttribute('stroke-opacity', '0.5');
   });
 });

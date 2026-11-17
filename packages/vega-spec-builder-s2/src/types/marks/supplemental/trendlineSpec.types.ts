@@ -33,6 +33,9 @@ export type WindowMethod = `movingAverage-${number}`;
 /** avaliable methods for generating a trendline */
 export type TrendlineMethod = AggregateMethod | RegressionMethod | WindowMethod;
 
+/** Which part of a scatter a trendline emphasizes: the other is faded. */
+export type TrendlineEmphasis = 'trendline' | 'points' | 'none';
+
 export interface TrendlineOptions {
   /** Trendline color: a Spectrum color name or CSS color. Defaults to the color of its series. */
   color?: SpectrumColor | (string & Record<never, never>);
@@ -42,6 +45,8 @@ export interface TrendlineOptions {
   dimensionRange?: [number | null, number | null];
   /** Whether the trendline should only be visible when hovering over the parent line */
   displayOnHover?: boolean;
+  /** On a scatter, fades the points (`trendline`) or the trendline (`points`) so the other stands out; `none` fades neither. Ignored with `displayOnHover`. Defaults to `trendline`. */
+  emphasis?: TrendlineEmphasis;
   /** Data points where these keys have truthy values will not be included in the trendline calculation */
   excludeDataKeys?: string[];
   /** If there is an inspect on this trendline, then this will highlight the raw point in addition to the hovered trendline point. */
@@ -67,6 +72,7 @@ type TrendlineOptionsWithDefaults =
   | 'dimensionExtent'
   | 'dimensionRange'
   | 'displayOnHover'
+  | 'emphasis'
   | 'hidePartialWindows'
   | 'highlightRawPoint'
   | 'lineType'

@@ -58,6 +58,7 @@ export const defaultTrendlineOptions: TrendlineSpecOptions = {
   dimensionRange: [null, null],
   dimensionScaleType: 'time',
   displayOnHover: false,
+  emphasis: 'trendline',
   hidePartialWindows: false,
   highlightRawPoint: false,
   isDimensionNormalized: false,

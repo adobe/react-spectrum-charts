@@ -119,6 +119,13 @@ HidePartialWindows.args = { method: 'movingAverage-3', hidePartialWindows: true 
 Object.assign(HidePartialWindows, { parameters: { controls: { include: ['hidePartialWindows'] } } });
 
 // needs a ChartInspect on the trendline to have a hovered point to highlight
+const Emphasis = bindWithProps(TrendlineStory);
+Emphasis.args = { emphasis: 'points' };
+Object.assign(Emphasis, {
+  parameters: { controls: { include: ['emphasis'] } },
+  argTypes: { emphasis: { control: 'select', options: ['trendline', 'points', 'none'] } },
+});
+
 const HighlightRawPoint = bindWithProps(TrendlineInspectStory);
 HighlightRawPoint.args = { highlightRawPoint: true };
 Object.assign(HighlightRawPoint, { parameters: { controls: { include: ['highlightRawPoint'] } } });
@@ -155,6 +162,7 @@ export {
   Basic,
   Color,
   DimensionExtent,
+  Emphasis,
   DimensionRange,
   DisplayOnHover,
   ExcludeDataKeys,

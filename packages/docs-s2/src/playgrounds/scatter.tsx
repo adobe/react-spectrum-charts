@@ -638,6 +638,13 @@ const trendlineControls: PlaygroundControl[] = [
     options: ['dashed', 'solid', 'dotted'],
     defaultValue: 'dashed',
   },
+  {
+    group: 'Trendline',
+    name: 'emphasis',
+    type: 'select',
+    options: ['trendline', 'points', 'none'],
+    defaultValue: 'trendline',
+  },
   { group: 'Trendline', name: 'size', type: 'select', options: ['auto', 'XS', 'S', 'M', 'L'], defaultValue: 'auto' },
   { group: 'Trendline', name: 'color', type: 'select', options: ['series', 'gray-700'], defaultValue: 'series' },
   {
@@ -692,6 +699,7 @@ export const TrendlinePlayground = () => (
       method,
       lineType,
       size,
+      emphasis,
       color,
       orientation,
       dimensionRange,
@@ -707,6 +715,7 @@ export const TrendlinePlayground = () => (
             <Trendline
               method={method as TrendlineMethod | undefined}
               lineType={lineType as LineType | undefined}
+              emphasis={emphasis as 'trendline' | 'points' | 'none' | undefined}
               size={size === 'auto' ? undefined : (size as 'XS' | 'S' | 'M' | 'L' | undefined)}
               color={color === 'series' ? undefined : optional(color)}
               orientation={orientation as 'vertical' | undefined}

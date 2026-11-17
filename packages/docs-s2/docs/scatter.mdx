@@ -201,7 +201,12 @@ don't fit anywhere are hidden. The default tries `right`, `top`, `bottom`, then 
 Trendlines are dashed and the color of their series, and their width follows the chart size like
 series lines. `lineType` and `color` change the style; `size` (`XS`, `S`, `M`, or `L`) sets a fixed
 width, matching `ReferenceLine`. A trendline fades with its series when another series is
-highlighted, and fades in once the points finish drawing in. `orientation="vertical"` calculates the trend of the dimension
+highlighted, and fades in once the points finish drawing in.
+
+`emphasis` sets which stands out. By default (`trendline`), the points' fill fades to 50% and they
+get an outline so their edges stay visible. `points` fades the trendline instead, and `none` fades
+neither. Hovering or highlighting a point, series, or trendline lifts the fade. `emphasis` is ignored
+when `displayOnHover` is set. `orientation="vertical"` calculates the trend of the dimension
 across the metric instead, for example a vertical line at the average x.
 
 `dimensionRange` limits the calculation to points between two dimension values; `null` leaves a

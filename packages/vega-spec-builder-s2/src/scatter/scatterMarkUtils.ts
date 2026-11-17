@@ -51,6 +51,7 @@ import {
   hasTrendlineInspect,
 } from './scatterAnimationUtils.js';
 import { getScatterAnnotationMarks } from './scatterAnnotation/index.js';
+import { getScatterPointsEmphasisExpr, isScatterPointsDeemphasized } from './scatterEmphasisUtils.js';
 import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
 
 export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, options) => {
@@ -116,7 +117,6 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
     lineWidth,
     metric,
     name,
-    opacity,
     size,
     stroke,
   } = options;
@@ -140,7 +140,7 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
       },
       update: {
         fill: getColorProductionRule(color, colorScheme, colorScaleType),
-        fillOpacity: getOpacityProductionRule(opacity),
+        fillOpacity: getScatterFillOpacity(options),
         size: options.isDrawInAnimate ? getScatterDrawInSize(sizeRule, options) : sizeRule,
         strokeDash: getStrokeDashProductionRule(lineType),
         strokeWidth: getLineWidthProductionRule(lineWidth),
@@ -246,4 +246,16 @@ export const getSelectRingSize = (size: SymbolSizeFacet): NumericValueRef => {
     return { signal: `pow(sqrt(scale('${baseSize.scale as string}', datum.${baseSize.field as string})) + 4, 2)` };
   }
   return baseSize;
+};
+
+/**
+ * Gets the points' fill opacity, faded when a trendline emphasizes itself over the points.
+ * @param options
+ * @returns NumericValueRef
+ */
+export const getScatterFillOpacity = (options: ScatterSpecOptions): NumericValueRef => {
+  const base = getOpacityProductionRule(options.opacity);
+  if (!isScatterPointsDeemphasized(options)) return base;
+  const baseExpr = 'signal' in base ? base.signal : `${base.value}`;
+  return { signal: `(${baseExpr}) * (${getScatterPointsEmphasisExpr(options)})` };
 };

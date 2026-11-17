@@ -16,6 +16,7 @@ import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getColorProductionRuleSignalString } from '../marks/markUtils.js';
 import { ScatterSpecOptions } from '../types/index.js';
+import { isScatterPointsDeemphasized } from './scatterEmphasisUtils.js';
 
 /** Opacity of the outline color; matches the Spectrum 2 color swatch border (gray-1000 at 42%). */
 export const SCATTER_OUTLINE_OPACITY = 0.42;
@@ -27,19 +28,16 @@ export const SCATTER_OUTLINE_MIN_CONTRAST = 3;
  * @param options ScatterSpecOptions
  * @returns stroke, strokeOpacity, and strokeWidth encodings
  */
-export const getScatterOutlineEncoding = ({
-  color,
-  colorScaleType,
-  colorScheme,
-  lineWidth,
-  outline,
-  stroke,
-}: ScatterSpecOptions): { stroke?: ColorValueRef; strokeOpacity?: NumericValueRef; strokeWidth?: NumericValueRef } => {
+export const getScatterOutlineEncoding = (
+  options: ScatterSpecOptions
+): { stroke?: ColorValueRef; strokeOpacity?: NumericValueRef; strokeWidth?: NumericValueRef } => {
+  const { color, colorScaleType, colorScheme, lineWidth, outline, stroke } = options;
   const hasCustomLineWidth = typeof lineWidth !== 'object' || lineWidth.value !== 0;
   if (outline === 'never' || stroke !== undefined || hasCustomLineWidth) return {};
   const fill = getColorProductionRuleSignalString(color, colorScheme, colorScaleType);
+  // faded points keep a full-strength outline so their edge stays visible
   const strokeWidth: NumericValueRef =
-    outline === 'always'
+    outline === 'always' || isScatterPointsDeemphasized(options)
       ? { value: 1 }
       : { signal: `contrast(${fill}, ${BACKGROUND_COLOR}) < ${SCATTER_OUTLINE_MIN_CONTRAST} ? 1 : 0` };
   return {

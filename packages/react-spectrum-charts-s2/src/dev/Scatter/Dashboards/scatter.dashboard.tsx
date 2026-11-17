@@ -920,13 +920,14 @@ const trendlineVariations: Variation[] = [
   {
     id: 'trendline-default',
     title: 'Trendline',
-    description: 'A dashed linear regression per series in the series color.',
+    description:
+      'A dashed linear regression per series in the series color; the points fade so the trendline stands out.',
     dataset: 'standard',
     coverage: [
       'Trendline.method=linear',
       'Trendline.lineType=dashed',
-      'Trendline.lineWidth=M',
-      'Trendline.opacity=1',
+      'Trendline.size=auto',
+      'Trendline.emphasis=trendline',
       'Trendline.orientation=horizontal',
       'Trendline.dimensionRange=[null,null]',
     ],
@@ -936,6 +937,31 @@ const trendlineVariations: Variation[] = [
       </ScatterVariationChart>
     ),
   },
+  {
+    id: 'trendline-emphasis-points',
+    title: 'Trendline emphasizing points',
+    description: 'The trendline fades so the points stand out; hovering a point or trendline restores it.',
+    dataset: 'standard',
+    coverage: ['Trendline.emphasis=points'],
+    render: () => (
+      <ScatterVariationChart>
+        <Trendline emphasis="points" />
+      </ScatterVariationChart>
+    ),
+  },
+  {
+    id: 'trendline-emphasis-none',
+    title: 'Trendline without emphasis',
+    description: 'Neither the points nor the trendline fade.',
+    dataset: 'standard',
+    coverage: ['Trendline.emphasis=none'],
+    render: () => (
+      <ScatterVariationChart>
+        <Trendline emphasis="none" />
+      </ScatterVariationChart>
+    ),
+  },
+
   trendlineMethodVariation('average', 'A flat line at each series mean.'),
   trendlineMethodVariation('median', 'A flat line at each series median.'),
   trendlineMethodVariation('quadratic', 'A second-order polynomial fit per series.'),
@@ -1714,6 +1740,7 @@ const trendlineCoverage: PropCoverage<TrendlineProps> = {
   color: ['trendline-default', 'trendline-style'],
   dimensionExtent: ['trendline-default', 'trendline-extent-domain', 'trendline-extent-fixed', 'trendline-range-extent'],
   dimensionRange: ['trendline-default', 'trendline-range', 'trendline-range-extent'],
+  emphasis: ['trendline-default', 'trendline-emphasis-points', 'trendline-emphasis-none'],
   displayOnHover: ['trendline-display-on-hover', 'trendline-annotation-display-on-hover'],
   excludeDataKeys: ['trendline-exclude-keys'],
   hidePartialWindows: ['trendline-moving-average', 'trendline-hide-partial-windows'],

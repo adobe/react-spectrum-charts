@@ -26,6 +26,7 @@ const Trendline: FC<TrendlineProps> = ({
   dimensionExtent,
   dimensionRange = [null, null],
   displayOnHover = false,
+  emphasis = 'trendline',
   excludeDataKeys,
   hidePartialWindows = false,
   highlightRawPoint = false,
