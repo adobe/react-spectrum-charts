@@ -317,12 +317,22 @@ describe('addScatterHoverAnimationData()', () => {
   test('matches the hovered point series when interactive', () => {
     expect(getRules({ ...defaultScatterOptions, interactiveMarkName: 'scatter0' })).toContain('hoveredMatch');
   });
+  test('matches the hovered trendline series when a trendline has an inspect', () => {
+    const rules = getRules({ ...defaultScatterOptions, trendlines: [{ chartInspects: [{}] }] });
+    expect(rules).toContain('trendlineHoveredMatch');
+    expect(rules).toContain('scatter0Trendline_hoveredItem');
+  });
   test('only matches the controlled series when not interactive', () => {
     expect(getRules({ ...defaultScatterOptions, interactiveMarkName: undefined })).not.toContain('hoveredMatch');
   });
 });
 
 describe('getItemHighlightExpr()', () => {
+  test('ignores a hovered trendline, which highlights a series rather than a point', () => {
+    expect(getItemHighlightExpr({ ...defaultScatterOptions, interactiveMarkName: 'scatter0Trendline' })).not.toContain(
+      'Trendline'
+    );
+  });
   test('reads the hovered point, then the controlled highlight', () => {
     expect(getItemHighlightExpr(defaultScatterOptions)).toBe(
       'isValid(scatter0_hoveredItem) ? [scatter0_hoveredItem.rscMarkId] : isArray(controlledHighlightedItem) && length(controlledHighlightedItem) > 0 ? controlledHighlightedItem : null'

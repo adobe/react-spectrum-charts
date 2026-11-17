@@ -72,6 +72,13 @@ describe('addScatterMarks()', () => {
 });
 
 describe('getOpacity()', () => {
+  test('should fade other series when a trendline with an inspect is hovered', () => {
+    const rules = getOpacity({ ...defaultScatterOptions, trendlines: [{ chartInspects: [{}] }] });
+    expect(rules[0]).toEqual({
+      test: 'isValid(scatter0Trendline_hoveredItem)',
+      signal: `scatter0Trendline_hoveredItem.rscSeriesId === datum.rscSeriesId ? 1 : ${FADE_FACTOR}`,
+    });
+  });
   test('should only fade for controlled highlights if there are not any interactive children', () => {
     expect(getOpacity(defaultScatterOptions)).toEqual([
       {

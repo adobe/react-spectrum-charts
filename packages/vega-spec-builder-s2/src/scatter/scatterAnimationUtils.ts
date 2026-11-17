@@ -38,7 +38,7 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { getLineWidthProductionRule, hasPopover } from '../marks/markUtils.js';
+import { getLineWidthProductionRule, hasInspect, hasPopover } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { ScatterSpecOptions } from '../types/index.js';
 import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
@@ -66,9 +66,9 @@ export const getItemHighlightStateSignalName = (name: string): string => `${name
  * @returns expression string
  */
 export const getItemHighlightExpr = (options: ScatterSpecOptions): string => {
-  const { idKey, interactiveMarkName } = options;
+  const { idKey, interactiveMarkName, name } = options;
   const sources: string[] = [];
-  if (interactiveMarkName) {
+  if (interactiveMarkName === name) {
     const hoveredItem = `${interactiveMarkName}_${HOVERED_ITEM}`;
     const hoveredIds = isHighlightedByGroup(options)
       ? `pluck(data('${interactiveMarkName}_highlightedData'), '${idKey}')`
@@ -169,7 +169,14 @@ export const getScatterAnimatedOpacity = (options: ScatterSpecOptions): Producti
 export const addScatterHoverAnimationData = (data: Data[], options: ScatterSpecOptions): void => {
   const { interactiveMarkName, name, seriesIds } = options;
   const hoveredRules: HoverMatchRule[] = [];
-  if (interactiveMarkName) {
+  if (hasTrendlineInspect(options)) {
+    const hoveredTrendline = `${name}Trendline_${HOVERED_ITEM}`;
+    hoveredRules.push({
+      as: 'trendlineHoveredMatch',
+      expr: `isValid(${hoveredTrendline}) ? (${hoveredTrendline}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`,
+    });
+  }
+  if (interactiveMarkName === name) {
     const hoveredItem = `${interactiveMarkName}_${HOVERED_ITEM}`;
     const highlighted = `data('${interactiveMarkName}_highlightedData')`;
     const expr = isHighlightedByGroup(options)
@@ -362,3 +369,11 @@ const getScatterStrokeWidthRule = (options: ScatterSpecOptions): NumericValueRef
   if (outline) return 'value' in outline ? outline : { value: 1 };
   return getLineWidthProductionRule(options.lineWidth) ?? { value: 0 };
 };
+
+/**
+ * Whether any of the scatter's trendlines has a ChartInspect, which makes hovering it highlight its series.
+ * @param options
+ * @returns boolean
+ */
+export const hasTrendlineInspect = ({ trendlines }: ScatterSpecOptions): boolean =>
+  trendlines.some((trendline) => hasInspect(trendline));
