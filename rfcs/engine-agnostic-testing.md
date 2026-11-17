@@ -9,7 +9,7 @@ governing permissions and limitations under the License. -->
 
 - Status: Draft
 - Start Date: 2026-11-17
-- RFC PR:
+- RFC PR: https://github.com/adobe/react-spectrum-charts/pull/1114
 - Authors: Madeline Luke
 
 # Engine-agnostic testing strategy
