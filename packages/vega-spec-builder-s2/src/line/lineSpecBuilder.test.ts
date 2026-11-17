@@ -60,6 +60,81 @@ import {
 } from './lineSpecBuilder.js';
 import { defaultLineOptions } from './lineTestUtils.js';
 
+describe.each([
+  {
+    name: 'alternate flags',
+    options: { alternateSegmentKey: 'isForecasted' },
+  },
+  {
+    name: 'forecast boundary',
+    options: { forecasts: [{ metric: 'forecastValue', start: Date.UTC(2026, 0, 3) }] },
+  },
+])('$name segment connections', ({ options }) => {
+  test.each([undefined, true, false])(
+    'renders connectAlternateSegments=%s without changing source points',
+    async (connectAlternateSegments) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 360);
+      const data = [10, 20, 30, 40].map((value, index) => ({
+        id: `point-${index}`,
+        datetime: Date.UTC(2026, 0, index + 1),
+        series: 'Example',
+        value,
+        isForecasted: index >= 2,
+        forecastValue: index >= 2 ? value : null,
+        low: index >= 2 ? value - 5 : null,
+        high: index >= 2 ? value + 5 : null,
+      }));
+      const spec = buildSpec({
+        animations: false,
+        idKey: 'id',
+        data,
+        marks: [
+          {
+            markType: 'line',
+            color: 'series',
+            ...options,
+            connectAlternateSegments,
+            alternateSegmentLineType: 'shortDash',
+            gradient: true,
+            chartInspects: [{}],
+            metricRanges: [{ metric: 'forecastValue', metricStart: 'low', metricEnd: 'high' }],
+          },
+        ],
+        legends: [{}],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data.');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        expect(view.data(`${FILTERED_TABLE}ForInspect`).map((datum) => datum.id)).toEqual(data.map(({ id }) => id));
+        const svg = await view.toSVG();
+        expect(svg).not.toMatch(/NaN|undefined/);
+        const document = new DOMParser().parseFromString(svg, 'image/svg+xml');
+        const paths = Array.from(document.querySelectorAll('.mark-line.line0 path'));
+        expect(paths).toHaveLength(2);
+        const pathXs = paths.map((path) =>
+          Array.from((path.getAttribute('d') ?? '').matchAll(/[ML](-?[\d.]+),/g), ([, x]) => Number(x))
+        );
+        expect(pathXs[0]).toHaveLength(connectAlternateSegments === false ? 2 : 3);
+        expect(pathXs[1]).toHaveLength(2);
+        const actualEnd = pathXs[0][pathXs[0].length - 1];
+        const forecastStart = pathXs[1][0];
+        const interval = pathXs[1][1] - forecastStart;
+        expect(forecastStart - actualEnd).toBeCloseTo(connectAlternateSegments === false ? interval : 0, 2);
+        expect(paths[1].getAttribute('stroke-dasharray')).toBeTruthy();
+        expect(document.querySelectorAll('.mark-area.line0_gradient path')).toHaveLength(2);
+        expect(document.querySelectorAll('.mark-area.line0MetricRange0_area path')).toHaveLength(1);
+        expect(document.querySelectorAll('.role-legend-label text')).toHaveLength(1);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+});
+
 describe('fixed metric axis hover', () => {
   test.each<[string, number[], Partial<LineOptions>, boolean, [number, number]?]>([
     [
