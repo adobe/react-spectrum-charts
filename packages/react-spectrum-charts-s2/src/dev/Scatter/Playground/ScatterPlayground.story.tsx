@@ -80,11 +80,10 @@ interface ScatterPlaygroundArgs extends ScatterProps {
   showTrendline: boolean;
   trendlineMethod: 'average' | 'median' | 'linear' | 'exponential' | 'movingAverage-3';
   trendlineColor: string;
-  trendlineWidth: number;
+  trendlineSize: 'auto' | 'XS' | 'S' | 'M' | 'L';
   trendlineDisplayOnHover: boolean;
   showTrendlineAnnotation: boolean;
   trendlineAnnotationPrefix: string;
-  trendlineAnnotationBadge: boolean;
 }
 
 export default {
@@ -140,11 +139,10 @@ export default {
       table: { category: 'Trendline' },
     },
     trendlineColor: { control: 'color', table: { category: 'Trendline' } },
-    trendlineWidth: { control: { type: 'range', min: 1, max: 8, step: 1 }, table: { category: 'Trendline' } },
+    trendlineSize: { control: 'select', options: ['auto', 'XS', 'S', 'M', 'L'], table: { category: 'Trendline' } },
     trendlineDisplayOnHover: { control: 'boolean', table: { category: 'Trendline' } },
     showTrendlineAnnotation: { control: 'boolean', table: { category: 'Trendline annotation' } },
     trendlineAnnotationPrefix: { control: 'text', table: { category: 'Trendline annotation' } },
-    trendlineAnnotationBadge: { control: 'boolean', table: { category: 'Trendline annotation' } },
   },
 };
 
@@ -186,11 +184,10 @@ const ScatterPlaygroundStory: StoryFn<ScatterPlaygroundArgs> = ({
   showTrendline,
   trendlineMethod,
   trendlineColor,
-  trendlineWidth,
+  trendlineSize,
   trendlineDisplayOnHover,
   showTrendlineAnnotation,
   trendlineAnnotationPrefix,
-  trendlineAnnotationBadge,
   ...scatterProps
 }): ReactElement => {
   const chartProps = useChartProps({ data: getScatterData(dataPreset), height, maxWidth });
@@ -234,12 +231,10 @@ const ScatterPlaygroundStory: StoryFn<ScatterPlaygroundArgs> = ({
             color={trendlineColor}
             method={trendlineMethod}
             dimensionExtent={['domain', 'domain']}
-            lineWidth={trendlineWidth}
+            size={trendlineSize === 'auto' ? undefined : trendlineSize}
             displayOnHover={trendlineDisplayOnHover}
           >
-            {showTrendlineAnnotation ? (
-              <TrendlineAnnotation prefix={trendlineAnnotationPrefix} badge={trendlineAnnotationBadge} />
-            ) : undefined}
+            {showTrendlineAnnotation ? <TrendlineAnnotation prefix={trendlineAnnotationPrefix} /> : undefined}
           </Trendline>
         ) : undefined}
       </Scatter>
@@ -298,11 +293,10 @@ Playground.args = {
   showTrendline: true,
   trendlineMethod: 'median',
   trendlineColor: 'categorical-200',
-  trendlineWidth: 2,
+  trendlineSize: 'auto',
   trendlineDisplayOnHover: false,
   showTrendlineAnnotation: true,
   trendlineAnnotationPrefix: 'Trend ',
-  trendlineAnnotationBadge: true,
   name: 'scatter0',
   dimension: 'speedNormal',
   metric: 'handlingNormal',

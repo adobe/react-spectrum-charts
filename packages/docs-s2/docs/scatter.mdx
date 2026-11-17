@@ -198,8 +198,10 @@ don't fit anywhere are hidden. The default tries `right`, `top`, `bottom`, then 
   `logarithmic`, and `power` fit a regression curve.
 - `movingAverage-N` averages each point with the N - 1 points before it.
 
-Trendlines are dashed, `M` width, and the color of their series. `lineType`, `lineWidth`,
-`opacity`, and `color` change that. `orientation="vertical"` calculates the trend of the dimension
+Trendlines are dashed and the color of their series, and their width follows the chart size like
+series lines. `lineType` and `color` change the style; `size` (`XS`, `S`, `M`, or `L`) sets a fixed
+width, matching `ReferenceLine`. A trendline fades with its series when another series is
+highlighted, and fades in once the points finish drawing in. `orientation="vertical"` calculates the trend of the dimension
 across the metric instead, for example a vertical line at the average x.
 
 `dimensionRange` limits the calculation to points between two dimension values; `null` leaves a
@@ -240,7 +242,8 @@ hovered position.
 `TrendlineAnnotation` labels a trendline with its value. `dimensionValue` sets where along the
 line: `end` (default), `start`, or a dimension value. `numberFormat` takes a
 [d3-format](https://d3js.org/d3-format) specifier and follows the chart's `locale`; `prefix` adds
-text before the value. `badge` draws the label in a filled badge in the trendline's color.
+text before the value. The label uses the same bold, chart-sized text and background halo as other
+direct labels, and fades with its trendline.
 
 <TrendlineAnnotationPlayground />
 
@@ -326,9 +329,8 @@ use the same nearest-point targeting as hover, so the pointer doesn't need to be
 />
 ```
 
-:::note
-`Scatter` doesn't support `onMouseOver` or `onMouseOut` yet.
-:::
+`onMouseOver` and `onMouseOut` are called with a point's row as the pointer moves onto and off
+it, using the same nearest-point targeting.
 
 ### Highlighting
 

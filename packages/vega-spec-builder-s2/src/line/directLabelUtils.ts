@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
+import { ColorValueRef, NumericValueRef, ProductionRule, TextMark, Transforms } from 'vega';
 
 import {
   BACKGROUND_COLOR,
@@ -23,7 +23,7 @@ import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { ColorScheme } from '../types/index.js';
 
 type PositionRef = NumericValueRef | ProductionRule<NumericValueRef>;
-type FillOverride = { field: string } | { value: string } | { signal: string };
+type FillOverride = ProductionRule<ColorValueRef>;
 
 export interface DirectLabelUpdateEncode {
   x: PositionRef;

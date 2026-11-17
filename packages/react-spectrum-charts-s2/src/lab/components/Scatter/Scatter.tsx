@@ -39,6 +39,8 @@ const Scatter: FC<ScatterProps> = ({
   name,
   onClick,
   onContextMenu,
+  onMouseOut,
+  onMouseOver,
   opacity = { value: 1 },
   outline = 'auto',
   size = { value: DEFAULT_SYMBOL_SIZE },

@@ -13,8 +13,8 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartPopover } from '../components/ChartPopover/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
+import { ChartPopover } from '../components/ChartPopover/index.js';
 import { ScatterAnnotation, ScatterPath, ScatterSizeLegend, Trendline } from '../lab/index.js';
 import { childrenToOptions } from './childrenAdapter.js';
 import { getScatterOptions } from './scatterAdapter.js';
@@ -62,6 +62,14 @@ describe('getScatterOptions()', () => {
     const options = getScatterOptions({ onClick: jest.fn(), onContextMenu: jest.fn() }, childrenToOptions);
     expect(options).toMatchObject({ hasOnClick: true, hasOnContextMenu: true });
     expect(options).not.toHaveProperty('onClick');
+  });
+  it('should convert mouse callbacks to a flag', () => {
+    expect(getScatterOptions({ onMouseOver: jest.fn() }, childrenToOptions)).toHaveProperty(
+      'hasMouseInteraction',
+      true
+    );
+    expect(getScatterOptions({ onMouseOut: jest.fn() }, childrenToOptions)).toHaveProperty('hasMouseInteraction', true);
+    expect(getScatterOptions({}, childrenToOptions)).toHaveProperty('hasMouseInteraction', false);
   });
   it('should set the click flags to false without callbacks', () => {
     expect(getScatterOptions({}, childrenToOptions)).toMatchObject({ hasOnClick: false, hasOnContextMenu: false });

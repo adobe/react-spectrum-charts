@@ -12,7 +12,14 @@
 import { produce } from 'immer';
 import { Blend, GroupMark, Mark, NumericValueRef, SymbolMark } from 'vega';
 
-import { DEFAULT_OPACITY_RULE, FADE_FACTOR, FILTERED_TABLE, SELECTED_ITEM } from '@spectrum-charts/core-s2/constants';
+import {
+  DEFAULT_OPACITY_RULE,
+  FADE_FACTOR,
+  FILTERED_TABLE,
+  HOVERED_ITEM,
+  SELECTED_ITEM,
+  SERIES_ID,
+} from '@spectrum-charts/core-s2/constants';
 import { spectrumColors } from '@spectrum-charts/core-s2/tokens';
 
 import {
@@ -20,6 +27,7 @@ import {
   getControlledHighlightedItemOpacityRule,
 } from '../chartInspect/chartInspectUtils.js';
 import { getRowKeyField } from '../data/rowKeyUtils.js';
+import { fadeInAfterDrawIn } from '../marks/drawInAnimationUtils.js';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -36,11 +44,11 @@ import { getScatterPathMarks } from '../scatterPath/scatterPathUtils.js';
 import { getTrendlineMarks } from '../trendline/index.js';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types/index.js';
 import {
-  fadeInAfterScatterDrawIn,
   fadeInLabelsAfterScatterDrawIn,
   getScatterAnimatedOpacity,
   getScatterDrawInBoundsMark,
   getScatterDrawInSize,
+  hasTrendlineInspect,
 } from './scatterAnimationUtils.js';
 import { getScatterAnnotationMarks } from './scatterAnnotation/index.js';
 import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
@@ -51,7 +59,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
   const pathMarks = getScatterPathMarks(options);
   const trendlineMarks = getTrendlineMarks(options);
   if (isDrawInAnimate) {
-    fadeInAfterScatterDrawIn([...pathMarks, ...trendlineMarks]);
+    fadeInAfterDrawIn(pathMarks);
     fadeInLabelsAfterScatterDrawIn(annotationMarks);
   }
 
@@ -153,11 +161,18 @@ export const getScatterMark = (options: ScatterSpecOptions): SymbolMark => {
  * @returns opacity production rule
  */
 export const getOpacity = (scatterOptions: ScatterSpecOptions): ({ test?: string } & NumericValueRef)[] => {
-  const { idKey } = scatterOptions;
-  if (!isInteractive(scatterOptions)) {
-    return [getControlledHighlightedItemOpacityRule(idKey), DEFAULT_OPACITY_RULE];
-  }
+  const { idKey, name } = scatterOptions;
   const rules: ({ test?: string } & NumericValueRef)[] = [];
+  if (hasTrendlineInspect(scatterOptions)) {
+    const hoveredTrendline = `${name}Trendline_${HOVERED_ITEM}`;
+    rules.push({
+      test: `isValid(${hoveredTrendline})`,
+      signal: `${hoveredTrendline}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : ${FADE_FACTOR}`,
+    });
+  }
+  if (!isInteractive(scatterOptions)) {
+    return [...rules, getControlledHighlightedItemOpacityRule(idKey), DEFAULT_OPACITY_RULE];
+  }
   addHoveredItemOpacityRules(rules, scatterOptions);
   if (hasPopover(scatterOptions)) {
     rules.push({

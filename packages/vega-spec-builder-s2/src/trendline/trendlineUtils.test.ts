@@ -50,7 +50,7 @@ describe('applyTrendlinePropDefaults()', () => {
     expect(options).toHaveProperty('method', 'linear');
     expect(options).toHaveProperty('dimensionRange', [null, null]);
     expect(options).toHaveProperty('lineType', 'dashed');
-    expect(options).toHaveProperty('lineWidth', 'M');
+    expect(options).not.toHaveProperty('size');
     expect(options).toHaveProperty('metric', TRENDLINE_VALUE);
     expect(options).toHaveProperty('trendlineColor', defaultLineOptions.color);
   });
@@ -67,7 +67,7 @@ describe('applyTrendlinePropDefaults()', () => {
 
 describe('getPolynomialOrder()', () => {
   test('should trow error if the polynomial order is less than 1', () => {
-    expect(() => getPolynomialOrder('polynomial-0')).toThrowError();
+    expect(() => getPolynomialOrder('polynomial-0')).toThrow();
   });
 });
 

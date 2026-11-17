@@ -33,7 +33,11 @@ import { toCamelCase } from '@spectrum-charts/core-s2/utils';
 import { addInspectData, addInspectSignals } from '../chartInspect/chartInspectUtils.js';
 import { addTimeTransform, getFilteredInspectData, getTableData } from '../data/dataUtils.js';
 import { addRowKeyTransforms } from '../data/rowKeyUtils.js';
-import { addDrawInClockSignals, addDrawInDoneSignal } from '../marks/drawInAnimationUtils.js';
+import {
+  addDrawInClockSignals,
+  addDrawInDoneSignal,
+  addDrawInFollowerFadeTimer,
+} from '../marks/drawInAnimationUtils.js';
 import { addHoverAnimationSignals } from '../marks/hoverAnimationUtils.js';
 import {
   getInteractiveMarkName,
@@ -56,7 +60,6 @@ import { addTrendlineData, getTrendlineScales, setTrendlineSignals } from '../tr
 import { ChartData, ColorScheme, HighlightedItem, ScSpec, ScatterOptions, ScatterSpecOptions } from '../types/index.js';
 import {
   addScatterDrawInExtentSignal,
-  addScatterFollowerFadeTimer,
   addScatterHoverAnimationData,
   addScatterItemHighlightSignals,
   getScatterDrawInBoundsData,
@@ -134,6 +137,7 @@ export const addScatter = produce<
           chartInspects,
           hasOnClick: options.hasOnClick,
           hasOnContextMenu: options.hasOnContextMenu,
+          hasMouseInteraction: options.hasMouseInteraction,
           highlightedItem: options.highlightedItem,
           trendlines,
         },
@@ -224,7 +228,7 @@ export const addSignals = produce<Signal[], [ScatterSpecOptions]>((signals, scat
     addDrawInClockSignals(signals, DRAW_IN_SWEEP_DURATION_MS);
     addScatterDrawInExtentSignal(signals, scatterOptions);
     addDrawInDoneSignal(signals);
-    if (hasDrawInFollowers(scatterOptions)) addScatterFollowerFadeTimer(signals);
+    if (hasDrawInFollowers(scatterOptions)) addDrawInFollowerFadeTimer(signals);
   }
   if (isHoverAnimate) {
     addHoverAnimationSignals(signals, scatterName);

@@ -14,8 +14,10 @@ import {
   clickNthElement,
   findAllMarksByGroupName,
   findChart,
+  hoverNthElement,
   render,
   rightClickNthElement,
+  unhoverNthElement,
 } from '../../test-utils/index.js';
 import { Basic } from './Features/ScatterFeatures.story.js';
 
@@ -54,5 +56,17 @@ describe('Scatter', () => {
       expect.any(Object),
       expect.objectContaining({ weightClass: expect.any(String) })
     );
+  });
+
+  test('calls onMouseOver and onMouseOut with the hovered point', async () => {
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    render(<Basic {...Basic.args} onMouseOver={onMouseOver} onMouseOut={onMouseOut} />);
+    const chart = await findChart();
+    const cells = await findAllMarksByGroupName(chart, 'scatter0_voronoi', 'path');
+    await hoverNthElement(cells, 0);
+    expect(onMouseOver).toHaveBeenCalledWith(expect.objectContaining({ weightClass: expect.any(String) }));
+    await unhoverNthElement(cells, 0);
+    expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining({ weightClass: expect.any(String) }));
   });
 });

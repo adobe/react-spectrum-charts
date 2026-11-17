@@ -9,21 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { EncodeEntry, GroupMark, LineMark, NumericValueRef, RuleMark } from 'vega';
+import { EncodeEntry, GroupMark, LineMark, NumericValueRef, ProductionRule, RuleMark } from 'vega';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
+import {
+  CHART_SIZE_STROKE_WIDTH,
+  HOVER_SERIES_FRACTION_DATA,
+  REFERENCE_LINE_SIZE_STROKE_WIDTHS,
+  ReferenceLineSize,
+  SERIES_ID,
+  TRENDLINE_VALUE,
+} from '@spectrum-charts/core-s2/constants';
 
 import { getLineYEncoding } from '../line/lineEncodingUtils.js';
 import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils.js';
 import { LineMarkOptions } from '../line/lineUtils.js';
-import {
-  getColorProductionRule,
-  getLineWidthProductionRule,
-  getOpacityProductionRule,
-  getSeriesFacet,
-  getStrokeDashProductionRule,
-  hasInspect,
-} from '../marks/markUtils.js';
+import { fadeInAfterDrawIn } from '../marks/drawInAnimationUtils.js';
+import { getColorProductionRule, getSeriesFacet, getStrokeDashProductionRule, hasInspect } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { getFacetsFromOptions } from '../specUtils.js';
 import { getTrendlineAnnotationMarks } from '../trendlineAnnotation/index.js';
@@ -59,7 +60,13 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
         marks: [getTrendlineLineMark(markOptions, trendlineOptions)],
       });
     }
-    marks.push(...getTrendlineAnnotationMarks(trendlineOptions, markOptions.name));
+    marks.push(
+      ...getTrendlineAnnotationMarks(
+        trendlineOptions,
+        markOptions.name,
+        getTrendlineSeriesFadeData(markOptions, trendlineOptions)
+      )
+    );
   }
 
   if (trendlines.some((trendline) => hasInspect(trendline))) {
@@ -71,6 +78,7 @@ export const getTrendlineMarks = (markOptions: TrendlineParentOptions): (GroupMa
     );
   }
 
+  if (markOptions.isDrawInAnimate) fadeInAfterDrawIn(marks);
   return marks;
 };
 
@@ -96,9 +104,9 @@ export const getTrendlineRuleMark = (
     dimensionScaleType,
     displayOnHover,
     lineType,
-    lineWidth,
     name,
     orientation,
+    size,
     trendlineColor,
     trendlineDimension,
   } = trendlineOptions;
@@ -117,14 +125,13 @@ export const getTrendlineRuleMark = (
       enter: {
         strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
-        strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
-        strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
       },
       update: {
+        strokeWidth: getTrendlineStrokeWidth(size),
         ...getRuleYEncodings(dimensionExtent, trendlineDimension, orientation),
         stroke: getColorProductionRule(trendlineColor, colorScheme),
         ...getRuleXEncodings(dimensionExtent, trendlineDimension, dimensionScaleType, orientation),
-        opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
+        opacity: getTrendlineOpacity(markOptions, trendlineOptions),
       },
     },
   };
@@ -190,9 +197,9 @@ export const getTrendlineLineMark = (
     dimensionScaleType,
     isDimensionNormalized,
     lineType,
-    lineWidth,
     name,
     orientation,
+    size,
     trendlineColor,
     trendlineDimension,
   } = trendlineOptions;
@@ -206,10 +213,9 @@ export const getTrendlineLineMark = (
       enter: {
         strokeCap: { value: 'round' },
         strokeDash: getStrokeDashProductionRule({ value: lineType }),
-        strokeOpacity: getOpacityProductionRule({ value: trendlineOptions.opacity }),
-        strokeWidth: getLineWidthProductionRule({ value: lineWidth }),
       },
       update: {
+        strokeWidth: getTrendlineStrokeWidth(size),
         stroke: getColorProductionRule(trendlineColor, colorScheme),
         y:
           markOptions.markType === 'line' && orientation === 'horizontal'
@@ -217,7 +223,7 @@ export const getTrendlineLineMark = (
             : getLineYProductionRule(trendlineDimension, orientation),
         defined: { signal: `isValid(datum.${TRENDLINE_VALUE}) && isFinite(datum.${TRENDLINE_VALUE})` },
         x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
-        opacity: getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions)),
+        opacity: getTrendlineOpacity(markOptions, trendlineOptions),
       },
     },
   };
@@ -281,7 +287,7 @@ const getTrendlineHoverMarks = (markOptions: TrendlineParentOptions, highlightRa
 
 const getLineMarkOptions = (
   markOptions: TrendlineParentOptions,
-  { dimensionScaleType, displayOnHover, lineWidth, metric, name, opacity }: TrendlineSpecOptions,
+  { dimensionScaleType, displayOnHover, metric, name, size }: TrendlineSpecOptions,
   override?: Partial<LineMarkOptions>
 ): LineMarkOptions => {
   const { color, lineType } = markOptions;
@@ -292,10 +298,10 @@ const getLineMarkOptions = (
     color: getTrendlineColorFromMarkOptions(color),
     displayOnHover,
     lineType: getTrendlineLineTypeFromMarkOptions(lineType),
-    lineWidth: { value: lineWidth },
     metric,
     name,
-    opacity: { value: opacity },
+    lineWidth: { value: size ? REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] : 'M' },
+    opacity: { value: 1 },
     popoverMarkName,
     scaleType: dimensionScaleType,
     staticPoint,
@@ -303,3 +309,40 @@ const getLineMarkOptions = (
     ...override,
   };
 };
+
+/**
+ * Gets the trendline stroke width: the size tier's width, or the chart-size width when no size is set.
+ * @param size
+ * @returns NumericValueRef
+ */
+export const getTrendlineStrokeWidth = (size?: ReferenceLineSize): NumericValueRef =>
+  size ? { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size] } : { signal: CHART_SIZE_STROKE_WIDTH };
+
+/**
+ * Gets the trendline opacity, following the parent mark's animated series fade when it has one.
+ * @param markOptions
+ * @param trendlineOptions
+ * @returns ProductionRule<NumericValueRef>
+ */
+export const getTrendlineOpacity = (
+  markOptions: TrendlineParentOptions,
+  trendlineOptions: TrendlineSpecOptions
+): ProductionRule<NumericValueRef> => {
+  const fractionData = getTrendlineSeriesFadeData(markOptions, trendlineOptions);
+  if (fractionData) {
+    return { signal: `hoverDeemphasisOpacity(data('${fractionData}'), '${SERIES_ID}', datum.${SERIES_ID})` };
+  }
+  return getLineOpacity(getLineMarkOptions(markOptions, trendlineOptions));
+};
+
+/**
+ * Gets the parent mark's animated series fraction data that the trendline fades with, if it has one.
+ * @param markOptions
+ * @param trendlineOptions
+ * @returns data name or undefined
+ */
+const getTrendlineSeriesFadeData = (
+  markOptions: TrendlineParentOptions,
+  { displayOnHover }: TrendlineSpecOptions
+): string | undefined =>
+  markOptions.isHoverAnimate && !displayOnHover ? `${markOptions.name}_${HOVER_SERIES_FRACTION_DATA}` : undefined;

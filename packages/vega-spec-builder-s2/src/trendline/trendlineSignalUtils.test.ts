@@ -11,7 +11,7 @@
  */
 import { Signal } from 'vega';
 
-import { CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
+import { ANIMATION_TIMER, CONTROLLED_HIGHLIGHTED_ITEM, HOVERED_ITEM } from '@spectrum-charts/core-s2/constants';
 
 import { defaultSignals } from '../specTestUtils.js';
 import { setTrendlineSignals } from './trendlineSignalUtils.js';
@@ -20,7 +20,7 @@ import { defaultLineOptions } from './trendlineTestUtils.js';
 describe('getTrendlineSignals()', () => {
   let signals: Signal[];
   beforeEach(() => {
-    signals = JSON.parse(JSON.stringify(defaultSignals));
+    signals = structuredClone(defaultSignals);
   });
   test('should add voronoi hover signal events if ChartInspect exists', () => {
     setTrendlineSignals(signals, {
@@ -36,6 +36,11 @@ describe('getTrendlineSignals()', () => {
 
   test('should not modify any signals if there is not a ChartInspect', () => {
     setTrendlineSignals(signals, defaultLineOptions);
-    expect(signals).toStrictEqual(defaultSignals);
+    expect(signals).toEqual(defaultSignals);
+  });
+
+  test('should keep the animation timer running for the draw-in fade', () => {
+    setTrendlineSignals(signals, { ...defaultLineOptions, isDrawInAnimate: true, trendlines: [{}] });
+    expect(signals.some((signal) => signal.name === ANIMATION_TIMER)).toBe(true);
   });
 });

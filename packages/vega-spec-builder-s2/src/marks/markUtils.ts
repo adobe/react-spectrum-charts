@@ -201,12 +201,14 @@ export const isInteractive = (options: {
   hasOnClick?: boolean;
   hasOnContextMenu?: boolean;
   hasOnMouseInput?: boolean;
+  hasMouseInteraction?: boolean;
   metricRanges?: MetricRangeOptions[];
   segmentLabels?: SegmentLabelOptions[];
   trendlines?: TrendlineOptions[];
 }): boolean => {
   const hasOnClick = 'hasOnClick' in options && options.hasOnClick;
   const hasOnContextMenu = 'hasOnContextMenu' in options && options.hasOnContextMenu;
+  const hasMouseInteraction = 'hasMouseInteraction' in options && options.hasMouseInteraction;
   const metricRanges = ('metricRanges' in options && options.metricRanges) || [];
   const segmentLabels = ('segmentLabels' in options && options.segmentLabels) || [];
   const trendlines = ('trendlines' in options && options.trendlines) || [];
@@ -215,6 +217,7 @@ export const isInteractive = (options: {
     hasOnClick ||
     hasOnContextMenu ||
     options.hasOnMouseInput ||
+    hasMouseInteraction ||
     hasActionBar(options) ||
     hasPopover(options) ||
     hasInspect(options) ||
@@ -540,6 +543,7 @@ export const getInteractiveMarkName = (
     hasOnClick?: boolean;
     hasOnContextMenu?: boolean;
     hasOnMouseInput?: boolean;
+    hasMouseInteraction?: boolean;
     highlightedItem?: HighlightedItem;
     metricRanges?: MetricRangeOptions[];
     trendlines?: TrendlineOptions[];
