@@ -20,6 +20,7 @@ import {
   getControlledHighlightedItemOpacityRule,
 } from '../chartInspect/chartInspectUtils.js';
 import { getRowKeyField } from '../data/rowKeyUtils.js';
+import { fadeInAfterDrawIn } from '../marks/drawInAnimationUtils.js';
 import {
   getColorProductionRule,
   getLineWidthProductionRule,
@@ -36,7 +37,6 @@ import { getScatterPathMarks } from '../scatterPath/scatterPathUtils.js';
 import { getTrendlineMarks } from '../trendline/index.js';
 import { ScatterSpecOptions, SymbolSizeFacet } from '../types/index.js';
 import {
-  fadeInAfterScatterDrawIn,
   fadeInLabelsAfterScatterDrawIn,
   getScatterAnimatedOpacity,
   getScatterDrawInBoundsMark,
@@ -51,7 +51,7 @@ export const addScatterMarks = produce<Mark[], [ScatterSpecOptions]>((marks, opt
   const pathMarks = getScatterPathMarks(options);
   const trendlineMarks = getTrendlineMarks(options);
   if (isDrawInAnimate) {
-    fadeInAfterScatterDrawIn([...pathMarks, ...trendlineMarks]);
+    fadeInAfterDrawIn(pathMarks);
     fadeInLabelsAfterScatterDrawIn(annotationMarks);
   }
 

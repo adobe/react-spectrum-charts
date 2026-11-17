@@ -11,6 +11,7 @@
  */
 import { Signal } from 'vega';
 
+import { addDrawInFollowerFadeTimer } from '../marks/drawInAnimationUtils.js';
 import { hasInspect } from '../marks/markUtils.js';
 import { addHoveredItemSignal } from '../signal/signalSpecBuilder.js';
 import { TrendlineParentOptions, getTrendlines } from './trendlineUtils.js';
@@ -22,4 +23,5 @@ export const setTrendlineSignals = (signals: Signal[], markOptions: TrendlinePar
   if (trendlines.some((trendline) => hasInspect(trendline))) {
     addHoveredItemSignal(signals, `${markName}Trendline`, `${markName}Trendline_voronoi`, 2);
   }
+  if (markOptions.isDrawInAnimate && trendlines.length) addDrawInFollowerFadeTimer(signals);
 };

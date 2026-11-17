@@ -11,7 +11,15 @@
  */
 import { Facet, From, GroupMark, Mark } from 'vega';
 
-import { COLOR_SCALE, DEFAULT_TIME_DIMENSION, TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
+import {
+  CHART_SIZE_STROKE_WIDTH,
+  COLOR_SCALE,
+  DEFAULT_TIME_DIMENSION,
+  DRAW_IN_START,
+  REFERENCE_LINE_SIZE_STROKE_WIDTHS,
+  SERIES_ID,
+  TRENDLINE_VALUE,
+} from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import {
@@ -24,6 +32,10 @@ import {
   getTrendlineRuleMark,
 } from './trendlineMarkUtils.js';
 import { defaultLineOptions, defaultTrendlineOptions } from './trendlineTestUtils.js';
+
+const animatedOpacity = {
+  signal: `hoverDeemphasisOpacity(data('line0_hoverSeriesFractionData'), '${SERIES_ID}', datum.${SERIES_ID})`,
+};
 
 describe('getTrendlineMarks()', () => {
   test('should return rule mark for aggregate methods', () => {
@@ -112,15 +124,27 @@ describe('getTrendlineRuleMark()', () => {
     expect(mark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
   });
 
-  test('opacity stays the static instant-rule array even when the parent line is animated', () => {
-    // the trendline renders under its own mark name (`${parentName}Trendline${index}`), which has no
-    // `_hoverFractionData` of its own — getLineMarkOptions forces isHoverAnimate: false for exactly this
-    // reason, otherwise this would reference a data source that was only created for the parent's name
+  test('opacity follows the parent series fade when the parent line is animated', () => {
     const mark = getTrendlineRuleMark(
       { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       { ...defaultTrendlineOptions, method: 'median' }
     );
+    expect(mark.encode?.update?.opacity).toEqual(animatedOpacity);
+  });
+
+  test('opacity uses the static rules with displayOnHover even when the parent line is animated', () => {
+    const mark = getTrendlineRuleMark(
+      { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
+      { ...defaultTrendlineOptions, method: 'median', displayOnHover: true }
+    );
     expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
+  });
+
+  test('stroke width follows the chart size unless a size is set', () => {
+    const auto = getTrendlineRuleMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'median' });
+    expect(auto.encode?.update).toHaveProperty('strokeWidth', { signal: CHART_SIZE_STROKE_WIDTH });
+    const large = getTrendlineRuleMark(defaultLineOptions, { ...defaultTrendlineOptions, method: 'median', size: 'L' });
+    expect(large.encode?.update).toHaveProperty('strokeWidth', { value: REFERENCE_LINE_SIZE_STROKE_WIDTHS.L });
   });
 });
 
@@ -217,12 +241,19 @@ describe('getTrendlineLineMark()', () => {
     expect(mark.encode?.enter).toHaveProperty('strokeCap', { value: 'round' });
   });
 
-  test('opacity stays the static instant-rule array even when the parent line is animated', () => {
+  test('opacity follows the parent series fade when the parent line is animated', () => {
     const mark = getTrendlineLineMark(
       { ...defaultLineOptions, interactiveMarkName: 'line0', isHoverAnimate: true },
       defaultTrendlineOptions
     );
-    expect(Array.isArray(mark.encode?.update?.opacity)).toBe(true);
+    expect(mark.encode?.update?.opacity).toEqual(animatedOpacity);
+  });
+
+  test('fades in after the parent draws in', () => {
+    const marks = getTrendlineMarks({ ...defaultLineOptions, isDrawInAnimate: true, trendlines: [{}] });
+    const group = marks[0] as GroupMark;
+    expect(group.marks?.[0].encode?.update?.opacity).toEqual(expect.anything());
+    expect(JSON.stringify(group.marks?.[0].encode?.update?.opacity)).toContain(DRAW_IN_START);
   });
 });
 

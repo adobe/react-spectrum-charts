@@ -35,6 +35,8 @@ export interface TrendlineAnnotationSpecOptions
   displayOnHover: boolean;
   markName: string;
   name: string;
+  /** Parent mark's animated series fraction data the annotation fades with, if any. */
+  seriesFadeData?: string;
   trendlineColor: ColorFacet;
   trendlineDimension: string;
   trendlineDimensionExtent: TrendlineSpecOptions['dimensionExtent'];

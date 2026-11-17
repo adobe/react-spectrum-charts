@@ -9,9 +9,11 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ReferenceLineSize } from '@spectrum-charts/core-s2/constants';
+
 import { ColorScheme } from '../../chartSpec.types.js';
 import { ChartInspectOptions } from '../../dialogs/chartInspectSpec.types.js';
-import { ColorFacet, LineType, LineWidth, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types.js';
+import { ColorFacet, LineType, Orientation, PartiallyRequired, ScaleType } from '../../specUtil.types.js';
 import { SpectrumColor } from '../../spectrumVizColor.types.js';
 import { TrendlineAnnotationOptions } from './trendlineAnnotationSpec.types.js';
 
@@ -32,8 +34,8 @@ export type WindowMethod = `movingAverage-${number}`;
 export type TrendlineMethod = AggregateMethod | RegressionMethod | WindowMethod;
 
 export interface TrendlineOptions {
-  /** Trendline color. Defaults to the color of its series. */
-  color?: SpectrumColor | string;
+  /** Trendline color: a Spectrum color name or CSS color. Defaults to the color of its series. */
+  color?: SpectrumColor | (string & Record<never, never>);
   /** Range of `dimension` to draw the trendline over. `domain` extends it to the edge of the chart; `null` stops at the first or last row. Defaults to `dimensionRange`. */
   dimensionExtent?: [number | 'domain' | null, number | 'domain' | null];
   /** Range of `dimension` the trendline is calculated from; `null` leaves that end unbounded. Defaults to `[null, null]`. */
@@ -48,12 +50,10 @@ export interface TrendlineOptions {
   hidePartialWindows?: boolean;
   /** Line type of the trendline. Defaults to `dashed`. */
   lineType?: LineType;
-  /** Line width of the trendline. Defaults to `M`. */
-  lineWidth?: LineWidth;
   /** Statistical method used to calculate the trendline. Defaults to `linear`. */
   method?: TrendlineMethod;
-  /** Opacity of the trendline. Defaults to `1`. */
-  opacity?: number;
+  /** Stroke width tier, matching `ReferenceLine`; when omitted, the width follows the chart size like series lines. */
+  size?: ReferenceLineSize;
   /** Orientation of the trendline; `vertical` calculates the dimension across the metric. Only supported on scatter plots. Defaults to `horizontal`. */
   orientation?: Orientation;
 
@@ -70,9 +70,7 @@ type TrendlineOptionsWithDefaults =
   | 'hidePartialWindows'
   | 'highlightRawPoint'
   | 'lineType'
-  | 'lineWidth'
   | 'method'
-  | 'opacity'
   | 'orientation'
   | 'trendlineAnnotations';
 

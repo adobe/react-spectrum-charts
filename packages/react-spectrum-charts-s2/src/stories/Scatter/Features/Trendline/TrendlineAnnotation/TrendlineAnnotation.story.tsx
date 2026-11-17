@@ -35,7 +35,7 @@ const TrendlineAnnotationStory: StoryFn<TrendlineAnnotationProps> = (args): Reac
       <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
       <Axis position="left" grid ticks baseline title="Handling (normal)" />
       <Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
-        <Trendline method="median" dimensionExtent={['domain', 'domain']} lineWidth="S">
+        <Trendline method="median" dimensionExtent={['domain', 'domain']} size="S">
           <TrendlineAnnotation {...args} />
         </Trendline>
       </Scatter>

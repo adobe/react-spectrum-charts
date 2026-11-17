@@ -10,9 +10,13 @@
  * governing permissions and limitations under the License.
  */
 import {
+  BACKGROUND_COLOR,
+  CHART_SIZE_FONT_SIZE,
   DEFAULT_COLOR,
   DEFAULT_COLOR_SCHEME,
   DEFAULT_TIME_DIMENSION,
+  DIRECT_LABEL_FONT_WEIGHT,
+  SERIES_ID,
   TRENDLINE_VALUE,
 } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
@@ -27,7 +31,7 @@ import {
   getTrendlineAnnotationPointX,
   getTrendlineAnnotationPointY,
   getTrendlineAnnotationSpecOptions,
-  getTrendlineAnnotationTextMark,
+  getTrendlineAnnotationTextMarks,
   getTrendlineAnnotations,
 } from './trendlineAnnotationUtils.js';
 
@@ -46,7 +50,7 @@ const defaultAnnotationOptions: TrendlineAnnotationSpecOptions = {
   trendlineDimensionScaleType: 'time',
   trendlineName: 'line0Trendline0',
   trendlineOrientation: 'horizontal',
-  trendlineWidth: 2,
+  trendlineWidth: 1.5,
 };
 
 const colors = spectrum2Colors.light;
@@ -137,25 +141,43 @@ describe('getTrendlineAnnotationPointY()', () => {
   });
 });
 
-describe('getTrendlineAnnotationTextMark()', () => {
-  test('should return text mark', () => {
-    const textMark = getTrendlineAnnotationTextMark(defaultAnnotationOptions);
-    expect(textMark).toHaveProperty('type', 'text');
-    expect(textMark).toHaveProperty('name', 'line0Trendline0Annotation0');
-    expect(textMark.transform).toHaveLength(1);
-    expect(textMark.transform?.[0]).toHaveProperty('type', 'label');
+describe('getTrendlineAnnotationTextMarks()', () => {
+  test('should return a halo mark with the label transform and a foreground text mark', () => {
+    const [background, foreground] = getTrendlineAnnotationTextMarks(defaultAnnotationOptions);
+    expect(background).toHaveProperty('name', 'line0Trendline0Annotation0_background');
+    expect(background.transform?.[0]).toHaveProperty('type', 'label');
+    expect(background.encode?.update).toHaveProperty('stroke', { signal: BACKGROUND_COLOR });
+    expect(foreground).toHaveProperty('name', 'line0Trendline0Annotation0');
+    expect(foreground).toHaveProperty('from', { data: 'line0Trendline0Annotation0_background' });
+    expect(foreground.encode?.update).toHaveProperty('fontSize', { signal: CHART_SIZE_FONT_SIZE });
+    expect(foreground.encode?.update).toHaveProperty('fontWeight', { value: DIRECT_LABEL_FONT_WEIGHT });
   });
   test('should add the prefix if it is a valid string', () => {
     const prefix = 'Median times';
-    const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationOptions, prefix });
-    expect(textMark.encode?.update?.text).toHaveProperty(
+    const [background] = getTrendlineAnnotationTextMarks({ ...defaultAnnotationOptions, prefix });
+    expect(background.encode?.update?.text).toHaveProperty(
       'signal',
       `'${prefix} ' + format(datum.datum.${TRENDLINE_VALUE}, '')`
     );
   });
   test('should not add the prefix if it is not a valid string', () => {
-    const textMark = getTrendlineAnnotationTextMark({ ...defaultAnnotationOptions, prefix: '' });
-    expect(textMark.encode?.update?.text).toHaveProperty('signal', `format(datum.datum.${TRENDLINE_VALUE}, '')`);
+    const [background] = getTrendlineAnnotationTextMarks({ ...defaultAnnotationOptions, prefix: '' });
+    expect(background.encode?.update?.text).toHaveProperty('signal', `format(datum.datum.${TRENDLINE_VALUE}, '')`);
+  });
+  test('should fade with the series when the parent mark animates', () => {
+    const seriesFadeData = 'line0_hoverSeriesFractionData';
+    const [background, foreground] = getTrendlineAnnotationTextMarks({ ...defaultAnnotationOptions, seriesFadeData });
+    const fade = (path: string) => ({
+      signal: `hoverDeemphasisOpacity(data('${seriesFadeData}'), '${SERIES_ID}', ${path}.${SERIES_ID})`,
+    });
+    expect(background.encode?.update).toHaveProperty('fillOpacity', fade('datum.datum'));
+    expect(foreground.encode?.update).toHaveProperty('fillOpacity', fade('datum.datum.datum'));
+    const [badge] = getTrendlineAnnotationBadgeMark({ ...defaultAnnotationOptions, badge: true, seriesFadeData });
+    expect(badge.encode?.update).toHaveProperty('fillOpacity', fade('datum.datum.datum.datum'));
+  });
+  test('should not fade without series fade data', () => {
+    const [background] = getTrendlineAnnotationTextMarks(defaultAnnotationOptions);
+    expect(background.encode?.update).not.toHaveProperty('fillOpacity');
   });
 });
 
@@ -163,7 +185,7 @@ describe('getTextFill()', () => {
   test('should return the correct fill for the text', () => {
     expect(getTextFill({ ...defaultAnnotationOptions, badge: true })).toEqual([
       {
-        test: `contrast(scale('color', datum.datum.${DEFAULT_COLOR}), '${colors['gray-50']}') >= 4.5`,
+        test: `contrast(scale('color', datum.datum.datum.${DEFAULT_COLOR}), '${colors['gray-50']}') >= 4.5`,
         value: colors['gray-50'],
       },
       { value: colors['gray-900'] },

@@ -972,15 +972,10 @@ const trendlineVariations: Variation[] = [
     title: 'Trendline style',
     description: 'A thin, solid, half-opaque gray trendline.',
     dataset: 'standard',
-    coverage: [
-      'Trendline.color=gray-800',
-      'Trendline.lineType=solid',
-      'Trendline.lineWidth=XS',
-      'Trendline.opacity=0.5',
-    ],
+    coverage: ['Trendline.color=gray-800', 'Trendline.lineType=solid', 'Trendline.size=XS'],
     render: () => (
       <ScatterVariationChart>
-        <Trendline color="gray-800" lineType="solid" lineWidth="XS" opacity={0.5} />
+        <Trendline color="gray-800" lineType="solid" size="XS" />
       </ScatterVariationChart>
     ),
   },
@@ -989,10 +984,10 @@ const trendlineVariations: Variation[] = [
     title: 'Thick dotted trendline',
     description: 'A large dotted trendline in the series color.',
     dataset: 'standard',
-    coverage: ['Trendline.lineType=dotted', 'Trendline.lineWidth=L'],
+    coverage: ['Trendline.lineType=dotted', 'Trendline.size=L'],
     render: () => (
       <ScatterVariationChart>
-        <Trendline lineType="dotted" lineWidth="L" />
+        <Trendline lineType="dotted" size="L" />
       </ScatterVariationChart>
     ),
   },
@@ -1725,7 +1720,6 @@ const trendlineCoverage: PropCoverage<TrendlineProps> = {
   hidePartialWindows: ['trendline-moving-average', 'trendline-hide-partial-windows'],
   highlightRawPoint: ['trendline-inspect', 'trendline-highlight-raw-point'],
   lineType: ['trendline-default', 'trendline-style', 'trendline-thick-dotted'],
-  lineWidth: ['trendline-default', 'trendline-style', 'trendline-thick-dotted'],
   method: [
     'trendline-default',
     'trendline-average',
@@ -1737,8 +1731,8 @@ const trendlineCoverage: PropCoverage<TrendlineProps> = {
     'trendline-power',
     'trendline-moving-average',
   ],
-  opacity: ['trendline-default', 'trendline-style'],
   orientation: ['trendline-default', 'trendline-vertical'],
+  size: ['trendline-default', 'trendline-style', 'trendline-thick-dotted'],
 };
 
 const trendlineAnnotationCoverage: PropCoverage<TrendlineAnnotationProps> = {

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Clip, NewSignal, NumericValueRef, ProductionRule, Signal, SourceData } from 'vega';
+import { Clip, Mark, NewSignal, NumericValueRef, ProductionRule, Signal, SourceData } from 'vega';
 
 import {
   ANIMATION_TIMER,
@@ -23,6 +23,7 @@ import {
   DRAW_IN_DONE,
   DRAW_IN_DURATION,
   DRAW_IN_LABEL_FADE_DURATION_MS,
+  DRAW_IN_PAINT_FADE_MS,
   DRAW_IN_START,
   DRAW_IN_SWEEP_DURATION_MS,
   FILTERED_TABLE,
@@ -251,10 +252,7 @@ export const applyDrawInReveal = (
  * @param name - bar name
  * @returns [stackMaxField, stackMinField]
  */
-export const getBarStackTotalFields = (name: string): [string, string] => [
-  `${name}_stackMax`,
-  `${name}_stackMin`,
-];
+export const getBarStackTotalFields = (name: string): [string, string] => [`${name}_stackMax`, `${name}_stackMin`];
 
 /**
  * Gets the animated metric value a bar's draw-in grows toward; stacked segments fill in order up the stack.
@@ -329,4 +327,42 @@ export const getBarDrawInSettleProgressExpr = (
   const v1 = `${datum}.${metric}1`;
   const total = `(${v1} > 0 ? ${datum}.${stackMax} : ${datum}.${stackMin})`;
   return `(${total} ? ${v1} / ${total} : 1)`;
+};
+
+/**
+ * Gets the 0-1 fade for layers that appear once the mark finishes drawing in.
+ * @returns expression string
+ */
+export const getDrawInFollowerFadeExpr = (): string =>
+  `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START} - ${DRAW_IN_DURATION}) / ${DRAW_IN_PAINT_FADE_MS}, 0, 1)`;
+
+/**
+ * Keeps the animation timer running until layers that follow the draw-in finish fading in.
+ * @param signals
+ */
+export const addDrawInFollowerFadeTimer = (signals: Signal[]): void =>
+  addAnimationTimerSignal(
+    signals,
+    (clock) => `${clock} - ${DRAW_IN_START} < ${DRAW_IN_DURATION} + ${DRAW_IN_PAINT_FADE_MS}`,
+    true
+  );
+
+/**
+ * Fades marks in after the mark finishes drawing in; text fades through fill and stroke opacity since label transforms own opacity.
+ * @param marks
+ */
+export const fadeInAfterDrawIn = (marks: Mark[]): void => {
+  const reveal = getDrawInFollowerFadeExpr();
+  for (const mark of marks) {
+    if (mark.type === 'group') {
+      fadeInAfterDrawIn(mark.marks ?? []);
+      continue;
+    }
+    mark.encode = mark.encode ?? {};
+    const update = (mark.encode.update = mark.encode.update ?? {}) as Record<string, ProductionRule<NumericValueRef>>;
+    const keys = mark.type === 'text' ? ['fillOpacity', 'strokeOpacity'] : ['opacity'];
+    for (const key of keys) {
+      update[key] = update[key] === undefined ? { signal: reveal } : applyDrawInReveal(update[key], reveal);
+    }
+  }
 };

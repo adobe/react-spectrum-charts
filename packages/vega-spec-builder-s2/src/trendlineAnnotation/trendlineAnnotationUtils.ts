@@ -11,12 +11,17 @@
  */
 import { ColorValueRef, GroupMark, NumericValueRef, ProductionRule, RectMark, SymbolMark, TextMark } from 'vega';
 
-import { TRENDLINE_VALUE } from '@spectrum-charts/core-s2/constants';
+import {
+  LINE_POINT_ANNOTATION_OFFSET,
+  REFERENCE_LINE_SIZE_STROKE_WIDTHS,
+  SERIES_ID,
+  TRENDLINE_VALUE,
+} from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
+import { getLabelTransformTextMarks } from '../line/directLabelUtils.js';
 import { getColorProductionRule, getColorProductionRuleSignalString } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
-import { getLineWidthPixelsFromLineWidth } from '../specUtils.js';
 import {
   getEndDimensionExtentProductionRule,
   getStartDimensionExtentProductionRule,
@@ -44,13 +49,14 @@ export const getTrendlineAnnotationSpecOptions = (
     dimensionExtent,
     dimensionScaleType,
     displayOnHover,
-    lineWidth,
+    size,
     orientation,
     trendlineColor,
     trendlineDimension,
     name: trendlineName,
   }: TrendlineSpecOptions,
-  markName: string
+  markName: string,
+  seriesFadeData?: string
 ): TrendlineAnnotationSpecOptions => ({
   badge,
   colorScheme,
@@ -60,14 +66,17 @@ export const getTrendlineAnnotationSpecOptions = (
   name: `${trendlineName}Annotation${index}`,
   numberFormat,
   prefix,
+  seriesFadeData,
   trendlineColor,
   trendlineDimension,
   trendlineDimensionExtent: dimensionExtent,
   trendlineDimensionScaleType: dimensionScaleType,
   trendlineName: trendlineName,
   trendlineOrientation: orientation,
-  trendlineWidth: getLineWidthPixelsFromLineWidth(lineWidth),
+  trendlineWidth: REFERENCE_LINE_SIZE_STROKE_WIDTHS[size ?? 'M'],
 });
+
+const TRENDLINE_ANNOTATION_BADGE_CORNER_RADIUS = 6;
 
 /**
  * Gets all the annotations on a trendline
@@ -77,10 +86,11 @@ export const getTrendlineAnnotationSpecOptions = (
  */
 export const getTrendlineAnnotations = (
   trendlineOptions: TrendlineSpecOptions,
-  markName: string
+  markName: string,
+  seriesFadeData?: string
 ): TrendlineAnnotationSpecOptions[] => {
   return trendlineOptions.trendlineAnnotations.map((annotationOptions, index) =>
-    getTrendlineAnnotationSpecOptions(annotationOptions, index, trendlineOptions, markName)
+    getTrendlineAnnotationSpecOptions(annotationOptions, index, trendlineOptions, markName, seriesFadeData)
   );
 };
 
@@ -90,9 +100,13 @@ export const getTrendlineAnnotations = (
  * @param markName
  * @returns GroupMark[]
  */
-export const getTrendlineAnnotationMarks = (trendlineOptions: TrendlineSpecOptions, markName: string): GroupMark[] => {
+export const getTrendlineAnnotationMarks = (
+  trendlineOptions: TrendlineSpecOptions,
+  markName: string,
+  seriesFadeData?: string
+): GroupMark[] => {
   const marks: GroupMark[] = [];
-  const annotations = getTrendlineAnnotations(trendlineOptions, markName);
+  const annotations = getTrendlineAnnotations(trendlineOptions, markName, seriesFadeData);
 
   for (const annotation of annotations) {
     marks.push({
@@ -101,7 +115,7 @@ export const getTrendlineAnnotationMarks = (trendlineOptions: TrendlineSpecOptio
       interactive: false,
       marks: [
         getTrendlineAnnotationPoints(annotation),
-        getTrendlineAnnotationTextMark(annotation),
+        ...getTrendlineAnnotationTextMarks(annotation),
         ...getTrendlineAnnotationBadgeMark(annotation),
       ],
     });
@@ -187,36 +201,52 @@ export const getTrendlineAnnotationPointY = ({
 };
 
 /**
- * Gets the annotation text mark
- * @param trendlineAnnotationOptions
- * @returns TextMark
+ * Gets the annotation halo and text marks, placed by a label transform.
+ * @param annotation
+ * @returns TextMark[]
  */
-export const getTrendlineAnnotationTextMark = (annotation: TrendlineAnnotationSpecOptions): TextMark => {
-  const { name, numberFormat, prefix, trendlineName, markName } = annotation;
+export const getTrendlineAnnotationTextMarks = (annotation: TrendlineAnnotationSpecOptions): TextMark[] => {
+  const { colorScheme, name, numberFormat, prefix, trendlineName, markName } = annotation;
   const textPrefix = prefix ? `'${prefix} ' + ` : '';
-  const fill = getTextFill({ ...annotation });
-  return {
+  const diagonalOffset = LINE_POINT_ANNOTATION_OFFSET * Math.SQRT2;
+  const [background, foreground] = getLabelTransformTextMarks(
+    `${name}_background`,
     name,
-    type: 'text',
-    from: { data: `${name}_points` },
-    zindex: 1, // this will draw the text in front of the badge
-    interactive: false,
-    encode: {
-      update: {
-        text: { signal: `${textPrefix}format(datum.datum.${TRENDLINE_VALUE}, '${numberFormat}')` },
-        fill,
-      },
+    `${name}_points`,
+    `${textPrefix}format(datum.datum.${TRENDLINE_VALUE}, '${numberFormat}')`,
+    colorScheme,
+    {
+      type: 'label',
+      size: { signal: '[width, height]' },
+      avoidMarks: [trendlineName, `${markName}_group`],
+      offset: [...new Array(4).fill(LINE_POINT_ANNOTATION_OFFSET), ...new Array(4).fill(diagonalOffset)],
+      anchor: ['top', 'bottom', 'right', 'left', 'top-right', 'top-left', 'bottom-right', 'bottom-left'],
     },
-    transform: [
-      {
-        type: 'label',
-        size: { signal: '[width, height]' },
-        avoidMarks: [trendlineName, `${markName}_group`],
-        offset: [6, 6, 6, 6, 8.49, 8.49, 8.49, 8.49],
-        anchor: ['top', 'bottom', 'right', 'left', 'top-right', 'top-left', 'bottom-right', 'bottom-left'],
-      },
-    ],
-  };
+    getTextFill(annotation)
+  );
+  const backgroundFade = getAnnotationSeriesFade(annotation, 2);
+  const foregroundFade = getAnnotationSeriesFade(annotation, 3);
+  if (backgroundFade && foregroundFade && background.encode?.update && foreground.encode?.update) {
+    Object.assign(background.encode.update, { fillOpacity: backgroundFade, strokeOpacity: backgroundFade });
+    Object.assign(foreground.encode.update, { fillOpacity: foregroundFade });
+  }
+  // draws the text in front of the badge
+  return [background, { ...foreground, zindex: 1 }];
+};
+
+/**
+ * Gets the opacity that fades the annotation with its trendline's series, or undefined when the parent doesn't animate.
+ * @param annotation
+ * @param datumOrder how many levels deep the row is
+ * @returns NumericValueRef | undefined
+ */
+export const getAnnotationSeriesFade = (
+  { seriesFadeData }: TrendlineAnnotationSpecOptions,
+  datumOrder: number
+): NumericValueRef | undefined => {
+  if (!seriesFadeData) return undefined;
+  const seriesId = `${new Array(datumOrder).fill('datum.').join('')}${SERIES_ID}`;
+  return { signal: `hoverDeemphasisOpacity(data('${seriesFadeData}'), '${SERIES_ID}', ${seriesId})` };
 };
 
 /**
@@ -231,10 +261,10 @@ export const getTextFill = ({
   trendlineColor,
 }: TrendlineAnnotationSpecOptions): ProductionRule<ColorValueRef> | undefined => {
   if (!badge) {
-    // by returning undefined, the rsc config will be used
+    // undefined falls back to the shared direct label color
     return undefined;
   }
-  const color = getColorKey(trendlineColor);
+  const color = getColorKey(trendlineColor, 2);
   const colorString = getColorProductionRuleSignalString(color, colorScheme);
   const textColors = [getS2ColorValue('gray-50', colorScheme), getS2ColorValue('gray-900', colorScheme)];
   return [
@@ -243,16 +273,13 @@ export const getTextFill = ({
   ];
 };
 
-export const getTrendlineAnnotationBadgeMark = ({
-  badge,
-  colorScheme,
-  name,
-  trendlineColor,
-}: TrendlineAnnotationSpecOptions): RectMark[] => {
+export const getTrendlineAnnotationBadgeMark = (annotation: TrendlineAnnotationSpecOptions): RectMark[] => {
+  const { badge, colorScheme, name, trendlineColor } = annotation;
   if (!badge) {
     return [];
   }
-  const color = getColorKey(trendlineColor, 2);
+  const color = getColorKey(trendlineColor, 3);
+  const fade = getAnnotationSeriesFade(annotation, 4);
   return [
     {
       name: `${name}_badge`,
@@ -262,10 +289,11 @@ export const getTrendlineAnnotationBadgeMark = ({
       interactive: false,
       encode: {
         enter: {
-          cornerRadius: { value: 2 },
+          cornerRadius: { value: TRENDLINE_ANNOTATION_BADGE_CORNER_RADIUS },
         },
         update: {
           fill: getColorProductionRule(color, colorScheme),
+          ...(fade ? { fillOpacity: fade } : {}),
           opacity: { field: 'opacity' },
           x: { signal: 'datum.bounds.x1 - 3' },
           x2: { signal: 'datum.bounds.x2 + 3' },

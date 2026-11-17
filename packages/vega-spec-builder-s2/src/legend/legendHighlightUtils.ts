@@ -28,6 +28,7 @@ import {
   GROUP_ID,
   HOVERED_SERIES,
   HOVER_FRACTION_DATA,
+  HOVER_SERIES_FRACTION_DATA,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 
@@ -142,11 +143,13 @@ export const injectLegendHoverIntoData = (legendName: string, data: Data[], keys
  */
 const isAnimatedOpacity = (opacity: ProductionRule<NumericValueRef> | undefined): boolean => {
   const rules = Array.isArray(opacity) ? opacity : [opacity];
-  return rules.some(
-    (rule) =>
-      typeof (rule as { signal?: string })?.signal === 'string' &&
-      (rule as { signal: string }).signal.includes(HOVER_FRACTION_DATA)
-  );
+  return rules.some((rule) => {
+    const signal = (rule as { signal?: string })?.signal;
+    return (
+      typeof signal === 'string' &&
+      (signal.includes(HOVER_FRACTION_DATA) || signal.includes(HOVER_SERIES_FRACTION_DATA))
+    );
+  });
 };
 
 /**

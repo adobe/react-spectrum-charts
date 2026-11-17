@@ -30,10 +30,9 @@ const Trendline: FC<TrendlineProps> = ({
   hidePartialWindows = false,
   highlightRawPoint = false,
   lineType = 'dashed',
-  lineWidth = 'M',
   method = 'linear',
-  opacity = 1,
   orientation,
+  size,
 }) => {
   return null;
 };

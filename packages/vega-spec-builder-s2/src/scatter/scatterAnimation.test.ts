@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { GroupMark, Mark, View, expressionFunction, parse } from 'vega';
+import { Data, GroupMark, Mark, View, expressionFunction, parse } from 'vega';
 
 import {
   ANIMATION_HOVER_SPEED,
@@ -23,7 +23,7 @@ import {
 import { buildSpec } from '../chartSpecBuilder.js';
 import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { ChartOptions, ScatterOptions } from '../types/index.js';
-import { getItemHighlightExpr } from './scatterAnimationUtils.js';
+import { addScatterHoverAnimationData, getItemHighlightExpr } from './scatterAnimationUtils.js';
 import { defaultScatterOptions } from './scatterTestUtils.js';
 
 interface SceneNode {
@@ -305,6 +305,20 @@ describe('scatter outline', () => {
   test('always and never ignore contrast', async () => {
     expect(await strokeWidths('indigo-900', 'always')).toEqual([1, 1, 1]);
     expect(await strokeWidths('yellow-400', 'never')).toEqual([0, 0, 0]);
+  });
+});
+
+describe('addScatterHoverAnimationData()', () => {
+  const getRules = (options: typeof defaultScatterOptions) => {
+    const data: Data[] = [];
+    addScatterHoverAnimationData(data, options);
+    return JSON.stringify(data[0]);
+  };
+  test('matches the hovered point series when interactive', () => {
+    expect(getRules({ ...defaultScatterOptions, interactiveMarkName: 'scatter0' })).toContain('hoveredMatch');
+  });
+  test('only matches the controlled series when not interactive', () => {
+    expect(getRules({ ...defaultScatterOptions, interactiveMarkName: undefined })).not.toContain('hoveredMatch');
   });
 });
 
