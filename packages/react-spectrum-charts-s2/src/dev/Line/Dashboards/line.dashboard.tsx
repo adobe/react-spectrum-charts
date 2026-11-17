@@ -1101,28 +1101,6 @@ const axisVariations: Variation[] = [
     ),
   },
   {
-    id: 'axis-exact-ticks',
-    title: 'Exact metric and calendar ticks',
-    description: 'Uses explicit tick coordinates without resampling the plotted points.',
-    dataset: 'standard',
-    coverage: ['Axis.tickValues'],
-    render: () => (
-      <LineVariationChart
-        axes={(data) => [
-          <Axis key="left" position="left" grid range={[0, 10000]} tickValues={[0, 2500, 5000, 7500, 10000]} />,
-          <Axis
-            key="bottom"
-            position="bottom"
-            labelFormat="time"
-            tickValues={[...new Set(data.map((datum) => datum.datetime))]
-              .sort((a, b) => a - b)
-              .filter((_, index) => index % 5 === 0)}
-          />,
-        ]}
-      />
-    ),
-  },
-  {
     id: 'axis-reference-lines',
     title: 'Reference lines',
     description: 'A labeled goal on the metric axis and a launch marker on the time axis.',
@@ -1507,7 +1485,6 @@ const axisCoverage: SiblingCoverage<AxisProps> = {
   position: ['dual-metric-axis'],
   range: ['axis-range', 'axis-range-out-of-bounds'],
   tickCountLimit: ['axis-tick-limits'],
-  tickValues: ['axis-exact-ticks'],
   ticks: ['axis-titles-format'],
   title: ['axis-titles-format'],
 };

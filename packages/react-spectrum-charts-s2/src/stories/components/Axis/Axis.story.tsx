@@ -77,14 +77,4 @@ const Range = bindWithProps(ConversionRateStory);
 Range.args = { position: 'left', grid: true, labelFormat: 'percentage', title: 'Conversion rate', range: [0, 0.08] };
 Object.assign(Range, controls('range'));
 
-const ExactTicks = bindWithProps(ConversionRateStory);
-ExactTicks.args = {
-  position: 'left',
-  grid: true,
-  labelFormat: 'percentage',
-  range: [0, 0.08],
-  tickValues: [0, 0.02, 0.04, 0.06, 0.08],
-};
-Object.assign(ExactTicks, controls('tickValues'));
-
-export { Basic, VerticalPosition, HorizontalPosition, Title, Grid, Baseline, BaselineOffset, Ticks, Range, ExactTicks };
+export { Basic, VerticalPosition, HorizontalPosition, Title, Grid, Baseline, BaselineOffset, Ticks, Range };

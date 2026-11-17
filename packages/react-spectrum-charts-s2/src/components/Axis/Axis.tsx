@@ -49,7 +49,6 @@ const Axis: FC<AxisProps> = ({
   tickCountLimit = undefined,
   tickCountMinimum = undefined,
   tickMinStep = undefined,
-  tickValues = undefined,
   title = undefined,
   tooltipText = undefined,
 }) => {

@@ -116,39 +116,13 @@ describe('getBaselineRule', () => {
 });
 
 describe('getDefaultAxis()', () => {
-  test('uses exact metric tick positions without changing automatic spacing when omitted', () => {
-    const values = [0, 20000, 40000, 60000, 80000, 100000];
-    const axis = getDefaultAxis(
-      {
-        ...defaultAxisOptions,
-        tickValues: values,
-        tickCountLimit: 2,
-        tickMinStep: 40000,
-      },
-      'yLinear'
+  test('ignores obsolete exact positions without suppressing numeric or time tick-count controls', () => {
+    const automatic = { ...defaultAxisOptions, tickCountLimit: 2, tickMinStep: 40000 };
+    const legacy = { ...automatic, tickValues: [0, 20000, 40000] };
+    expect(getDefaultAxis(legacy, 'yLinear')).toEqual(getDefaultAxis(automatic, 'yLinear'));
+    expect(getTimeAxes('xTime', { ...legacy, position: 'bottom', scaleType: 'time' })).toEqual(
+      getTimeAxes('xTime', { ...automatic, position: 'bottom', scaleType: 'time' })
     );
-    expect(axis).toHaveProperty('values', values);
-    expect(axis.tickCount).toBeUndefined();
-    expect(axis.tickMinStep).toBeUndefined();
-    expect(getDefaultAxis(defaultAxisOptions, 'yLinear')).not.toHaveProperty('values');
-    expect(getDefaultAxis({ ...defaultAxisOptions, tickValues: [] }, 'yLinear')).toHaveProperty('values', []);
-  });
-
-  test('uses the same exact calendar ticks on both time-label rows', () => {
-    const values = [Date.UTC(2026, 10, 1), Date.UTC(2026, 10, 6), Date.UTC(2026, 10, 11)];
-    for (const axis of getTimeAxes('xTime', {
-      ...defaultAxisOptions,
-      position: 'bottom',
-      scaleType: 'time',
-      tickValues: values,
-      tickCountLimit: 2,
-    })) {
-      expect(axis).toHaveProperty('values', values);
-      expect(axis.tickCount).toBeUndefined();
-    }
-    for (const axis of getTimeAxes('xTime', { ...defaultAxisOptions, position: 'bottom', scaleType: 'time' })) {
-      expect(axis).not.toHaveProperty('values');
-    }
   });
 
   test('tickMinStep: linear scale', () => {

@@ -192,23 +192,6 @@ Vega rounds to readable values, so the final count can differ slightly.
 
 <AxisTickCountPlayground />
 
-### Exact tick positions
-
-Use `tickValues` on a linear or time axis to replace automatic tick positions:
-
-```tsx
-<Axis position="left" range={[0, 100000]} tickValues={[0, 20000, 40000, 60000, 80000, 100000]} />
-<Axis position="bottom" labelFormat="time" tickValues={[Date.UTC(2026, 0, 1), Date.UTC(2026, 0, 6)]} />
-```
-
-Values must be finite and strictly increasing. For time axes, use epoch
-milliseconds. Exact positions override `tickCountMinimum`, `tickCountLimit`
-and `tickMinStep`. An empty array hides the ticks.
-Do not combine `tickValues` with custom `labels`. Time axes retain both date-label
-rows and their `granularity` formatting. Tick positions do not resample data or
-change the scale domain; labels may still be suppressed to avoid overlaps.
-Omit `tickValues` to retain automatic spacing.
-
 ## Label layout
 
 - `labelOrientation="vertical"` rotates labels 90° to fit long category names.
