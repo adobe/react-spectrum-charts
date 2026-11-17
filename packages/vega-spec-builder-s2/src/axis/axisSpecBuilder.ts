@@ -160,7 +160,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 
     const dualMetricAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
 
-    spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
+    spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' }, scaleField);
     spec.signals = addAxisSignals(spec.signals ?? [], axisOptions, scaleName);
 
     // set custom range if applicable
@@ -240,12 +240,14 @@ function getEffectiveScaleField(spec: ScSpec, position: Position, scaleField?: s
   return getScaleField(scale);
 }
 
-export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }]>((data, options) => {
-  const axisAnnotations = getAxisAnnotationsFromChildren(options);
-  for (const annotation of axisAnnotations) {
-    addAxisAnnotationData(data, annotation);
+export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }, string?]>(
+  (data, options, dimension) => {
+    const axisAnnotations = getAxisAnnotationsFromChildren(options);
+    for (const annotation of axisAnnotations) {
+      addAxisAnnotationData(data, annotation, dimension);
+    }
   }
-});
+);
 
 export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((signals, options, scaleName) => {
   const { name, hasTooltip, labels, position, subLabels, labelOrientation, tooltipText } = options;
