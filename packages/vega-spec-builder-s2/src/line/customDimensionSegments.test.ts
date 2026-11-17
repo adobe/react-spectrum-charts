@@ -31,7 +31,13 @@ test('sorts forecast flags by a custom temporal dimension', async () => {
   try {
     await view.width(400).height(240).runAsync();
     expect(view.data('table').map((row) => row.line0_alternateFlag)).toEqual([false, false, true, true]);
-    expect(await view.toSVG()).not.toMatch(/NaN|undefined/);
+    expect(view.data('line0_segmented').map((row) => row.line0_segmentId)).toEqual([0, 0, 1, 1]);
+    const markup = await view.toSVG();
+    expect(markup).not.toMatch(/NaN|undefined/);
+    const svg = new DOMParser().parseFromString(markup, 'image/svg+xml');
+    const paths = [...svg.querySelectorAll('.mark-line.line0 path')];
+    expect(paths).toHaveLength(2);
+    expect(paths[1].getAttribute('stroke-dasharray')).toBeTruthy();
   } finally {
     view.finalize();
   }
