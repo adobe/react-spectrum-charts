@@ -171,13 +171,13 @@ export const getLineDrawInClip = (name: string, clipToPlotHeight = false): Clip 
   const o = DRAW_IN_CLIP_OVERFLOW;
   // the sweeping edge while animating, then the full plot width so nothing stays clipped
   const right = `(${DRAW_IN_ANIM_T} >= 1 ? width + ${o} : ${name}_${DRAW_IN_CLIP_X})`;
-  const top = clipToPlotHeight ? '0' : `-${o}`;
-  const bottom = clipToPlotHeight ? 'height' : `(height + ${o})`;
+  const top = clipToPlotHeight ? `(-${CHART_SIZE_HOVER_STROKE_WIDTH} / 2)` : `-${o}`;
+  const bottom = clipToPlotHeight ? `(height + ${CHART_SIZE_HOVER_STROKE_WIDTH} / 2)` : `(height + ${o})`;
   // a lone move to the final right edge keeps the clip's bounds, and so the chart's layout, the same during the sweep
-  const finalBounds = `'M' + (width + ${o}) + ',${top}'`;
+  const finalBounds = `'M' + (width + ${o}) + ',' + ${top}`;
   // the clip is a rectangle from (-o, top) to (right, bottom), written as an SVG path
   return {
-    path: { signal: `${finalBounds} + 'M-${o},${top}' + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` },
+    path: { signal: `${finalBounds} + 'M-${o},' + ${top} + 'H' + ${right} + 'V' + ${bottom} + 'H-${o}' + 'Z'` },
   };
 };
 
@@ -196,7 +196,16 @@ export const getLineGeometryClip = ({
   hasFixedMetricAxis?: boolean;
 }): { clip?: Clip } => {
   if (isDrawInAnimate) return { clip: getLineDrawInClip(name, hasFixedMetricAxis) };
-  return hasFixedMetricAxis ? { clip: true } : {};
+  if (!hasFixedMetricAxis) return {};
+  // Avoid cutting boundary peaks in half while retaining bounded clipping.
+  const padding = `(${CHART_SIZE_HOVER_STROKE_WIDTH} / 2)`;
+  return {
+    clip: {
+      path: {
+        signal: `'M' + -${padding} + ',' + -${padding} + 'H' + (width + ${padding}) + 'V' + (height + ${padding}) + 'H' + -${padding} + 'Z'`,
+      },
+    },
+  };
 };
 
 /**
