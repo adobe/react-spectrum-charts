@@ -27,7 +27,11 @@ export default {
 };
 
 const DirectLabelStory: StoryFn<typeof LineDirectLabel> = (args): ReactElement => {
-  const chartProps = useChartProps({ data: visitsByChannelData, minWidth: 400, maxWidth: 800, height: 400 });
+  const data = visitsByChannelData.map(point => ({
+    ...point,
+    formattedLabel: `${point.channel}: ${new Intl.NumberFormat('en-US').format(point.visits)}`,
+  }));
+  const chartProps = useChartProps({ data, minWidth: 400, maxWidth: 800, height: 400 });
   return (
     <Chart {...chartProps}>
       <Axis position="left" grid title="Visits" />
@@ -70,4 +74,8 @@ const FontSize = bindWithProps(DirectLabelStory);
 FontSize.args = { fontSize: 16 };
 setControls(FontSize, ['fontSize']);
 
-export { Basic, Value, Position, Format, Prefix, ExcludeSeries, FontSize };
+const FormattedText = bindWithProps(DirectLabelStory);
+FormattedText.args = { textKey: 'formattedLabel' };
+setControls(FormattedText, ['textKey', 'position']);
+
+export { Basic, Value, Position, Format, Prefix, ExcludeSeries, FontSize, FormattedText };

@@ -192,16 +192,16 @@ describe('getLineDrawInClip()', () => {
     expect(getLineDrawInClip('line0')).toStrictEqual({
       path: {
         signal:
-          "'M' + (width + 1000) + ',-1000' + 'M-1000,-1000' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + 1000) + 'H-1000' + 'Z'",
+          "'M' + (width + 1000) + ',' + -1000 + 'M-1000,' + -1000 + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + 1000) + 'H-1000' + 'Z'",
       },
     });
   });
 
-  test('clips vertically at the plot edges when requested', () => {
+  test('allows half a hover stroke beyond fixed plot edges', () => {
     expect(getLineDrawInClip('line0', true)).toStrictEqual({
       path: {
         signal:
-          "'M' + (width + 1000) + ',0' + 'M-1000,0' + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + height + 'H-1000' + 'Z'",
+          "'M' + (width + 1000) + ',' + (-rscChartSizeHoverStrokeWidth / 2) + 'M-1000,' + (-rscChartSizeHoverStrokeWidth / 2) + 'H' + (drawInAnimT >= 1 ? width + 1000 : line0_drawInClipX) + 'V' + (height + rscChartSizeHoverStrokeWidth / 2) + 'H-1000' + 'Z'",
       },
     });
   });
@@ -210,7 +210,7 @@ describe('getLineDrawInClip()', () => {
 describe('getLineGeometryClip()', () => {
   test.each([
     [{}, {}],
-    [{ hasFixedMetricAxis: true }, { clip: true }],
+    [{ hasFixedMetricAxis: true }, { clip: { path: { signal: expect.any(String) } } }],
     [{ isDrawInAnimate: true }, { clip: getLineDrawInClip('line0') }],
     [{ isDrawInAnimate: true, hasFixedMetricAxis: true }, { clip: getLineDrawInClip('line0', true) }],
   ])('returns the clip for %j', (options, expected) => {

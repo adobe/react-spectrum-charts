@@ -35,6 +35,12 @@ import {
 
 # Line
 
+`onMouseOver` and `onMouseOut` receive the original point datum when the pointer
+enters or leaves a point's interaction region, using the configured nearest/item
+interaction mode. They work without a tooltip or click handler. These callbacks
+are separate from `ChartInspect` rendering; clear external highlights when the
+chart is replaced or unmounted as well as on pointer leave.
+
 <StageBadge />
 
 Line charts show how values change over time. Each series becomes a line through its data points,
@@ -67,6 +73,24 @@ When `data` is an empty array, `Chart` shows `emptyStateText` instead of the plo
 <LineStatesPlayground />
 
 ## Lines
+
+### Precomputed trends
+
+The experimental `Trendline` component from
+`@spectrum-charts/react-spectrum-charts-s2/lab` accepts optional `data` for
+externally calculated Line trends. Rows use the parent Line's dimension, metric
+and series fields, with finite numeric coordinates and finite-or-null metrics.
+Calculation options are ignored; null metrics retain gaps. These trends share
+the parent axes, clipping and series visibility, and may use `displayOnHover`.
+Precomputed data currently supports only horizontal, noninteractive Line trends,
+without trendline inspect or annotation children. The caller owns calculation,
+coordinate association and any fixed-axis domains.
+
+```tsx
+<Line dimension="timestamp" metric="value" color="series">
+  <Trendline data={calculatedTrendPoints} color="gray-600" lineType="solid" />
+</Line>
+```
 
 ### Series
 
@@ -131,6 +155,8 @@ has no axes and is 200 × 60px.
 
 `alternateSegmentKey` names a boolean field. Rows where it's truthy draw in
 `alternateSegmentLineType` (default `dotted`), for example to mark estimated or incomplete values.
+Adjacent segments connect by default. Set `connectAlternateSegments={false}` to leave a gap
+between the last point of one segment and the first point of the next, without dropping either point.
 
 <DataCode name="lineEstimatedData" />
 
@@ -242,6 +268,7 @@ Labels are colored like their series and spread apart when they would overlap.
 and leave the line's `metric` empty for those rows. `start` is the x value (a timestamp on a time
 scale) where the forecast begins. From there on the line uses `alternateSegmentLineType` (default
 `dotted`), and a vertical rule marks the boundary with `label` (default `Forecast`).
+Set `connectAlternateSegments={false}` on `Line` to separate the actual and forecast paths.
 
 <DataCode name="lineForecastData" />
 
@@ -324,8 +351,37 @@ animation. See [Animation](./guides/animation.mdx) for when draw-in replays.
 
 ### LineDirectLabel
 
+Use `textKey` for per-series preformatted labels, such as a display name combined
+with a localized value. It names a literal data field, not a nested field path:
+
+```tsx
+<Line dimension="datetime" metric="value" color="series">
+  <LineDirectLabel textKey="formattedLabel" />
+</Line>
+```
+
+For `position="end"` it reads the last finite effective-metric point in each
+visible series; `position="start"` reads the first. Null/nonfinite endpoints
+are skipped, including when a forecast supplies the effective metric. Hidden,
+excluded, and non-primary series keep their existing label visibility rules.
+Missing, empty, or non-string text on the selected endpoint omits that label;
+it does not reuse an earlier label or fall back to numeric formatting.
+`textKey` overrides `value` and `format`, while `prefix` still applies. Labels
+retain the existing collision positioning and narrow-chart truncation.
+
 <PropsTable component="LineDirectLabel" />
 
 ### LineForecast
 
 <PropsTable component="LineForecast" />
+
+### Metric ranges
+
+`Line.metricRanges` accepts lower/upper data fields and an optional center metric.
+Ranges follow the parent Line's interpolation and metric scale, including custom
+and dual axes. Both bounds must be finite at a row; missing bounds leave a gap.
+`displayOnHover` limits the range to highlighted series, and `scaleAxisToFit`
+includes its bounds in automatic domains. An explicit Axis range remains fixed.
+`rangeOpacity` controls the area; `lineOpacity` independently controls the center
+line (`0` renders only the band). These options do not compute predictions or
+confidence bounds.

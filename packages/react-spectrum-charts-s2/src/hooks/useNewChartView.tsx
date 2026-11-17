@@ -18,6 +18,7 @@ import { useChartContext } from '../context/RscChartContext.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import {
   ActionItem,
+  getOnAxisAnnotationClickCallback,
   getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
@@ -26,6 +27,7 @@ import {
   setSelectedSignals,
 } from '../utils/index.js';
 import useActionBars from './useActionBars.js';
+import useAxisAnnotationOnClickDetails from './useAxisAnnotationOnClickDetails.js';
 import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails.js';
 import { UseLegendProps } from './useLegend.js';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails.js';
@@ -49,6 +51,7 @@ const useNewChartView = (
   const popovers = usePopovers(sanitizedChildren);
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
   const axisLabelOnClickDetails = useAxisLabelOnClickDetails(sanitizedChildren);
+  const axisAnnotationOnClickDetails = useAxisAnnotationOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
   const derived = useMemo(
@@ -65,13 +68,18 @@ const useNewChartView = (
     }),
     [actionBars, markClickDetails, popovers]
   );
+  const onMouseInput = useMemo(
+    () => getOnMouseInputCallback(legendProps.onMouseOver, markMouseInputDetails, legendProps.onMouseOut),
+    [legendProps.onMouseOver, legendProps.onMouseOut, markMouseInputDetails]
+  );
 
   const latestInputs = {
     idKey,
     legendProps,
     markClickDetails,
     axisLabelOnClickDetails,
-    markMouseInputDetails,
+    axisAnnotationOnClickDetails,
+    onMouseInput,
     ...derived,
   };
   const latest = useRef(latestInputs);
@@ -147,17 +155,17 @@ const useNewChartView = (
       view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
         getOnAxisLabelClickCallback(latest.current.axisLabelOnClickDetails)(event, item)
       );
+      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
+        getOnAxisAnnotationClickCallback(latest.current.axisAnnotationOnClickDetails)(event, item)
+      );
       view.addEventListener('mouseover', (event: ScenegraphEvent, item: ActionItem) =>
-        getOnMouseInputCallback(latest.current.legendProps.onMouseOver, latest.current.markMouseInputDetails)(
-          event,
-          item
-        )
+        latest.current.onMouseInput(event, item)
+      );
+      view.addEventListener('mousemove', (event: ScenegraphEvent, item: ActionItem) =>
+        latest.current.onMouseInput(event, item)
       );
       view.addEventListener('mouseout', (event: ScenegraphEvent, item: ActionItem) =>
-        getOnMouseInputCallback(latest.current.legendProps.onMouseOut, latest.current.markMouseInputDetails)(
-          event,
-          item
-        )
+        latest.current.onMouseInput(event, item)
       );
     },
     [chartId, chartView, selectedData, selectedDataBounds, selectedDataName]

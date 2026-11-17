@@ -20,6 +20,7 @@ import {
   TRENDLINE_VALUE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { getLineYEncoding } from '../line/lineEncodingUtils.js';
 import { getLineHoverMarks, getLineOpacity } from '../line/lineMarkUtils.js';
 import { LineMarkOptions } from '../line/lineUtils.js';
 import { fadeInAfterDrawIn } from '../marks/drawInAnimationUtils.js';
@@ -215,8 +216,12 @@ export const getTrendlineLineMark = (
       },
       update: {
         strokeWidth: getTrendlineStrokeWidth(size),
-        y: getLineYProductionRule(trendlineDimension, orientation),
         stroke: getColorProductionRule(trendlineColor, colorScheme),
+        y:
+          markOptions.markType === 'line' && orientation === 'horizontal'
+            ? getLineYEncoding(markOptions, TRENDLINE_VALUE)
+            : getLineYProductionRule(trendlineDimension, orientation),
+        defined: { signal: `isValid(datum.${TRENDLINE_VALUE}) && isFinite(datum.${TRENDLINE_VALUE})` },
         x: getLineXProductionRule(trendlineDimension, dimensionScaleType, orientation, isDimensionNormalized),
         opacity: getTrendlineOpacity(markOptions, trendlineOptions),
       },

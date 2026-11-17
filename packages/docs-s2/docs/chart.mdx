@@ -81,6 +81,70 @@ before you render one.
 
 ## Size
 
+### Render lifecycle
+
+`renderId` optionally identifies a caller's requested revision. `onRenderStart`
+and `onRenderComplete` receive `{ generation, renderId }`; `generation` increases
+within a mounted chart. Completion waits for embed, view listeners, and both
+asynchronous layout passes. Size-only updates reuse the view. Superseded or
+unmounted work does not emit completion or errors.
+
+`onRenderError` receives `{ generation, renderId, phase, error }`, where `phase`
+is `embed` or `resize`. Without a handler, errors are logged. This includes
+rejected second-pass resize work, not only initial embed failures.
+
+Disable animations when final pixels are required. Completion does not wait for
+application-owned overlays, external fonts/assets, or subsequent interactions;
+callers must coordinate those separately. Zero-sized charts do not complete.
+
+### Axis projections
+
+Use `axisProjections` and `onGeometryChange` to position application-owned overlays
+without reading Vega scale names or scenegraph internals:
+
+```tsx
+const anchors = [
+  { id: 'target-date', position: 'bottom' as const, value: Date.UTC(2026, 0, 2) },
+];
+
+<Chart
+  data={rows}
+  animations={false}
+  axisProjections={anchors}
+  onRenderStart={hideOverlay}
+  onGeometryChange={({ plotBounds, projections, generation, renderId }) => {
+    updateOverlay({ plotBounds, projections, generation, renderId });
+  }}
+  onRenderError={hideOverlay}
+>
+  <Axis position="bottom" labelFormat="time" hideDefaultLabels />
+  <Line dimension="timestamp" />
+</Chart>
+```
+
+Each request has a unique nonempty `id`, a declared axis `position`, and a finite
+numeric `value` (epoch milliseconds for time axes). Numeric continuous and
+temporal scales are supported; categorical, missing, or ambiguous axes report a
+render error. Requests do not add rows or expand domains. Axes may hide their
+labels but must still be declared.
+
+The callback runs after both layout passes, before `onRenderComplete`, and carries
+the current `{ generation, renderId }`, `plotBounds: { x, y, width, height }`, and
+`projections: [{ id, coordinate }]` in request order. Coordinates are pixels
+relative to the chart's rendered SVG or canvas, including padding and layout
+origin. Top/bottom axes return horizontal coordinates; left/right axes return
+vertical coordinates. A value outside the domain or plot returns `null`, even
+when the scale clamps. Zero is a valid coordinate.
+
+Projection-only changes reuse the view and start a new generation. Superseded or
+unmounted work cannot publish geometry. Hide or invalidate overlays on render
+start, source changes, failures, and unmount. Keep request references stable and
+overlay state separate from chart inputs to avoid render feedback loops. These
+are fixed-layout snapshots, not pointer hit-testing, ongoing animation tracking,
+font/asset readiness, or export readiness.
+
+### Dimensions
+
 `width` is a number of pixels, `auto` (the default) to fill the parent's width, or a percentage of
 the parent's width, like `'75%'`. `height` is a number of pixels (default `300`) or a percentage of
 the parent's height. The chart resizes when its parent does.

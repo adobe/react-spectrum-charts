@@ -24,6 +24,8 @@ export interface AxisProps extends Omit<AxisOptions, 'axisThumbnails' | 'referen
   children?: Children<AxisChildElement>;
   /** Called with the mouse event, label value, and label index when an axis label is clicked; not supported on time axes. */
   onClick?: AxisLabelClickCallback;
+  /** Called with the native click event and IDs represented by the clicked annotation icon. */
+  onAnnotationClick?: (event: MouseEvent, annotationIds: readonly string[]) => void;
 }
 
 export type AxisElement = ReactElement<AxisProps, JSXElementConstructor<AxisProps>>;
