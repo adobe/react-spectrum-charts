@@ -14,10 +14,10 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartActionBarElement, ChartInspectElement, ChartPopoverElement } from '../dialogs/index.js';
-import { LineForecastElement } from './supplemental/lineForecast.types.js';
-import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types.js';
-import { LinePointAnnotationElement } from './supplemental/linePointAnnotation.types.js';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types.js';
+import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types.js';
+import { LineForecastElement } from './supplemental/lineForecast.types.js';
+import { LinePointAnnotationElement } from './supplemental/linePointAnnotation.types.js';
 
 /**
  * Controls which interaction marks can trigger `onContextMenu`.
@@ -44,6 +44,7 @@ export interface LineProps
     | 'forecasts'
     | 'hasOnClick'
     | 'hasOnContextMenu'
+    | 'hasOnMouseInput'
     | 'lineDirectLabels'
     | 'linePointAnnotations'
     | 'markType'
@@ -51,6 +52,10 @@ export interface LineProps
   children?: Children<LineChildElement>;
   /** Called with the row's data when a point is clicked. */
   onClick?: MarkCallback;
+  /** Called with the hovered point's data when entering its interaction region. */
+  onMouseOver?: MarkCallback;
+  /** Called with the point's data when leaving its interaction region. */
+  onMouseOut?: MarkCallback;
   /**
    * Called with the event and the row's data when a point is right-clicked. Use it to show a custom context menu.
    * Use `contextMenuMode` to control which marks can trigger it.
