@@ -4857,7 +4857,7 @@ The interactive example has these controls. The code above uses the shown values
 -   `linear`, `quadratic`, `polynomial-N` (for example `polynomial-3`), `exponential`, `logarithmic`, and `power` fit a regression curve.
 -   `movingAverage-N` averages each point with the N - 1 points before it.
 
-Trendlines are dashed, `M` width, and the color of their series. `lineType`, `lineWidth`, `opacity`, and `color` change that. `orientation="vertical"` calculates the trend of the dimension across the metric instead, for example a vertical line at the average x.
+Trendlines are dashed and the color of their series, and their width follows the chart size like series lines. `lineType` and `color` change the style; `size` (`XS`, `S`, `M`, or `L`) sets a fixed width, matching `ReferenceLine`. A trendline fades with its series when another series is highlighted, and fades in once the points finish drawing in. `orientation="vertical"` calculates the trend of the dimension across the metric instead, for example a vertical line at the average x.
 
 `dimensionRange` limits the calculation to points between two dimension values; `null` leaves a side unbounded. `dimensionExtent` sets how far the line draws and defaults to `dimensionRange`. Use `'domain'` to extend the line to the edge of the axis.
 
@@ -4882,8 +4882,7 @@ The interactive example has these controls. The code above uses the shown values
 
 -   `method` on `Trendline`: `linear`, `average`, `median`, `quadratic`, `exponential`, `logarithmic` or `power`. Shown: `linear`.
 -   `lineType` on `Trendline`: `dashed`, `solid` or `dotted`. Shown: `dashed`.
--   `lineWidth` on `Trendline`: `M`, `XS`, `S`, `L` or `XL`. Shown: `M`.
--   `opacity` on `Trendline`: 0 to 1, in steps of 0.1. Shown: `1`.
+-   `size` on `Trendline`: `auto`, `XS`, `S`, `M` or `L`. Shown: `auto`.
 -   `color` on `Trendline`: `series` or `gray-700`. Shown: `series`.
 -   `orientation` on `Trendline`: `horizontal` or `vertical`. Shown: `horizontal`.
 -   `dimensionRange` on `Trendline`: `none` or `10, 30`. Shown: `none`.
@@ -5009,7 +5008,7 @@ The interactive example has these controls. The code above uses the shown values
 
 ## TrendlineAnnotation
 
-`TrendlineAnnotation` labels a trendline with its value. `dimensionValue` sets where along the line: `end` (default), `start`, or a dimension value. `numberFormat` takes a [d3-format](https://d3js.org/d3-format) specifier and follows the chart's `locale`; `prefix` adds text before the value. `badge` draws the label in a filled badge in the trendline's color.
+`TrendlineAnnotation` labels a trendline with its value. `dimensionValue` sets where along the line: `end` (default), `start`, or a dimension value. `numberFormat` takes a [d3-format](https://d3js.org/d3-format) specifier and follows the chart's `locale`; `prefix` adds text before the value. The label uses the same bold, chart-sized text and background halo as other direct labels, and fades with its trendline.
 
 ```jsx
 import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
@@ -5033,7 +5032,6 @@ import {
 The interactive example has these controls. The code above uses the shown values.
 
 -   `method` on `Trendline`: `average` or `median`. Shown: `average`.
--   `badge` on `TrendlineAnnotation`: `true` or `false`. Shown: `false`.
 -   `dimensionValue` on `TrendlineAnnotation`: `end`, `start` or `20`. Shown: `end`.
 -   `numberFormat` on `TrendlineAnnotation`: `,.1f`, `$,.0f` or `none`. Shown: `,.1f`.
 -   `prefix` on `TrendlineAnnotation`: any text. Shown: empty.
@@ -5396,7 +5394,7 @@ Draw-in plays once when the chart mounts; re-renders, data updates, and resizing
 | Prop | Type | Default |
 | --- | --- | --- |
 | `children` — Supported child components. | `TrendlineChild` | – |
-| `color` — Trendline color. Defaults to the color of its series. | `string` | – |
+| `color` — Trendline color: a Spectrum color name or CSS color. Defaults to the color of its series. | `SpectrumColor \| (string & Record<never, never>)` | – |
 | `dimensionExtent` — Range of `dimension` to draw the trendline over. `domain` extends it to the edge of the chart; `null` stops at the first or last row. | `[number \| "domain" \| null, number \| "domain" \| null]` | `'dimensionRange'` |
 | `dimensionRange` — Range of `dimension` the trendline is calculated from; `null` leaves that end unbounded. | `[number \| null, number \| null]` | `[null, null]` |
 | `displayOnHover` — Whether the trendline should only be visible when hovering over the parent line | `boolean` | `false` |
@@ -5404,16 +5402,14 @@ Draw-in plays once when the chart mounts; re-renders, data updates, and resizing
 | `hidePartialWindows` — Hides the first points of a moving average, which are calculated from less than a full window. | `boolean` | `false` |
 | `highlightRawPoint` — If there is an inspect on this trendline, then this will highlight the raw point in addition to the hovered trendline point. | `boolean` | `false` |
 | `lineType` — Line type of the trendline. | `LineType` | `'dashed'` |
-| `lineWidth` — Line width of the trendline. | `LineWidth` | `'M'` |
 | `method` — Statistical method used to calculate the trendline. | `TrendlineMethod` | `'linear'` |
-| `opacity` — Opacity of the trendline. | `number` | `1` |
 | `orientation` — Orientation of the trendline; `vertical` calculates the dimension across the metric. Only supported on scatter plots. | `"vertical" \| "horizontal"` | `'horizontal'` |
+| `size` — Stroke width tier, matching `ReferenceLine`; when omitted, the width follows the chart size like series lines. | `"XS" \| "S" \| "M" \| "L"` | – |
 
 ### TrendlineAnnotation
 
 | Prop | Type | Default |
 | --- | --- | --- |
-| `badge` — Adds a badge around the annotation | `boolean` | `false` |
 | `dimensionValue` — Where along the trendline to place the label: `start`, `end`, or a `dimension` value. | `number \| "start" \| "end"` | `'end'` |
 | `numberFormat` — d3 number format specifier. Only valid if labelFormat is linear or undefined. @see https://d3js.org/d3-format#locale\_format | `string` | `''` |
 | `prefix` — Text shown before the trendline value. | `string` | `''` |
