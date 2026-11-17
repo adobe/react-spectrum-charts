@@ -53,6 +53,7 @@ module.exports = {
     'sonarjs/no-identical-functions': 'error', // S4144
     'max-params': ['error', 7], // S107
     'sonarjs/pseudo-random': 'error', // S2245
+    'sonarjs/no-nested-assignment': 'error', // S1121
     'no-restricted-syntax': [
       'error',
       {

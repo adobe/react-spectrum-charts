@@ -359,7 +359,8 @@ export const fadeInAfterDrawIn = (marks: Mark[]): void => {
       continue;
     }
     mark.encode = mark.encode ?? {};
-    const update = (mark.encode.update = mark.encode.update ?? {}) as Record<string, ProductionRule<NumericValueRef>>;
+    mark.encode.update = mark.encode.update ?? {};
+    const update = mark.encode.update as Record<string, ProductionRule<NumericValueRef>>;
     const keys = mark.type === 'text' ? ['fillOpacity', 'strokeOpacity'] : ['opacity'];
     for (const key of keys) {
       update[key] = update[key] === undefined ? { signal: reveal } : applyDrawInReveal(update[key], reveal);
