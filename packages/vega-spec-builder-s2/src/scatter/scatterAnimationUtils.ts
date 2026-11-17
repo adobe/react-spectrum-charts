@@ -12,15 +12,11 @@
 import { Data, Mark, NumericValueRef, ProductionRule, Signal, SourceData, SymbolMark, ValuesData } from 'vega';
 
 import {
-  ANIMATION_TIMER,
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   DEFAULT_TRANSFORMED_TIME_DIMENSION,
   DRAW_IN_ANIM_T,
   DRAW_IN_ANIM_T_EASED,
-  DRAW_IN_DURATION,
-  DRAW_IN_PAINT_FADE_MS,
-  DRAW_IN_START,
   FADE_FACTOR,
   FILTERED_TABLE,
   HOVERED_ITEM,
@@ -32,9 +28,9 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { isHighlightedByGroup } from '../chartInspect/chartInspectUtils.js';
-import { addAnimationTimerSignal } from '../marks/animationTimerUtils.js';
-import { applyDrawInReveal, getCubicBezierExpr } from '../marks/drawInAnimationUtils.js';
+import { applyDrawInReveal, getCubicBezierExpr, getDrawInFollowerFadeExpr } from '../marks/drawInAnimationUtils.js';
 import {
+  HoverMatchRule,
   addHoverAnimLastChangeData,
   getHoverAnimStateData,
   getHoverDeemphasisOpacitySignal,
@@ -42,7 +38,7 @@ import {
   getHoverSeriesFractionData,
   getHoverTargetData,
 } from '../marks/hoverAnimationUtils.js';
-import { getLineWidthProductionRule, hasPopover } from '../marks/markUtils.js';
+import { getLineWidthProductionRule, hasInspect, hasPopover } from '../marks/markUtils.js';
 import { getScaleName } from '../scale/scaleSpecBuilder.js';
 import { ScatterSpecOptions } from '../types/index.js';
 import { getScatterOutlineEncoding } from './scatterOutlineUtils.js';
@@ -70,9 +66,9 @@ export const getItemHighlightStateSignalName = (name: string): string => `${name
  * @returns expression string
  */
 export const getItemHighlightExpr = (options: ScatterSpecOptions): string => {
-  const { idKey, interactiveMarkName } = options;
+  const { idKey, interactiveMarkName, name } = options;
   const sources: string[] = [];
-  if (interactiveMarkName) {
+  if (interactiveMarkName === name) {
     const hoveredItem = `${interactiveMarkName}_${HOVERED_ITEM}`;
     const hoveredIds = isHighlightedByGroup(options)
       ? `pluck(data('${interactiveMarkName}_highlightedData'), '${idKey}')`
@@ -171,12 +167,29 @@ export const getScatterAnimatedOpacity = (options: ScatterSpecOptions): Producti
  * @param options
  */
 export const addScatterHoverAnimationData = (data: Data[], options: ScatterSpecOptions): void => {
-  const { name, seriesIds } = options;
+  const { interactiveMarkName, name, seriesIds } = options;
+  const hoveredRules: HoverMatchRule[] = [];
+  if (hasTrendlineInspect(options)) {
+    const hoveredTrendline = `${name}Trendline_${HOVERED_ITEM}`;
+    hoveredRules.push({
+      as: 'trendlineHoveredMatch',
+      expr: `isValid(${hoveredTrendline}) ? (${hoveredTrendline}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`,
+    });
+  }
+  if (interactiveMarkName === name) {
+    const hoveredItem = `${interactiveMarkName}_${HOVERED_ITEM}`;
+    const highlighted = `data('${interactiveMarkName}_highlightedData')`;
+    const expr = isHighlightedByGroup(options)
+      ? `length(${highlighted}) ? (indexof(pluck(${highlighted}, '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null`
+      : `isValid(${hoveredItem}) ? (${hoveredItem}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
+    hoveredRules.push({ as: 'hoveredMatch', expr });
+  }
   data.push(
     getHoverTargetData({
       name,
       groupby: [SERIES_ID],
       rules: [
+        ...hoveredRules,
         {
           as: 'controlledSeriesMatch',
           expr: `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`,
@@ -266,42 +279,6 @@ export const getScatterDrawInSize = (size: NumericValueRef, options: ScatterSpec
 };
 
 /**
- * Gets the 0-1 fade for layers that appear once the points finish drawing in.
- * @returns expression string
- */
-export const getScatterFollowerFadeExpr = (): string =>
-  `clamp((${ANIMATION_TIMER} - ${DRAW_IN_START} - ${DRAW_IN_DURATION}) / ${DRAW_IN_PAINT_FADE_MS}, 0, 1)`;
-
-/**
- * Keeps the animation timer running until layers that follow the draw-in finish fading in.
- * @param signals
- */
-export const addScatterFollowerFadeTimer = (signals: Signal[]): void =>
-  addAnimationTimerSignal(
-    signals,
-    (clock) => `${clock} - ${DRAW_IN_START} < ${DRAW_IN_DURATION} + ${DRAW_IN_PAINT_FADE_MS}`,
-    true
-  );
-
-/**
- * Fades marks in after the points finish drawing in (annotations, paths, trendlines).
- * @param marks
- */
-export const fadeInAfterScatterDrawIn = (marks: Mark[]): void => {
-  const reveal = getScatterFollowerFadeExpr();
-  for (const mark of marks) {
-    if (mark.type === 'group') {
-      fadeInAfterScatterDrawIn(mark.marks ?? []);
-      continue;
-    }
-    mark.encode = mark.encode ?? {};
-    mark.encode.update = mark.encode.update ?? {};
-    const { opacity } = mark.encode.update;
-    mark.encode.update.opacity = opacity === undefined ? { signal: reveal } : applyDrawInReveal(opacity, reveal);
-  }
-};
-
-/**
  * Gets the data source of the points that reach furthest to each edge of the plot at their final size.
  * @param options
  * @param size - the points' final size rule
@@ -361,7 +338,7 @@ export const getScatterDrawInBoundsMark = ({ name }: ScatterSpecOptions): Symbol
  * @param marks
  */
 export const fadeInLabelsAfterScatterDrawIn = (marks: Mark[]): void => {
-  const reveal = getScatterFollowerFadeExpr();
+  const reveal = getDrawInFollowerFadeExpr();
   for (const mark of marks) {
     const update = mark.encode?.update;
     const fillOpacity = update?.fillOpacity;
@@ -392,3 +369,11 @@ const getScatterStrokeWidthRule = (options: ScatterSpecOptions): NumericValueRef
   if (outline) return 'value' in outline ? outline : { value: 1 };
   return getLineWidthProductionRule(options.lineWidth) ?? { value: 0 };
 };
+
+/**
+ * Whether any of the scatter's trendlines has a ChartInspect, which makes hovering it highlight its series.
+ * @param options
+ * @returns boolean
+ */
+export const hasTrendlineInspect = ({ trendlines }: ScatterSpecOptions): boolean =>
+  trendlines.some((trendline) => hasInspect(trendline));

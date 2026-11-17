@@ -96,13 +96,13 @@ const mockView = () => {
     runAsync: jest.fn().mockResolvedValue(undefined),
     runAfter: jest.fn((callback: (v: View) => void) => callback(viewMock)),
     addSignalListener: jest.fn((name: string, handler: (name: string, value: unknown) => void) => {
-      (signalListeners[name] ??= []).push(handler);
+      signalListeners[name] = [...(signalListeners[name] ?? []), handler];
     }),
     removeSignalListener: jest.fn((name: string, handler: (name: string, value: unknown) => void) => {
       signalListeners[name] = (signalListeners[name] ?? []).filter((h) => h !== handler);
     }),
     addEventListener: jest.fn((type: string, handler: (event: unknown, item: unknown) => void) => {
-      (eventListeners[type] ??= []).push(handler);
+      eventListeners[type] = [...(eventListeners[type] ?? []), handler];
     }),
     removeEventListener: jest.fn((type: string, handler: (event: unknown, item: unknown) => void) => {
       eventListeners[type] = (eventListeners[type] ?? []).filter((h) => h !== handler);

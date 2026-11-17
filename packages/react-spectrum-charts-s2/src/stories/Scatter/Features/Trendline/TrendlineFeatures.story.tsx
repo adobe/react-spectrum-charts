@@ -127,9 +127,9 @@ const LineType = bindWithProps(TrendlineStory);
 LineType.args = { lineType: 'dotted' };
 Object.assign(LineType, { parameters: { controls: { include: ['lineType'] } } });
 
-const LineWidth = bindWithProps(TrendlineStory);
-LineWidth.args = { lineWidth: 'L' };
-Object.assign(LineWidth, { parameters: { controls: { include: ['lineWidth'] } } });
+const Size = bindWithProps(TrendlineStory);
+Size.args = { size: 'L' };
+Object.assign(Size, { parameters: { controls: { include: ['size'] } } });
 
 const Method = bindWithProps(TrendlineStory);
 Method.args = { method: 'quadratic' };
@@ -142,10 +142,6 @@ Object.assign(Method, {
     },
   },
 });
-
-const Opacity = bindWithProps(TrendlineStory);
-Opacity.args = { opacity: 0.4 };
-Object.assign(Opacity, { parameters: { controls: { include: ['opacity'] } } });
 
 const Orientation = bindWithProps(TrendlineStory);
 Orientation.args = { orientation: 'vertical' };
@@ -165,9 +161,8 @@ export {
   HidePartialWindows,
   HighlightRawPoint,
   LineType,
-  LineWidth,
   Method,
-  Opacity,
   Orientation,
+  Size,
   ChartInspectStory as ChartInspect,
 };

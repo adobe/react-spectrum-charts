@@ -14,8 +14,6 @@ import { ColorFacet, Orientation, PartiallyRequired, ScaleType } from '../../spe
 import { TrendlineSpecOptions } from './trendlineSpec.types.js';
 
 export interface TrendlineAnnotationOptions {
-  /** Adds a badge around the annotation */
-  badge?: boolean;
   /** Where along the trendline to place the label: `start`, `end`, or a `dimension` value. */
   dimensionValue?: number | 'start' | 'end';
   /** d3 number format specifier. Only valid if labelFormat is linear or undefined.
@@ -27,7 +25,7 @@ export interface TrendlineAnnotationOptions {
   prefix?: string;
 }
 
-type TrendlineAnnotationOptionsWithDefaults = 'badge' | 'dimensionValue' | 'numberFormat' | 'prefix';
+type TrendlineAnnotationOptionsWithDefaults = 'dimensionValue' | 'numberFormat' | 'prefix';
 
 export interface TrendlineAnnotationSpecOptions
   extends PartiallyRequired<TrendlineAnnotationOptions, TrendlineAnnotationOptionsWithDefaults> {
@@ -35,6 +33,8 @@ export interface TrendlineAnnotationSpecOptions
   displayOnHover: boolean;
   markName: string;
   name: string;
+  /** Parent mark's animated series fraction data the annotation fades with, if any. */
+  seriesFadeData?: string;
   trendlineColor: ColorFacet;
   trendlineDimension: string;
   trendlineDimensionExtent: TrendlineSpecOptions['dimensionExtent'];

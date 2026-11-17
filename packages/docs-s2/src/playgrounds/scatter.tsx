@@ -638,8 +638,7 @@ const trendlineControls: PlaygroundControl[] = [
     options: ['dashed', 'solid', 'dotted'],
     defaultValue: 'dashed',
   },
-  { group: 'Trendline', name: 'lineWidth', type: 'select', options: ['M', 'XS', 'S', 'L', 'XL'], defaultValue: 'M' },
-  { group: 'Trendline', name: 'opacity', type: 'number', min: 0, max: 1, step: 0.1, defaultValue: 1 },
+  { group: 'Trendline', name: 'size', type: 'select', options: ['auto', 'XS', 'S', 'M', 'L'], defaultValue: 'auto' },
   { group: 'Trendline', name: 'color', type: 'select', options: ['series', 'gray-700'], defaultValue: 'series' },
   {
     group: 'Trendline',
@@ -692,8 +691,7 @@ export const TrendlinePlayground = () => (
     render={({
       method,
       lineType,
-      lineWidth,
-      opacity,
+      size,
       color,
       orientation,
       dimensionRange,
@@ -709,8 +707,7 @@ export const TrendlinePlayground = () => (
             <Trendline
               method={method as TrendlineMethod | undefined}
               lineType={lineType as LineType | undefined}
-              lineWidth={lineWidth as SymbolSize | undefined}
-              opacity={opacity as number | undefined}
+              size={size === 'auto' ? undefined : (size as 'XS' | 'S' | 'M' | 'L' | undefined)}
               color={color === 'series' ? undefined : optional(color)}
               orientation={orientation as 'vertical' | undefined}
               dimensionRange={range}
@@ -851,7 +848,6 @@ const trendlineAnnotationControls: PlaygroundControl[] = [
     options: ['average', 'median'],
     defaultValue: 'average',
   },
-  { group: 'TrendlineAnnotation', name: 'badge', type: 'boolean', defaultValue: false },
   {
     group: 'TrendlineAnnotation',
     name: 'dimensionValue',
@@ -879,7 +875,7 @@ export const TrendlineAnnotationPlayground = () => (
     previewSize={getScatterPreviewSize}
     controls={trendlineAnnotationControls}
     component="TrendlineAnnotation"
-    render={({ method = 'average', badge, dimensionValue, numberFormat = ',.1f', prefix, locale }) => {
+    render={({ method = 'average', dimensionValue, numberFormat = ',.1f', prefix, locale }) => {
       let dimensionValueProp: 'start' | 'end' | number | undefined;
       if (dimensionValue === 'start') dimensionValueProp = 'start';
       else if (dimensionValue) dimensionValueProp = Number(dimensionValue);
@@ -890,7 +886,6 @@ export const TrendlineAnnotationPlayground = () => (
           <Scatter dimension="spend" metric="revenue">
             <Trendline method={method as 'average' | 'median'} dimensionExtent={['domain', 'domain']}>
               <TrendlineAnnotation
-                badge={badge as boolean | undefined}
                 dimensionValue={dimensionValueProp}
                 numberFormat={optional(numberFormat)}
                 prefix={optional(prefix)}

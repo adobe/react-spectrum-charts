@@ -35,7 +35,7 @@ const TrendlineAnnotationStory: StoryFn<TrendlineAnnotationProps> = (args): Reac
       <Axis position="bottom" grid ticks baseline title="Speed (normal)" />
       <Axis position="left" grid ticks baseline title="Handling (normal)" />
       <Scatter color="weightClass" dimension="speedNormal" metric="handlingNormal">
-        <Trendline method="median" dimensionExtent={['domain', 'domain']} lineWidth="S">
+        <Trendline method="median" dimensionExtent={['domain', 'domain']} size="S">
           <TrendlineAnnotation {...args} />
         </Trendline>
       </Scatter>
@@ -47,10 +47,6 @@ const TrendlineAnnotationStory: StoryFn<TrendlineAnnotationProps> = (args): Reac
 const Basic = bindWithProps(TrendlineAnnotationStory);
 Basic.args = {};
 Object.assign(Basic, { parameters: { controls: { include: [] } } });
-
-const Badge = bindWithProps(TrendlineAnnotationStory);
-Badge.args = { badge: true };
-Object.assign(Badge, { parameters: { controls: { include: ['badge'] } } });
 
 const DimensionValue = bindWithProps(TrendlineAnnotationStory);
 DimensionValue.args = { dimensionValue: 'start' };
@@ -64,4 +60,4 @@ const Prefix = bindWithProps(TrendlineAnnotationStory);
 Prefix.args = { prefix: 'Handling:' };
 Object.assign(Prefix, { parameters: { controls: { include: ['prefix'] } } });
 
-export { Basic, Badge, DimensionValue, NumberFormat, Prefix };
+export { Basic, DimensionValue, NumberFormat, Prefix };

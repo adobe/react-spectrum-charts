@@ -21,7 +21,6 @@ import { TrendlineAnnotationProps } from '../../../types/index.js';
  * @experimental
  */
 const TrendlineAnnotation: FC<TrendlineAnnotationProps> = ({
-  badge = false,
   dimensionValue = 'end',
   numberFormat = '',
   prefix = '',
