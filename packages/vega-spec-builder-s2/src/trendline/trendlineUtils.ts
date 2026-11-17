@@ -67,9 +67,13 @@ export const applyTrendlinePropDefaults = (
   }: TrendlineOptions,
   index: number
 ): TrendlineSpecOptions => {
+  if (opts.data !== undefined) method = 'linear';
   const dimensionScaleType = getTrendlineScaleType(markOptions, orientation);
   const isDimensionNormalized =
-    dimensionScaleType === 'time' && isRegressionMethod(method) && orientation === 'horizontal';
+    opts.data === undefined &&
+    dimensionScaleType === 'time' &&
+    isRegressionMethod(method) &&
+    orientation === 'horizontal';
   const { trendlineDimension, trendlineMetric } = getTrendlineDimensionMetric(
     markOptions.dimension,
     markOptions.metric,
@@ -200,9 +204,7 @@ export const hasTrendlineWithNormalizedDimension = (markOptions: TrendlineParent
   const trendlines = getTrendlines(markOptions);
 
   // only need to add the normalized dimension transform if there is a regression trendline and the dimension scale type is time
-  return trendlines.some(
-    ({ dimensionScaleType, method }) => isRegressionMethod(method) && dimensionScaleType === 'time'
-  );
+  return trendlines.some(({ isDimensionNormalized }) => isDimensionNormalized);
 };
 
 /**

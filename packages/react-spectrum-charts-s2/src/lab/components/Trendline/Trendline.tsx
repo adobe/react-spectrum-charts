@@ -23,6 +23,7 @@ import { TrendlineProps } from '../../../types/index.js';
 const Trendline: FC<TrendlineProps> = ({
   children,
   color,
+  data,
   dimensionExtent,
   dimensionRange = [null, null],
   displayOnHover = false,

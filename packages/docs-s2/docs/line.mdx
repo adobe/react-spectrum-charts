@@ -68,6 +68,24 @@ When `data` is an empty array, `Chart` shows `emptyStateText` instead of the plo
 
 ## Lines
 
+### Precomputed trends
+
+The experimental `Trendline` component from
+`@spectrum-charts/react-spectrum-charts-s2/lab` accepts optional `data` for
+externally calculated Line trends. Rows use the parent Line's dimension, metric
+and series fields, with finite numeric coordinates and finite-or-null metrics.
+Calculation options are ignored; null metrics retain gaps. These trends share
+the parent axes, clipping and series visibility, and may use `displayOnHover`.
+Precomputed data currently supports only horizontal, noninteractive Line trends,
+without trendline inspect or annotation children. The caller owns calculation,
+coordinate association and any fixed-axis domains.
+
+```tsx
+<Line dimension="timestamp" metric="value" color="series">
+  <Trendline data={calculatedTrendPoints} color="gray-600" lineType="solid" />
+</Line>
+```
+
 ### Series
 
 `color`, `lineType`, and `opacity` each take either a data field or a fixed value such as

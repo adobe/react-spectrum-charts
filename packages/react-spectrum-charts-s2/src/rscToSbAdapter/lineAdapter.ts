@@ -18,8 +18,15 @@ export const getLineOptions = (
   { children, onClick, onContextMenu, contextMenuMode: _contextMenuMode, ...lineProps }: LineProps,
   childrenToOptions: ChildrenToOptions
 ): LineOptions => {
-  const { chartActionBars, chartInspects, chartPopovers, forecasts, lineDirectLabels, linePointAnnotations } =
-    childrenToOptions(children);
+  const {
+    chartActionBars,
+    chartInspects,
+    chartPopovers,
+    forecasts,
+    lineDirectLabels,
+    linePointAnnotations,
+    trendlines,
+  } = childrenToOptions(children);
   return {
     ...lineProps,
     chartActionBars,
@@ -30,6 +37,7 @@ export const getLineOptions = (
     hasOnContextMenu: Boolean(onContextMenu),
     lineDirectLabels,
     linePointAnnotations,
+    ...(trendlines.length ? { trendlines: [...(lineProps.trendlines ?? []), ...trendlines] } : {}),
     markType: 'line',
   };
 };

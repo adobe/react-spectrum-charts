@@ -14,10 +14,11 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { LineOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartActionBarElement, ChartInspectElement, ChartPopoverElement } from '../dialogs/index.js';
-import { LineForecastElement } from './supplemental/lineForecast.types.js';
-import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types.js';
-import { LinePointAnnotationElement } from './supplemental/linePointAnnotation.types.js';
 import { Children, ContextMenuCallback, MarkCallback } from '../util.types.js';
+import { LineDirectLabelElement } from './supplemental/lineDirectLabel.types.js';
+import { LineForecastElement } from './supplemental/lineForecast.types.js';
+import { LinePointAnnotationElement } from './supplemental/linePointAnnotation.types.js';
+import { TrendlineElement } from './supplemental/trendline.types.js';
 
 /**
  * Controls which interaction marks can trigger `onContextMenu`.
@@ -34,7 +35,8 @@ type LineChildElement =
   | ChartInspectElement
   | LineForecastElement
   | LineDirectLabelElement
-  | LinePointAnnotationElement;
+  | LinePointAnnotationElement
+  | TrendlineElement;
 export interface LineProps
   extends Omit<
     LineOptions,
