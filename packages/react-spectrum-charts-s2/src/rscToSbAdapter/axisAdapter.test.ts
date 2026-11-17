@@ -19,6 +19,19 @@ import { childrenToOptions } from './childrenAdapter.js';
 const basicAxisProps: AxisProps = { position: 'bottom' };
 
 describe('getAxisOptions()', () => {
+  it('retains explicit annotation positions and enables activation without forwarding a React callback', () => {
+    const data = [{ id: 'release', value: 1000, lower: 500, upper: 1500 }];
+    const options = getAxisOptions(
+      {
+        position: 'bottom',
+        axisAnnotations: [{ data }],
+        onAnnotationClick: jest.fn(),
+      },
+      childrenToOptions
+    );
+    expect(options.axisAnnotations).toEqual([{ data, hasOnClick: true }]);
+    expect(options).not.toHaveProperty('onAnnotationClick');
+  });
   it('should return all basic options', () => {
     const options = getAxisOptions(basicAxisProps, childrenToOptions);
     expect(options.referenceLines).toHaveLength(0);

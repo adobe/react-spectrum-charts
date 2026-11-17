@@ -15,7 +15,7 @@ import { AxisProps } from '../types/index.js';
 import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getAxisOptions = (
-  { children, onClick, ...axisProps }: AxisProps,
+  { children, onClick, onAnnotationClick, ...axisProps }: AxisProps,
   childrenToOptions: ChildrenToOptions
 ): AxisOptions => {
   const { referenceLines, axisThumbnails } = childrenToOptions(children);
@@ -25,5 +25,10 @@ export const getAxisOptions = (
     referenceLines,
     axisThumbnails,
     hasOnClick: Boolean(onClick),
+    ...(onAnnotationClick
+      ? {
+          axisAnnotations: (axisProps.axisAnnotations ?? []).map((annotation) => ({ ...annotation, hasOnClick: true })),
+        }
+      : {}),
   };
 };

@@ -292,3 +292,36 @@ Low-level spec-builder `axisAnnotations` options use the parent time axis's
 dimension, including custom field names. Point and ranged annotations retain
 numeric midpoint coordinates when the input values are dates.
 :::
+
+### Axis annotations
+
+Use `Axis.axisAnnotations` on a bottom time axis. `dataKey` retains source-row
+membership behavior. Alternatively, supply independent span `data` with unique
+string `id`s and finite numeric `value` positions. Optional `lower` and `upper`
+must both be present, ordered, and contain `value`. This preserves positions
+between source buckets without adding source rows or expanding the source domain.
+Coincident positions share an icon; `options` supplies colors by annotation ID.
+An empty `data` array clears annotations. Precomputed data requires `format: 'span'`.
+
+```tsx
+<Axis
+  position="bottom"
+  labelFormat="time"
+  axisAnnotations={[
+    {
+      format: 'span',
+      data: [{ id: 'release', value: 1750464000000, lower: 1750377600000, upper: 1750550400000 }],
+      options: [{ id: 'release', color: 'magenta-600' }],
+    },
+  ]}
+  onAnnotationClick={(event, annotationIds) => {
+    openDetails(annotationIds, { x: event.clientX, y: event.clientY });
+  }}
+/>
+```
+
+`onAnnotationClick` receives the native mouse event and a deduplicated ID array,
+including every member of a coincident group. No private Vega fields are exposed.
+The callback does not persist selection by itself or provide keyboard activation.
+
+Provide keyboard activation and accessible details dialogs in the consuming application.
