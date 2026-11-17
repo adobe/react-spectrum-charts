@@ -18,6 +18,7 @@ import {
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
   SELECTED_ITEM,
   SELECTED_SERIES,
   SERIES_ID,
@@ -26,6 +27,7 @@ import {
 import { getEffectiveMetricField } from '../lineForecast/index.js';
 import { HoverMatchRule } from '../marks/hoverAnimationUtils.js';
 import { hasPopover, isInteractive } from '../marks/markUtils.js';
+import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
 import { LineSpecOptions } from '../types/index.js';
 import { getCascadeTransforms } from './directLabelUtils.js';
 
@@ -55,7 +57,12 @@ export const getInPlotMetricFilter = (
   metric = getEffectiveMetricField(options)
 ): FilterTransform => {
   const metricScale = options.metricAxis || 'yLinear';
-  const scaledMetric = `scale('${metricScale}', datum["${metric}"])`;
+  const field = `datum[${JSON.stringify(metric)}]`;
+  let scaledMetric = `scale('${metricScale}', ${field})`;
+  if (options.dualMetricAxis) {
+    const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScale);
+    scaledMetric = `(datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? scale('${secondaryScale}', ${field}) : scale('${primaryScale}', ${field}))`;
+  }
   return {
     type: 'filter',
     expr: `${getValidMetricFilter(options, metric).expr} && inrange(${scaledMetric}, [0, height])`,

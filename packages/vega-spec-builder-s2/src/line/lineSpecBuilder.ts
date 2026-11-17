@@ -271,19 +271,13 @@ const getLineHoverDataSource = ({ hasFixedMetricAxis, name }: LineSpecOptions): 
  * @param options - line spec options
  * @returns boolean
  */
-const hasFixedMetricAxis = (
-  axes: AxisOptions[],
-  scales: Scale[],
-  { dualMetricAxis, metricAxis }: LineSpecOptions
-): boolean => {
+const hasFixedMetricAxis = (axes: AxisOptions[], scales: Scale[], { metricAxis }: LineSpecOptions): boolean => {
   const metricScaleName = metricAxis || 'yLinear';
-  const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleName);
-  const metricScaleNames = dualMetricAxis ? [primaryScale, secondaryScale] : [metricScaleName];
   return axes.some(
     (axis) =>
       Boolean(axis.range) &&
       ['left', 'right'].includes(axis.position) &&
-      metricScaleNames.includes(getScale([...scales], axis.position).name)
+      getScale([...scales], axis.position).name === metricScaleName
   );
 };
 
