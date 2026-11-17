@@ -106,6 +106,7 @@ import {
   getLineStaticPointData,
   getPrimarySeriesFacetData,
   getPrimarySeriesOtherExpr,
+  getValidMetricFilter,
 } from './lineDataUtils.js';
 import {
   getHighlightedSeriesOpacityRules,
@@ -382,7 +383,9 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
   const { chartInspects, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   data.push(getLineHighlightedData(options));
   if (isInteractive(options)) {
-    data.push(getFilteredInspectData(chartInspects));
+    const inspectData = getFilteredInspectData(chartInspects);
+    inspectData.transform = [...(inspectData.transform ?? []), getValidMetricFilter(options)];
+    data.push(inspectData);
     if (options.hasFixedMetricAxis) {
       data.push(getInBoundsHoverData(options, `${FILTERED_TABLE}ForInspect`));
     }
