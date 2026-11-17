@@ -54,6 +54,18 @@ export type ChartChildElement =
   | TitleElement;
 export type MarkChildElement = BarAnnotationElement | ChartInspectElement | ChartPopoverElement | DonutSummaryElement;
 
+export interface ChartRenderEvent {
+  /** Monotonically increasing within this mounted chart. Superseded generations never complete. */
+  generation: number;
+  /** Optional caller identity for the requested data/settings/layout revision. */
+  renderId?: string | number;
+}
+
+export interface ChartRenderErrorEvent extends ChartRenderEvent {
+  phase: 'embed' | 'resize';
+  error: unknown;
+}
+
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {
   // children is optional because it is a pain to make this required with how children get defined in stories
   // we have a check at the beginning of Chart to make sure this isn't undefined
@@ -71,6 +83,14 @@ export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' 
   padding?: Padding;
   /** Called with the Vega view each time the chart creates one, such as after data or props change. */
   onVegaViewReady?: (view: View) => void;
+  /** Identifies a requested render revision, including changes outside the chart data. */
+  renderId?: string | number;
+  /** Called when embed or resize work begins. Zero-sized charts do not complete. */
+  onRenderStart?: (event: ChartRenderEvent) => void;
+  /** Called after embed and both resize passes settle for the current generation. Disable animations when final pixels are required. */
+  onRenderComplete?: (event: ChartRenderEvent) => void;
+  /** Reports current-generation embed and resize failures. Without a handler, errors are logged. */
+  onRenderError?: (event: ChartRenderErrorEvent) => void;
   /** Draws the chart as `svg` or `canvas`. `canvas` is faster for large data sets but exposes less to screen readers. Defaults to `svg`. */
   renderer?: 'svg' | 'canvas';
   /** Whether `ChartInspect` content follows the cursor or anchors to the hovered mark. Defaults to `cursor`. */
