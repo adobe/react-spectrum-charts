@@ -26,8 +26,8 @@ import {
   ReferenceLine,
   Title,
 } from '../../../components/index.js';
-import { ChartActionBar } from '../../../lab/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import {
   AxisProps,
   ChartActionBarProps,
@@ -1451,6 +1451,7 @@ const lineDirectLabelCoverage: PropCoverage<LineDirectLabelProps> = {
   format: ['direct-label-average-format', 'locale'],
   position: ['direct-label-defaults', 'direct-label-series-start'],
   prefix: ['direct-label-average-format'],
+  textKey: { skip: 'Covered by the FormattedText direct-label story' },
   value: ['direct-label-defaults', 'direct-label-series-start', 'direct-label-average-format'],
 };
 

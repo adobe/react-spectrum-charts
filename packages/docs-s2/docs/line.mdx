@@ -324,6 +324,24 @@ animation. See [Animation](./guides/animation.mdx) for when draw-in replays.
 
 ### LineDirectLabel
 
+Use `textKey` for per-series preformatted labels, such as a display name combined
+with a localized value. It names a literal data field, not a nested field path:
+
+```tsx
+<Line dimension="datetime" metric="value" color="series">
+  <LineDirectLabel textKey="formattedLabel" />
+</Line>
+```
+
+For `position="end"` it reads the last finite effective-metric point in each
+visible series; `position="start"` reads the first. Null/nonfinite endpoints
+are skipped, including when a forecast supplies the effective metric. Hidden,
+excluded, and non-primary series keep their existing label visibility rules.
+Missing, empty, or non-string text on the selected endpoint omits that label;
+it does not reuse an earlier label or fall back to numeric formatting.
+`textKey` overrides `value` and `format`, while `prefix` still applies. Labels
+retain the existing collision positioning and narrow-chart truncation.
+
 <PropsTable component="LineDirectLabel" />
 
 ### LineForecast

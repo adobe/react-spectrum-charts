@@ -132,7 +132,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           createElement(
             Line,
             { dimension: 'datetime', metric: 'value' },
-            createElement(LineDirectLabel, { value: 'series', position: 'start' })
+            createElement(LineDirectLabel, { value: 'series', position: 'start', textKey: 'formattedLabel' })
           ),
         ],
       });
@@ -140,19 +140,13 @@ describe('rscPropsToSpecBuilderOptions()', () => {
       expect(options.marks[0]).toHaveProperty('lineDirectLabels');
       const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
       expect(labels).toHaveLength(1);
-      expect(labels[0]).toEqual({ value: 'series', position: 'start' });
+      expect(labels[0]).toEqual({ value: 'series', position: 'start', textKey: 'formattedLabel' });
     });
 
     test('should apply default props for LineDirectLabel', () => {
       const options = rscPropsToSpecBuilderOptions({
         ...chartProps,
-        children: [
-          createElement(
-            Line,
-            { dimension: 'datetime', metric: 'value' },
-            createElement(LineDirectLabel)
-          ),
-        ],
+        children: [createElement(Line, { dimension: 'datetime', metric: 'value' }, createElement(LineDirectLabel))],
       });
       const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
       expect(labels).toHaveLength(1);
@@ -285,6 +279,5 @@ describe('rscPropsToSpecBuilderOptions()', () => {
         titles: [],
       });
     });
-
   });
 });

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Data, SourceData } from 'vega';
+import { Data, SourceData, View, changeset, expressionFunction, parse } from 'vega';
 
 import {
   CHART_SIZE_FONT_SIZE,
@@ -21,8 +21,11 @@ import {
   FILTERED_TABLE,
   MARK_ID,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { getHoverDeemphasisOpacitySignal } from '../marks/hoverAnimationUtils.js';
 import { LineDirectLabelOptions, LineDirectLabelSpecOptions, LineSpecOptions } from '../types/index.js';
 import {
@@ -82,6 +85,151 @@ const defaultLabelSpecOptions: LineDirectLabelSpecOptions = {
   fontSize: undefined,
 };
 
+describe('field-based direct label rendering', () => {
+  async function draw(
+    data: Record<string, unknown>[],
+    labelOptions: LineDirectLabelOptions = {},
+    forecasts: LineSpecOptions['forecasts'] = []
+  ) {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', () => 360);
+    const spec = buildSpec({
+      animations: false,
+      data,
+      marks: [
+        {
+          markType: 'line',
+          name: 'line0',
+          dimension: 'x',
+          scaleType: 'linear',
+          color: 'series',
+          forecasts,
+          lineDirectLabels: [{ textKey: 'label', ...labelOptions }],
+        },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data.');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+    await view.runAsync();
+    return view;
+  }
+
+  test('uses the last finite metric point, preserving zero/negative values and excluding all-missing series', async () => {
+    const view = await draw([
+      { x: 2, value: 0, series: 'A', label: 'A: zero' },
+      { x: 3, value: null, series: 'A', label: 'not drawable' },
+      { x: 1, value: -2, series: 'A', label: 'A: negative' },
+      { x: 3, value: null, series: 'B', label: 'missing' },
+    ]);
+    try {
+      expect(view.data('line0DirectLabel0_data').map((d) => d.directLabel_text)).toEqual(['A: zero']);
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test('reads the first finite point for start labels', async () => {
+    const view = await draw(
+      [
+        { x: 0, value: null, series: 'A', label: 'missing' },
+        { x: 1, value: -2, series: 'A', label: 'A: negative' },
+        { x: 2, value: 0, series: 'A', label: 'A: zero' },
+      ],
+      { position: 'start' }
+    );
+    try {
+      expect(view.data('line0DirectLabel0_data')[0].directLabel_text).toBe('A: negative');
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test.each([undefined, '', 42])(
+    'omits missing/invalid endpoint text (%s) instead of relabeling an earlier value',
+    async (label) => {
+      const view = await draw([
+        { x: 1, value: 1, series: 'A', label: 'old label' },
+        { x: 2, value: 2, series: 'A', label },
+      ]);
+      try {
+        expect(view.data('line0DirectLabel0_data')).toEqual([]);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
+  test('overrides value/format, retains prefixes, and safely reads literal field names', async () => {
+    const textKey = 'quoted".label';
+    const view = await draw([{ x: 1, value: 10, series: 'A', [textKey]: 'Revenue: $1,234.50' }], {
+      textKey,
+      value: 'average',
+      format: 'not-a-format',
+      prefix: 'Last',
+    });
+    try {
+      const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+      expect(svg.querySelector('.line0DirectLabel0 text')?.textContent).toBe('Last Revenue: $1,234.50');
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test('respects excluded and controlled hidden series', async () => {
+    const view = await draw(
+      ['A', 'B', 'C'].flatMap((series) => [1, 2].map((x) => ({ x, value: x, series, label: `${series}: ${x}` }))),
+      { excludeSeries: ['C'] }
+    );
+    try {
+      await view.signal('hiddenSeries', ['B']).runAsync();
+      expect(view.data('line0DirectLabel0_data').map((d) => d.directLabel_text)).toEqual(['A: 2']);
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test('uses the forecast effective metric at the endpoint', async () => {
+    const view = await draw(
+      [
+        { x: 1, value: 10, series: 'A', label: 'Actual: 10' },
+        { x: 2, value: null, prediction: 20, series: 'A', label: 'Forecast: 20' },
+      ],
+      {},
+      [{ metric: 'prediction', start: 2 }]
+    );
+    try {
+      expect(view.data('line0DirectLabel0_data')[0].directLabel_text).toBe('Forecast: 20');
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test('updates text in place and constrains narrow-chart text without invalid SVG geometry', async () => {
+    const view = await draw([{ x: 1, value: 10, series: 'A', label: 'Old' }]);
+    try {
+      await view.change(TABLE, changeset().modify(view.data(TABLE)[0], 'label', 'New')).runAsync();
+      await view.width(140).resize().runAsync();
+      const svg = await view.toSVG();
+      expect(svg).not.toMatch(/NaN|undefined/);
+      expect(
+        new DOMParser().parseFromString(svg, 'image/svg+xml').querySelector('.line0DirectLabel0 text')?.textContent
+      ).toBe('New');
+      const longText = 'A very long synthetic series name '.repeat(12);
+      await view.change(TABLE, changeset().modify(view.data(TABLE)[0], 'label', longText)).runAsync();
+      const longLabel = new DOMParser()
+        .parseFromString(await view.toSVG(), 'image/svg+xml')
+        .querySelector('.line0DirectLabel0 text');
+      if (!longLabel?.textContent) throw new Error('Expected a rendered, truncated direct label.');
+      expect(longLabel.textContent.length).toBeLessThan(longText.length);
+      expect(longLabel.textContent).toMatch(/\u2026$/);
+    } finally {
+      view.finalize();
+    }
+  });
+});
+
 describe('getLineDirectLabelSpecOptions', () => {
   test('applies defaults when no options provided', () => {
     const result = getLineDirectLabelSpecOptions({}, 0, defaultLineOptions);
@@ -91,6 +239,7 @@ describe('getLineDirectLabelSpecOptions', () => {
   test('preserves user-provided values', () => {
     const labelOptions: LineDirectLabelOptions = {
       value: 'average',
+      textKey: 'label',
       format: ',.0f',
       prefix: '$',
       excludeSeries: ['seriesA'],
@@ -99,6 +248,7 @@ describe('getLineDirectLabelSpecOptions', () => {
     expect(result).toEqual({
       ...defaultLabelSpecOptions,
       value: 'average',
+      textKey: 'label',
       format: ',.0f',
       prefix: '$',
       excludeSeries: ['seriesA'],
