@@ -329,3 +329,10 @@ animation. See [Animation](./guides/animation.mdx) for when draw-in replays.
 ### LineForecast
 
 <PropsTable component="LineForecast" />
+
+### Metric ranges
+
+`Line.metricRanges` accepts lower/upper data fields and an optional center metric.
+`rangeOpacity` controls the area; `lineOpacity` independently controls the center
+line (`0` renders only the band). These options do not compute predictions or
+confidence bounds.
