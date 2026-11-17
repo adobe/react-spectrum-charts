@@ -33,6 +33,8 @@ export type Option = {
 export interface AxisAnnotationOptions {
   /** Precomputed span positions, independent of source rows. Does not expand the parent axis domain. */
   data?: AxisAnnotationData[];
+  /** Controlled span selection. Selected groups persist after pointer leave; an empty array restores ordinary hover. */
+  selectedIds?: string[];
   /** Whether annotation icons have a click handler. */
   hasOnClick?: boolean;
   /** the color to use for the annotation icon and span lines if a color isn't specified in options or multiple annotations fall in the same icon */

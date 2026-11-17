@@ -41,9 +41,19 @@ import {
  */
 export const addAxisAnnotationData = (
   data: Data[],
-  { name, dataKey, color, colorScheme, options, format, data: positions }: AxisAnnotationSpecOptions,
+  { name, dataKey, color, colorScheme, options, format, data: positions, selectedIds }: AxisAnnotationSpecOptions,
   dimension = DEFAULT_TIME_DIMENSION
 ) => {
+  if (selectedIds !== undefined) {
+    if (format !== 'span') throw new Error('Controlled axis annotation selection requires span format.');
+    if (
+      !Array.isArray(selectedIds) ||
+      selectedIds.some((id) => typeof id !== 'string' || !id) ||
+      new Set(selectedIds).size !== selectedIds.length
+    ) {
+      throw new Error('Axis annotation selection requires unique, nonempty string IDs.');
+    }
+  }
   if (positions !== undefined) {
     if (format !== 'span') throw new Error('Precomputed axis annotations require span format.');
     if (
@@ -72,8 +82,17 @@ export const addAxisAnnotationData = (
     data.push(getAxisAnnotationSummaryData(name, dataKey, color, colorScheme));
   } else {
     data.push(
-      getAxisAnnotationAggregateData(name, dataKey, color, colorScheme, dimension, positions),
-      getAxisAnnotationRangeData(name)
+      getAxisAnnotationAggregateData(name, dataKey, color, colorScheme, dimension, positions, selectedIds),
+      ...(selectedIds !== undefined
+        ? [
+            {
+              name: `${name}_selection`,
+              source: `${name}_aggregate`,
+              transform: [{ type: 'filter' as const, expr: 'datum.isSelected' }],
+            },
+          ]
+        : []),
+      getAxisAnnotationRangeData(name, selectedIds !== undefined)
     );
   }
 };
@@ -89,7 +108,8 @@ const getAxisAnnotationAggregateData = (
   color,
   colorScheme,
   dimension: string,
-  positions?: AxisAnnotationData[]
+  positions?: AxisAnnotationData[],
+  selectedIds?: string[]
 ): SourceData | ValuesData => {
   const sourceTransforms: Transforms[] =
     positions !== undefined
@@ -119,6 +139,15 @@ const getAxisAnnotationAggregateData = (
       : { source: FILTERED_TABLE }),
     transform: [
       ...sourceTransforms,
+      ...(selectedIds !== undefined
+        ? [
+            {
+              type: 'formula' as const,
+              expr: `indexof(${JSON.stringify(selectedIds)}, datum[${JSON.stringify(`${name}_id`)}]) >= 0 ? 1 : 0`,
+              as: 'isSelected',
+            },
+          ]
+        : []),
       {
         type: 'formula',
         expr: 'datum.max_datetime - datum.min_datetime',
@@ -132,9 +161,16 @@ const getAxisAnnotationAggregateData = (
       {
         type: 'aggregate',
         groupby: ['center'],
-        fields: ['min_datetime', 'max_datetime', 'width', dataKey, dataKey],
-        ops: ['min', 'max', 'max', 'count', 'values'],
-        as: ['lower', 'upper', 'width', 'number', 'annotations'],
+        fields: [
+          'min_datetime',
+          'max_datetime',
+          'width',
+          dataKey,
+          dataKey,
+          ...(selectedIds !== undefined ? ['isSelected'] : []),
+        ],
+        ops: ['min', 'max', 'max', 'count', 'values', ...(selectedIds !== undefined ? ['max' as const] : [])],
+        as: ['lower', 'upper', 'width', 'number', 'annotations', ...(selectedIds !== undefined ? ['isSelected'] : [])],
       },
       {
         type: 'formula',
@@ -200,14 +236,16 @@ const getAxisAnnotationSummaryData = (name, dataKey, color, colorScheme): Source
   };
 };
 
-const getAxisAnnotationRangeData = (name: string): SourceData => {
+const getAxisAnnotationRangeData = (name: string, controlled = false): SourceData => {
   return {
     name: `${name}_range`,
     source: `${name}_aggregate`,
     transform: [
       {
         type: 'filter',
-        expr: `${name}_highlighted && datum.center == ${name}_highlighted.center && ${name}_highlighted.width > 0`,
+        expr: controlled
+          ? `datum.width > 0 && (datum.isSelected || (!length(data('${name}_selection')) && ${name}_highlighted && datum.center == ${name}_highlighted.center))`
+          : `${name}_highlighted && datum.center == ${name}_highlighted.center && ${name}_highlighted.width > 0`,
       },
     ],
   };
@@ -356,9 +394,13 @@ export const getAxisAnnotationSummaryMarks = ({
  * @param param1
  */
 export const getAxisAnnotationSpanMarks = (
-  { chartPopovers, name, offset, hasOnClick }: AxisAnnotationSpecOptions,
+  { chartPopovers, name, offset, hasOnClick, selectedIds }: AxisAnnotationSpecOptions,
   scaleName: string
 ): Mark => {
+  const opacity =
+    selectedIds !== undefined
+      ? `datum.isSelected || isValid(${name}_selected) ? 1.0 : 0.2`
+      : `${name}_selected ? 1.0 : 0.2`;
   return {
     name: `${name}_group`,
     type: 'group',
@@ -384,7 +426,7 @@ export const getAxisAnnotationSpanMarks = (
                 height: { value: -4 },
                 fill: { field: 'color' },
                 fillOpacity: {
-                  signal: `${name}_selected ? 1.0 : 0.2`,
+                  signal: opacity,
                 },
               },
             },
@@ -410,7 +452,7 @@ export const getAxisAnnotationSpanMarks = (
                 height: { value: 2 },
                 fill: { field: 'color' },
                 fillOpacity: {
-                  signal: `${name}_selected ? 1.0 : 0.2`,
+                  signal: opacity,
                 },
               },
             },
@@ -432,7 +474,7 @@ export const getAxisAnnotationSpanMarks = (
                 height: { value: -6 },
                 fill: { field: 'color' },
                 fillOpacity: {
-                  signal: `${name}_selected ? 1.0 : 0.2`,
+                  signal: opacity,
                 },
               },
             },
@@ -468,7 +510,10 @@ export const getAxisAnnotationSpanMarks = (
               signal: `height + ${offset}`,
             },
             fillOpacity: {
-              signal: `(${name}_selected && ${name}_selected != datum.center) ? 0.0 : 1.0`,
+              signal:
+                selectedIds !== undefined
+                  ? `length(data('${name}_selection')) ? (datum.isSelected ? 1.0 : 0.0) : (isValid(${name}_selected) && ${name}_selected != datum.center ? 0.0 : 1.0)`
+                  : `(${name}_selected && ${name}_selected != datum.center) ? 0.0 : 1.0`,
             },
           },
         },
@@ -518,6 +563,7 @@ export const applyDefaultAxisAnnotationOptions = (
     dataKey = 'annotations',
     options = [],
     data,
+    selectedIds,
     hasOnClick,
   }: AxisAnnotationOptions,
   annotationIndex: number,
@@ -537,6 +583,7 @@ export const applyDefaultAxisAnnotationOptions = (
     axisName,
     format: format ?? (scaleType === 'time' ? 'span' : 'summary'),
     ...(data !== undefined ? { data } : {}),
+    ...(selectedIds !== undefined ? { selectedIds } : {}),
     ...(hasOnClick ? { hasOnClick } : {}),
   };
 };
