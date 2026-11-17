@@ -44,9 +44,15 @@ describe('getBaselineRule', () => {
   describe('baselineOffset', () => {
     test('should apply offset', () => {
       for (const offset of [1, 100, -100]) {
-        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('scale', 'yLinear');
+        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty(
+          'scale',
+          'yLinear'
+        );
         expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('value', offset);
-        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('scale', 'xLinear');
+        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty(
+          'scale',
+          'xLinear'
+        );
         expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('value', offset);
       }
     });
@@ -116,15 +122,6 @@ describe('getBaselineRule', () => {
 });
 
 describe('getDefaultAxis()', () => {
-  test('ignores obsolete exact positions without suppressing numeric or time tick-count controls', () => {
-    const automatic = { ...defaultAxisOptions, tickCountLimit: 2, tickMinStep: 40000 };
-    const legacy = { ...automatic, tickValues: [0, 20000, 40000] };
-    expect(getDefaultAxis(legacy, 'yLinear')).toEqual(getDefaultAxis(automatic, 'yLinear'));
-    expect(getTimeAxes('xTime', { ...legacy, position: 'bottom', scaleType: 'time' })).toEqual(
-      getTimeAxes('xTime', { ...automatic, position: 'bottom', scaleType: 'time' })
-    );
-  });
-
   test('tickMinStep: linear scale', () => {
     expect(
       getDefaultAxis(

@@ -13,12 +13,7 @@ import { FC } from 'react';
 
 import { View } from 'vega';
 
-import {
-  COLOR_SCALE,
-  DEFAULT_COLOR,
-  DEFAULT_METRIC,
-  DONUT_BOOLEAN_SECONDARY_COLOR,
-} from '@spectrum-charts/core-s2/constants';
+import { COLOR_SCALE, DEFAULT_COLOR, DEFAULT_METRIC, DONUT_BOOLEAN_SECONDARY_COLOR } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { ColorScheme, Datum, formatPercentWithValue } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -93,7 +88,7 @@ const DonutDialogContent: FC<DonutDialogContentProps> = ({ color, colorKey, datu
         style={{ backgroundColor: color }}
       />
       <span className="rsc-donut-dialog-series">{String(series ?? '')}</span>
-      <span className="rsc-donut-dialog-percent-value">{percentWithValue} TEST TEST TESTING</span>
+      <span className="rsc-donut-dialog-percent-value">{percentWithValue}</span>
     </div>
   );
 };

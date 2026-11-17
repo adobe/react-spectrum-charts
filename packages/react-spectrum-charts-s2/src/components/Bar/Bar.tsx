@@ -47,3 +47,5 @@ const Bar: FC<BarProps> = ({
 Bar.displayName = 'Bar';
 
 export { Bar };
+
+
