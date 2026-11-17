@@ -12,7 +12,7 @@ governing permissions and limitations under the License. -->
 - RFC PR: https://github.com/adobe/react-spectrum-charts/pull/1114
 - Authors: Madeline Luke
 
-# Engine-agnostic testing strategy
+# Updated testing strategy
 
 ## Summary
 
