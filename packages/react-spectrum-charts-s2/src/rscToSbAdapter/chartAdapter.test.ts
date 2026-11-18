@@ -11,6 +11,8 @@
  */
 import { createElement } from 'react';
 
+import { renderHook } from '@testing-library/react';
+
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_COLOR_SCHEME,
@@ -25,6 +27,8 @@ import { Legend } from '../components/Legend/index.js';
 import { Line } from '../components/Line/index.js';
 import { LineDirectLabel } from '../components/LineDirectLabel/index.js';
 import { Title } from '../components/Title/index.js';
+import useMarkMouseInputDetails from '../hooks/useMarkMouseInputDetails.js';
+import { Scatter } from '../lab/components/Scatter/index.js';
 import { SanitizedSpecProps } from '../types/index.js';
 import { rscPropsToSpecBuilderOptions } from './chartAdapter.js';
 
@@ -67,6 +71,30 @@ describe('rscPropsToSpecBuilderOptions()', () => {
   });
 
   describe('marks', () => {
+    test('registers Bar, Line, and Scatter hover handlers together', () => {
+      const onMouseOver = jest.fn();
+      const onMouseOut = jest.fn();
+      const children = [
+        createElement(Bar, { name: 'bars', onMouseOver, onMouseOut }),
+        createElement(Line, { name: 'lines', onMouseOver, onMouseOut }),
+        createElement(Scatter, { name: 'points', onMouseOver, onMouseOut }),
+      ];
+      const { result } = renderHook(() => useMarkMouseInputDetails(children));
+      expect(result.current).toEqual([
+        { markName: 'bars', onMouseOver, onMouseOut },
+        { markName: 'lines', onMouseOver, onMouseOut },
+        { markName: 'points', onMouseOver, onMouseOut },
+      ]);
+      const options = rscPropsToSpecBuilderOptions({ ...chartProps, children });
+      const [, line, scatter] = options.marks;
+      expect(line).toHaveProperty('hasOnMouseInput', true);
+      expect(scatter).toHaveProperty('hasMouseInteraction', true);
+      for (const mark of [line, scatter]) {
+        expect(mark).not.toHaveProperty('onMouseOver');
+        expect(mark).not.toHaveProperty('onMouseOut');
+      }
+    });
+
     test('should return provided marks in the marks array', () => {
       const options = rscPropsToSpecBuilderOptions({
         ...chartProps,
@@ -132,7 +160,7 @@ describe('rscPropsToSpecBuilderOptions()', () => {
           createElement(
             Line,
             { dimension: 'datetime', metric: 'value' },
-            createElement(LineDirectLabel, { value: 'series', position: 'start' })
+            createElement(LineDirectLabel, { value: 'series', position: 'start', textKey: 'formattedLabel' })
           ),
         ],
       });
@@ -140,19 +168,13 @@ describe('rscPropsToSpecBuilderOptions()', () => {
       expect(options.marks[0]).toHaveProperty('lineDirectLabels');
       const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
       expect(labels).toHaveLength(1);
-      expect(labels[0]).toEqual({ value: 'series', position: 'start' });
+      expect(labels[0]).toEqual({ value: 'series', position: 'start', textKey: 'formattedLabel' });
     });
 
     test('should apply default props for LineDirectLabel', () => {
       const options = rscPropsToSpecBuilderOptions({
         ...chartProps,
-        children: [
-          createElement(
-            Line,
-            { dimension: 'datetime', metric: 'value' },
-            createElement(LineDirectLabel)
-          ),
-        ],
+        children: [createElement(Line, { dimension: 'datetime', metric: 'value' }, createElement(LineDirectLabel))],
       });
       const labels = (options.marks[0] as { lineDirectLabels: unknown[] }).lineDirectLabels;
       expect(labels).toHaveLength(1);
@@ -285,6 +307,5 @@ describe('rscPropsToSpecBuilderOptions()', () => {
         titles: [],
       });
     });
-
   });
 });

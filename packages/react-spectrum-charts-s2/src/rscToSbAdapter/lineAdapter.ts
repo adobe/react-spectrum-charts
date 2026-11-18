@@ -15,7 +15,15 @@ import { LineProps } from '../types/index.js';
 import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getLineOptions = (
-  { children, onClick, onContextMenu, contextMenuMode: _contextMenuMode, ...lineProps }: LineProps,
+  {
+    children,
+    onClick,
+    onContextMenu,
+    onMouseOver,
+    onMouseOut,
+    contextMenuMode: _contextMenuMode,
+    ...lineProps
+  }: LineProps,
   childrenToOptions: ChildrenToOptions
 ): LineOptions => {
   const { chartActionBars, chartInspects, chartPopovers, forecasts, lineDirectLabels, linePointAnnotations } =
@@ -28,6 +36,7 @@ export const getLineOptions = (
     forecasts,
     hasOnClick: Boolean(onClick),
     hasOnContextMenu: Boolean(onContextMenu),
+    ...(onMouseOver || onMouseOut ? { hasOnMouseInput: true } : {}),
     lineDirectLabels,
     linePointAnnotations,
     markType: 'line',
