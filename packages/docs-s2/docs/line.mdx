@@ -35,6 +35,12 @@ import {
 
 # Line
 
+`onMouseOver` and `onMouseOut` receive the original point datum when the pointer
+enters or leaves a point's interaction region, using the configured nearest/item
+interaction mode. They work without a tooltip or click handler. These callbacks
+are separate from `ChartInspect` rendering; clear external highlights when the
+chart is replaced or unmounted as well as on pointer leave.
+
 <StageBadge />
 
 Line charts show how values change over time. Each series becomes a line through its data points,
