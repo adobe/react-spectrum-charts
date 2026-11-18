@@ -66,9 +66,9 @@ export interface ViewAdapter<TSpec, TView, TEnvironment> {
   /** Creates a view that renders the spec into the container */
   createView: (container: HTMLElement, spec: TSpec, environment: TEnvironment, size: ViewSize) => Promise<TView>;
   /** Runs a new view once its listeners are attached */
-  startView: (view: TView) => void;
+  startView: (view: TView, isCurrent?: () => boolean) => void | Promise<void>;
   /** Applies changes to a live view, then runs it once */
-  updateView: (view: TView, changes: ViewChanges) => void;
+  updateView: (view: TView, changes: ViewChanges, isCurrent?: () => boolean) => void | Promise<void>;
   /** Releases a view */
   destroyView: (view: TView) => void;
 }

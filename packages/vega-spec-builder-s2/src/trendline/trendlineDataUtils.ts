@@ -68,8 +68,8 @@ export const addTrendlineData = (data: Data[], markOptions: TrendlineParentOptio
  * @param markOptions
  * @returns Data[]
  */
-export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceData[] => {
-  const data: SourceData[] = [];
+export const getTrendlineData = (markOptions: TrendlineParentOptions): Data[] => {
+  const data: Data[] = [];
   const { color, idKey, lineType, name: markName, interactiveMarkName } = markOptions;
   const trendlines = getTrendlines(markOptions);
 
@@ -82,7 +82,9 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
     const { displayOnHover, method, name } = trendlineOptions;
     const { facets } = getFacetsFromOptions({ color, lineType });
 
-    if (isRegressionMethod(method)) {
+    if (trendlineOptions.data !== undefined) {
+      data.push(getProvidedTrendlineData(markOptions, trendlineOptions, facets));
+    } else if (isRegressionMethod(method)) {
       data.push(...getRegressionTrendlineData(markOptions, trendlineOptions, facets));
     } else if (isAggregateMethod(method)) {
       data.push(...getAggregateTrendlineData(markOptions, trendlineOptions, facets));
@@ -102,6 +104,44 @@ export const getTrendlineData = (markOptions: TrendlineParentOptions): SourceDat
   }
 
   return data;
+};
+
+const getProvidedTrendlineData = (
+  markOptions: TrendlineParentOptions,
+  options: TrendlineSpecOptions,
+  facets: string[]
+): Data => {
+  const { dimension, metric } = markOptions;
+  const { data, name, method } = options;
+  if (
+    markOptions.markType !== 'line' ||
+    options.orientation !== 'horizontal' ||
+    isAggregateMethod(method) ||
+    options.chartInspects.length ||
+    options.trendlineAnnotations.length
+  ) {
+    throw new Error('Precomputed trendline data requires a horizontal, noninteractive Line trendline.');
+  }
+  if (
+    !Array.isArray(data) ||
+    data.some(
+      (row) => !row || !Number.isFinite(row[dimension]) || (row[metric] !== null && !Number.isFinite(row[metric]))
+    )
+  ) {
+    throw new Error('Precomputed trendline points require finite numeric dimensions and finite or null metrics.');
+  }
+  return {
+    name: `${name}_${isWindowMethod(method) ? 'data' : 'highResolutionData'}`,
+    values: data,
+    transform: [
+      ...getSeriesIdTransform(facets),
+      ...(facets.length
+        ? [{ type: 'filter' as const, expr: `indata('${FILTERED_TABLE}', '${SERIES_ID}', datum.${SERIES_ID})` }]
+        : []),
+      { type: 'formula', expr: `datum[${JSON.stringify(metric)}]`, as: TRENDLINE_VALUE },
+      getSortTransform(dimension),
+    ],
+  };
 };
 
 /**
@@ -269,7 +309,10 @@ export const getTrendlineStatisticalTransforms = (
   }
   if (isWindowMethod(method)) {
     const frameWidth = Number.parseInt(method.split('-')[1]);
-    const transforms: Transforms[] = [getSortTransform(trendlineDimension), getWindowTransform(markOptions, trendlineOptions)];
+    const transforms: Transforms[] = [
+      getSortTransform(trendlineDimension),
+      getWindowTransform(markOptions, trendlineOptions),
+    ];
     if (trendlineOptions.hidePartialWindows) {
       transforms.push(...getPartialWindowFilterTransforms(markOptions, frameWidth));
     }
@@ -288,7 +331,8 @@ export const addTableDataTransforms = produce<Transforms[], [TrendlineParentOpti
   const { dimension, metric } = markOptions;
 
   const trendlines = getTrendlines(markOptions);
-  for (const { isDimensionNormalized, method, name, orientation, trendlineDimension } of trendlines) {
+  for (const { data, isDimensionNormalized, method, name, orientation, trendlineDimension } of trendlines) {
+    if (data !== undefined) continue;
     if (isRegressionMethod(method)) {
       // time scales need to be normalized for regression trendlines
       const { trendlineDimension: standardTrendlinDimension } = getTrendlineDimensionMetric(

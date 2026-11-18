@@ -32,6 +32,7 @@ import { MetricRangeOptions } from './supplemental/metricRangeSpec.types.js';
 import { TrendlineOptions } from './supplemental/trendlineSpec.types.js';
 
 export type InteractionMode = `${INTERACTION_MODE}`;
+export type LineInteractionMode = InteractionMode | 'adaptive';
 export type InterpolationType =
   | 'basis'
   | 'cardinal'
@@ -59,6 +60,8 @@ export interface LineOptions {
   hasOnClick?: boolean;
   /** `true` if LineProps has an onContextMenu callback. Ensures interactive marks are generated even without inspect/click. */
   hasOnContextMenu?: boolean;
+  /** Internal: generate interaction regions for point enter/leave callbacks. */
+  hasOnMouseInput?: boolean;
   /** Line type or key in the data that is used as the line type facet */
   lineType?: LineTypeFacet;
   /** Opacity or key in the data that is used as the opacity facet */
@@ -80,7 +83,7 @@ export interface LineOptions {
    * `'adaptive'` picks a series within 4px of its rendered curve, otherwise all series at the nearest date.
    * Adaptive inspect data includes `rscHoverTarget: 'item' | 'dimension'`.
    */
-  interactionMode?: InteractionMode;
+  interactionMode?: LineInteractionMode;
   /** Axis that the metric is trended against (y-axis) */
   metricAxis?: string;
   /** Enables dual metric axis mode where the last series uses a secondary axis with independent scale */
@@ -187,6 +190,6 @@ export interface LineSpecOptions extends PartiallyRequired<LineOptions, LineOpti
   legendHighlightSignals?: string[];
   lineWidth?: FacetRef<LineWidth>;
   popoverMarkName: string | undefined;
-  interactionMode?: InteractionMode;
+  interactionMode?: LineInteractionMode;
   interpolate?: InterpolationType;
 }

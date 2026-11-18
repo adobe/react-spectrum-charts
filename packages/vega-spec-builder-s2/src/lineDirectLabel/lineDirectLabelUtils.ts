@@ -20,7 +20,7 @@ import {
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { MIN_LABEL_GAP, getCascadeTransforms } from '../line/directLabelUtils.js';
-import { getInPlotMetricFilter, getPrimarySeriesOtherExpr } from '../line/lineDataUtils.js';
+import { getInPlotMetricFilter, getPrimarySeriesOtherExpr, getValidMetricFilter } from '../line/lineDataUtils.js';
 import { getLineOpacity } from '../line/lineMarkUtils.js';
 import { getEffectiveMetricField } from '../lineForecast/index.js';
 import { getColorProductionRule, getDirectLabelFontSizeProductionRule } from '../marks/markUtils.js';
@@ -36,7 +36,10 @@ export const getLineDirectLabelData = (
   labelOptions: LineDirectLabelSpecOptions,
   lineOptions: LineSpecOptions
 ): Data => {
-  const { color, dimension, excludeSeries, metric, position, scaleType, value } = labelOptions;
+  const { color, dimension, excludeSeries, metric, position, scaleType, value, textKey } = labelOptions;
+  if (textKey !== undefined && !textKey.length) {
+    throw new Error('LineDirectLabel textKey must be a nonempty field name.');
+  }
   const dimField = getDimensionField(dimension, scaleType);
   const isStart = position === 'start';
   const yScaleName = lineOptions.metricAxis || 'yLinear';
@@ -49,11 +52,13 @@ export const getLineDirectLabelData = (
   const colorField = typeof color === 'string' ? color : undefined;
 
   const formatSpec = labelOptions.format || '';
-  const valueExpr = getLabelValueExpr(value, metric, colorField, formatSpec);
+  const textField = textKey === undefined ? undefined : `datum[${JSON.stringify(textKey)}]`;
+  const valueExpr = textField ?? getLabelValueExpr(value, metric, colorField, formatSpec);
 
   const usesMin = isStart;
   const transforms: Transforms[] = [
-    ...(value === 'average'
+    ...(textField ? [getValidMetricFilter(lineOptions, metric)] : []),
+    ...(value === 'average' && !textField
       ? [
           {
             type: 'joinaggregate' as const,
@@ -72,6 +77,7 @@ export const getLineDirectLabelData = (
       as: ['_extremeDim'],
     },
     { type: 'filter' as const, expr: `datum["${dimField}"] === datum._extremeDim` },
+    ...(textField ? [{ type: 'filter' as const, expr: `isString(${textField}) && length(${textField}) > 0` }] : []),
     { type: 'formula' as const, as: 'directLabel_text', expr: valueExpr },
     ...(excludeSeries.length
       ? [
@@ -151,15 +157,17 @@ export const getLineDirectLabelMarks = (
   // Combined logic for direct label offset given 1, 2, or 3+ series
   const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${MIN_LABEL_GAP} - 12 - datum._scaledY)`;
 
+  const positionLimitSignal = isStart
+    ? `scale('${xScaleName}', datum["${dimField}"])`
+    : `width - scale('${xScaleName}', datum["${dimField}"])`;
+
   const baseEnter = {
     align: { value: isStart ? ('left' as const) : ('right' as const) },
   };
   const baseUpdate = {
     text: { signal: textExpr },
     limit: {
-      signal: isStart
-        ? `scale('${xScaleName}', datum["${dimField}"])`
-        : `width - scale('${xScaleName}', datum["${dimField}"])`,
+      signal: labelOptions.textKey !== undefined ? 'width' : positionLimitSignal,
     },
     x: isStart ? ({ value: 0 } as const) : { signal: 'width' },
     y: {
@@ -239,6 +247,7 @@ export const getLineDirectLabelSpecOptions = (
   dimension: lineOptions.dimension,
   excludeSeries: labelOptions.excludeSeries ?? [],
   format: labelOptions.format ?? '',
+  ...(labelOptions.textKey === undefined ? {} : { textKey: labelOptions.textKey }),
   index,
   lineName: lineOptions.name,
   metric: getEffectiveMetricField(lineOptions),

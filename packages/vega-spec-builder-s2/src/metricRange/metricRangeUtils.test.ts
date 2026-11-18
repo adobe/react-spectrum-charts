@@ -111,6 +111,7 @@ const basicMetricRangeMarks = [
           scale: 'xTime',
           field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
         },
+        defined: { signal: 'isValid(datum["metric"]) && isFinite(datum["metric"])' },
         opacity: [
           {
             test: `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}'))`,

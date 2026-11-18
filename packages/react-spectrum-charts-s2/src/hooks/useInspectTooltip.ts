@@ -26,20 +26,28 @@ import { getItemBounds } from '../utils/index.js';
  * @returns TooltipHandler
  */
 const useInspectTooltip = (inspectOptions: TooltipOptions): TooltipHandler => {
-  const { setHoveredAxisLabel } = useChartContext();
+  const { chartView, setHoveredAxisLabel } = useChartContext();
   const inspectHandler = useMemo(() => new Handler(inspectOptions), [inspectOptions]);
-  const latest = useRef({ inspectHandler, setHoveredAxisLabel });
+  const latest = useRef({ chartView, inspectHandler, setHoveredAxisLabel });
+  const inspectRequest = useRef(0);
   // delays legend tooltips on hover
   const inspectTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    latest.current = { inspectHandler, setHoveredAxisLabel };
-  }, [inspectHandler, setHoveredAxisLabel]);
+    latest.current = { chartView, inspectHandler, setHoveredAxisLabel };
+  }, [chartView, inspectHandler, setHoveredAxisLabel]);
 
-  useEffect(() => () => clearTimeout(inspectTimeout.current), []);
+  useEffect(
+    () => () => {
+      inspectRequest.current++;
+      clearTimeout(inspectTimeout.current);
+    },
+    []
+  );
 
   return useCallback((view, event, item, inspectValue) => {
-    const { inspectHandler, setHoveredAxisLabel } = latest.current;
+    const request = ++inspectRequest.current;
+    const { chartView, inspectHandler, setHoveredAxisLabel } = latest.current;
     const value = toPlainInspectDatum(inspectValue);
     // Cancel delayed tooltips if the mouse moves before the delay is resolved.
     if (inspectTimeout.current) {
@@ -52,6 +60,17 @@ const useInspectTooltip = (inspectOptions: TooltipOptions): TooltipHandler => {
       return;
     }
     setHoveredAxisLabel(null);
+    if (item && event?.type === 'pointermove' && Reflect.has(item, 'adaptiveHover')) {
+      const currentView = chartView.current;
+      if (!currentView) throw new Error('Adaptive Line inspect requires an active chart view.');
+      // Vega requests the tooltip before processing the pointermove signal.
+      currentView.runAfter(() => {
+        if (request === inspectRequest.current && chartView.current === currentView) {
+          inspectHandler.call(view, event, item, toPlainInspectDatum(Reflect.get(item, 'tooltip')));
+        }
+      }, true);
+      return;
+    }
     if (event?.type === 'pointermove' && itemIsLegendItem(item) && 'tooltip' in item) {
       inspectTimeout.current = setTimeout(() => {
         inspectHandler.call(view, event, item, value);

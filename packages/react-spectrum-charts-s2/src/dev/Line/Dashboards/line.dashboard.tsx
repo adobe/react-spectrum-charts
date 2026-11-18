@@ -1405,6 +1405,8 @@ const lineCoverage: PropCoverage<LineProps> = {
   name: ['defaults', 'named-interactive'],
   onClick: ['on-click'],
   onContextMenu: ['context-menu-interaction', 'context-menu-item', 'context-menu-dimension'],
+  onMouseOver: { skip: 'Covered by mouse-input callback tests; no dashboard variation yet' },
+  onMouseOut: { skip: 'Covered by mouse-input callback tests; no dashboard variation yet' },
   opacity: ['opacity-static', 'chart-opacities'],
   otherSeriesColor: ['other-series-color'],
   padding: ['padding-point', 'padding-time'],
@@ -1462,6 +1464,7 @@ const lineDirectLabelCoverage: PropCoverage<LineDirectLabelProps> = {
   format: ['direct-label-average-format', 'locale'],
   position: ['direct-label-defaults', 'direct-label-series-start'],
   prefix: ['direct-label-average-format'],
+  textKey: { skip: 'Covered by the FormattedText direct-label story' },
   value: ['direct-label-defaults', 'direct-label-series-start', 'direct-label-average-format'],
 };
 
