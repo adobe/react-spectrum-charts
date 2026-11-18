@@ -32,10 +32,13 @@ const data = ['A', 'B'].flatMap((series) =>
     value: value + (series === 'B' ? 20 : 0),
   }))
 );
-const trend = data.map((row, index) => ({
-  ...row,
-  value: index % 4 === 2 ? null : 12 + (index % 4) * 4 + (row.series === 'B' ? 20 : 0),
-}));
+const trend = data.map((row, index) => {
+  const seriesOffset = row.series === 'B' ? 20 : 0;
+  return {
+    ...row,
+    value: index % 4 === 2 ? null : 12 + (index % 4) * 4 + seriesOffset,
+  };
+});
 
 const PrecomputedStory: StoryFn<typeof Trendline> = (args): ReactElement => {
   const chartProps = useChartProps({ data, minWidth: 400, maxWidth: 800, height: 400 });
