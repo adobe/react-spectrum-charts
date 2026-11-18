@@ -165,12 +165,26 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 
     // set custom range if applicable
     if (range && (scaleType === 'linear' || scaleType === 'time')) {
-      scale.domain = range;
+      let rangeScale = scale;
+      if (
+        dualMetricAxis &&
+        !isTrellisedChart(spec) &&
+        getIsMetricAxis(position, spec.usermeta?.chartOrientation ?? 'vertical')
+      ) {
+        const { primaryScale, secondaryScale } = getDualAxisScaleNames(scaleName);
+        const rangeScaleName = spec.usermeta?.metricAxisCount ? secondaryScale : primaryScale;
+        const dualScale = spec.scales?.find((candidate) => candidate.name === rangeScaleName);
+        if (!dualScale || (dualScale.type !== 'linear' && dualScale.type !== 'time')) {
+          throw new Error(`Missing continuous dual metric axis scale: ${rangeScaleName}`);
+        }
+        rangeScale = dualScale;
+      }
+      rangeScale.domain = range;
       // don't round values if there's a custom range
-      scale.nice = false;
+      rangeScale.nice = false;
       // if there's a custom range set for linear scale types, we don't want to start the axis at 0
-      if (scaleType === 'linear') {
-        scale.zero = false;
+      if (rangeScale.type === 'linear') {
+        rangeScale.zero = false;
       }
     }
 

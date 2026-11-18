@@ -27,6 +27,10 @@ export interface ViewHostInputs {
   height: number;
   /** Called once per new view; a new function rebuilds the view */
   onNewView: (view: View) => void;
+  /** Called after the current update and its layout passes settle */
+  onRenderComplete?: (view: View) => void;
+  /** Reports failures only for the current inputs */
+  onRenderError?: (error: unknown, phase: 'embed' | 'resize') => void;
   /** Values that override the spec's signal initial values */
   signals?: Record<string, unknown>;
   spec: Spec;
@@ -66,6 +70,7 @@ interface ActiveView {
   table: unknown[] | undefined;
   tableJson: string;
   hasRows: boolean;
+  work?: Promise<void>;
 }
 
 /**
@@ -157,6 +162,40 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
   // a draw-in that hasn't started yet keeps one hold deadline and one paint fade across rebuilds
   let pendingDrawIn: PendingDrawIn | undefined;
 
+  const reportError = (
+    current: ActiveView,
+    inputs: ViewHostInputs,
+    error: unknown,
+    phase: 'embed' | 'resize'
+  ): void => {
+    if (current.cancelled || latest !== inputs) return;
+    if (inputs.onRenderError) {
+      inputs.onRenderError(error, phase);
+    } else {
+      console.error('Failed to render chart:', error);
+    }
+  };
+
+  const run = (
+    current: ActiveView,
+    view: View,
+    inputs: ViewHostInputs,
+    work: (isCurrent: () => boolean) => void | Promise<void>
+  ): void => {
+    const perform = async () => {
+      if (current.cancelled) return;
+      await work(() => !current.cancelled);
+      if (!current.cancelled && latest === inputs) inputs.onRenderComplete?.(view);
+    };
+    const pending = (current.work ? current.work.then(perform) : perform()).catch((error: unknown) => {
+      reportError(current, inputs, error, 'resize');
+    });
+    current.work = pending;
+    void pending.then(() => {
+      if (current.work === pending) current.work = undefined;
+    });
+  };
+
   const retire = (): void => {
     const retired = active;
     if (!retired) {
@@ -227,7 +266,7 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
           next.detachTicker = animation.attachTicker(view, container, pending?.holdUntil);
         }
         inputs.onNewView(view);
-        adapter.startView(view);
+        run(next, view, inputs, (isCurrent) => adapter.startView(view, isCurrent));
         // inputs that arrived while the view was being created
         if (latest && latest !== inputs) {
           update(latest);
@@ -235,7 +274,7 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
       })
       .catch((error: unknown) => {
         next.failed = true;
-        console.error('Failed to render chart:', error);
+        reportError(next, latest ?? inputs, error, 'embed');
       });
   };
 
@@ -247,13 +286,20 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
     Object.assign(current, { inputs, signalValues: split.signalValues, table: split.table, tableJson });
 
     if (!signals.length && !tableChanged && !resized) {
+      run(current, view, inputs, () => undefined);
       return 'noop';
     }
-    adapter.updateView(view, {
-      signals,
-      table: tableChanged ? split.table ?? [] : undefined,
-      size: resized ? { width: inputs.width, height: inputs.height } : undefined,
-    });
+    run(current, view, inputs, (isCurrent) =>
+      adapter.updateView(
+        view,
+        {
+          signals,
+          table: tableChanged ? split.table ?? [] : undefined,
+          size: resized ? { width: inputs.width, height: inputs.height } : undefined,
+        },
+        isCurrent
+      )
+    );
     return 'incremental';
   };
 
