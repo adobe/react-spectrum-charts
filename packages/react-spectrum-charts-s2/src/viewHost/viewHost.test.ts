@@ -70,7 +70,7 @@ describe('createViewHost()', () => {
 
   const mount = async (inputs = base) => {
     const host = createViewHost(document.createElement('div'));
-    expect(host.update(inputs)).toBe('rebuild');
+    expect(host.update(inputs)).toHaveProperty('route', 'rebuild');
     resolvers.at(-1)?.();
     await flush();
     return host;
@@ -86,16 +86,16 @@ describe('createViewHost()', () => {
   test('should return none when the size is zero', () => {
     const host = createViewHost(document.createElement('div'));
 
-    expect(host.update({ ...base, width: 0 })).toBe('none');
+    expect(host.update({ ...base, width: 0 })).toHaveProperty('route', 'none');
     expect(embedSpy).not.toHaveBeenCalled();
   });
 
   test('should do nothing for the same inputs or equal inputs', async () => {
     const host = await mount();
 
-    expect(host.update(base)).toBe('noop');
-    expect(host.update({ ...base, table: [{ x: 1 }] })).toBe('noop');
-    expect(host.update({ ...base, environment: { ...base.environment } })).toBe('noop');
+    expect(host.update(base)).toHaveProperty('route', 'noop');
+    expect(host.update({ ...base, table: [{ x: 1 }] })).toHaveProperty('route', 'noop');
+    expect(host.update({ ...base, environment: { ...base.environment } })).toHaveProperty('route', 'noop');
     expect(embedSpy).toHaveBeenCalledTimes(1);
     expect(fakeViews[0].change).not.toHaveBeenCalled();
   });
@@ -115,7 +115,7 @@ describe('createViewHost()', () => {
   ])('should rebuild when %s changes', async (_, change) => {
     const host = await mount();
 
-    expect(host.update({ ...base, ...change() })).toBe('rebuild');
+    expect(host.update({ ...base, ...change() })).toHaveProperty('route', 'rebuild');
     expect(embedSpy).toHaveBeenCalledTimes(2);
     expect(fakeViews[0].finalize).toHaveBeenCalled();
   });
@@ -123,7 +123,7 @@ describe('createViewHost()', () => {
   test('should apply a signal change to the current view', async () => {
     const host = await mount();
 
-    expect(host.update({ ...base, signals: { highlightedSeries: 'a' } })).toBe('incremental');
+    expect(host.update({ ...base, signals: { highlightedSeries: 'a' } })).toEqual({ route: 'incremental', channels: ['signal'] });
     expect(fakeViews[0].signal).toHaveBeenCalledWith('highlightedSeries', 'a');
     expect(fakeViews[0].change).not.toHaveBeenCalled();
     expect(embedSpy).toHaveBeenCalledTimes(1);
@@ -132,7 +132,7 @@ describe('createViewHost()', () => {
   test('should apply a data change to the current view', async () => {
     const host = await mount();
 
-    expect(host.update({ ...base, table: [{ x: 2 }] })).toBe('incremental');
+    expect(host.update({ ...base, table: [{ x: 2 }] })).toEqual({ route: 'incremental', channels: ['data'] });
     expect(fakeViews[0].change).toHaveBeenCalledWith(TABLE, expect.anything());
     expect(fakeViews[0].signal).not.toHaveBeenCalled();
     expect(embedSpy).toHaveBeenCalledTimes(1);
@@ -141,16 +141,25 @@ describe('createViewHost()', () => {
   test('should resize the current view', async () => {
     const host = await mount();
 
-    expect(host.update({ ...base, width: 500 })).toBe('incremental');
+    expect(host.update({ ...base, width: 500 })).toEqual({ route: 'incremental', channels: ['size'] });
     expect(fakeViews[0].width).toHaveBeenCalledWith(500);
     expect(embedSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('should report every channel an update changes', async () => {
+    const host = await mount();
+
+    expect(host.update({ ...base, signals: { highlightedSeries: 'a' }, table: [{ x: 2 }] })).toEqual({
+      route: 'incremental',
+      channels: ['signal', 'data'],
+    });
   });
 
   test('should apply updates that arrive during an embed once it resolves', async () => {
     const host = createViewHost(document.createElement('div'));
     host.update(base);
 
-    expect(host.update({ ...base, table: [{ x: 2 }] })).toBe('deferred');
+    expect(host.update({ ...base, table: [{ x: 2 }] })).toHaveProperty('route', 'deferred');
 
     resolvers[0]();
     await flush();
@@ -181,7 +190,7 @@ describe('createViewHost()', () => {
     await flush();
 
     expect(consoleError).toHaveBeenCalledWith('Failed to render chart:', expect.any(Error));
-    expect(host.update({ ...base, table: [{ x: 2 }] })).toBe('rebuild');
+    expect(host.update({ ...base, table: [{ x: 2 }] })).toHaveProperty('route', 'rebuild');
     consoleError.mockRestore();
   });
 
@@ -190,7 +199,7 @@ describe('createViewHost()', () => {
     host.destroy();
 
     expect(fakeViews[0].finalize).toHaveBeenCalled();
-    expect(host.update({ ...base, ...withEnvironment({ padding: 4 }) })).toBe('none');
+    expect(host.update({ ...base, ...withEnvironment({ padding: 4 }) })).toHaveProperty('route', 'none');
     expect(embedSpy).toHaveBeenCalledTimes(1);
   });
 

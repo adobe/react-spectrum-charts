@@ -64,6 +64,7 @@
     "build:docs:s2": "yarn workspace @spectrum-charts/docs-s2 build:s2",
     "start:docs:s2": "yarn workspace @spectrum-charts/docs-s2 start",
     "docs:update-cursor-rule": "node scripts/createCursorRule.js",
+    "docs:update-behavior": "cross-env UPDATE_BEHAVIOR_DOCS=1 yarn test:quiet --testPathPattern=updateBehaviorDocs",
     "skills:update-s2-design-tokens": "yarn workspace @spectrum-charts/mcp build && node scripts/createDesignTokenSkill.js",
     "skills:update-chart-features": "yarn workspace @spectrum-charts/mcp build && node scripts/createChartFeatureSkill.js",
     "clean": "yarn workspaces run clean",

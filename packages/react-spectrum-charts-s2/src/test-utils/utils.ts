@@ -22,6 +22,17 @@ export const findChart = async () => {
 /** Lets charts draw in; jest.setup.js skips draw-in by default so timing can't make tests flaky. */
 export const enableDrawIn = () => jest.mocked(usePrefersReducedMotion).mockReturnValue(false);
 
+/**
+ * Enables draw-in until the returned function restores reduced motion.
+ * @returns function that restores reduced motion
+ */
+export const withDrawIn = () => {
+  enableDrawIn();
+  return () => {
+    jest.mocked(usePrefersReducedMotion).mockReturnValue(true);
+  };
+};
+
 export const hoverNthElement = async (elements: HTMLElement[], index: number) => {
   await userEvent.hover(elements[index]);
 };
