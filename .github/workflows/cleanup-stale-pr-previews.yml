@@ -1,6 +1,6 @@
 name: Clean Up Stale PR Previews
 # Removes gh-pages PR-<n>/-s2/-docs preview directories for PRs closed more
-# than 60 days ago. Runs on a schedule since retention is time-based, not
+# than 10 days ago. Runs on a schedule since retention is time-based, not
 # tied to the close event itself.
 
 on:
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Remove preview directories for PRs closed over 60 days ago
+      - name: Remove preview directories for PRs closed over 10 days ago
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -30,7 +30,7 @@ jobs:
           git fetch origin gh-pages
           git checkout gh-pages
 
-          CUTOFF=$(date -u -d '60 days ago' +%s)
+          CUTOFF=$(date -u -d '10 days ago' +%s)
 
           gh pr list --repo "${{ github.repository }}" --state closed --limit 5000 \
             --json number,closedAt,mergedAt > closed_prs.json
@@ -57,7 +57,7 @@ jobs:
           echo "Removed ${REMOVED} stale preview directories"
 
           if ! git diff --cached --quiet; then
-            git commit -m "chore: remove PR preview folders closed over 60 days ago"
+            git commit -m "chore: remove PR preview folders closed over 10 days ago"
             git push origin gh-pages
           else
             echo "Nothing to clean up"
