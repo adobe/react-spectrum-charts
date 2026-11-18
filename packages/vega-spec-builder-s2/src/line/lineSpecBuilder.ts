@@ -18,6 +18,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -106,6 +107,7 @@ import {
   getLineStaticPointData,
   getPrimarySeriesFacetData,
   getPrimarySeriesOtherExpr,
+  getValidMetricFilter,
 } from './lineDataUtils.js';
 import {
   getHighlightedSeriesOpacityRules,
@@ -146,6 +148,7 @@ export const addLine = produce<
       chartInspects = [],
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
+      connectAlternateSegments = true,
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
       forecasts = [],
@@ -189,12 +192,14 @@ export const addLine = produce<
       chartInspects,
       color,
       colorScheme,
+      connectAlternateSegments,
       dimension,
       dualMetricAxis,
       forecasts,
       gradient,
       hasOnClick,
       hasOnContextMenu,
+      hasOnMouseInput: options.hasOnMouseInput,
       index,
       lineCap,
       lineDirectLabels,
@@ -270,19 +275,13 @@ const getLineHoverDataSource = ({ hasFixedMetricAxis, name }: LineSpecOptions): 
  * @param options - line spec options
  * @returns boolean
  */
-const hasFixedMetricAxis = (
-  axes: AxisOptions[],
-  scales: Scale[],
-  { dualMetricAxis, metricAxis }: LineSpecOptions
-): boolean => {
+const hasFixedMetricAxis = (axes: AxisOptions[], scales: Scale[], { metricAxis }: LineSpecOptions): boolean => {
   const metricScaleName = metricAxis || 'yLinear';
-  const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleName);
-  const metricScaleNames = dualMetricAxis ? [primaryScale, secondaryScale] : [metricScaleName];
   return axes.some(
     (axis) =>
       Boolean(axis.range) &&
       ['left', 'right'].includes(axis.position) &&
-      metricScaleNames.includes(getScale([...scales], axis.position).name)
+      getScale([...scales], axis.position).name === metricScaleName
   );
 };
 
@@ -357,7 +356,7 @@ const addDimensionHoverGroupTransform = (
 const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions): void => {
   const { alternateSegmentKey, dimension, forecasts, metric, name, primarySeries, scaleType } = options;
   // time data was transformed above, so we need to use the transformed dimension
-  const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+  const dimSortField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
   if (alternateSegmentKey) {
     tableData.transform = tableData.transform ?? [];
     tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
@@ -382,7 +381,9 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
   const { chartInspects, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   data.push(getLineHighlightedData(options));
   if (isInteractive(options)) {
-    data.push(getFilteredInspectData(chartInspects));
+    const inspectData = getFilteredInspectData(chartInspects);
+    inspectData.transform = [...(inspectData.transform ?? []), getValidMetricFilter(options)];
+    data.push(inspectData);
     if (options.hasFixedMetricAxis) {
       data.push(getInBoundsHoverData(options, `${FILTERED_TABLE}ForInspect`));
     }
@@ -466,6 +467,21 @@ export const addSignals = produce<Signal[], [LineSpecOptions]>((signals, options
     getPrimarySeriesExcludeCondition(primarySeries, 'datum.datum')
   );
   addHoverSignals(signals, options);
+  if (options.interactionMode === 'adaptive') {
+    const hover = signals.find((signal) => signal.name === `${name}_hoveredItem`);
+    if (!hover) throw new Error('Adaptive Line hover requires a hovered-item signal.');
+    const primary = options.primarySeries;
+    const primaryIds = typeof primary === 'number' ? `slice(domain('color'), 0, ${primary})` : JSON.stringify(primary);
+    hover.on = [
+      {
+        events: `@${name}_voronoi:pointermove, @${name}_voronoi:mouseover`,
+        update: `rscLineHover(group(), x(), y(), '${name}', data('${getLineHoverDataSource(options)}'), '${
+          options.idKey
+        }', ${primaryIds ?? 'null'})`,
+      },
+      { events: `@${name}_voronoi:mouseout`, update: 'null' },
+    ];
+  }
   addInspectSignals(signals, options);
 });
 
@@ -536,7 +552,8 @@ const getLineFacetContext = (
   const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
   // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
   const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
-  const facetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
+  const segmentData = options.connectAlternateSegments ? `${name}_with_bridges` : `${name}_segmented`;
+  const facetData = usesAlternateSegments ? segmentData : defaultFacetData;
   const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
   const markOptions = hasForecast

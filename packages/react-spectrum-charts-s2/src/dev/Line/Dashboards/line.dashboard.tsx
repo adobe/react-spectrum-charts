@@ -26,8 +26,8 @@ import {
   ReferenceLine,
   Title,
 } from '../../../components/index.js';
-import { ChartActionBar } from '../../../lab/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import {
   AxisProps,
   ChartActionBarProps,
@@ -581,6 +581,16 @@ const seriesVariations: Variation[] = [
     dataset: 'standard',
     coverage: ['alternateSegmentKey=isEstimated'],
     render: () => <LineVariationChart lineProps={{ alternateSegmentKey: 'isEstimated' }} />,
+  },
+  {
+    id: 'alternate-segment-gap',
+    title: 'Disconnected alternate segments',
+    description: 'Leaves a gap between the last observed point and the first estimated point.',
+    dataset: 'standard',
+    coverage: ['connectAlternateSegments=false', 'alternateSegmentKey=isEstimated'],
+    render: () => (
+      <LineVariationChart lineProps={{ alternateSegmentKey: 'isEstimated', connectAlternateSegments: false }} />
+    ),
   },
   {
     id: 'alternate-segment-styled',
@@ -1364,6 +1374,7 @@ export const LineDashboard = (): ReactElement => (
 );
 
 const lineCoverage: PropCoverage<LineProps> = {
+  connectAlternateSegments: ['alternate-segment', 'alternate-segment-gap'],
   alternateSegmentKey: ['alternate-segment', 'alternate-segment-styled'],
   alternateSegmentLabel: ['alternate-segment-styled'],
   alternateSegmentLineType: ['alternate-segment-styled'],
@@ -1394,6 +1405,8 @@ const lineCoverage: PropCoverage<LineProps> = {
   name: ['defaults', 'named-interactive'],
   onClick: ['on-click'],
   onContextMenu: ['context-menu-interaction', 'context-menu-item', 'context-menu-dimension'],
+  onMouseOver: { skip: 'Covered by mouse-input callback tests; no dashboard variation yet' },
+  onMouseOut: { skip: 'Covered by mouse-input callback tests; no dashboard variation yet' },
   opacity: ['opacity-static', 'chart-opacities'],
   otherSeriesColor: ['other-series-color'],
   padding: ['padding-point', 'padding-time'],
@@ -1451,6 +1464,7 @@ const lineDirectLabelCoverage: PropCoverage<LineDirectLabelProps> = {
   format: ['direct-label-average-format', 'locale'],
   position: ['direct-label-defaults', 'direct-label-series-start'],
   prefix: ['direct-label-average-format'],
+  textKey: { skip: 'Covered by the FormattedText direct-label story' },
   value: ['direct-label-defaults', 'direct-label-series-start', 'direct-label-average-format'],
 };
 

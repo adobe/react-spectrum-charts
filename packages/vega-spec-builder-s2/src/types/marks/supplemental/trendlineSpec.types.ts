@@ -34,6 +34,8 @@ export type WindowMethod = `movingAverage-${number}`;
 export type TrendlineMethod = AggregateMethod | RegressionMethod | WindowMethod;
 
 export interface TrendlineOptions {
+  /** Precomputed, noninteractive Line trend points using the parent's dimension, metric and series fields. Skips statistical calculation. Null metrics leave gaps. */
+  data?: Record<string, unknown>[];
   /** Trendline color: a Spectrum color name or CSS color. Defaults to the color of its series. */
   color?: SpectrumColor | (string & Record<never, never>);
   /** Range of `dimension` to draw the trendline over. `domain` extends it to the edge of the chart; `null` stops at the first or last row. Defaults to `dimensionRange`. */

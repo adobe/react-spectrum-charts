@@ -22,6 +22,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 
 import { AreaMarkOptions, getAreaMark } from '../area/areaUtils.js';
+import { getLineYEncoding } from '../line/lineEncodingUtils.js';
 import { getLineMark } from '../line/lineMarkUtils.js';
 import { LineMarkOptions } from '../line/lineUtils.js';
 import { getSeriesFacet } from '../marks/markUtils.js';
@@ -126,6 +127,23 @@ export const getMetricRangeMark = (
   const dataSource = `${metricRangeOptions.name}_facet`;
   const lineMark = getLineMark(lineOptions, dataSource);
   const areaMark = getAreaMark(areaOptions, dataSource);
+  delete areaMark.encode?.enter?.y;
+  delete areaMark.encode?.enter?.y2;
+  delete areaMark.encode?.enter?.defined;
+  areaMark.encode = {
+    ...areaMark.encode,
+    update: {
+      ...areaMark.encode?.update,
+      y: getLineYEncoding(lineMarkOptions, metricRangeOptions.metricStart),
+      y2: getLineYEncoding(lineMarkOptions, metricRangeOptions.metricEnd),
+      defined: {
+        signal: [metricRangeOptions.metricStart, metricRangeOptions.metricEnd]
+          .map((field) => `isValid(datum[${JSON.stringify(field)}]) && isFinite(datum[${JSON.stringify(field)}])`)
+          .join(' && '),
+      },
+      ...(lineMarkOptions.interpolate ? { interpolate: { value: lineMarkOptions.interpolate } } : {}),
+    },
+  };
 
   return [lineMark, areaMark];
 };

@@ -11,7 +11,7 @@
  */
 import deepmerge from 'deepmerge';
 import { produce } from 'immer';
-import { Axis, AxisEncode, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
+import { Axis, AxisEncode, Data, GroupMark, LinearScale, Mark, ScaleType, Signal, TimeScale } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -160,17 +160,25 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 
     const dualMetricAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
 
-    spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
+    spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' }, scaleField);
     spec.signals = addAxisSignals(spec.signals ?? [], axisOptions, scaleName);
 
     // set custom range if applicable
     if (range && (scaleType === 'linear' || scaleType === 'time')) {
-      scale.domain = range;
+      let rangeScale = scale;
+      if (
+        dualMetricAxis &&
+        !isTrellisedChart(spec) &&
+        getIsMetricAxis(position, spec.usermeta?.chartOrientation ?? 'vertical')
+      ) {
+        rangeScale = getDualMetricRangeScale(spec, scaleName);
+      }
+      rangeScale.domain = range;
       // don't round values if there's a custom range
-      scale.nice = false;
+      rangeScale.nice = false;
       // if there's a custom range set for linear scale types, we don't want to start the axis at 0
-      if (scaleType === 'linear') {
-        scale.zero = false;
+      if (rangeScale.type === 'linear') {
+        rangeScale.zero = false;
       }
     }
 
@@ -225,6 +233,19 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 );
 
 /**
+ * Gets the continuous scale for the current dual metric axis's custom range.
+ */
+function getDualMetricRangeScale(spec: ScSpec, scaleName: string): LinearScale | TimeScale {
+  const { primaryScale, secondaryScale } = getDualAxisScaleNames(scaleName);
+  const rangeScaleName = spec.usermeta?.metricAxisCount ? secondaryScale : primaryScale;
+  const scale = spec.scales?.find((candidate) => candidate.name === rangeScaleName);
+  if (!scale || (scale.type !== 'linear' && scale.type !== 'time')) {
+    throw new Error(`Missing continuous dual metric axis scale: ${rangeScaleName}`);
+  }
+  return scale;
+}
+
+/**
  * For a trellised chart, resolves the trellis group's inner per-panel scale field (distinct from
  * the outer trellis/facet field) when this axis's orientation matches the trellis orientation.
  */
@@ -240,12 +261,14 @@ function getEffectiveScaleField(spec: ScSpec, position: Position, scaleField?: s
   return getScaleField(scale);
 }
 
-export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }]>((data, options) => {
-  const axisAnnotations = getAxisAnnotationsFromChildren(options);
-  for (const annotation of axisAnnotations) {
-    addAxisAnnotationData(data, annotation);
+export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }, string?]>(
+  (data, options, dimension) => {
+    const axisAnnotations = getAxisAnnotationsFromChildren(options);
+    for (const annotation of axisAnnotations) {
+      addAxisAnnotationData(data, annotation, dimension);
+    }
   }
-});
+);
 
 export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((signals, options, scaleName) => {
   const { name, hasTooltip, labels, position, subLabels, labelOrientation, tooltipText } = options;

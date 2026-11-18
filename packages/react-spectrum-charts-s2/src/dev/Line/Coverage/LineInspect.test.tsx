@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import '../../../test-utils/__mocks__/matchMedia.mock.js';
 import {
   findAllMarksByGroupName,
   findChart,
@@ -18,8 +19,7 @@ import {
   waitFor,
   within,
 } from '../../../test-utils/index.js';
-import '../../../test-utils/__mocks__/matchMedia.mock.js';
-import { Inspect, ItemInspect } from './LineInspect.story.js';
+import { AdaptiveInspect, Inspect, ItemInspect } from './LineInspect.story.js';
 
 describe('Line', () => {
   describe('Inspect', () => {
@@ -58,6 +58,16 @@ describe('Line', () => {
         expect(lines[1]).toHaveAttribute('opacity', '0.2');
       });
     });
+  });
+
+  test('Adaptive inspect renders independent synthetic series', async () => {
+    render(<AdaptiveInspect {...AdaptiveInspect.args} />);
+    const chart = await findChart();
+    expect(await findAllMarksByGroupName(chart, 'line0')).toHaveLength(3);
+
+    for (const series of ['Series A', 'Series B', 'Series C']) {
+      expect(within(chart).getByText(series)).toBeInTheDocument();
+    }
   });
 
   test('Item inspect renders', async () => {
