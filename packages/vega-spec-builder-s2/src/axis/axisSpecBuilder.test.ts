@@ -362,6 +362,39 @@ describe('Spec builder, Axis', () => {
           view.finalize();
         }
       });
+      test.each<{ name: string; scales: Scale[] }>([
+        { name: 'missing', scales: [] },
+        {
+          name: 'non-continuous',
+          scales: [{ name: 'yLinearPrimary', type: 'point', range: 'height', domain: [0, 1] }],
+        },
+      ])('rejects a $name dual metric range scale', ({ scales }) => {
+        expect(() =>
+          addAxis(
+            {
+              usermeta: {},
+              signals: [{ name: FIRST_RSC_SERIES_ID, value: 'A' }],
+              scales: [...defaultLinearScales, ...scales],
+            },
+            { position: 'left', range: [10, 100] }
+          )
+        ).toThrow('Missing continuous dual metric axis scale: yLinearPrimary');
+      });
+      test('applies a dual metric time range without linear-only zero configuration', () => {
+        const range: [number, number] = [Date.UTC(2026, 0, 1), Date.UTC(2026, 0, 3)];
+        const result = addAxis(
+          {
+            usermeta: {},
+            signals: [{ name: FIRST_RSC_SERIES_ID, value: 'A' }],
+            scales: [...defaultLinearScales, { name: 'yLinearPrimary', type: 'time', range: 'height', domain: [0, 1] }],
+          },
+          { position: 'left', range }
+        );
+        const rangeScale = result.scales?.find(({ name }) => name === 'yLinearPrimary');
+        expect(rangeScale).toMatchObject({ type: 'time', domain: range, nice: false });
+        expect(rangeScale).not.toHaveProperty('zero');
+        expect(result.scales?.find(({ name }) => name === 'yLinear')).toEqual(defaultLinearScales.at(1));
+      });
       test("custom X range that doesn't start at 0", () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },
