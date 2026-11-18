@@ -354,6 +354,7 @@ const popoverContent = withSource(
 
 const segmentControls: PlaygroundControl[] = [
   { name: 'alternateSegmentKey', type: 'select', options: ['none', 'isEstimated'], defaultValue: 'isEstimated' },
+  { name: 'connectAlternateSegments', type: 'boolean', defaultValue: true },
   {
     name: 'alternateSegmentLineType',
     type: 'select',
@@ -371,12 +372,13 @@ export const LineSegmentPlayground = () => (
     previewSize={getLinePreviewSize}
     controls={segmentControls}
     component="Line"
-    render={({ alternateSegmentKey = 'isEstimated', alternateSegmentLineType }) => (
+    render={({ alternateSegmentKey = 'isEstimated', alternateSegmentLineType, connectAlternateSegments }) => (
       <Chart data={lineEstimatedData}>
         {timeAxes}
         <Line
           color="series"
           alternateSegmentKey={optional(alternateSegmentKey)}
+          connectAlternateSegments={connectAlternateSegments !== false}
           alternateSegmentLineType={alternateSegmentLineType as LineProps['alternateSegmentLineType']}
         >
           <ChartPopover width="auto">{popoverContent}</ChartPopover>

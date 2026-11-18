@@ -36,6 +36,7 @@ const Line: FC<LineProps> = ({
   interactionMode = DEFAULT_INTERACTION_MODE,
   interpolate,
   alternateSegmentKey,
+  connectAlternateSegments = true,
   alternateSegmentLineType,
   alternateSegmentLabel,
   primarySeries,

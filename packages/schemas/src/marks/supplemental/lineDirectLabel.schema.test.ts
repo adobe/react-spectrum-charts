@@ -23,6 +23,7 @@ describe('LineDirectLabelSchema', () => {
       value: 'series',
       position: 'end',
       format: 'shortNumber',
+      textKey: 'label',
       prefix: '$',
       excludeSeries: ['Series B'],
       fontSize: 12,
@@ -31,6 +32,7 @@ describe('LineDirectLabelSchema', () => {
       value: 'series',
       position: 'end',
       format: 'shortNumber',
+      textKey: 'label',
       prefix: '$',
       excludeSeries: ['Series B'],
       fontSize: 12,
@@ -40,6 +42,10 @@ describe('LineDirectLabelSchema', () => {
   test('rejects an invalid value', () => {
     const result = LineDirectLabelSchema.safeParse({ component: 'LineDirectLabel', value: 'max' });
     expect(result.success).toBe(false);
+  });
+
+  test.each(['', 42, null])('rejects an invalid textKey: %s', (textKey) => {
+    expect(LineDirectLabelSchema.safeParse({ component: 'LineDirectLabel', textKey }).success).toBe(false);
   });
 
   test('rejects an invalid position', () => {

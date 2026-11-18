@@ -41,7 +41,7 @@ import {
 
 import { buildSpec } from '../chartSpecBuilder.js';
 import { getExpressionFunctions } from '../expressionFunctions/index.js';
-import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
+import { getLineDrawInClip, getLineGeometryClip } from '../marks/drawInAnimationUtils.js';
 import { getSeriesFacet } from '../marks/markUtils.js';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder.js';
 import { defaultSignals } from '../specTestUtils.js';
@@ -59,6 +59,81 @@ import {
   setScales,
 } from './lineSpecBuilder.js';
 import { defaultLineOptions } from './lineTestUtils.js';
+
+describe.each([
+  {
+    name: 'alternate flags',
+    options: { alternateSegmentKey: 'isForecasted' },
+  },
+  {
+    name: 'forecast boundary',
+    options: { forecasts: [{ metric: 'forecastValue', start: Date.UTC(2026, 0, 3) }] },
+  },
+])('$name segment connections', ({ options }) => {
+  test.each([undefined, true, false])(
+    'renders connectAlternateSegments=%s without changing source points',
+    async (connectAlternateSegments) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 360);
+      const data = [10, 20, 30, 40].map((value, index) => ({
+        id: `point-${index}`,
+        datetime: Date.UTC(2026, 0, index + 1),
+        series: 'Example',
+        value,
+        isForecasted: index >= 2,
+        forecastValue: index >= 2 ? value : null,
+        low: index >= 2 ? value - 5 : null,
+        high: index >= 2 ? value + 5 : null,
+      }));
+      const spec = buildSpec({
+        animations: false,
+        idKey: 'id',
+        data,
+        marks: [
+          {
+            markType: 'line',
+            color: 'series',
+            ...options,
+            connectAlternateSegments,
+            alternateSegmentLineType: 'shortDash',
+            gradient: true,
+            chartInspects: [{}],
+            metricRanges: [{ metric: 'forecastValue', metricStart: 'low', metricEnd: 'high' }],
+          },
+        ],
+        legends: [{}],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data.');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        expect(view.data(`${FILTERED_TABLE}ForInspect`).map((datum) => datum.id)).toEqual(data.map(({ id }) => id));
+        const svg = await view.toSVG();
+        expect(svg).not.toMatch(/NaN|undefined/);
+        const document = new DOMParser().parseFromString(svg, 'image/svg+xml');
+        const paths = Array.from(document.querySelectorAll('.mark-line.line0 path'));
+        expect(paths).toHaveLength(2);
+        const pathXs = paths.map((path) =>
+          Array.from((path.getAttribute('d') ?? '').matchAll(/[ML](-?[\d.]+),/g), ([, x]) => Number(x))
+        );
+        expect(pathXs[0]).toHaveLength(connectAlternateSegments === false ? 2 : 3);
+        expect(pathXs[1]).toHaveLength(2);
+        const actualEnd = pathXs[0][pathXs[0].length - 1];
+        const forecastStart = pathXs[1][0];
+        const interval = pathXs[1][1] - forecastStart;
+        expect(forecastStart - actualEnd).toBeCloseTo(connectAlternateSegments === false ? interval : 0, 2);
+        expect(paths[1].getAttribute('stroke-dasharray')).toBeTruthy();
+        expect(document.querySelectorAll('.mark-area.line0_gradient path')).toHaveLength(2);
+        expect(document.querySelectorAll('.mark-area.line0MetricRange0_area path')).toHaveLength(1);
+        expect(document.querySelectorAll('.role-legend-label text')).toHaveLength(1);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+});
 
 describe('null metric gaps', () => {
   test.each(['linear', 'monotone'] as const)(
@@ -98,6 +173,112 @@ describe('null metric gaps', () => {
 });
 
 describe('fixed metric axis hover', () => {
+  test.each(['linear', 'monotone'] as const)(
+    'switches adaptive highlights between date and item with %s curves',
+    async (interpolate) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 360);
+      const data = [
+        { id: 'a', datetime: Date.UTC(2026, 0, 1), value: 20, series: 'a' },
+        { id: 'b', datetime: Date.UTC(2026, 0, 1), value: 70, series: 'b' },
+        { id: 'a-next', datetime: Date.UTC(2026, 0, 2), value: 30, series: 'a' },
+        { id: 'b-next', datetime: Date.UTC(2026, 0, 2), value: 200, series: 'b' },
+      ];
+      const spec = buildSpec({
+        animations: false,
+        idKey: 'id',
+        data,
+        axes: [{ position: 'left', range: [0, 100] }],
+        marks: [{ markType: 'line', color: 'series', interactionMode: 'adaptive', interpolate, chartInspects: [{}] }],
+        legends: [{ position: 'bottom', highlight: true }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data.');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        const point = view.data(TABLE).find((datum) => datum.id === 'a');
+        await view.signal('line0_hoveredItem', { ...point, rscHoverTarget: 'dimension' }).runAsync();
+        expect(view.data('line0_highlightedData').map((datum) => datum.id)).toEqual(['a', 'b']);
+        const grouped = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        expect(
+          Array.from(grouped.querySelectorAll('.role-legend-label text'), (label) =>
+            Number(label.getAttribute('opacity'))
+          )
+        ).toEqual([1, 1]);
+        await view.signal('line0_hoveredItem', { ...point, rscHoverTarget: 'item' }).runAsync();
+        expect(view.data('line0_highlightedData').map((datum) => datum.id)).toEqual(['a']);
+        const single = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        expect(
+          Array.from(single.querySelectorAll('.role-legend-label text'), (label) =>
+            Number(label.getAttribute('opacity'))
+          )
+        ).toEqual([1, 0.2]);
+        await view.signal('line0_hoveredItem', null).runAsync();
+        expect(view.data('line0_highlightedData')).toHaveLength(0);
+        expect(view.data('line0_visibleHoverData').some((datum) => datum.id === 'b-next')).toBe(false);
+        expect(view.scale('yLinear').domain()).toEqual([0, 100]);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
+  test.each(['linear', 'monotone'] as const)(
+    'preserves the full boundary stroke with %s interpolation',
+    async (interpolate) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 360);
+      const data = [0, 80, 100, 99, 0, 150].map((value, index) => ({
+        datetime: Date.UTC(2026, 0, index + 1),
+        value,
+      }));
+      const spec = buildSpec({
+        animations: false,
+        data,
+        axes: [
+          { position: 'left', range: [0, 100] },
+          { position: 'bottom', labelFormat: 'time' },
+        ],
+        marks: [{ markType: 'line', name: 'line0', interpolate, chartInspects: [{}] }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        expect(view.scale('yLinear').domain()).toEqual([0, 100]);
+        expect(view.scale('yLinear')(100)).toBeCloseTo(0);
+        expect(view.data('line0_visibleHoverData').some((datum) => datum.value === 150)).toBe(false);
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const clipUrl = svg
+          .querySelector('.line0_group[clip-path], .line0_group [clip-path]')
+          ?.getAttribute('clip-path');
+        const clipId = clipUrl?.match(/#([^)]*)/)?.[1];
+        const shape = svg.querySelector(`#${clipId} path, #${clipId} rect`);
+        if (!shape) throw new Error('Expected the line geometry clip.');
+        const bounds =
+          shape.tagName === 'rect'
+            ? [
+                Number(shape.getAttribute('x') || 0),
+                Number(shape.getAttribute('y') || 0),
+                Number(shape.getAttribute('x') || 0) + Number(shape.getAttribute('width')),
+                Number(shape.getAttribute('y') || 0) + Number(shape.getAttribute('height')),
+              ]
+            : (shape.getAttribute('d')?.match(/-?\d+(?:\.\d+)?/g) ?? []).slice(0, 4).map(Number);
+        const halfStroke = view.signal(CHART_SIZE_HOVER_STROKE_WIDTH) / 2;
+        expect(bounds[0]).toBeLessThanOrEqual(-halfStroke);
+        expect(bounds[1]).toBeLessThanOrEqual(-halfStroke);
+        expect(bounds[2]).toBeGreaterThanOrEqual(view.width() + halfStroke);
+        expect(bounds[3]).toBeGreaterThanOrEqual(view.height() + halfStroke);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
   test.each<[string, number[], Partial<LineOptions>, boolean, [number, number]?]>([
     [
       'sparse data above the range',
@@ -166,7 +347,13 @@ describe('fixed metric axis hover', () => {
     const clippedGroups = new Set(['line0_group', 'line0_highlightOverlay_group', 'line0_hoverGroup']);
     spec.marks
       ?.filter((mark) => mark.name?.startsWith('line0'))
-      .forEach((mark) => expect(mark.clip).toBe(clippedGroups.has(mark.name ?? '') || undefined));
+      .forEach((mark) => {
+        const clip =
+          mark.name === 'line0_hoverGroup'
+            ? true
+            : getLineGeometryClip({ name: 'line0', hasFixedMetricAxis: true }).clip;
+        expect(mark.clip).toEqual(clippedGroups.has(mark.name ?? '') ? clip : undefined);
+      });
     const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
     try {
       await view.runAsync();

@@ -1733,6 +1733,7 @@ const scatterAnnotationCoverage: PropCoverage<ScatterAnnotationProps> = {
 const trendlineCoverage: PropCoverage<TrendlineProps> = {
   children: ['trendline-inspect', 'trendline-annotation-default'],
   color: ['trendline-default', 'trendline-style'],
+  data: { skip: 'Precomputed data is supported only for Line trendlines' },
   dimensionExtent: ['trendline-default', 'trendline-extent-domain', 'trendline-extent-fixed', 'trendline-range-extent'],
   dimensionRange: ['trendline-default', 'trendline-range', 'trendline-range-extent'],
   displayOnHover: ['trendline-display-on-hover', 'trendline-annotation-display-on-hover'],
