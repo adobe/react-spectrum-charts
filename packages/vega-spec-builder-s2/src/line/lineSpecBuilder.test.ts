@@ -60,6 +60,43 @@ import {
 } from './lineSpecBuilder.js';
 import { defaultLineOptions } from './lineTestUtils.js';
 
+describe('null metric gaps', () => {
+  test.each(['linear', 'monotone'] as const)(
+    'preserves gaps with %s interpolation and valid hover geometry',
+    async (interpolate) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 360);
+      const data = [1, 2, null, 4, 5].map((value, index) => ({
+        datetime: Date.UTC(2026, 0, index + 1),
+        value,
+        series: 'Example',
+      }));
+      const spec = buildSpec({
+        animations: false,
+        data,
+        axes: [{ position: 'left' }, { position: 'bottom', labelFormat: 'time' }],
+        marks: [{ markType: 'line', name: 'line0', interpolate, gradient: true, chartInspects: [{}] }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        expect(view.data(FILTERED_TABLE)).toHaveLength(5);
+        expect(view.data(`${FILTERED_TABLE}ForInspect`).map((datum) => datum.value)).toEqual([1, 2, 4, 5]);
+        const svg = await view.toSVG();
+        expect(svg).not.toMatch(/NaN|undefined/);
+        const svgDocument = new DOMParser().parseFromString(svg, 'image/svg+xml');
+        const paths = Array.from(svgDocument.querySelectorAll('.mark-line path'));
+        expect(paths.some((path) => (path.getAttribute('d')?.match(/M/g) ?? []).length === 2)).toBe(true);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+});
+
 describe('fixed metric axis hover', () => {
   test.each<[string, number[], Partial<LineOptions>, boolean, [number, number]?]>([
     [
@@ -274,6 +311,7 @@ const defaultSpec = initializeSpec({
               strokeOpacity: DEFAULT_OPACITY_RULE,
               y: [{ field: 'value', scale: 'yLinear' }],
               x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+              defined: { signal: 'isValid(datum["value"]) && isFinite(datum["value"])' },
               ...controlledLineUpdate,
               strokeWidth: [DEFAULT_STROKE_WIDTH_RULE],
             },
@@ -351,6 +389,7 @@ const line0_groupMark = {
           strokeDash: { value: [] },
           strokeOpacity: DEFAULT_OPACITY_RULE,
           x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
+          defined: { signal: 'isValid(datum["value"]) && isFinite(datum["value"])' },
           ...controlledLineUpdate,
         },
       },
@@ -395,6 +434,7 @@ const metricRangeGroupMark = {
             scale: 'xTime',
             field: DEFAULT_TRANSFORMED_TIME_DIMENSION,
           },
+          defined: { signal: 'isValid(datum["value"]) && isFinite(datum["value"])' },
           ...controlledLineUpdate,
         },
       },
@@ -1021,6 +1061,7 @@ describe('lineSpecBuilder', () => {
                   strokeDash: { value: [8, 8] },
                   y: [{ field: 'value', scale: 'yLinear' }],
                   x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+                  defined: { signal: 'isValid(datum["value"]) && isFinite(datum["value"])' },
                   ...controlledLineUpdate,
                 },
               },
