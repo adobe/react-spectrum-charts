@@ -25,6 +25,7 @@ import {
   getOnAxisLabelClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
+  getOnMouseInputCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
   triggerPopover,
@@ -107,6 +108,45 @@ describe('getItemBounds()', () => {
   test('should return default bounds if null or undefined', () => {
     expect(getItemBounds(null)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
     expect(getItemBounds(undefined)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
+  });
+});
+
+describe('Line hover-only interaction regions', () => {
+  test('dispatches the actual point datum on enter/leave without tooltip or click handlers', async () => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [
+      { pointId: 'first', datetime: 1000, value: 10, series: 'a' },
+      { pointId: 'second', datetime: 2000, value: 20, series: 'a' },
+    ];
+    const spec = buildSpec({
+      data,
+      animations: false,
+      marks: [{ markType: 'line', color: 'series', hasOnMouseInput: true }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const container = document.createElement('div');
+    const view = new View(parse(spec), { renderer: 'svg' }).width(500).height(300).initialize(container);
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver, onMouseOut }]);
+    view.addEventListener('mouseover', callback);
+    view.addEventListener('mouseout', callback);
+    try {
+      await view.runAsync();
+      const regions = container.querySelectorAll('g.line0_voronoi path');
+      expect(regions).toHaveLength(2);
+      regions[0].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      expect(onMouseOver).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'first', value: 10 }));
+      regions[0].dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+      expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'first', value: 10 }));
+      regions[1].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      expect(onMouseOver).toHaveBeenLastCalledWith(expect.objectContaining({ pointId: 'second', value: 20 }));
+    } finally {
+      view.finalize();
+    }
   });
 });
 
@@ -434,6 +474,122 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       date: 1000,
       value: 42,
     });
+  });
+
+  test('uses the adaptive hover point instead of the original Voronoi owner for context actions', () => {
+    const onContextMenu = jest.fn();
+    const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'line0', onContextMenu }]);
+    const selected = { id: 'selected-series-point', date: 2000, value: 80, rscHoverTarget: 'item' };
+    const item = { ...lineMarkItem, adaptiveHover: selected };
+    callback(fakeContextMenuEvent, item);
+    expect(onContextMenu).toHaveBeenCalledWith(expect.anything(), selected);
+  });
+
+  test('anchors an adaptive popover to the selected point rather than the original Voronoi owner', () => {
+    const selected = {
+      id: 'selected-series-point',
+      date: 2000,
+      value: 80,
+      rscHoverTarget: 'item',
+      rscHoverPoint: { x: 120, y: 80 },
+    };
+    const args = {
+      ...defaultMarkClickArgs,
+      selectedData: { current: null },
+      selectedDataBounds: { current: undefined },
+    };
+    const callback = getOnMarkClickCallback({ ...args, markHasPopover: true });
+    const item = { ...lineMarkItem, adaptiveHover: selected };
+    callback(new MouseEvent('click'), item);
+    expect(args.selectedData.current).toMatchObject(selected);
+    expect(args.selectedDataBounds.current).toEqual({ x1: 120, x2: 120, y1: 80, y2: 80 });
+  });
+
+  test('updates adaptive point callbacks within one Voronoi cell without duplicate enters', () => {
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver, onMouseOut }]);
+    const first = { rscMarkId: 1, rscSeriesId: 'a', id: 'a' };
+    const next = { rscMarkId: 2, rscSeriesId: 'b', id: 'b' };
+    const firstItem = { ...lineMarkItem, adaptiveHover: first };
+    const nextItem = { ...lineMarkItem, adaptiveHover: next };
+    callback(new MouseEvent('mouseover'), firstItem);
+    callback(new MouseEvent('mousemove'), firstItem);
+    callback(new MouseEvent('mousemove'), nextItem);
+    callback(new MouseEvent('mouseout'), nextItem);
+    expect(onMouseOver.mock.calls).toEqual([[first], [next]]);
+    expect(onMouseOut.mock.calls).toEqual([[first], [next]]);
+  });
+
+  test('unwraps an adaptive group anchor before positioning the popover', () => {
+    const selected = { rscMarkId: 1, rscSeriesId: 'a', rscHoverPoint: { x: 25, y: 35 } };
+    const args = {
+      ...defaultMarkClickArgs,
+      selectedData: { current: null },
+      selectedDataBounds: { current: undefined },
+    };
+    const item = {
+      ...lineMarkItem,
+      datum: lineMarkItem,
+      adaptiveHover: selected,
+    };
+    getOnMarkClickCallback({ ...args, markHasPopover: true })(new MouseEvent('click'), item);
+    expect(args.selectedData.current).toMatchObject({ ...selected, [COMPONENT_NAME]: 'line0' });
+    expect(args.selectedDataBounds.current).toEqual({ x1: 25, x2: 25, y1: 35, y2: 35 });
+  });
+
+  test.each([
+    { point: null, message: 'Adaptive Line hover requires a valid anchor point.' },
+    { point: 'invalid', message: 'Adaptive Line hover requires a valid anchor point.' },
+    { point: { x: '25', y: 35 }, message: 'Adaptive Line hover requires finite anchor coordinates.' },
+    { point: { x: 25, y: undefined }, message: 'Adaptive Line hover requires finite anchor coordinates.' },
+    { point: { x: Number.NaN, y: 35 }, message: 'Adaptive Line hover requires finite anchor coordinates.' },
+    {
+      point: { x: 25, y: Number.POSITIVE_INFINITY },
+      message: 'Adaptive Line hover requires finite anchor coordinates.',
+    },
+  ])('rejects invalid adaptive anchors: $point', ({ point, message }) => {
+    const callback = getOnMarkClickCallback({ ...defaultMarkClickArgs, markHasPopover: true });
+    const item = { ...lineMarkItem, adaptiveHover: { rscHoverPoint: point } };
+    expect(() => callback(new MouseEvent('click'), item)).toThrow(TypeError);
+    expect(() => callback(new MouseEvent('click'), item)).toThrow(message);
+  });
+
+  test('clears adaptive callback state on exit and allows re-entering the same point', () => {
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver, onMouseOut }]);
+    const selected = { rscMarkId: 1, rscSeriesId: 'a' };
+    const item = { ...lineMarkItem, adaptiveHover: selected };
+    const emptyItem = { ...item, adaptiveHover: null };
+    const invalidItem = { ...item, adaptiveHover: false };
+    callback(new MouseEvent('mouseout'), item);
+    callback(new MouseEvent('mouseover'), item);
+    callback(new MouseEvent('mousemove'), emptyItem);
+    callback(new MouseEvent('mousemove'), invalidItem);
+    callback(new MouseEvent('mouseout'), item);
+    callback(new MouseEvent('mouseover'), item);
+    expect(onMouseOver.mock.calls).toEqual([[selected], [selected]]);
+    expect(onMouseOut.mock.calls).toEqual([[selected]]);
+  });
+
+  test('tolerates adaptive events without matching or configured mouse callbacks', () => {
+    const item = { ...lineMarkItem, adaptiveHover: { rscMarkId: 1, rscSeriesId: 'a' } };
+    const onMouseOver = jest.fn();
+    for (const details of [undefined, [{ markName: 'line0' }], [{ markName: 'bar0', onMouseOver }]]) {
+      const callback = getOnMouseInputCallback(undefined, details);
+      callback(new MouseEvent('mouseover'), item);
+      callback(new MouseEvent('mouseout'), item);
+    }
+    expect(onMouseOver).not.toHaveBeenCalled();
+  });
+
+  test('ignores non-adaptive mousemove and empty items without firing callbacks', () => {
+    const onMouseOver = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver }]);
+    callback(new MouseEvent('mousemove'), lineMarkItem);
+    callback(new MouseEvent('mouseover'), null);
+    expect(onMouseOver).not.toHaveBeenCalled();
   });
 
   test('should not call onContextMenu when event type is click', () => {

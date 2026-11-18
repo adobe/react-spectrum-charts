@@ -71,6 +71,10 @@ describe('getInPlotMetricFilter()', () => {
 });
 
 describe('getLineHighlightedData()', () => {
+  test('excludes invalid metrics even when their IDs are controlled highlights', () => {
+    const expr = (getLineHighlightedData(defaultLineOptions).transform?.[0] as FilterTransform).expr;
+    expect(expr).toMatch(/^isValid\(datum\["value"\]\) && isFinite\(datum\["value"\]\) && \(/);
+  });
   test('should include select signal if hasPopover', () => {
     const expr = (
       getLineHighlightedData({ ...defaultLineOptions, chartPopovers: [{}] }).transform?.[0] as FilterTransform
