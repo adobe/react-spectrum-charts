@@ -40,7 +40,11 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export interface VegaChartProps {
+export interface VegaChartProps
+  extends Pick<
+    ChartProps,
+    'renderId' | 'onRenderStart' | 'onRenderComplete' | 'onRenderError' | 'axisProjections' | 'onGeometryChange'
+  > {
   config: Config;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: ChartData[];
@@ -48,12 +52,6 @@ export interface VegaChartProps {
   height: number;
   locale: ChartProps['locale'];
   onNewView: (view: View) => void;
-  renderId?: ChartProps['renderId'];
-  onRenderStart?: ChartProps['onRenderStart'];
-  onRenderComplete?: ChartProps['onRenderComplete'];
-  onRenderError?: ChartProps['onRenderError'];
-  axisProjections?: ChartProps['axisProjections'];
-  onGeometryChange?: ChartProps['onGeometryChange'];
   padding: Padding;
   renderer: Renderers;
   signals?: Record<string, unknown>;
