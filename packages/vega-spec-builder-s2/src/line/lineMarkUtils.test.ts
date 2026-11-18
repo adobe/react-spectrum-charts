@@ -80,6 +80,7 @@ describe('getLineMark()', () => {
           strokeOpacity: DEFAULT_OPACITY_RULE,
           y: [{ field: 'value', scale: 'yLinear' }],
           x: { field: DEFAULT_TRANSFORMED_TIME_DIMENSION, scale: 'xTime' },
+          defined: { signal: 'isValid(datum["value"]) && isFinite(datum["value"])' },
           opacity: [...controlledOpacityRules, DEFAULT_OPACITY_RULE],
           strokeWidth: [...controlledStrokeWidthRules, DEFAULT_STROKE_WIDTH_RULE],
         },
@@ -160,6 +161,26 @@ describe('getLineMark()', () => {
     expect(getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: true }, 'line0_facet')).toStrictEqual(
       getLineMark({ ...defaultLineMarkOptions, isDrawInAnimate: false }, 'line0_facet')
     );
+  });
+});
+
+describe.each([
+  ['line', getLineMark],
+  ['gradient', getLineGradientMark],
+] as const)('%s gap validity', (_name, getMark) => {
+  test('updates defined status without dropping null rows or creating invalid paths', () => {
+    const mark = getMark(defaultLineMarkOptions, 'line0_facet');
+    expect(mark.encode?.update?.defined).toEqual({
+      signal: 'isValid(datum["value"]) && isFinite(datum["value"])',
+    });
+    expect(mark.encode?.enter?.defined).toBeUndefined();
+  });
+
+  test('escapes metric field names in the validity expression', () => {
+    const mark = getMark({ ...defaultLineMarkOptions, metric: 'metric "value"' }, 'line0_facet');
+    expect(mark.encode?.update?.defined).toEqual({
+      signal: 'isValid(datum["metric \\"value\\""]) && isFinite(datum["metric \\"value\\""])',
+    });
   });
 });
 

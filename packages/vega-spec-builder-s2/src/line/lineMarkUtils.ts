@@ -109,9 +109,9 @@ export const getLineGradientMark = (lineMarkOptions: LineMarkOptions, dataSource
       update: {
         y: getLineYEncoding(lineMarkOptions, metric),
         y2: { signal: 'height' },
-        defined: { signal: `isValid(datum["${metric}"])` },
         ...getGradientFillEncoding(lineMarkOptions),
         x: getXProductionRule(scaleType, dimension),
+        defined: { signal: `isValid(datum[${JSON.stringify(metric)}]) && isFinite(datum[${JSON.stringify(metric)}])` },
         opacity: [
           {
             test: `length(domain('${COLOR_SCALE}')) > 1 || length(domain('${LINE_TYPE_SCALE}')) > 1 || length(domain('${OPACITY_SCALE}')) > 1`,
@@ -233,6 +233,7 @@ export const getLineMark = (lineMarkOptions: LineMarkOptions, dataSource: string
           : getStrokeDashProductionRule(lineType),
         strokeOpacity: getOpacityProductionRule(opacity),
         x: getXProductionRule(scaleType, dimension),
+        defined: { signal: `isValid(datum[${JSON.stringify(metric)}]) && isFinite(datum[${JSON.stringify(metric)}])` },
         ...(popoverWithDimensionHighlightExists ? {} : { opacity: getLineOpacity(lineMarkOptions) }),
         ...(interpolate ? { interpolate: { value: interpolate } } : {}),
         strokeWidth: getLineStrokeWidth(lineMarkOptions),

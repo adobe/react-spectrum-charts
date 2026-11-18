@@ -9,6 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { View, expressionFunction, parse } from 'vega';
+
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { AxisAnnotationSpecOptions } from '../types/index.js';
 import {
   addAxisAnnotationAxis,
@@ -66,6 +70,55 @@ const testAxisAnnotationSummary: AxisAnnotationSpecOptions = {
     { id: '4', color: 'celery-600' },
   ],
 };
+
+test.each(['datetime', 'timestamp'])(
+  'time-axis annotations use %s for point/range coordinates through resize',
+  async (dimension) => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', () => 400);
+    const start = Date.UTC(2026, 0, 1);
+    const end = Date.UTC(2026, 0, 3);
+    const rows = [
+      { [dimension]: start, value: 1, annotations: ['range', 'point'] },
+      { [dimension]: end, value: 2, annotations: ['range'] },
+    ];
+    const spec = buildSpec({
+      data: rows,
+      animations: false,
+      axes: [{ position: 'bottom', labelFormat: 'time', axisAnnotations: [{}] }],
+      marks: [{ markType: 'line', dimension }],
+    });
+    const view = new View(parse(JSON.parse(JSON.stringify(spec))), { renderer: 'none' }).insert('table', rows);
+    try {
+      let previousTransforms: string[] | undefined;
+      for (const width of [400, 520]) {
+        await view.width(width).height(240).runAsync();
+        expect(
+          view.data('axis0Annotation0_aggregate').map(({ id, lower, upper, center }) => ({
+            id,
+            lower: Number(lower),
+            upper: Number(upper),
+            center,
+          }))
+        ).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ id: 'range', lower: start, upper: end, center: (start + end) / 2 }),
+            expect.objectContaining({ id: 'point', lower: start, upper: start, center: start }),
+          ])
+        );
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const paths = Array.from(svg.querySelectorAll('.axis0Annotation0_icon path'));
+        expect(paths).toHaveLength(2);
+        const transforms = paths.map((path) => path.getAttribute('transform') ?? '');
+        expect(transforms.join(' ')).not.toMatch(/NaN|Infinity/);
+        if (previousTransforms) expect(transforms).not.toEqual(previousTransforms);
+        previousTransforms = transforms;
+      }
+    } finally {
+      view.finalize();
+    }
+  }
+);
 
 describe('Spec builder, AxisAnnotation', () => {
   describe('addAxisAnnotationData()', () => {
