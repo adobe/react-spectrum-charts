@@ -160,17 +160,31 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
 
     const dualMetricAxis = spec.signals?.some((signal) => signal.name === 'firstRscSeriesId');
 
-    spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' });
+    spec.data = addAxisData(spec.data ?? [], { ...axisOptions, scaleType: scaleType ?? 'linear' }, scaleField);
     spec.signals = addAxisSignals(spec.signals ?? [], axisOptions, scaleName);
 
     // set custom range if applicable
     if (range && (scaleType === 'linear' || scaleType === 'time')) {
-      scale.domain = range;
+      let rangeScale = scale;
+      if (
+        dualMetricAxis &&
+        !isTrellisedChart(spec) &&
+        getIsMetricAxis(position, spec.usermeta?.chartOrientation ?? 'vertical')
+      ) {
+        const { primaryScale, secondaryScale } = getDualAxisScaleNames(scaleName);
+        const rangeScaleName = spec.usermeta?.metricAxisCount ? secondaryScale : primaryScale;
+        const dualScale = spec.scales?.find((candidate) => candidate.name === rangeScaleName);
+        if (!dualScale || (dualScale.type !== 'linear' && dualScale.type !== 'time')) {
+          throw new Error(`Missing continuous dual metric axis scale: ${rangeScaleName}`);
+        }
+        rangeScale = dualScale;
+      }
+      rangeScale.domain = range;
       // don't round values if there's a custom range
-      scale.nice = false;
+      rangeScale.nice = false;
       // if there's a custom range set for linear scale types, we don't want to start the axis at 0
-      if (scaleType === 'linear') {
-        scale.zero = false;
+      if (rangeScale.type === 'linear') {
+        rangeScale.zero = false;
       }
     }
 
@@ -240,12 +254,14 @@ function getEffectiveScaleField(spec: ScSpec, position: Position, scaleField?: s
   return getScaleField(scale);
 }
 
-export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }]>((data, options) => {
-  const axisAnnotations = getAxisAnnotationsFromChildren(options);
-  for (const annotation of axisAnnotations) {
-    addAxisAnnotationData(data, annotation);
+export const addAxisData = produce<Data[], [AxisSpecOptions & { scaleType: ScaleType }, string?]>(
+  (data, options, dimension) => {
+    const axisAnnotations = getAxisAnnotationsFromChildren(options);
+    for (const annotation of axisAnnotations) {
+      addAxisAnnotationData(data, annotation, dimension);
+    }
   }
-});
+);
 
 export const addAxisSignals = produce<Signal[], [AxisSpecOptions, string]>((signals, options, scaleName) => {
   const { name, hasTooltip, labels, position, subLabels, labelOrientation, tooltipText } = options;

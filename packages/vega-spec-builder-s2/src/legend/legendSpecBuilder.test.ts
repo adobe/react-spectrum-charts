@@ -578,3 +578,39 @@ describe('getContinuousLegend()', () => {
     ).toHaveProperty('fill', LINEAR_COLOR_SCALE);
   });
 });
+
+test.each(['range', 'trend'])('supports hover-only %s marks with a non-highlighting legend', async (kind) => {
+  const { View, expressionFunction, parse } = await import('vega');
+  const { buildSpec } = await import('../chartSpecBuilder.js');
+  const { getExpressionFunctions } = await import('../expressionFunctions/index.js');
+  Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', () => 400);
+  const rows = [0, 1, 2].map((index) => ({
+    datetime: 1000 + index * 1000,
+    value: index + 10,
+    low: index + 8,
+    high: index + 12,
+    series: 'A',
+  }));
+  const spec = buildSpec({
+    data: rows,
+    animations: false,
+    legends: [{ highlight: false }],
+    marks: [
+      {
+        markType: 'line',
+        color: 'series',
+        ...(kind === 'range'
+          ? { metricRanges: [{ metricStart: 'low', metricEnd: 'high', displayOnHover: true }] }
+          : { trendlines: [{ method: 'linear' as const, displayOnHover: true }] }),
+      },
+    ],
+  });
+  const view = new View(parse(spec), { renderer: 'none' }).insert('table', rows);
+  try {
+    await view.width(400).height(240).runAsync();
+    expect(await view.toSVG()).not.toMatch(/NaN|undefined/);
+  } finally {
+    view.finalize();
+  }
+});

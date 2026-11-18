@@ -107,6 +107,7 @@ import {
   getLineStaticPointData,
   getPrimarySeriesFacetData,
   getPrimarySeriesOtherExpr,
+  getValidMetricFilter,
 } from './lineDataUtils.js';
 import {
   getHighlightedSeriesOpacityRules,
@@ -271,19 +272,13 @@ const getLineHoverDataSource = ({ hasFixedMetricAxis, name }: LineSpecOptions): 
  * @param options - line spec options
  * @returns boolean
  */
-const hasFixedMetricAxis = (
-  axes: AxisOptions[],
-  scales: Scale[],
-  { dualMetricAxis, metricAxis }: LineSpecOptions
-): boolean => {
+const hasFixedMetricAxis = (axes: AxisOptions[], scales: Scale[], { metricAxis }: LineSpecOptions): boolean => {
   const metricScaleName = metricAxis || 'yLinear';
-  const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleName);
-  const metricScaleNames = dualMetricAxis ? [primaryScale, secondaryScale] : [metricScaleName];
   return axes.some(
     (axis) =>
       Boolean(axis.range) &&
       ['left', 'right'].includes(axis.position) &&
-      metricScaleNames.includes(getScale([...scales], axis.position).name)
+      getScale([...scales], axis.position).name === metricScaleName
   );
 };
 
@@ -383,7 +378,9 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
   const { chartInspects, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   data.push(getLineHighlightedData(options));
   if (isInteractive(options)) {
-    data.push(getFilteredInspectData(chartInspects));
+    const inspectData = getFilteredInspectData(chartInspects);
+    inspectData.transform = [...(inspectData.transform ?? []), getValidMetricFilter(options)];
+    data.push(inspectData);
     if (options.hasFixedMetricAxis) {
       data.push(getInBoundsHoverData(options, `${FILTERED_TABLE}ForInspect`));
     }
