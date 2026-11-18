@@ -45,7 +45,7 @@ import {
 } from '../types/index.js';
 import { getFacets, getFacetsFromKeys } from './legendFacetUtils.js';
 import { injectLegendHoverIntoData, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legendHighlightUtils.js';
-import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils.js';
+import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getLegendName, getSymbolType } from './legendUtils.js';
 
 export const addLegend = produce<
   ScSpec,
@@ -87,7 +87,7 @@ export const addLegend = produce<
       colorScheme
     );
 
-    const name = `legend${index}`;
+    const name = getLegendName(options, index);
 
     // put options back together now that all defaults are set
     const legendOptions: LegendSpecOptions = {
@@ -102,11 +102,11 @@ export const addLegend = produce<
       isToggleable,
       lineType: formattedLineType,
       lineWidth: formattedLineWidth,
-      name,
       position,
       symbolShape: formattedSymbolShape,
       colorScheme,
       ...options,
+      name,
     };
 
     if (align !== undefined) {

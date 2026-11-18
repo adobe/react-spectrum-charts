@@ -14,7 +14,7 @@ import { RectMark } from 'vega';
 
 import { DEFAULT_FONT_SIZE, DEFAULT_LEGEND_SYMBOL_WIDTH } from '@spectrum-charts/core-s2/constants';
 
-import { getMaxLabelWidthExpr } from '../legend/legendUtils.js';
+import { getLegendName, getMaxLabelWidthExpr } from '../legend/legendUtils.js';
 import { DonutOptions, LegendOptions, ScSpec } from '../types/index.js';
 
 export const DONUT_LEGEND_EXTENT = 'rscDonutLegendExtent';
@@ -30,9 +30,10 @@ const LEGEND_TITLE_LIMIT = 180;
  * @param legend
  * @returns vega expression string
  */
-const getLegendContentWidthExpr = (index: number, { labelLimit, title, titleLimit }: LegendOptions): string => {
+const getLegendContentWidthExpr = (index: number, legend: LegendOptions): string => {
+  const { labelLimit, title, titleLimit } = legend;
   const symbolColumn = DEFAULT_LEGEND_SYMBOL_WIDTH + LEGEND_SYMBOL_STROKE_WIDTH + 4;
-  const legendName = `legend${index}`;
+  const legendName = getLegendName(legend, index);
   const labels = `${symbolColumn} + ${getMaxLabelWidthExpr(legendName, labelLimit)}`;
   if (!title) return labels;
   const titleWidth = `min(getLabelWidth(${JSON.stringify(title)}, 'bold', ${DEFAULT_FONT_SIZE}), ${
