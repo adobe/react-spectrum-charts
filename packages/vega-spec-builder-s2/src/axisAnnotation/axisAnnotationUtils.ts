@@ -111,6 +111,7 @@ const getAxisAnnotationAggregateData = (
   positions?: AxisAnnotationData[],
   selectedIds?: string[]
 ): SourceData | ValuesData => {
+  const idField = `${name}_id`;
   const sourceTransforms: Transforms[] =
     positions !== undefined
       ? []
@@ -143,7 +144,7 @@ const getAxisAnnotationAggregateData = (
         ? [
             {
               type: 'formula' as const,
-              expr: `indexof(${JSON.stringify(selectedIds)}, datum[${JSON.stringify(`${name}_id`)}]) >= 0 ? 1 : 0`,
+              expr: `indexof(${JSON.stringify(selectedIds)}, datum[${JSON.stringify(idField)}]) >= 0 ? 1 : 0`,
               as: 'isSelected',
             },
           ]
