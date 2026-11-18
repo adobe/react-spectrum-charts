@@ -11,7 +11,7 @@
  */
 import deepmerge from 'deepmerge';
 import { produce } from 'immer';
-import { Axis, AxisEncode, Data, GroupMark, Mark, ScaleType, Signal } from 'vega';
+import { Axis, AxisEncode, Data, GroupMark, LinearScale, Mark, ScaleType, Signal, TimeScale } from 'vega';
 
 import {
   COLOR_SCALE,
@@ -171,13 +171,7 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
         !isTrellisedChart(spec) &&
         getIsMetricAxis(position, spec.usermeta?.chartOrientation ?? 'vertical')
       ) {
-        const { primaryScale, secondaryScale } = getDualAxisScaleNames(scaleName);
-        const rangeScaleName = spec.usermeta?.metricAxisCount ? secondaryScale : primaryScale;
-        const dualScale = spec.scales?.find((candidate) => candidate.name === rangeScaleName);
-        if (!dualScale || (dualScale.type !== 'linear' && dualScale.type !== 'time')) {
-          throw new Error(`Missing continuous dual metric axis scale: ${rangeScaleName}`);
-        }
-        rangeScale = dualScale;
+        rangeScale = getDualMetricRangeScale(spec, scaleName);
       }
       rangeScale.domain = range;
       // don't round values if there's a custom range
@@ -237,6 +231,19 @@ export const addAxis = produce<ScSpec, [AxisOptions & { colorScheme?: ColorSchem
     return spec;
   }
 );
+
+/**
+ * Gets the continuous scale for the current dual metric axis's custom range.
+ */
+function getDualMetricRangeScale(spec: ScSpec, scaleName: string): LinearScale | TimeScale {
+  const { primaryScale, secondaryScale } = getDualAxisScaleNames(scaleName);
+  const rangeScaleName = spec.usermeta?.metricAxisCount ? secondaryScale : primaryScale;
+  const scale = spec.scales?.find((candidate) => candidate.name === rangeScaleName);
+  if (!scale || (scale.type !== 'linear' && scale.type !== 'time')) {
+    throw new Error(`Missing continuous dual metric axis scale: ${rangeScaleName}`);
+  }
+  return scale;
+}
 
 /**
  * For a trellised chart, resolves the trellis group's inner per-panel scale field (distinct from
