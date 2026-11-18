@@ -44,15 +44,9 @@ describe('getBaselineRule', () => {
   describe('baselineOffset', () => {
     test('should apply offset', () => {
       for (const offset of [1, 100, -100]) {
-        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty(
-          'scale',
-          'yLinear'
-        );
+        expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('scale', 'yLinear');
         expect(getBaselineRule(offset, 'bottom').encode?.update?.y).toHaveProperty('value', offset);
-        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty(
-          'scale',
-          'xLinear'
-        );
+        expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('scale', 'xLinear');
         expect(getBaselineRule(offset, 'left').encode?.update?.x).toHaveProperty('value', offset);
       }
     });
@@ -546,4 +540,20 @@ describe('getDivergingBarContext()', () => {
   test('returns undefined when scaleField is undefined', () => {
     expect(getDivergingBarContext(undefined, divergingBarMarks)).toBeUndefined();
   });
+});
+
+test('hides both time-axis label tiers when default labels are disabled', async () => {
+  const { buildSpec } = await import('../chartSpecBuilder.js');
+  const spec = buildSpec({
+    data: [
+      { datetime: 1000, value: 10 },
+      { datetime: 2000, value: 20 },
+    ],
+    animations: false,
+    axes: [{ position: 'bottom', labelFormat: 'time', hideDefaultLabels: true }],
+    marks: [{ markType: 'line' }],
+  });
+  const axes = spec.axes?.filter((axis) => axis.orient === 'bottom');
+  expect(axes?.length).toBeGreaterThan(0);
+  expect(axes?.every((axis) => axis.labels === false)).toBe(true);
 });

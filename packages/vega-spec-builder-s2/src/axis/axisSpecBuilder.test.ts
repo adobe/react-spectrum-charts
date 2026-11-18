@@ -299,6 +299,69 @@ describe('Spec builder, Axis', () => {
 
         expect(resultScales?.at(1)?.domain).toEqual([0, 100]);
       });
+      test('keeps independent dual-axis ranges and plotted coordinates through initial layout and resize', async () => {
+        Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+        expressionFunction('rscContainerWidth', (width: number) => width);
+        const data = [
+          { datetime: Date.UTC(2026, 0, 1), series: 'A', value: 10 },
+          { datetime: Date.UTC(2026, 0, 2), series: 'A', value: 20 },
+          { datetime: Date.UTC(2026, 0, 1), series: 'B', value: 1000 },
+          { datetime: Date.UTC(2026, 0, 2), series: 'B', value: 2000 },
+          { datetime: Date.UTC(2026, 0, 3), series: 'A', value: 30 },
+          { datetime: Date.UTC(2026, 0, 3), series: 'B', value: 4000 },
+        ];
+        const spec = buildSpec({
+          data,
+          axes: [
+            { position: 'left', range: [5, 25] },
+            { position: 'right', range: [0, 3000] },
+            { position: 'bottom', labelFormat: 'time' },
+          ],
+          marks: [
+            {
+              markType: 'line',
+              name: 'testLine',
+              color: 'series',
+              dualMetricAxis: true,
+              staticPoint: 'marked',
+              chartInspects: [{}],
+            },
+          ],
+        });
+        const view = new View(parse(spec), { renderer: 'none' }).insert(
+          TABLE,
+          data.map((point) => ({ ...point, marked: true }))
+        );
+        try {
+          await view.runAsync();
+          for (const [width, height] of [
+            [400, 240],
+            [600, 320],
+          ]) {
+            await view.width(width).height(height).resize().runAsync();
+            await view.runAsync();
+            expect(view.scale('yLinearPrimary').domain()).toEqual([5, 25]);
+            expect(view.scale('yLinearSecondary').domain()).toEqual([0, 3000]);
+            const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+            const paths = [...svg.querySelectorAll('.testLine path')].map((path) => path.getAttribute('d'));
+            expect(svg.querySelector('.testLine_group')?.getAttribute('clip-path')).toMatch(/^url\(#/);
+            expect(
+              view
+                .data('testLine_visibleHoverData')
+                .map((point) => point.value)
+                .sort((a, b) => a - b)
+            ).toEqual([10, 20, 1000, 2000]);
+            expect(paths).toHaveLength(2);
+            expect(Number(paths[0]?.match(/^M0,([^L]+)/)?.[1])).toBeCloseTo(view.scale('yLinearPrimary')(10), 3);
+            expect(Number(paths[1]?.match(/^M0,([^L]+)/)?.[1])).toBeCloseTo(view.scale('yLinearSecondary')(1000), 3);
+            const point = svg.querySelector('.testLine_staticPoints path')?.getAttribute('transform');
+            expect(Number(point?.match(/^translate\(0,([^)]+)/)?.[1])).toBeCloseTo(view.scale('yLinearPrimary')(10), 3);
+            expect(paths.every((path) => !path?.includes('NaN'))).toBe(true);
+          }
+        } finally {
+          view.finalize();
+        }
+      });
       test("custom X range that doesn't start at 0", () => {
         const resultScales = addAxis(
           { usermeta: {}, scales: defaultLinearScales },

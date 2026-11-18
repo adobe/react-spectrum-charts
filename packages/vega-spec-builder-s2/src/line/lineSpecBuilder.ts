@@ -18,6 +18,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -106,6 +107,7 @@ import {
   getLineStaticPointData,
   getPrimarySeriesFacetData,
   getPrimarySeriesOtherExpr,
+  getValidMetricFilter,
 } from './lineDataUtils.js';
 import {
   getHighlightedSeriesOpacityRules,
@@ -271,19 +273,13 @@ const getLineHoverDataSource = ({ hasFixedMetricAxis, name }: LineSpecOptions): 
  * @param options - line spec options
  * @returns boolean
  */
-const hasFixedMetricAxis = (
-  axes: AxisOptions[],
-  scales: Scale[],
-  { dualMetricAxis, metricAxis }: LineSpecOptions
-): boolean => {
+const hasFixedMetricAxis = (axes: AxisOptions[], scales: Scale[], { metricAxis }: LineSpecOptions): boolean => {
   const metricScaleName = metricAxis || 'yLinear';
-  const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScaleName);
-  const metricScaleNames = dualMetricAxis ? [primaryScale, secondaryScale] : [metricScaleName];
   return axes.some(
     (axis) =>
       Boolean(axis.range) &&
       ['left', 'right'].includes(axis.position) &&
-      metricScaleNames.includes(getScale([...scales], axis.position).name)
+      getScale([...scales], axis.position).name === metricScaleName
   );
 };
 
@@ -358,7 +354,7 @@ const addDimensionHoverGroupTransform = (
 const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions): void => {
   const { alternateSegmentKey, dimension, forecasts, metric, name, primarySeries, scaleType } = options;
   // time data was transformed above, so we need to use the transformed dimension
-  const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+  const dimSortField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
   if (alternateSegmentKey) {
     tableData.transform = tableData.transform ?? [];
     tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
@@ -383,7 +379,9 @@ const addLineHoverData = (data: Data[], options: LineSpecOptions): void => {
   const { chartInspects, isHoverAnimate, name, seriesIds, showHoverLabel } = options;
   data.push(getLineHighlightedData(options));
   if (isInteractive(options)) {
-    data.push(getFilteredInspectData(chartInspects));
+    const inspectData = getFilteredInspectData(chartInspects);
+    inspectData.transform = [...(inspectData.transform ?? []), getValidMetricFilter(options)];
+    data.push(inspectData);
     if (options.hasFixedMetricAxis) {
       data.push(getInBoundsHoverData(options, `${FILTERED_TABLE}ForInspect`));
     }
