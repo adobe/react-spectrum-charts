@@ -47,10 +47,10 @@ export interface VegaChartProps {
   height: number;
   locale: ChartProps['locale'];
   onNewView: (view: View) => void;
-  renderId?: ChartProps['renderId'];
-  onRenderStart?: ChartProps['onRenderStart'];
-  onRenderComplete?: ChartProps['onRenderComplete'];
-  onRenderError?: ChartProps['onRenderError'];
+  renderId?: NonNullable<ChartProps['renderId']>;
+  onRenderStart?: NonNullable<ChartProps['onRenderStart']>;
+  onRenderComplete?: NonNullable<ChartProps['onRenderComplete']>;
+  onRenderError?: NonNullable<ChartProps['onRenderError']>;
   padding: Padding;
   renderer: Renderers;
   signals?: Record<string, unknown>;
