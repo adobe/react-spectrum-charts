@@ -26,18 +26,20 @@ module.exports = {
     // ESM packages use fully specified relative imports (`./foo.js`) that point at TypeScript sources.
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@spectrum-charts/(schemas|vega-spec-builder-s2)$': '<rootDir>/packages/$1/index.ts',
+    '^@spectrum-charts/chart-engine$': '<rootDir>/packages/chart-engine/src/index.ts',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/__mocks__/fileMock.ts',
     '\\.(css)$': 'identity-obj-proxy',
     'single-spa-react/parcel': 'single-spa-react/lib/cjs/parcel.cjs',
     '^.+\\.(css|less|scss)$': 'babel-jest',
     '^d3-format$': '<rootDir>/node_modules/d3-format/dist/d3-format.js',
+    '^d3-ease$': '<rootDir>/node_modules/d3-ease/dist/d3-ease.js',
     '^vega$': '<rootDir>/node_modules/vega/build/vega.js',
     '^(storybook/actions|storybook-dark-mode)$': '<rootDir>/jest.storybookMock.js',
     ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact)/)',
+    'node_modules/(?!(vega|vega-.*|d3-.*|internmap|json-stringify-pretty-compact|delaunator|robust-predicates)/)',
   ],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
   setupFilesAfterEnv: ['@testing-library/jest-dom', 'jest-canvas-mock', '<rootDir>/jest.setup.js'],

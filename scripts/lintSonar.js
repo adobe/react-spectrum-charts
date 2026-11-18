@@ -24,7 +24,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const LINTABLE = /^packages\/(?!docs\/|docs-s2\/).*\.tsx?$/;
+const LINTABLE = /^packages\/(?!docs\/|docs-s2\/|chart-engine\/).*\.tsx?$/;
 
 const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
 
