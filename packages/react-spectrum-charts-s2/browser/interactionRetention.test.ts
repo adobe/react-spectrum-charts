@@ -166,7 +166,6 @@ for (const renderer of ['svg', 'canvas'] as const) {
 
     for (const [update, args] of CLEARING_UPDATES) {
       test(`popover closes after ${update}`, async ({ page }) => {
-        test.fail(true, 'data updates and rebuilds keep the selection');
         await openPopoverOnSeriesA(page);
 
         await updateArgs(page, args);
@@ -176,7 +175,6 @@ for (const renderer of ['svg', 'canvas'] as const) {
       });
 
       test(`popover reopens on the same point after ${update} without moving`, async ({ page }) => {
-        test.fail(true, 'data updates and rebuilds keep the selection');
         failsOnCanvas();
         await openPopoverOnSeriesA(page);
         await updateArgs(page, args);

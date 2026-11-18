@@ -136,7 +136,9 @@ To change the colors, line types, or shapes for the whole chart, use `colors`, `
 With `isToggleable`, clicking an entry hides its series and clicking again shows it. The hidden
 entry's symbol turns into a crossed-out eye icon and its label stays at full strength, so the
 entry still reads clearly. `defaultHiddenSeries` lists series to hide when the chart first
-renders; after that, the legend tracks hidden series itself.
+renders; after that, the legend tracks hidden series itself. Hidden series stay hidden when the
+data changes, unless the new data no longer contains them. A series that comes back after that is
+visible again.
 
 <LegendToggleablePlayground />
 

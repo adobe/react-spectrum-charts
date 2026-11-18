@@ -47,6 +47,8 @@ export interface VegaChartProps {
   height: number;
   locale: ChartProps['locale'];
   onNewView: (view: View) => void;
+  /** Called after a data update or rebuild resets selection and hover */
+  onInteractionReset?: (view: View) => void;
   padding: Padding;
   renderer: Renderers;
   signals?: Record<string, unknown>;
@@ -63,6 +65,7 @@ export const VegaChart: FC<VegaChartProps> = ({
   height,
   locale,
   onNewView,
+  onInteractionReset,
   padding,
   renderer = 'svg',
   signals,
@@ -108,12 +111,26 @@ export const VegaChart: FC<VegaChartProps> = ({
       environment: { config, locale, padding, renderer, tooltip },
       height,
       onNewView,
+      onInteractionReset,
       signals,
       spec,
       table: chartData.table,
       width,
     });
-  }, [chartData.table, config, height, locale, onNewView, padding, renderer, signals, spec, tooltip, width]);
+  }, [
+    chartData.table,
+    config,
+    height,
+    locale,
+    onInteractionReset,
+    onNewView,
+    padding,
+    renderer,
+    signals,
+    spec,
+    tooltip,
+    width,
+  ]);
 
   return <div ref={containerRef} className="rsc"></div>;
 };

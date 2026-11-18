@@ -11,7 +11,7 @@
  */
 import { CSSProperties, useMemo } from 'react';
 
-import { TooltipHandler, View } from 'vega';
+import { Spec, TooltipHandler, View } from 'vega';
 
 import { SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/core-s2/constants';
 import { getColorValue } from '@spectrum-charts/core-s2/tokens';
@@ -24,6 +24,7 @@ import useNewChartView from './useNewChartView.js';
 import usePopoverAnchorStyle from './usePopoverAnchorStyle.js';
 import useChartInspectInteractions from './useChartInspectInteractions.js';
 import useInspectTooltip from './useInspectTooltip.js';
+import useInteractionReset from './useInteractionReset.js';
 
 export interface ChartInteractions {
   signals: Record<string, unknown>;
@@ -31,11 +32,13 @@ export interface ChartInteractions {
   axisLabelTooltipAnchorStyle: CSSProperties;
   tooltip: TooltipHandler;
   onNewView: (view: View) => void;
+  onInteractionReset: (view: View) => void;
 }
 
 export const useChartInteractions = (
   props: RscChartProps,
-  sanitizedChildren: ChartChildElement[]
+  sanitizedChildren: ChartChildElement[],
+  spec: Spec
 ): ChartInteractions => {
   const { selectedData } = useChartContext();
   const legendProps = useLegend(sanitizedChildren);
@@ -59,6 +62,7 @@ export const useChartInteractions = (
 
   const tooltip = useInspectTooltip(inspectOptions);
   const onNewView = useNewChartView(props, sanitizedChildren, legendProps);
+  const onInteractionReset = useInteractionReset(spec, legendProps, tooltip);
 
-  return { signals, targetStyle, axisLabelTooltipAnchorStyle, tooltip, onNewView };
+  return { signals, targetStyle, axisLabelTooltipAnchorStyle, tooltip, onNewView, onInteractionReset };
 };

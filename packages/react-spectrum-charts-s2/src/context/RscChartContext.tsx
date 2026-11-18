@@ -37,6 +37,8 @@ interface ChartContextValue {
   isPopoverOpen: boolean;
   setIsPopoverOpen: (isOpen: boolean) => void;
   popoverAnchorRef: RefObject<HTMLDivElement | null>;
+  // Close callbacks of open popovers and action bars, called when selection resets
+  openDialogClosers: RefObject<Set<() => void>>;
 
   // Axis label tooltip state
   hoveredAxisLabel: HoveredAxisLabel | null;
@@ -63,6 +65,7 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
   const selectedDataName = useRef<string>('');
   const selectedDataBounds = useRef<MarkBounds>({ x1: 0, x2: 0, y1: 0, y2: 0 });
   const keyboardPopoverComponentName = useRef<string | null>(null);
+  const openDialogClosers = useRef(new Set<() => void>());
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [hoveredAxisLabel, setHoveredAxisLabel] = useState<HoveredAxisLabel | null>(null);
@@ -80,6 +83,7 @@ export const ChartProvider = ({ children, chartId, chartView }: ChartProviderPro
       isPopoverOpen,
       setIsPopoverOpen,
       popoverAnchorRef,
+      openDialogClosers,
       hoveredAxisLabel,
       setHoveredAxisLabel,
     }),
