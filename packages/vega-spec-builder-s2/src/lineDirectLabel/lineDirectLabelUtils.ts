@@ -157,18 +157,17 @@ export const getLineDirectLabelMarks = (
   // Combined logic for direct label offset given 1, 2, or 3+ series
   const offsetSignal = `datum._seriesCount === 2 ? (datum._metricRank === 1 ? -12 : 22) : (datum._cumMaxAdjusted + datum._metricRank * ${MIN_LABEL_GAP} - 12 - datum._scaledY)`;
 
+  const positionLimitSignal = isStart
+    ? `scale('${xScaleName}', datum["${dimField}"])`
+    : `width - scale('${xScaleName}', datum["${dimField}"])`;
+
   const baseEnter = {
     align: { value: isStart ? ('left' as const) : ('right' as const) },
   };
   const baseUpdate = {
     text: { signal: textExpr },
     limit: {
-      signal:
-        labelOptions.textKey !== undefined
-          ? 'width'
-          : isStart
-          ? `scale('${xScaleName}', datum["${dimField}"])`
-          : `width - scale('${xScaleName}', datum["${dimField}"])`,
+      signal: labelOptions.textKey !== undefined ? 'width' : positionLimitSignal,
     },
     x: isStart ? ({ value: 0 } as const) : { signal: 'width' },
     y: {
