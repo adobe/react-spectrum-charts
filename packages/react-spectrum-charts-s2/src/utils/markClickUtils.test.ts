@@ -420,6 +420,77 @@ describe('getOnChartMarkContextMenuCallback()', () => {
     expect(onMouseOut.mock.calls).toEqual([[first], [next]]);
   });
 
+  test('unwraps an adaptive group anchor before positioning the popover', () => {
+    const selected = { rscMarkId: 1, rscSeriesId: 'a', rscHoverPoint: { x: 25, y: 35 } };
+    const args = {
+      ...defaultMarkClickArgs,
+      selectedData: { current: null },
+      selectedDataBounds: { current: undefined },
+    };
+    const item = {
+      ...lineMarkItem,
+      datum: lineMarkItem,
+      adaptiveHover: selected,
+    };
+    getOnMarkClickCallback({ ...args, markHasPopover: true })(new MouseEvent('click'), item);
+    expect(args.selectedData.current).toMatchObject({ ...selected, [COMPONENT_NAME]: 'line0' });
+    expect(args.selectedDataBounds.current).toEqual({ x1: 25, x2: 25, y1: 35, y2: 35 });
+  });
+
+  test.each([
+    { point: null, message: 'Adaptive Line hover requires a valid anchor point.' },
+    { point: 'invalid', message: 'Adaptive Line hover requires a valid anchor point.' },
+    { point: { x: '25', y: 35 }, message: 'Adaptive Line hover requires finite anchor coordinates.' },
+    { point: { x: 25, y: undefined }, message: 'Adaptive Line hover requires finite anchor coordinates.' },
+    { point: { x: Number.NaN, y: 35 }, message: 'Adaptive Line hover requires finite anchor coordinates.' },
+    {
+      point: { x: 25, y: Number.POSITIVE_INFINITY },
+      message: 'Adaptive Line hover requires finite anchor coordinates.',
+    },
+  ])('rejects invalid adaptive anchors: $point', ({ point, message }) => {
+    const callback = getOnMarkClickCallback({ ...defaultMarkClickArgs, markHasPopover: true });
+    const item = { ...lineMarkItem, adaptiveHover: { rscHoverPoint: point } };
+    expect(() => callback(new MouseEvent('click'), item)).toThrow(TypeError);
+    expect(() => callback(new MouseEvent('click'), item)).toThrow(message);
+  });
+
+  test('clears adaptive callback state on exit and allows re-entering the same point', () => {
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver, onMouseOut }]);
+    const selected = { rscMarkId: 1, rscSeriesId: 'a' };
+    const item = { ...lineMarkItem, adaptiveHover: selected };
+    const emptyItem = { ...item, adaptiveHover: null };
+    const invalidItem = { ...item, adaptiveHover: false };
+    callback(new MouseEvent('mouseout'), item);
+    callback(new MouseEvent('mouseover'), item);
+    callback(new MouseEvent('mousemove'), emptyItem);
+    callback(new MouseEvent('mousemove'), invalidItem);
+    callback(new MouseEvent('mouseout'), item);
+    callback(new MouseEvent('mouseover'), item);
+    expect(onMouseOver.mock.calls).toEqual([[selected], [selected]]);
+    expect(onMouseOut.mock.calls).toEqual([[selected]]);
+  });
+
+  test('tolerates adaptive events without matching or configured mouse callbacks', () => {
+    const item = { ...lineMarkItem, adaptiveHover: { rscMarkId: 1, rscSeriesId: 'a' } };
+    const onMouseOver = jest.fn();
+    for (const details of [undefined, [{ markName: 'line0' }], [{ markName: 'bar0', onMouseOver }]]) {
+      const callback = getOnMouseInputCallback(undefined, details);
+      callback(new MouseEvent('mouseover'), item);
+      callback(new MouseEvent('mouseout'), item);
+    }
+    expect(onMouseOver).not.toHaveBeenCalled();
+  });
+
+  test('ignores non-adaptive mousemove and empty items without firing callbacks', () => {
+    const onMouseOver = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver }]);
+    callback(new MouseEvent('mousemove'), lineMarkItem);
+    callback(new MouseEvent('mouseover'), null);
+    expect(onMouseOver).not.toHaveBeenCalled();
+  });
+
   test('should not call onContextMenu when event type is click', () => {
     const onContextMenu = jest.fn();
     const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'line0', onContextMenu }]);

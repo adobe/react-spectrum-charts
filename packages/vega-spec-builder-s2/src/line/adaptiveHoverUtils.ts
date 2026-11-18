@@ -36,10 +36,38 @@ function getPath(scene: Scene): Path2D {
   return path;
 }
 
-/**
- * Picks against the actual rendered curve, retaining nearest-date background hover.
- * Inspect data identifies the target with `rscHoverTarget: 'item' | 'dimension'`.
- */
+const getLineScenes = (group: SceneGroup, name: string): Scene[] => {
+  const root = group.items.find((scene) => scene.name === `${name}_group`);
+  const scenes = root?.items.flatMap((facet) => facet.items) ?? [];
+  return scenes.filter((scene) => scene.name === name && scene.marktype === 'line' && scene.items.length > 0);
+};
+
+const getNearestEligiblePoint = (
+  scene: Scene,
+  x: number,
+  eligible: Map<unknown, Datum>,
+  idKey: string,
+  primarySeries?: string[] | null
+): SceneItem | undefined => {
+  const points = scene.items.filter(
+    (point) =>
+      point.datum &&
+      eligible.has(Reflect.get(point.datum, idKey)) &&
+      (!primarySeries || primarySeries.includes(Reflect.get(point.datum, SERIES_ID)))
+  );
+  let nearest: SceneItem | undefined;
+  let distance = Number.POSITIVE_INFINITY;
+  for (const point of points) {
+    const dx = Math.abs(point.x - x);
+    if (dx < distance) {
+      nearest = point;
+      distance = dx;
+    }
+  }
+  return nearest;
+};
+
+/** Picks against the rendered curve, retaining nearest-date background hover. */
 export function getAdaptiveLineHover(
   group: SceneGroup,
   x: number,
@@ -56,37 +84,19 @@ export function getAdaptiveLineHover(
   }
   const eligible = new Map(eligibleData.map((datum) => [datum[idKey], datum]));
   let nearest: SceneItem | undefined;
-  let nearestDistance = Infinity;
+  let nearestDistance = Number.POSITIVE_INFINITY;
   let hit: SceneItem | undefined;
-  const root = group.items.find((scene) => scene.name === `${name}_group`);
-  for (const facet of root?.items ?? []) {
-    for (const scene of facet.items) {
-      if (scene.name !== name || scene.marktype !== 'line' || !scene.items.length) continue;
-      const points = scene.items.filter(
-        (point) =>
-          point.datum &&
-          eligible.has(Reflect.get(point.datum, idKey)) &&
-          (!primarySeries || primarySeries.includes(Reflect.get(point.datum, SERIES_ID)))
-      );
-      let candidate: SceneItem | undefined;
-      let distance = Infinity;
-      for (const point of points) {
-        const dx = Math.abs(point.x - x);
-        if (dx < distance) {
-          candidate = point;
-          distance = dx;
-        }
-        if (dx < nearestDistance) {
-          nearest = point;
-          nearestDistance = dx;
-        }
-      }
-      if (candidate) {
-        context.lineWidth = 8;
-        context.lineCap = 'round';
-        if (context.isPointInStroke(getPath(scene), x, y)) hit = candidate;
-      }
+  for (const scene of getLineScenes(group, name)) {
+    const candidate = getNearestEligiblePoint(scene, x, eligible, idKey, primarySeries);
+    if (!candidate) continue;
+    const distance = Math.abs(candidate.x - x);
+    if (distance < nearestDistance) {
+      nearest = candidate;
+      nearestDistance = distance;
     }
+    context.lineWidth = 8;
+    context.lineCap = 'round';
+    if (context.isPointInStroke(getPath(scene), x, y)) hit = candidate;
   }
   const point = hit ?? nearest;
   const datum = point?.datum ? eligible.get(Reflect.get(point.datum, idKey)) : undefined;

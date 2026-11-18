@@ -594,7 +594,7 @@ export const getHighlightedSeriesOpacityRules = (markOptions: {
   interactiveMarkName?: string;
   isHighlightedByGroup?: boolean;
   legendHighlightSignals?: string[];
-  interactionMode?: LineMarkOptions['interactionMode'];
+  interactionMode?: NonNullable<LineMarkOptions['interactionMode']>;
 }): ProductionRule<NumericValueRef> => {
   const { interactiveMarkName, isHighlightedByGroup, legendHighlightSignals } = markOptions;
   return [
