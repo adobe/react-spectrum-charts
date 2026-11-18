@@ -230,6 +230,23 @@ describe('getLineStaticPoint()', () => {
     ]);
   });
 
+  test('keeps every static point visible during adaptive dimension hover', () => {
+    const mark = getLineStaticPoint({
+      ...defaultLineOptions,
+      interactiveMarkName: 'line0',
+      interactionMode: 'adaptive',
+    });
+    expect(mark.encode?.update).toHaveProperty(
+      'opacity',
+      expect.arrayContaining([
+        {
+          test: `line0_${HOVERED_ITEM} && line0_${HOVERED_ITEM}.rscHoverTarget === 'dimension'`,
+          value: 1,
+        },
+      ])
+    );
+  });
+
   test('should add group opacity rule when interactiveMarkName and isHighlightedByGroup are set', () => {
     const mark = getLineStaticPoint({
       ...defaultLineOptions,

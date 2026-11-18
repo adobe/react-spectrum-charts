@@ -46,6 +46,7 @@ export interface LineProps
     | 'forecasts'
     | 'hasOnClick'
     | 'hasOnContextMenu'
+    | 'hasOnMouseInput'
     | 'lineDirectLabels'
     | 'linePointAnnotations'
     | 'markType'
@@ -53,6 +54,10 @@ export interface LineProps
   children?: Children<LineChildElement>;
   /** Called with the row's data when a point is clicked. */
   onClick?: MarkCallback;
+  /** Called with the hovered point's data when entering its interaction region. */
+  onMouseOver?: MarkCallback;
+  /** Called with the point's data when leaving its interaction region. */
+  onMouseOut?: MarkCallback;
   /**
    * Called with the event and the row's data when a point is right-clicked. Use it to show a custom context menu.
    * Use `contextMenuMode` to control which marks can trigger it.

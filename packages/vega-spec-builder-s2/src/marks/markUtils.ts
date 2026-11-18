@@ -200,6 +200,7 @@ export const isInteractive = (options: {
   chartInspects?: ChartInspectOptions[];
   hasOnClick?: boolean;
   hasOnContextMenu?: boolean;
+  hasOnMouseInput?: boolean;
   hasMouseInteraction?: boolean;
   metricRanges?: MetricRangeOptions[];
   segmentLabels?: SegmentLabelOptions[];
@@ -215,6 +216,7 @@ export const isInteractive = (options: {
   return (
     hasOnClick ||
     hasOnContextMenu ||
+    options.hasOnMouseInput ||
     hasMouseInteraction ||
     hasActionBar(options) ||
     hasPopover(options) ||
@@ -540,6 +542,7 @@ export const getInteractiveMarkName = (
     chartInspects?: ChartInspectOptions[];
     hasOnClick?: boolean;
     hasOnContextMenu?: boolean;
+    hasOnMouseInput?: boolean;
     hasMouseInteraction?: boolean;
     highlightedItem?: HighlightedItem;
     metricRanges?: MetricRangeOptions[];

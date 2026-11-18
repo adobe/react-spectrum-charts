@@ -29,6 +29,7 @@ import {
 } from '@spectrum-charts/core-s2/locales';
 import { ADOBE_CLEAN_FONT } from '@spectrum-charts/core-s2/tokens';
 
+import { getAdaptiveLineHover } from '../line/adaptiveHoverUtils.js';
 import { NumberFormat } from '../types/index.js';
 import { legendSymbolShape } from './legendSymbolShape.js';
 
@@ -58,6 +59,7 @@ export const getExpressionFunctions = (
     getLabelWidth,
     hoverAnimFraction,
     hoverDeemphasisOpacity,
+    rscLineHover: getAdaptiveLineHover,
     hoverFraction,
     inspectDatum,
     isDonutLabelVisible,
@@ -404,7 +406,11 @@ export const hoverAnimFraction = (startValue: number, target: number, startTime:
  * @param key - the identity of the item being encoded
  * @returns number
  */
-export const hoverDeemphasisOpacity = (rows: HoverFractionRow[] | undefined, keyField: string, key: unknown): number => {
+export const hoverDeemphasisOpacity = (
+  rows: HoverFractionRow[] | undefined,
+  keyField: string,
+  key: unknown
+): number => {
   const fraction = hoverFraction(rows, keyField, key, HOVER_NEUTRAL_TARGET);
   return FADE_FACTOR + (1 - FADE_FACTOR) * Math.max(0, Math.min(1, fraction / HOVER_NEUTRAL_TARGET));
 };
@@ -500,7 +506,8 @@ const inspectDatums = new WeakMap<object, Map<string, object>>();
 const inspectDatumParts = new WeakMap<object, { datum: object; fields: Record<string, unknown> }>();
 
 const getInspectDatumHandler = (fields: Record<string, unknown>): ProxyHandler<object> => ({
-  get: (datum, property, receiver) => (Object.hasOwn(fields, property) ? fields[property as string] : Reflect.get(datum, property, receiver)),
+  get: (datum, property, receiver) =>
+    Object.hasOwn(fields, property) ? fields[property as string] : Reflect.get(datum, property, receiver),
   has: (datum, property) => Object.hasOwn(fields, property) || Reflect.has(datum, property),
   ownKeys: (datum) => [...new Set([...Reflect.ownKeys(datum), ...Reflect.ownKeys(fields)])],
   getOwnPropertyDescriptor: (datum, property) =>
