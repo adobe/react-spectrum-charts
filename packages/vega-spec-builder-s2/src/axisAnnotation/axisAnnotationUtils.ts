@@ -16,12 +16,19 @@ import {
   ANNOTATION_SINGLE_ICON_SVG,
   DEFAULT_AXIS_ANNOTATION_COLOR,
   DEFAULT_AXIS_ANNOTATION_OFFSET,
+  DEFAULT_TIME_DIMENSION,
   FILTERED_TABLE,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getCursor } from '../marks/markUtils.js';
-import { AxisAnnotationOptions, AxisAnnotationSpecOptions, AxisSpecOptions, ColorScheme, Position } from '../types/index.js';
+import {
+  AxisAnnotationOptions,
+  AxisAnnotationSpecOptions,
+  AxisSpecOptions,
+  ColorScheme,
+  Position,
+} from '../types/index.js';
 
 /**
  * Adds the required data for axis annotations.
@@ -33,13 +40,17 @@ import { AxisAnnotationOptions, AxisAnnotationSpecOptions, AxisSpecOptions, Colo
  */
 export const addAxisAnnotationData = (
   data: Data[],
-  { name, dataKey, color, colorScheme, options, format }: AxisAnnotationSpecOptions
+  { name, dataKey, color, colorScheme, options, format }: AxisAnnotationSpecOptions,
+  dimension = DEFAULT_TIME_DIMENSION
 ) => {
   data.push(getAxisAnnotationDetailData(name, options, colorScheme));
   if (format === 'summary') {
     data.push(getAxisAnnotationSummaryData(name, dataKey, color, colorScheme));
   } else {
-    data.push(getAxisAnnotationAggregateData(name, dataKey, color, colorScheme), getAxisAnnotationRangeData(name));
+    data.push(
+      getAxisAnnotationAggregateData(name, dataKey, color, colorScheme, dimension),
+      getAxisAnnotationRangeData(name)
+    );
   }
 };
 
@@ -48,7 +59,7 @@ const getAxisAnnotationDetailData = (name: string, options, colorScheme): Values
   return { name: `${name}_details`, values: newOptions };
 };
 
-const getAxisAnnotationAggregateData = (name, dataKey, color, colorScheme): SourceData => {
+const getAxisAnnotationAggregateData = (name, dataKey, color, colorScheme, dimension: string): SourceData => {
   return {
     name: `${name}_aggregate`,
     source: FILTERED_TABLE,
@@ -62,8 +73,9 @@ const getAxisAnnotationAggregateData = (name, dataKey, color, colorScheme): Sour
       {
         type: 'aggregate',
         groupby: [`${name}_id`],
-        fields: ['datetime', 'datetime'],
+        fields: [dimension, dimension],
         ops: ['min', 'max'],
+        as: ['min_datetime', 'max_datetime'],
       },
       {
         type: 'formula',
@@ -72,7 +84,7 @@ const getAxisAnnotationAggregateData = (name, dataKey, color, colorScheme): Sour
       },
       {
         type: 'formula',
-        expr: 'datum.width / 2 + datum.min_datetime',
+        expr: 'datum.width / 2 + toNumber(datum.min_datetime)',
         as: 'center',
       },
       {

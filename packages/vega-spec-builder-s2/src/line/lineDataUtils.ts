@@ -11,11 +11,24 @@
  */
 import { FilterTransform, SourceData } from 'vega';
 
-import { CONTROLLED_HIGHLIGHTED_ITEM, CONTROLLED_HIGHLIGHTED_SERIES, CONTROLLED_HIGHLIGHTED_TABLE, FILTERED_TABLE, GROUP_ID, HOVERED_ITEM, SELECTED_ITEM, SELECTED_SERIES, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import {
+  CONTROLLED_HIGHLIGHTED_ITEM,
+  CONTROLLED_HIGHLIGHTED_SERIES,
+  CONTROLLED_HIGHLIGHTED_TABLE,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
+  FILTERED_TABLE,
+  GROUP_ID,
+  HOVERED_ITEM,
+  LAST_RSC_SERIES_ID,
+  SELECTED_ITEM,
+  SELECTED_SERIES,
+  SERIES_ID,
+} from '@spectrum-charts/core-s2/constants';
 
 import { getEffectiveMetricField } from '../lineForecast/index.js';
 import { HoverMatchRule } from '../marks/hoverAnimationUtils.js';
 import { hasPopover, isInteractive } from '../marks/markUtils.js';
+import { getDualAxisScaleNames } from '../scale/scaleUtils.js';
 import { LineSpecOptions } from '../types/index.js';
 import { getCascadeTransforms } from './directLabelUtils.js';
 
@@ -25,6 +38,14 @@ export const getInBoundsHoverData = (options: LineSpecOptions, source: string): 
   source,
   transform: [getInPlotMetricFilter(options)],
 });
+
+export const getValidMetricFilter = (
+  options: LineSpecOptions,
+  metric = getEffectiveMetricField(options)
+): FilterTransform => {
+  const field = JSON.stringify(metric);
+  return { type: 'filter', expr: `isValid(datum[${field}]) && isFinite(datum[${field}])` };
+};
 
 /**
  * Gets a filter that keeps rows whose metric position is inside the plot.
@@ -37,10 +58,15 @@ export const getInPlotMetricFilter = (
   metric = getEffectiveMetricField(options)
 ): FilterTransform => {
   const metricScale = options.metricAxis || 'yLinear';
-  const scaledMetric = `scale('${metricScale}', datum["${metric}"])`;
+  const field = `datum[${JSON.stringify(metric)}]`;
+  let scaledMetric = `scale('${metricScale}', ${field})`;
+  if (options.dualMetricAxis) {
+    const { primaryScale, secondaryScale } = getDualAxisScaleNames(metricScale);
+    scaledMetric = `(datum.${SERIES_ID} === ${LAST_RSC_SERIES_ID} ? scale('${secondaryScale}', ${field}) : scale('${primaryScale}', ${field}))`;
+  }
   return {
     type: 'filter',
-    expr: `isValid(datum["${metric}"]) && isFinite(datum["${metric}"]) && inrange(${scaledMetric}, [0, height])`,
+    expr: `${getValidMetricFilter(options, metric).expr} && inrange(${scaledMetric}, [0, height])`,
   };
 };
 
@@ -63,6 +89,16 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
     } else {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
     }
+    if (options.interactionMode === 'adaptive') {
+      const dimension = JSON.stringify(
+        options.scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : options.dimension
+      );
+      const hovered = `${hoveredItemSignal}[${dimension}]`;
+      const value = `datum[${dimension}]`;
+      const match =
+        options.scaleType === 'time' ? `toNumber(${hovered}) === toNumber(${value})` : `${hovered} === ${value}`;
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.rscHoverTarget === 'dimension' && ${match}`;
+    }
     if (hasPopover(options)) {
       expr = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${expr}`;
     }
@@ -74,7 +110,7 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
     transform: [
       {
         type: 'filter',
-        expr,
+        expr: `${getValidMetricFilter(options).expr} && (${expr})`,
       },
     ],
   };
@@ -159,29 +195,35 @@ export const getLineStaticPointData = (
  * @param lineOptions - the line spec options containing the interactive mark name, popover mark name, combo sibling names, and whether the series is highlighted by group
  * @returns HoverMatchRule[] - the hover interaction rules
  */
-export const getLineHoverRules = (
-  { interactiveMarkName, popoverMarkName, comboSiblingNames, isHighlightedByGroup }: LineSpecOptions
-): HoverMatchRule[] => {
+export const getLineHoverRules = ({
+  interactiveMarkName,
+  popoverMarkName,
+  comboSiblingNames,
+  isHighlightedByGroup,
+  interactionMode,
+}: LineSpecOptions): HoverMatchRule[] => {
   const rules: HoverMatchRule[] = [];
 
   if (interactiveMarkName) {
     const hoveredGroupExpr = `length(data('${interactiveMarkName}_highlightedData')) ? (indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null`;
-    const hoveredItemExpr = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
+    const hoveredItemExpr = `isValid(${interactiveMarkName}_${HOVERED_ITEM})${
+      interactionMode === 'adaptive' ? ` && ${interactiveMarkName}_${HOVERED_ITEM}.rscHoverTarget !== 'dimension'` : ''
+    } ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
     const hoveredMatchExpr = isHighlightedByGroup ? hoveredGroupExpr : hoveredItemExpr;
     rules.push({ as: 'hoveredMatch', expr: hoveredMatchExpr });
   }
   const controlledTableMatchExpr = `length(data('${CONTROLLED_HIGHLIGHTED_TABLE}')) ? (indexof(pluck(data('${CONTROLLED_HIGHLIGHTED_TABLE}'), '${SERIES_ID}'), datum.${SERIES_ID}) > -1 ? 1 : 0) : null`;
   const controlledSeriesMatchExpr = `isValid(${CONTROLLED_HIGHLIGHTED_SERIES}) ? (${CONTROLLED_HIGHLIGHTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`;
   rules.push(
-    { as: 'controlledTableMatch',  expr: controlledTableMatchExpr },
-    { as: 'controlledSeriesMatch', expr: controlledSeriesMatchExpr },
+    { as: 'controlledTableMatch', expr: controlledTableMatchExpr },
+    { as: 'controlledSeriesMatch', expr: controlledSeriesMatchExpr }
   );
   if (popoverMarkName) {
     const popoverMatchExpr = `isValid(${SELECTED_SERIES}) ? (${SELECTED_SERIES} === datum.${SERIES_ID} ? 1 : 0) : null`;
     rules.push({ as: 'popoverMatch', expr: popoverMatchExpr });
   }
   if (comboSiblingNames?.length) {
-    const siblingTest = comboSiblingNames.map((s) => `isValid(${s}_${HOVERED_ITEM})`).join(' || ')
+    const siblingTest = comboSiblingNames.map((s) => `isValid(${s}_${HOVERED_ITEM})`).join(' || ');
     const comboSiblingMatchExpr = `(${siblingTest}) ? 1 : 0`;
     rules.push({ as: 'comboSiblingMatch', expr: comboSiblingMatchExpr });
   }
