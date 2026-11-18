@@ -49,6 +49,45 @@ describe('getItemBounds()', () => {
   });
 });
 
+describe('Line hover-only interaction regions', () => {
+  test('dispatches the actual point datum on enter/leave without tooltip or click handlers', async () => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [
+      { pointId: 'first', datetime: 1000, value: 10, series: 'a' },
+      { pointId: 'second', datetime: 2000, value: 20, series: 'a' },
+    ];
+    const spec = buildSpec({
+      data,
+      animations: false,
+      marks: [{ markType: 'line', color: 'series', hasOnMouseInput: true }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const container = document.createElement('div');
+    const view = new View(parse(spec), { renderer: 'svg' }).width(500).height(300).initialize(container);
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver, onMouseOut }]);
+    view.addEventListener('mouseover', callback);
+    view.addEventListener('mouseout', callback);
+    try {
+      await view.runAsync();
+      const regions = container.querySelectorAll('g.line0_voronoi path');
+      expect(regions).toHaveLength(2);
+      regions[0].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      expect(onMouseOver).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'first', value: 10 }));
+      regions[0].dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+      expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'first', value: 10 }));
+      regions[1].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      expect(onMouseOver).toHaveBeenLastCalledWith(expect.objectContaining({ pointId: 'second', value: 20 }));
+    } finally {
+      view.finalize();
+    }
+  });
+});
+
 describe('triggerPopover()', () => {
   afterEach(() => {
     document.body.innerHTML = '';

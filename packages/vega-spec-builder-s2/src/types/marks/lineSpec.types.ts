@@ -60,6 +60,8 @@ export interface LineOptions {
   hasOnClick?: boolean;
   /** `true` if LineProps has an onContextMenu callback. Ensures interactive marks are generated even without inspect/click. */
   hasOnContextMenu?: boolean;
+  /** Internal: generate interaction regions for point enter/leave callbacks. */
+  hasOnMouseInput?: boolean;
   /** Line type or key in the data that is used as the line type facet */
   lineType?: LineTypeFacet;
   /** Opacity or key in the data that is used as the opacity facet */

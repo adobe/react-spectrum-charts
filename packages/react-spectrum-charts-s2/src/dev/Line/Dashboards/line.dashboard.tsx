@@ -26,8 +26,8 @@ import {
   ReferenceLine,
   Title,
 } from '../../../components/index.js';
-import { ChartActionBar } from '../../../lab/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
+import { ChartActionBar } from '../../../lab/index.js';
 import {
   AxisProps,
   ChartActionBarProps,
@@ -1394,6 +1394,8 @@ const lineCoverage: PropCoverage<LineProps> = {
   name: ['defaults', 'named-interactive'],
   onClick: ['on-click'],
   onContextMenu: ['context-menu-interaction', 'context-menu-item', 'context-menu-dimension'],
+  onMouseOver: { skip: 'Covered by mouse-input callback tests; no dashboard variation yet' },
+  onMouseOut: { skip: 'Covered by mouse-input callback tests; no dashboard variation yet' },
   opacity: ['opacity-static', 'chart-opacities'],
   otherSeriesColor: ['other-series-color'],
   padding: ['padding-point', 'padding-time'],
