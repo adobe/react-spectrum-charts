@@ -64,7 +64,7 @@ Tests that inspect the Vega spec or scene graph have to be rewritten whenever th
 - **Action:** something done to a rendered case: hover a datum, hover a legend entry, click, press a key, resize, change props, wait for animations to settle.
 - **Check:** a function that passes or fails. Checks never read engine internals.
 - **Chart description:** an engine-neutral summary of what is drawn, produced by a small adapter (below).
-- **Reference:** what a comparison check compares against: the same case rendered from `main`.
+- **Baseline:** the committed screenshot and chart description a comparison check compares against.
 
 ### Test buckets
 
@@ -85,7 +85,7 @@ Buckets 1–7 are browser tests. Bucket 8 is where the remaining unit tests live
 
 ### The four kinds of checks
 
-1. **Comparison.** Pixels and the chart description match the reference, within a tolerance. There are no committed baseline images: the reference is always rendered from `main` (or Vega), so merging a PR updates it.
+1. **Comparison.** Pixels and the chart description match the baseline, within a tolerance.
 2. **Invariants.** Rules that hold for any case, so generated cases need no hand-written expected results. The starting set:
    - one mark per non-null datum;
    - no overlapping labels;
@@ -94,8 +94,10 @@ Buckets 1–7 are browser tests. Bucket 8 is where the remaining unit tests live
    - legend entries match the drawn series;
    - hovering never changes the plot area or container size;
    - dimmed and highlighted items match the highlight state.
-3. **Equivalence.** Two routes to the same state must give the same chart description and pixels. These need no reference and target the largest bug groups:
-   - animated and settled = not animated;
+3. **Equivalence.** Two routes to the same state must give the same chart description and pixels. These need no baseline and target the largest bug groups:
+   - animated, settled = the clock jumped straight to the end;
+   - reduced motion, settled = animated, settled;
+   - interrupted transition, settled = going straight to the final state;
    - controlled `highlightedItem` = hovering that item;
    - after leaving = never hovered;
    - every hover path (mark, gap, axis label, legend entry) gives the same highlight state;
@@ -145,7 +147,8 @@ export const lineMatrix = defineMatrix({
     interpolate: { linear: {}, basis: {...} },
     child: { none: {}, trendline: {...}, metricRange: {...} },
     legend: { none: {}, highlight: {...}, toggle: {...} },
-    animations: { on: {...}, off: {...} },
+    motion: { animated: {}, reduced: {...} },
+    interrupt: { none: {}, hoverDuringDrawIn: {...}, leaveMidHover: {...}, dataUpdateMidway: {...} },
     size: { tiny: {...}, default: {...} },
   },
   constraints: [(c) => !(c.data === 'single' && c.interpolate === 'basis')],
@@ -155,9 +158,9 @@ export const lineMatrix = defineMatrix({
 generateCases(lineMatrix, { strength: 2, seed });
 ```
 
-- **Case IDs are the values**, e.g. `line/data=gaps/interactivity=highlightedOnly/animations=off/...`, so a failure names the settings that broke.
+- **Case IDs are the values**, e.g. `line/data=gaps/interactivity=highlightedOnly/motion=reduced/...`, so a failure names the settings that broke.
 - **Fixed seed**, so every PR run generates the same cases. A different seed generates a different set that still covers every pair.
-- **`strength: 3`** for high-risk dimension groups (interactivity × highlight × children × animations) and for small charts like Bullet.
+- **`strength: 3`** for high-risk dimension groups (interactivity × highlight × children × motion) and for small charts like Bullet.
 - Style-only props (`lineWidth`, `opacity`, `lineCap`) stay out of the matrix and get one case each.
 
 Estimated counts, with 9–14 dimensions per chart:
@@ -178,27 +181,43 @@ Every Line-related bug listed under Motivation involved two settings and would b
 
 **Chart-specific checks.** Each chart type may add 1–3 invariants of its own, such as donut labels outside the ring, bars in a group not overlapping, or a Bullet target at its value.
 
+### Rendering and runner
+
+```
+yarn test:visual [--bucket interaction] [--case <id>] [--seed <seed>] [--update]
+```
+
+- Cases are built once into a static page (no dev server, no Storybook) that exposes `renderCase(id, options)`. It resolves when the chart has rendered and fonts are loaded.
+- Each worker keeps one browser page open and renders cases in it without reloading. Only the chart element (plus any open popover or tooltip) is captured.
+- Baselines are committed next to the cases and are only generated inside the pinned container (`--update`), never on a developer's machine.
+- Writes a JSON report and an HTML report: case ID, bucket, status, failed checks, pixels changed, baseline/current/diff images, and chart-description differences (e.g. "`line` series `s2` opacity 1 → 0.4"). Identical differences across cases (e.g. from a token change) are grouped so they're reviewed once.
+- Re-running one case takes seconds, so an agent can iterate on a failure.
+
+### Interactions
+
+- Steps use real mouse and keyboard input, so hover areas and hit-testing are exercised. Targets are named by datum or legend entry (e.g. `{ hover: { series: 's2', index: 5 } }`) and located through the chart description, never by fixed coordinates.
+- After each step the runner waits for the chart to settle, then takes any requested screenshot and runs the checks.
+
+### Animations
+
+Animations are on by default, so every case runs animated. The browser's clock (`requestAnimationFrame`, `Date.now`, `performance.now`) is replaced with a fake one that the runner advances, so every frame is reproducible without changes to RSC.
+
+- **Every frame, checks only (all cases):** the runner steps through each transition and records the chart description per frame. Frame checks: starts where it was, ends where it should, values move only toward their target, no single-frame jumps, finishes within its duration, layout stays still, nothing invalid or outside the clip, and hover still works mid-transition.
+- **Key-frame screenshots** at 0%, 50% and 100% for draw-in and hover cases.
+- **Interruptions** (hover during draw-in, leave mid-hover, data update or resize midway) are a matrix dimension.
+- **Frame timing** varies (regular, slow, uneven) on regression and interaction cases; results must be identical.
+- **Reduced motion** (emulated OS setting) is a matrix value class, since real users get that path.
+
 ### Determinism
 
-- Fonts are loaded before any capture, and CI renders in a pinned container image so fonts and anti-aliasing match.
-- Animations run on a fixed clock, so a test can capture any frame or the settled state.
-- Data and dates in cases are fixed. Random data comes only from a seeded generator.
-- Pixel comparison uses a tolerance and reports the changed area, not just pass or fail.
-
-### Runner and report
-
-```
-yarn test:visual [--base main] [--bucket interaction] [--case <id>] [--seed <seed>]
-```
-
-- Runs in Playwright against a small case-rendering page (`/case/<id>`). It doesn't depend on Storybook; existing stories can be loaded as cases.
-- Writes a JSON report: case ID, bucket, status, failed checks, percentage of pixels changed, paths to reference, current and diff images, and chart-description differences (e.g. "`line` series `s2` opacity 1 → 0.4").
-- Reference renders for `main` are cached as CI artifacts per commit, so a PR run renders only its own branch.
-- Re-running one case takes seconds, so an agent can iterate on a failure.
+- A pinned container image with local fonts, used in CI and for `--update`.
+- Fake clock for all animation.
+- Fixed data and dates. Random data comes only from a seeded generator.
+- Pixel comparison uses a tolerance and anti-aliasing detection; a test that passes on retry is reported as flaky.
 
 ### When it runs
 
-The whole suite runs on every PR with a fixed seed: pinned regression cases, the pairwise matrices, 3-way groups, sweeps and accessibility. The estimate is 8–12 minutes on 4 CI workers. If that becomes too slow, PRs can run only the chart types a change affects, plus every pinned regression case.
+The whole suite runs on every PR with a fixed seed: pinned regression cases, the pairwise matrices, 3-way groups, sweeps and accessibility. The estimate is a few minutes on 4 CI workers; the pilot will measure it. If that becomes too slow, PRs can run only the chart types a change affects, plus every pinned regression case.
 
 A scheduled run with a new seed each time could later widen coverage beyond the fixed pairwise set (see Open Questions).
 
@@ -217,7 +236,7 @@ New tests that assert the structure of the generated spec are no longer added. E
 
 ### Agent workflow
 
-The JSON report and per-case URLs are the interface for agents. An agent can run the suite, read a failure, open the case side by side with its reference, use the chart description to find the mark that changed, fix the code, and re-run that one case. The same case-rendering page and chart-description adapters can back the team's interactive agent sandbox, so there is one implementation of each.
+The JSON report and per-case URLs are the interface for agents. An agent can run the suite, read a failure, open the case side by side with its baseline, use the chart description to find the mark that changed, fix the code, and re-run that one case. The same case-rendering page and chart-description adapters can back the team's interactive agent sandbox, so there is one implementation of each.
 
 ### Relationship to the S2 chart stability RFC
 
@@ -227,15 +246,17 @@ The JSON report and per-case URLs are the interface for agents. An agent can run
 
 | Issue | Description                                                                                                              |
 | ----- | ------------------------------------------------------------------------------------------------------------------------ |
-| new   | Case format, case-rendering page, and Playwright runner with JSON report                                                 |
+| new   | Case format, static case page, and runner with JSON and HTML reports                                                     |
 | new   | Vega chart-description adapter                                                                                           |
 | new   | Shared invariant checks (starting set above)                                                                             |
 | new   | Shared equivalence checks                                                                                                |
 | new   | Pairwise generator with constraints, seeds and strength                                                                  |
 | new   | Line matrix and Line-specific checks (pilot)                                                                             |
 | new   | Pinned cases for every open bug issue and recent fix PR                                                                  |
-| new   | `main` reference caching in CI and the PR workflow                                                                       |
-| new   | Determinism: fixed animation clock, font loading, pinned container image                                                 |
+| new   | Committed baselines, container-only update command, and the PR workflow                                                  |
+| new   | Determinism: pinned container image with local fonts                                                                     |
+| new   | Fake clock, frame checks, key-frame screenshots, and interruption and reduced-motion value classes                       |
+| new   | Interaction steps with datum-based targets                                                                               |
 | new   | Matrices for Bar, Donut, Scatter, Area, Bullet and Combo                                                                 |
 | new   | Donut width sweeps                                                                                                       |
 | new   | Update `AGENTS.md` and the `fixing-bugs`, `adding-props` and related skills to add cases instead of spec-structure tests |
@@ -244,7 +265,7 @@ Pilot first: the runner, the Vega adapter, three checks (no errors, hover doesn'
 
 ## Cross-Cutting Concerns
 
-- **Hover animation:** every interaction case runs with animations on and off; settled-animated = not-animated is a core equivalence check.
+- **Hover animation:** every interaction step is checked frame by frame; reduced motion is a value class.
 - **Controlled highlight:** controlled = hovered is a core equivalence check; `highlightedItem`-only is a value class in every matrix.
 - **Legend interaction:** legend hover, highlight and toggle are value classes; the legend-matches-series invariant applies everywhere.
 - **Tooltip/popover:** behavior checks for content, and "every hover path agrees" covers which target opens them.
@@ -259,7 +280,8 @@ Pilot first: the runner, the Vega adapter, three checks (no errors, hover doesn'
 ## Drawbacks
 
 - Browser tests are slower and can be flaky. Determinism work and advisory pixel checks reduce this but don't remove it.
-- Intentional visual changes (a token update) can produce hundreds of diffs to review.
+- Intentional visual changes (a token update) change hundreds of baselines. Grouping identical differences keeps the review to one item per change.
+- Committed baselines add images to the repo (roughly 25 MB for 800 cases).
 - Each new behavior-changing prop needs a matrix entry, which adds a little work per feature (intentionally).
 - Pairwise coverage misses bugs that need three or more settings together, unless they are in a 3-way group.
 - About 6–8 weeks of work for one person before the full suite exists. The pilot is about 2 weeks.
@@ -272,7 +294,9 @@ No public API changes. Tests and tooling only.
 
 - **Hosted visual testing tied to Storybook (e.g. Chromatic).** Rejected: the team doesn't want to depend on Storybook or an outside service, and it gives pixel diffs only, without invariants or equivalence checks.
 - **Vega scene-graph snapshots.** Fast and precise, but Vega-specific. Kept only as the Vega adapter's input.
-- **Committed baseline images.** Rejected in favor of rendering the reference from `main`, which avoids baseline churn and merge conflicts.
+- **Rendering `main` as the reference on every run.** No images in git, but roughly doubles rendering time.
+- **Rendering without a browser (SVG to PNG in Node).** Fastest and fully deterministic, but skips the React layer, can't test interactions, and is tied to Vega.
+- **Switching browser drivers for speed.** Drivers take about the same time per screenshot; the cost is in the setup (dev server, page reloads, waiting on animations), which this design removes.
 - **Exhaustive or hand-picked prop combinations.** Exhaustive is millions of cases per chart; hand-picked misses the combinations nobody thought of, which is how #985–#998 shipped.
 - **AI vision review as a gate.** Not deterministic. Possible later as an advisory step that sorts expected from unexpected diffs.
 - **Keep investing in unit tests.** They don't catch the bug groups above and break when the implementation is refactored.
@@ -283,9 +307,10 @@ No public API changes. Tests and tooling only.
 2. Does S1 need any coverage, given it is in maintenance mode?
 3. When do pixel comparisons become blocking, and at what tolerance?
 4. Which existing unit tests are removed first, and on what schedule?
-5. Which CI runner and container image do we standardize on for consistent fonts?
+5. Which container image do we standardize on, and can Adobe Clean be bundled in it (it currently loads from Typekit)? If not, do tests use an open font?
 6. Should the stability RFC's validation switch from scene-graph comparison to the chart description?
 7. Should we add a scheduled run (for example nightly) that uses a new seed each time, to cover more combinations than the fixed PR set?
+8. Which browser driver runs the tests? Playwright is already a dependency; Puppeteer is the alternative.
 
 ## Help Needed
 
