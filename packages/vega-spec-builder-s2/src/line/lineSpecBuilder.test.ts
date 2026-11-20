@@ -636,20 +636,27 @@ const metricRangeGroupMark = {
       interactive: false,
       encode: {
         update: {
-          y: {
-            field: 'start',
-            scale: 'yLinear',
-          },
-          y2: {
-            field: 'end',
-            scale: 'yLinear',
-          },
+          y: [
+            {
+              field: 'start',
+              scale: 'yLinear',
+            },
+          ],
+          y2: [
+            {
+              field: 'end',
+              scale: 'yLinear',
+            },
+          ],
           fill: {
             scale: COLOR_SCALE,
             field: 'series',
           },
           tooltip: undefined,
-          defined: { signal: 'isValid(datum["start"]) || isValid(datum["end"])' },
+          defined: {
+            signal:
+              'isValid(datum["start"]) && isFinite(datum["start"]) && isValid(datum["end"]) && isFinite(datum["end"])',
+          },
           cursor: undefined,
           x: {
             scale: 'xTime',
