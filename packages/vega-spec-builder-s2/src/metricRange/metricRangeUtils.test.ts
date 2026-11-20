@@ -58,6 +58,7 @@ const defaultMetricRangeSpecOptions: MetricRangeSpecOptions = {
 };
 
 const defaultLineOptions: LineSpecOptions = {
+  connectAlternateSegments: true,
   chartActionBars: [],
   chartPopovers: [],
   chartInspects: [],

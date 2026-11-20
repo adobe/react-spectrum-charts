@@ -20,6 +20,7 @@ import {
 import { LineSpecOptions, TrendlineSpecOptions } from '../types/index.js';
 
 export const defaultLineOptions: LineSpecOptions = {
+  connectAlternateSegments: true,
   chartActionBars: [],
   chartPopovers: [],
   chartInspects: [],
