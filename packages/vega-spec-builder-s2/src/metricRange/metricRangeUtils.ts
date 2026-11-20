@@ -121,6 +121,7 @@ export const getMetricRangeMark = (
     displayOnHover: metricRangeOptions.displayOnHover,
     isHoverAnimate: false,
     isDrawInAnimate: false,
+    ...(metricRangeOptions.lineOpacity === undefined ? {} : { opacity: { value: metricRangeOptions.lineOpacity } }),
   };
 
   const dataSource = `${metricRangeOptions.name}_facet`;
