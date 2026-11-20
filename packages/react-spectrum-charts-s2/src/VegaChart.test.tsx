@@ -17,6 +17,7 @@ import { ANIMATION_TIMER } from '@spectrum-charts/core-s2/constants';
 
 import { VegaChart, VegaChartProps } from './VegaChart.js';
 import { attachAnimationTicker } from './animation/animationTicker.js';
+import { ChartGeometryEvent } from './types/chart.types.js';
 import { resizeView } from './viewHost/index.js';
 
 jest.mock('vega-embed');
@@ -138,6 +139,80 @@ describe('VegaChart init render cycle', () => {
       mockRunAsync.mockReset().mockResolvedValue(undefined);
       mockEmbed.mockResolvedValue({ view: createMockView() } as unknown as Awaited<ReturnType<typeof embed>>);
       mockAttachAnimationTicker.mockReturnValue(mockDetachAnimationTicker);
+    });
+
+    test('publishes geometry only for the settled current generation, including projection-only updates', async () => {
+      const spec: Spec = {
+        scales: [{ name: 'x', type: 'linear', domain: [0, 100], range: 'width' }],
+        axes: [{ orient: 'bottom', scale: 'x' }],
+      };
+      const view = new View(parse(spec), { renderer: 'none' }).width(800).height(600);
+      const run = view.runAsync.bind(view);
+      let finishSecondPass: () => void = () => {};
+      jest
+        .spyOn(view, 'runAsync')
+        .mockImplementationOnce(() => run())
+        .mockImplementationOnce(
+          () =>
+            new Promise<View>((resolve) => {
+              finishSecondPass = () => {
+                void run().then(resolve);
+              };
+            })
+        );
+      mockEmbed.mockResolvedValue({ view } as Awaited<ReturnType<typeof embed>>);
+      const order: string[] = [];
+      const onGeometryChange = jest.fn<void, [ChartGeometryEvent]>(() => {
+        order.push('geometry');
+      });
+      const onRenderComplete = jest.fn(() => order.push('complete'));
+      const shared = { ...defaultProps, spec, onGeometryChange, onRenderComplete };
+      const { rerender, unmount } = render(
+        <VegaChart {...shared} axisProjections={[{ id: 'old', position: 'bottom', value: 20 }]} />
+      );
+      await waitFor(() => expect(view.runAsync).toHaveBeenCalledTimes(2));
+      expect(onGeometryChange).not.toHaveBeenCalled();
+      rerender(<VegaChart {...shared} axisProjections={[{ id: 'current', position: 'bottom', value: 30 }]} />);
+      await act(async () => finishSecondPass());
+      await waitFor(() => expect(onGeometryChange).toHaveBeenCalledTimes(1));
+      expect(onGeometryChange.mock.calls[0][0]).toMatchObject({
+        generation: 2,
+        projections: [{ id: 'current', coordinate: expect.any(Number) }],
+      });
+      expect(order).toEqual(['geometry', 'complete']);
+      expect(mockEmbed).toHaveBeenCalledTimes(1);
+      unmount();
+    });
+
+    test('surfaces projection failures without publishing render completion', async () => {
+      const spec: Spec = {
+        scales: [{ name: 'x', type: 'linear', domain: [0, 100], range: 'width' }],
+        axes: [{ orient: 'bottom', scale: 'x' }],
+      };
+      const view = new View(parse(spec), { renderer: 'none' }).width(800).height(600);
+      mockEmbed.mockResolvedValue({ view } as Awaited<ReturnType<typeof embed>>);
+      const onRenderComplete = jest.fn();
+      const onRenderError = jest.fn();
+      const { unmount } = render(
+        <VegaChart
+          {...defaultProps}
+          spec={spec}
+          axisProjections={[{ id: 'invalid', position: 'bottom', value: NaN }]}
+          onRenderError={onRenderError}
+          onRenderComplete={onRenderComplete}
+        />
+      );
+      await waitFor(() =>
+        expect(onRenderError).toHaveBeenCalledWith(
+          expect.objectContaining({
+            phase: 'resize',
+            generation: 1,
+            error: expect.any(Error),
+          })
+        )
+      );
+      expect(onRenderComplete).not.toHaveBeenCalled();
+      unmount();
     });
 
     test('completes only after both asynchronous resize passes', async () => {
