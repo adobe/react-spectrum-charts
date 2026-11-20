@@ -51,6 +51,7 @@ import {
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
 import { getControlledHighlightedItemOpacityRule } from '../chartInspect/chartInspectUtils.js';
+import { buildSpec } from '../chartSpecBuilder.js';
 import { getRowKeyField, getRowKeyTransforms } from '../data/rowKeyUtils.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { baseData, initializeSpec } from '../specUtils.js';
@@ -299,6 +300,43 @@ const defaultSpec: ScSpec = {
 };
 
 describe('barSpecBuilder', () => {
+  describe('fixed dualMetricAxis ranges', () => {
+    test.each(['vertical', 'horizontal'] as const)(
+      'applies independent metric ranges to %s dodged bars',
+      (orientation) => {
+        const horizontal = orientation === 'horizontal';
+        const primaryRange: [number, number] = [5, 25];
+        const secondaryRange: [number, number] = [500, 3000];
+        const scaleName = horizontal ? 'xLinear' : 'yLinear';
+        const spec = buildSpec({
+          data: [
+            { category: 'January', series: 'A', value: 10 },
+            { category: 'January', series: 'B', value: 1000 },
+            { category: 'February', series: 'A', value: 20 },
+            { category: 'February', series: 'B', value: 2000 },
+          ],
+          axes: [
+            { position: horizontal ? 'bottom' : 'left', range: primaryRange },
+            { position: horizontal ? 'top' : 'right', range: secondaryRange },
+            { position: horizontal ? 'left' : 'bottom' },
+          ],
+          marks: [{ markType: 'bar', type: 'dodged', color: 'series', dualMetricAxis: true, orientation }],
+        });
+
+        expect(spec.scales?.find(({ name }) => name === `${scaleName}Primary`)).toMatchObject({
+          domain: primaryRange,
+          nice: false,
+          zero: false,
+        });
+        expect(spec.scales?.find(({ name }) => name === `${scaleName}Secondary`)).toMatchObject({
+          domain: secondaryRange,
+          nice: false,
+          zero: false,
+        });
+      }
+    );
+  });
+
   describe('addBar()', () => {
     test('no options with draw-in off', () => {
       expect(addBar(startingSpec, { idKey: MARK_ID, markType: 'bar', animationTypes: ['hover'] })).toStrictEqual(
