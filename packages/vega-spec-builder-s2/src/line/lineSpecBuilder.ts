@@ -18,6 +18,7 @@ import {
   DEFAULT_COLOR_SCHEME,
   DEFAULT_METRIC,
   DEFAULT_TIME_DIMENSION,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   INTERACTION_MODE,
   LAST_RSC_SERIES_ID,
@@ -352,7 +353,7 @@ const addDimensionHoverGroupTransform = (
 const addSegmentData = (data: Data[], tableData: Data, options: LineSpecOptions): void => {
   const { alternateSegmentKey, dimension, forecasts, metric, name, primarySeries, scaleType } = options;
   // time data was transformed above, so we need to use the transformed dimension
-  const dimSortField = scaleType === 'time' ? `${dimension}0` : dimension;
+  const dimSortField = scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : dimension;
   if (alternateSegmentKey) {
     tableData.transform = tableData.transform ?? [];
     tableData.transform.push({ type: 'formula', as: `${name}_alternateFlag`, expr: `datum["${alternateSegmentKey}"]` });
