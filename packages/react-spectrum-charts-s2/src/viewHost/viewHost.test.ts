@@ -221,12 +221,16 @@ describe('createViewHost()', () => {
     host.destroy();
 
     expect(adapter.createView).toHaveBeenCalledTimes(1);
-    expect(adapter.startView).toHaveBeenCalledWith(view);
-    expect(adapter.updateView).toHaveBeenCalledWith(view, {
-      signals: [],
-      table: [{ x: 2 }],
-      size: { width: 500, height: 300 },
-    });
+    expect(adapter.startView).toHaveBeenCalledWith(view, expect.any(Function));
+    expect(adapter.updateView).toHaveBeenCalledWith(
+      view,
+      {
+        signals: [],
+        table: [{ x: 2 }],
+        size: { width: 500, height: 300 },
+      },
+      expect.any(Function)
+    );
     expect(adapter.destroyView).toHaveBeenCalledWith(view);
     expect(embedSpy).not.toHaveBeenCalled();
   });

@@ -89,16 +89,17 @@ export const splitSpec = (spec: Spec): SplitSpec => {
  * @param width - new width
  * @param height - new height
  */
-export const resizeView = (view: View | undefined, width: number, height: number): void => {
+export const resizeView = async (
+  view: View | undefined,
+  width: number,
+  height: number,
+  isCurrent: () => boolean = () => true
+): Promise<void> => {
   if (view && width && height) {
     // Two passes: first updates width/height signals; second lets Vega re-settle layout
     // after dependent changes (e.g. legend column count → legend height → plot area height).
-    void view
-      .width(width)
-      .height(height)
-      .resize()
-      .runAsync()
-      .then(() => view.runAsync());
+    await view.width(width).height(height).resize().runAsync();
+    if (isCurrent()) await view.runAsync();
   }
 };
 
@@ -153,13 +154,11 @@ export const vegaViewAdapter: ViewAdapter<Spec, View, VegaEnvironment> = {
     previous === next ||
     (previous.tooltip === next.tooltip && serializeEnvironment(previous) === serializeEnvironment(next)),
   createView,
-  startView: (view) => {
-    view.resize();
-    void view.runAsync();
-    // One additional render to settle all resize calculations
-    setTimeout(() => view.runAsync(), 0);
+  startView: async (view, isCurrent = () => true) => {
+    await view.resize().runAsync();
+    if (isCurrent()) await view.runAsync();
   },
-  updateView: (view, { signals, table, size }) => {
+  updateView: async (view, { signals, table, size }, isCurrent = () => true) => {
     for (const [name, value] of signals) {
       view.signal(name, value);
     }
@@ -172,13 +171,11 @@ export const vegaViewAdapter: ViewAdapter<Spec, View, VegaEnvironment> = {
       );
     }
     if (size) {
-      resizeView(view, size.width, size.height);
+      await resizeView(view, size.width, size.height, isCurrent);
       return;
     }
-    view
-      .resize()
-      .runAsync()
-      .catch((error: unknown) => console.error('Failed to update chart:', error));
+    await view.resize().runAsync();
+    if (isCurrent()) await view.runAsync();
   },
   destroyView: (view) => view.finalize(),
 };

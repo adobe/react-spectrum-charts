@@ -47,6 +47,10 @@ export interface VegaChartProps {
   height: number;
   locale: ChartProps['locale'];
   onNewView: (view: View) => void;
+  renderId?: NonNullable<ChartProps['renderId']>;
+  onRenderStart?: NonNullable<ChartProps['onRenderStart']>;
+  onRenderComplete?: NonNullable<ChartProps['onRenderComplete']>;
+  onRenderError?: NonNullable<ChartProps['onRenderError']>;
   padding: Padding;
   renderer: Renderers;
   signals?: Record<string, unknown>;
@@ -63,6 +67,10 @@ export const VegaChart: FC<VegaChartProps> = ({
   height,
   locale,
   onNewView,
+  renderId,
+  onRenderStart,
+  onRenderComplete,
+  onRenderError,
   padding,
   renderer = 'svg',
   signals,
@@ -72,6 +80,9 @@ export const VegaChart: FC<VegaChartProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const host = useRef<ViewHost | undefined>(undefined);
+  const generation = useRef(0);
+  const callbacks = useRef({ onRenderStart, onRenderComplete, onRenderError });
+  callbacks.current = { onRenderStart, onRenderComplete, onRenderError };
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
@@ -104,6 +115,8 @@ export const VegaChart: FC<VegaChartProps> = ({
 
   // the host compares what changed and rebuilds the view, updates it in place, resizes it or does nothing
   useEffect(() => {
+    const event = { generation: ++generation.current, renderId };
+    if (width && height) callbacks.current.onRenderStart?.(event);
     host.current?.update({
       environment: { config, locale, padding, renderer, tooltip },
       height,
@@ -112,8 +125,18 @@ export const VegaChart: FC<VegaChartProps> = ({
       spec,
       table: chartData.table,
       width,
+      onRenderComplete: () => {
+        callbacks.current.onRenderComplete?.(event);
+      },
+      onRenderError: (error, phase) => {
+        if (callbacks.current.onRenderError) {
+          callbacks.current.onRenderError({ ...event, phase, error });
+        } else {
+          console.error('Failed to render chart:', error);
+        }
+      },
     });
-  }, [chartData.table, config, height, locale, onNewView, padding, renderer, signals, spec, tooltip, width]);
+  }, [chartData.table, config, height, locale, onNewView, padding, renderId, renderer, signals, spec, tooltip, width]);
 
   return <div ref={containerRef} className="rsc"></div>;
 };
