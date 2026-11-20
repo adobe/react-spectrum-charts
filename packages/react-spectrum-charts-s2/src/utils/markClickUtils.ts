@@ -13,7 +13,13 @@ import { RefObject } from 'react';
 
 import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
-import { COMPONENT_NAME, DIMENSION_FIELD, FILTERED_TABLE, GROUP_DATA, SERIES_ID } from '@spectrum-charts/core-s2/constants';
+import {
+  COMPONENT_NAME,
+  DIMENSION_FIELD,
+  FILTERED_TABLE,
+  GROUP_DATA,
+  SERIES_ID,
+} from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
 import type { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails.js';
@@ -88,7 +94,11 @@ const handleMarkClick = (
 };
 
 /** @returns whether a matching popover button was actually found and clicked. */
-export const triggerPopover = (chartId: string, itemName: string | undefined, trigger: 'click' | 'contextmenu'): boolean => {
+export const triggerPopover = (
+  chartId: string,
+  itemName: string | undefined,
+  trigger: 'click' | 'contextmenu'
+): boolean => {
   if (!itemName) return false;
   const button = document.querySelector(
     `#${chartId} > div > #${itemName}-${trigger === 'contextmenu' ? 'contextmenu' : 'popover'}-button`
@@ -148,14 +158,18 @@ export const getOnChartMarkContextMenuCallback = (
     const itemName = getItemName(item);
     const detail = markClickDetails.find((d) => d.markName === itemName);
     if (detail?.onContextMenu && contextMenuModeAllowsMark(detail.contextMenuMode, fullMarkName)) {
-      const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+      const nativeEvent =
+        (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
       let datum = item.datum;
       if (fullMarkName.endsWith('_xAxisVoronoi')) {
         const dimensionField = datum[DIMENSION_FIELD] as string;
         if (dimensionField) {
           const dimensionValue = toComparableValue(datum[dimensionField]);
           const tableData = chartView.current.data(FILTERED_TABLE);
-          datum = { ...datum, [GROUP_DATA]: tableData.filter((d) => toComparableValue(d[dimensionField]) === dimensionValue) };
+          datum = {
+            ...datum,
+            [GROUP_DATA]: tableData.filter((d) => toComparableValue(d[dimensionField]) === dimensionValue),
+          };
         }
       }
       detail.onContextMenu(nativeEvent, datum);
@@ -169,9 +183,7 @@ export const getOnChartMarkContextMenuCallback = (
  * @param axisLabelOnClickDetails - The details for all axes with the onClick prop.
  * @returns The callback for axis label click events.
  */
-export const getOnAxisLabelClickCallback = (
-  axisLabelOnClickDetails?: AxisLabelOnClickDetail[]
-): ViewEventCallback => {
+export const getOnAxisLabelClickCallback = (axisLabelOnClickDetails?: AxisLabelOnClickDetail[]): ViewEventCallback => {
   return (event, item) => {
     if (!item || !axisLabelOnClickDetails?.length || !isAxisLabelItem(item)) return;
 
@@ -182,7 +194,8 @@ export const getOnAxisLabelClickCallback = (
     if (datum.index < 0 || datum.value === undefined) return;
 
     const index = getAxisLabelIndex(item, datum.index);
-    const nativeEvent = (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
+    const nativeEvent =
+      (event as unknown as { sourceEvent?: MouseEvent }).sourceEvent ?? (event as unknown as MouseEvent);
     axisLabelOnClickDetails.find((detail) => detail.markName === itemName)?.onClick?.(nativeEvent, datum.value, index);
   };
 };
@@ -233,7 +246,7 @@ const userDidNotClickOnLegend = (item: unknown): item is Item & SceneItem => {
 
 /**
  * Handles mark mouse input events (mouseover/mouseout)
- * Supports bar and scatter marks.
+ * Supports bar, line, and scatter interaction marks.
  * @param event
  * @param item
  * @param markMouseInputDetails

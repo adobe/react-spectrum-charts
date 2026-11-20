@@ -24,6 +24,7 @@ import {
   getOnAxisLabelClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
+  getOnMouseInputCallback,
   handleLegendItemClick,
   handleLegendItemMouseInput,
   triggerPopover,
@@ -45,6 +46,45 @@ describe('getItemBounds()', () => {
   test('should return default bounds if null or undefined', () => {
     expect(getItemBounds(null)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
     expect(getItemBounds(undefined)).toStrictEqual({ x1: 0, x2: 0, y1: 0, y2: 0 });
+  });
+});
+
+describe('Line hover-only interaction regions', () => {
+  test('dispatches the actual point datum on enter/leave without tooltip or click handlers', async () => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [
+      { pointId: 'first', datetime: 1000, value: 10, series: 'a' },
+      { pointId: 'second', datetime: 2000, value: 20, series: 'a' },
+    ];
+    const spec = buildSpec({
+      data,
+      animations: false,
+      marks: [{ markType: 'line', color: 'series', hasOnMouseInput: true }],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const container = document.createElement('div');
+    const view = new View(parse(spec), { renderer: 'svg' }).width(500).height(300).initialize(container);
+    const onMouseOver = jest.fn();
+    const onMouseOut = jest.fn();
+    const callback = getOnMouseInputCallback(undefined, [{ markName: 'line0', onMouseOver, onMouseOut }]);
+    view.addEventListener('mouseover', callback);
+    view.addEventListener('mouseout', callback);
+    try {
+      await view.runAsync();
+      const regions = container.querySelectorAll('g.line0_voronoi path');
+      expect(regions).toHaveLength(2);
+      regions[0].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      expect(onMouseOver).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'first', value: 10 }));
+      regions[0].dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+      expect(onMouseOut).toHaveBeenCalledWith(expect.objectContaining({ pointId: 'first', value: 10 }));
+      regions[1].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      expect(onMouseOver).toHaveBeenLastCalledWith(expect.objectContaining({ pointId: 'second', value: 20 }));
+    } finally {
+      view.finalize();
+    }
   });
 });
 
@@ -272,82 +312,77 @@ describe('getOnMarkClickCallback() mark click with markHasPopover', () => {
 
 describe('donut label popovers', () => {
   test.each(
-    [
-      { value: false },
-      { value: true },
-      { percent: true, swatch: true, showValueRow: true, showTotal: true },
-    ].flatMap((label) => (['click', 'contextmenu'] as const).map((trigger) => ({ label, trigger })))
-  )(
-    'routes every label row and swatch to the donut popover: %o',
-    async ({ label, trigger }) => {
-      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
-      expressionFunction('rscContainerWidth', (width: number) => width);
-      const data = [
-        { series: 'Chrome', value: 70 },
-        { series: 'Safari', value: 30 },
-      ];
-      const spec = buildSpec({
-        data,
-        animations: false,
-        marks: [
-          {
-            markType: 'donut',
-            color: 'series',
-            segmentLabels: [label],
-            chartPopovers: [{ rightClick: trigger === 'contextmenu' }],
-          },
-        ],
-      });
-      const table = spec.data?.find(({ name }) => name === TABLE);
-      if (!table || !('values' in table)) throw new Error('Expected inline table data');
-      table.values = data;
-      const container = document.createElement('div');
-      const view = new View(parse(spec), { renderer: 'svg' }).width(500).height(500).initialize(container);
-      const selectedData: GetOnMarkClickCallbackArgs['selectedData'] = { current: null };
-      const buttonId = trigger === 'contextmenu' ? 'donut0-contextmenu-button' : 'donut0-popover-button';
-      document.body.innerHTML = `<div id="test"><div><button id="${buttonId}"></button></div></div>`;
-      const button = document.getElementById(buttonId);
-      if (!button) throw new Error('Expected the popover trigger button');
-      const onOpen = jest.fn();
-      button.addEventListener('click', onOpen);
-      view.addEventListener(
+    [{ value: false }, { value: true }, { percent: true, swatch: true, showValueRow: true, showTotal: true }].flatMap(
+      (label) => (['click', 'contextmenu'] as const).map((trigger) => ({ label, trigger }))
+    )
+  )('routes every label row and swatch to the donut popover: %o', async ({ label, trigger }) => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [
+      { series: 'Chrome', value: 70 },
+      { series: 'Safari', value: 30 },
+    ];
+    const spec = buildSpec({
+      data,
+      animations: false,
+      marks: [
+        {
+          markType: 'donut',
+          color: 'series',
+          segmentLabels: [label],
+          chartPopovers: [{ rightClick: trigger === 'contextmenu' }],
+        },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const container = document.createElement('div');
+    const view = new View(parse(spec), { renderer: 'svg' }).width(500).height(500).initialize(container);
+    const selectedData: GetOnMarkClickCallbackArgs['selectedData'] = { current: null };
+    const buttonId = trigger === 'contextmenu' ? 'donut0-contextmenu-button' : 'donut0-popover-button';
+    document.body.innerHTML = `<div id="test"><div><button id="${buttonId}"></button></div></div>`;
+    const button = document.getElementById(buttonId);
+    if (!button) throw new Error('Expected the popover trigger button');
+    const onOpen = jest.fn();
+    button.addEventListener('click', onOpen);
+    view.addEventListener(
+      trigger,
+      getOnMarkClickCallback({
+        ...defaultMarkClickArgs,
+        chartView: { current: view },
+        selectedData,
+        selectedDataBounds: { current: undefined },
+        selectedDataName: { current: undefined },
         trigger,
-        getOnMarkClickCallback({
-          ...defaultMarkClickArgs,
-          chartView: { current: view },
-          selectedData,
-          selectedDataBounds: { current: undefined },
-          selectedDataName: { current: undefined },
-          trigger,
-          markHasPopover: true,
-        })
-      );
-      try {
-        await view.runAsync();
-        const nodes = Array.from(container.querySelectorAll('g.mark-text, g.mark-symbol'))
-          .filter((group) => Array.from(group.classList).some((name) => name.startsWith('donut0_')))
-          .flatMap((group) => Array.from(group.children));
-        expect(nodes.length).toBeGreaterThan(0);
-        for (const node of nodes) {
-          selectedData.current = null;
-          onOpen.mockClear();
-          node.dispatchEvent(new MouseEvent(trigger, { bubbles: true }));
-          expect(selectedData.current).toEqual(
-            expect.objectContaining({
-              [COMPONENT_NAME]: 'donut0',
-              series: expect.any(String),
-              value: expect.any(Number),
-              donut0_arcPercent: expect.any(Number),
-            })
-          );
-          expect(onOpen).toHaveBeenCalledTimes(1);
-        }
-      } finally {
-        view.finalize();
-        document.body.innerHTML = '';
+        markHasPopover: true,
+      })
+    );
+    try {
+      await view.runAsync();
+      const nodes = Array.from(container.querySelectorAll('g.mark-text, g.mark-symbol'))
+        .filter((group) => Array.from(group.classList).some((name) => name.startsWith('donut0_')))
+        .flatMap((group) => Array.from(group.children));
+      expect(nodes.length).toBeGreaterThan(0);
+      for (const node of nodes) {
+        selectedData.current = null;
+        onOpen.mockClear();
+        node.dispatchEvent(new MouseEvent(trigger, { bubbles: true }));
+        expect(selectedData.current).toEqual(
+          expect.objectContaining({
+            [COMPONENT_NAME]: 'donut0',
+            series: expect.any(String),
+            value: expect.any(Number),
+            donut0_arcPercent: expect.any(Number),
+          })
+        );
+        expect(onOpen).toHaveBeenCalledTimes(1);
       }
+    } finally {
+      view.finalize();
+      document.body.innerHTML = '';
     }
-  );
+  });
 });
 
 describe('getOnChartMarkContextMenuCallback()', () => {
@@ -370,22 +405,18 @@ describe('getOnChartMarkContextMenuCallback()', () => {
 
   test('should call onContextMenu with event and datum when contextmenu event on matching mark', () => {
     const onContextMenu = jest.fn();
-    const callback = getOnChartMarkContextMenuCallback(chartView, [
-      { markName: 'line0', onContextMenu },
-    ]);
+    const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'line0', onContextMenu }]);
     callback(fakeContextMenuEvent, lineMarkItem);
     expect(onContextMenu).toHaveBeenCalledTimes(1);
-    expect(onContextMenu).toHaveBeenCalledWith(
-      expect.objectContaining({ clientX: 10, clientY: 15 }),
-      { date: 1000, value: 42 }
-    );
+    expect(onContextMenu).toHaveBeenCalledWith(expect.objectContaining({ clientX: 10, clientY: 15 }), {
+      date: 1000,
+      value: 42,
+    });
   });
 
   test('should not call onContextMenu when event type is click', () => {
     const onContextMenu = jest.fn();
-    const callback = getOnChartMarkContextMenuCallback(chartView, [
-      { markName: 'line0', onContextMenu },
-    ]);
+    const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'line0', onContextMenu }]);
     callback({ type: 'click' } as unknown as typeof fakeContextMenuEvent, lineMarkItem);
     expect(onContextMenu).not.toHaveBeenCalled();
   });
@@ -397,18 +428,14 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       mark: { role: 'legend-symbol', name: 'legend', marktype: 'symbol', group: { x: 0, y: 0 }, items: [] },
       bounds: { x1: 0, y1: 0, x2: 10, y2: 10 },
     } as unknown as Item;
-    const callback = getOnChartMarkContextMenuCallback(chartView, [
-      { markName: 'line0', onContextMenu },
-    ]);
+    const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'line0', onContextMenu }]);
     callback(fakeContextMenuEvent, legendItem);
     expect(onContextMenu).not.toHaveBeenCalled();
   });
 
   test('should not call onContextMenu when no detail matches mark name', () => {
     const onContextMenu = jest.fn();
-    const callback = getOnChartMarkContextMenuCallback(chartView, [
-      { markName: 'bar0', onContextMenu },
-    ]);
+    const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'bar0', onContextMenu }]);
     callback(fakeContextMenuEvent, lineMarkItem);
     expect(onContextMenu).not.toHaveBeenCalled();
   });
@@ -422,18 +449,14 @@ describe('getOnChartMarkContextMenuCallback()', () => {
 
   test('should not call onContextMenu when chartView.current is undefined', () => {
     const onContextMenu = jest.fn();
-    const callback = getOnChartMarkContextMenuCallback({ current: undefined }, [
-      { markName: 'line0', onContextMenu },
-    ]);
+    const callback = getOnChartMarkContextMenuCallback({ current: undefined }, [{ markName: 'line0', onContextMenu }]);
     callback(fakeContextMenuEvent, lineMarkItem);
     expect(onContextMenu).not.toHaveBeenCalled();
   });
 
   test('should not call onContextMenu when item is null', () => {
     const onContextMenu = jest.fn();
-    const callback = getOnChartMarkContextMenuCallback(chartView, [
-      { markName: 'line0', onContextMenu },
-    ]);
+    const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'line0', onContextMenu }]);
     callback(fakeContextMenuEvent, null as unknown as ActionItem);
     expect(onContextMenu).not.toHaveBeenCalled();
   });
@@ -444,14 +467,12 @@ describe('getOnChartMarkContextMenuCallback()', () => {
       type: 'contextmenu',
       sourceEvent: { clientX: 100, clientY: 200 } as MouseEvent,
     } as unknown as Parameters<ReturnType<typeof getOnChartMarkContextMenuCallback>>[0];
-    const callback = getOnChartMarkContextMenuCallback(chartView, [
-      { markName: 'line0', onContextMenu },
-    ]);
+    const callback = getOnChartMarkContextMenuCallback(chartView, [{ markName: 'line0', onContextMenu }]);
     callback(eventWithSource, lineMarkItem);
-    expect(onContextMenu).toHaveBeenCalledWith(
-      expect.objectContaining({ clientX: 100, clientY: 200 }),
-      { date: 1000, value: 42 }
-    );
+    expect(onContextMenu).toHaveBeenCalledWith(expect.objectContaining({ clientX: 100, clientY: 200 }), {
+      date: 1000,
+      value: 42,
+    });
   });
 
   describe('contextMenuMode filtering', () => {
@@ -548,9 +569,7 @@ describe('getOnChartMarkContextMenuCallback()', () => {
         },
       } as unknown as ActionItem;
       const onContextMenu = jest.fn();
-      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
-        { markName: 'line0', onContextMenu },
-      ]);
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [{ markName: 'line0', onContextMenu }]);
       callback(fakeContextMenuEvent, itemWithDimensionField);
       const [, datum] = onContextMenu.mock.calls[0];
       expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
@@ -579,15 +598,13 @@ describe('getOnChartMarkContextMenuCallback()', () => {
         },
       } as unknown as ActionItem;
       const onContextMenu = jest.fn();
-      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
-        { markName: 'line0', onContextMenu },
-      ]);
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [{ markName: 'line0', onContextMenu }]);
       callback(fakeContextMenuEvent, itemWithDate);
       const [, datum] = onContextMenu.mock.calls[0];
       expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
     });
 
-    test("unknown contextMenuMode falls back to allowing the mark", () => {
+    test('unknown contextMenuMode falls back to allowing the mark', () => {
       const onContextMenu = jest.fn();
       const callback = getOnChartMarkContextMenuCallback(chartView, [
         { markName: 'line0', onContextMenu, contextMenuMode: 'unknown' as ContextMenuMode },
@@ -617,9 +634,7 @@ describe('getOnChartMarkContextMenuCallback()', () => {
         },
       } as unknown as ActionItem;
       const onContextMenu = jest.fn();
-      const callback = getOnChartMarkContextMenuCallback(mockChartView, [
-        { markName: 'line0', onContextMenu },
-      ]);
+      const callback = getOnChartMarkContextMenuCallback(mockChartView, [{ markName: 'line0', onContextMenu }]);
       callback(fakeContextMenuEvent, itemWithString);
       const [, datum] = onContextMenu.mock.calls[0];
       expect(datum).toHaveProperty(GROUP_DATA, [row1, row2]);
