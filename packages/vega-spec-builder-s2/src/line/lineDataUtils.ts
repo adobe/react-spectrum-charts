@@ -15,6 +15,7 @@ import {
   CONTROLLED_HIGHLIGHTED_ITEM,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
+  DEFAULT_TRANSFORMED_TIME_DIMENSION,
   FILTERED_TABLE,
   GROUP_ID,
   HOVERED_ITEM,
@@ -87,6 +88,16 @@ export const getLineHighlightedData = (options: LineSpecOptions): SourceData => 
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${groupKey} === datum.${groupKey}`;
     } else {
       expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.${idKey} === datum.${idKey}`;
+    }
+    if (options.interactionMode === 'adaptive') {
+      const dimension = JSON.stringify(
+        options.scaleType === 'time' ? DEFAULT_TRANSFORMED_TIME_DIMENSION : options.dimension
+      );
+      const hovered = `${hoveredItemSignal}[${dimension}]`;
+      const value = `datum[${dimension}]`;
+      const match =
+        options.scaleType === 'time' ? `toNumber(${hovered}) === toNumber(${value})` : `${hovered} === ${value}`;
+      expr += ` || isValid(${hoveredItemSignal}) && ${hoveredItemSignal}.rscHoverTarget === 'dimension' && ${match}`;
     }
     if (hasPopover(options)) {
       expr = `${SELECTED_ITEM} && ${SELECTED_ITEM} === datum.${idKey} || !${SELECTED_ITEM} && ${expr}`;
@@ -189,12 +200,15 @@ export const getLineHoverRules = ({
   popoverMarkName,
   comboSiblingNames,
   isHighlightedByGroup,
+  interactionMode,
 }: LineSpecOptions): HoverMatchRule[] => {
   const rules: HoverMatchRule[] = [];
 
   if (interactiveMarkName) {
     const hoveredGroupExpr = `length(data('${interactiveMarkName}_highlightedData')) ? (indexof(pluck(data('${interactiveMarkName}_highlightedData'), '${SERIES_ID}'), datum.${SERIES_ID}) !== -1 ? 1 : 0) : null`;
-    const hoveredItemExpr = `isValid(${interactiveMarkName}_${HOVERED_ITEM}) ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
+    const hoveredItemExpr = `isValid(${interactiveMarkName}_${HOVERED_ITEM})${
+      interactionMode === 'adaptive' ? ` && ${interactiveMarkName}_${HOVERED_ITEM}.rscHoverTarget !== 'dimension'` : ''
+    } ? (${interactiveMarkName}_${HOVERED_ITEM}.${SERIES_ID} === datum.${SERIES_ID} ? 1 : 0) : null`;
     const hoveredMatchExpr = isHighlightedByGroup ? hoveredGroupExpr : hoveredItemExpr;
     rules.push({ as: 'hoveredMatch', expr: hoveredMatchExpr });
   }

@@ -12,13 +12,15 @@
 import {
   BarAnnotationOptions,
   ChartActionBarOptions,
-  ChartPopoverOptions,
   ChartInspectOptions,
+  ChartPopoverOptions,
   ColorFacet,
   ColorScheme,
   DonutSummaryOptions,
   HighlightedItem,
-  InteractionMode,
+  InterpolationType,
+  LineCap,
+  LineInteractionMode,
   LineType,
   LineTypeFacet,
   LineWidthFacet,
@@ -28,8 +30,6 @@ import {
   ScatterPathOptions,
   SegmentLabelOptions,
   TrendlineOptions,
-  InterpolationType,
-  LineCap,
 } from '../types/index.js';
 
 export const getPopoverMarkName = (
@@ -68,7 +68,7 @@ export interface LineMarkOptions {
   highlightedItem?: HighlightedItem;
   idKey: string;
   interactiveMarkName?: string; // optional name of the mark that is used for hover and click interactions
-  interactionMode?: InteractionMode;
+  interactionMode?: LineInteractionMode;
   isHighlightedByDimension?: boolean;
   isHighlightedByGroup?: boolean;
   lineCap?: LineCap;

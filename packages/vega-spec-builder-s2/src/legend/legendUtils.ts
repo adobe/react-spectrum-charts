@@ -255,7 +255,7 @@ export const getOpacityEncoding = (
   );
   for (const { name: markName } of userMeta.interactiveMarks || []) {
     rules.push({
-      test: `isValid(${markName}_${HOVERED_ITEM})`,
+      test: `isValid(${markName}_${HOVERED_ITEM}) && ${markName}_${HOVERED_ITEM}.rscHoverTarget !== 'dimension'`,
       signal: `${markName}_${HOVERED_ITEM}.${SERIES_ID} === datum.value ? 1 : ${FADE_FACTOR}`,
     });
   }

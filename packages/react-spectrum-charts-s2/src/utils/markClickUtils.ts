@@ -11,13 +11,14 @@
  */
 import { RefObject } from 'react';
 
-import { Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
+import { Bounds, Item, Scene, SceneGroup, SceneItem, ScenegraphEvent, View } from 'vega';
 
 import {
   COMPONENT_NAME,
   DIMENSION_FIELD,
   FILTERED_TABLE,
   GROUP_DATA,
+  MARK_ID,
   SERIES_ID,
 } from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
@@ -225,7 +226,24 @@ const contextMenuModeAllowsMark = (contextMenuMode: ContextMenuMode | undefined,
   return true;
 };
 
-const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>) => {
+const getGroupOrAreaMarkItemFromItem = (item: NonNullable<ActionItem>): NonNullable<ActionItem> => {
+  const adaptive: unknown = Reflect.get(item, 'adaptiveHover');
+  if (adaptive && typeof adaptive === 'object') {
+    const anchor = isItemSceneItem(item.datum) ? item.datum : item;
+    const point: unknown = Reflect.get(adaptive, 'rscHoverPoint');
+    if (point !== undefined) {
+      if (!point || typeof point !== 'object')
+        throw new TypeError('Adaptive Line hover requires a valid anchor point.');
+      const x: unknown = Reflect.get(point, 'x');
+      const y: unknown = Reflect.get(point, 'y');
+      if (typeof x !== 'number' || typeof y !== 'number' || !Number.isFinite(x) || !Number.isFinite(y)) {
+        throw new TypeError('Adaptive Line hover requires finite anchor coordinates.');
+      }
+      const selected = { ...anchor, datum: adaptive, bounds: new Bounds().set(x, y, x, y) };
+      return selected;
+    }
+    return { ...anchor, datum: adaptive };
+  }
   // if they clicked on a mark group then we want to go down an additional level
   if (isGroupMarkItem(item)) {
     item = item.datum;
@@ -284,20 +302,42 @@ export const handleLegendItemMouseInput = (
   }
 };
 
-/**
- * Generates the callback for mouse events (both legend and mark hover)
- * @param onLegendMouseInput
- * @param markHoverDetails
- * @returns
- */
+const handleAdaptiveMouseInput = (
+  event: ScenegraphEvent,
+  item: NonNullable<ActionItem>,
+  markMouseInputDetails: MarkMouseInputDetail[] | undefined,
+  adaptiveDatum: Datum | undefined
+): Datum | undefined => {
+  const detail = markMouseInputDetails?.find((entry) => entry.markName === getItemName(item));
+  if (event.type === 'mouseout') {
+    if (adaptiveDatum) detail?.onMouseOut?.(adaptiveDatum);
+    return undefined;
+  }
+  const selected: unknown = Reflect.get(item, 'adaptiveHover');
+  if (!selected || typeof selected !== 'object') return adaptiveDatum;
+  const next: Datum = getGroupOrAreaMarkItemFromItem(item).datum;
+  if (next[MARK_ID] === adaptiveDatum?.[MARK_ID]) return adaptiveDatum;
+  if (adaptiveDatum) detail?.onMouseOut?.(adaptiveDatum);
+  detail?.onMouseOver?.(next);
+  return next;
+};
+
+/** Generates the callback for mouse events (both legend and mark hover). */
 export const getOnMouseInputCallback = (
   onLegendMouseInput?: (seriesName: string) => void,
-  markMouseInputDetails?: MarkMouseInputDetail[]
+  markMouseInputDetails?: MarkMouseInputDetail[],
+  onLegendMouseOut = onLegendMouseInput
 ): ViewEventCallback => {
+  let adaptiveDatum: Datum | undefined;
   return (event, item) => {
     if (!item) return;
+    if (Reflect.has(item, 'adaptiveHover')) {
+      adaptiveDatum = handleAdaptiveMouseInput(event, item, markMouseInputDetails, adaptiveDatum);
+      return;
+    }
+    if (event.type === 'mousemove') return;
     if (isLegendItem(item)) {
-      handleLegendItemMouseInput(item, onLegendMouseInput);
+      handleLegendItemMouseInput(item, event.type === 'mouseout' ? onLegendMouseOut : onLegendMouseInput);
     } else if (markMouseInputDetails?.length) {
       handleMarkMouseInput(event, item, markMouseInputDetails);
     }
