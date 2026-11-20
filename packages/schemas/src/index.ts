@@ -15,6 +15,7 @@ export * from './axis.schema.js';
 export * from './chart.schema.js';
 export * from './dialogs/chartInspect.schema.js';
 export * from './marks/bar.schema.js';
+export * from './marks/donut.schema.js';
 export * from './marks/line.schema.js';
 export * from './marks/supplemental/barDirectLabel.schema.js';
 export * from './marks/supplemental/lineDirectLabel.schema.js';

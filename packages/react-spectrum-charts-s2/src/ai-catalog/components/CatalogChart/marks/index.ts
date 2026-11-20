@@ -10,4 +10,5 @@
  * governing permissions and limitations under the License.
  */
 export * from './CatalogBar.js';
+export * from './CatalogDonut.js';
 export * from './CatalogLine.js';

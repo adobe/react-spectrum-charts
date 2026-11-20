@@ -20,7 +20,15 @@ import { DonutSummaryProps } from '../../types/index.js';
  * Shows a summary metric in the center of its parent donut.
  * @alpha
  */
-const DonutSummary: FC<DonutSummaryProps> = ({ numberFormat = 'shortNumber', hideValue = false, label, delta }) => {
+const DonutSummary: FC<DonutSummaryProps> = ({
+  numberFormat = 'shortNumber',
+  hideValue = false,
+  hideLabel = false,
+  labelGap = 0,
+  label,
+  delta,
+  valueText,
+}) => {
   return null;
 };
 

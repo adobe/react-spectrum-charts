@@ -19,6 +19,8 @@ export const defaultDonutOptions: DonutSpecOptions = {
   color: 'testColor',
   colorScheme: 'light',
   donutSummaries: [],
+  hasOnClick: false,
+  hasOnContextMenu: false,
   holeRatio: 0.85,
   idKey: MARK_ID,
   index: 0,

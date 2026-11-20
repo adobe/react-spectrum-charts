@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement, ReactNode } from 'react';
+import { ReactElement, ReactNode, useState } from 'react';
 
 import { DONUT_BASE_PADDING, DONUT_SIZE_TIER_CUTPOINTS } from '@spectrum-charts/core-s2/constants';
 import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
@@ -159,12 +159,7 @@ const DonutVariationChart = ({
   }
   return (
     <div style={{ width: '100%', minWidth: 0 }}>
-      <Chart
-        {...chartProps}
-        animationTypes={animationTypes}
-        renderer={renderer}
-        {...overrides}
-      >
+      <Chart {...chartProps} animationTypes={animationTypes} renderer={renderer} {...overrides}>
         {siblings?.(chartData as DonutVariationDatum[])}
         <Donut {...donutProps} emphasizedItems={emphasizedItems}>
           {children}
@@ -172,6 +167,31 @@ const DonutVariationChart = ({
         </Donut>
       </Chart>
     </div>
+  );
+};
+
+const DonutPointerVariation = (): ReactElement => {
+  const [lastEvent, setLastEvent] = useState('Hover, click, or right-click a segment or label');
+  return (
+    <>
+      <DonutVariationChart
+        data={[
+          { id: 'alpha', series: 'Alpha', value: 60, shareLabel: '60,0 %' },
+          { id: 'beta', series: 'Beta', value: 40, shareLabel: '40,0 %' },
+        ]}
+        chartProps={{ idKey: 'id' }}
+        donutProps={{
+          onMouseOver: (datum) => setLastEvent(`Enter: ${datum.id}`),
+          onMouseOut: (datum) => setLastEvent(`Leave: ${datum.id}`),
+          onClick: (datum) => setLastEvent(`Click: ${datum.id}`),
+          onContextMenu: (event, datum) => setLastEvent(`Context: ${datum.id} at ${event.clientX}, ${event.clientY}`),
+        }}
+      >
+        <DonutSummary label="Total" valueText="100 units" />
+        <SegmentLabel labelKey="shareLabel" value={false} percent={false} />
+      </DonutVariationChart>
+      <output>{lastEvent}</output>
+    </>
   );
 };
 
@@ -276,6 +296,31 @@ const baseDonutVariations: Variation[] = [
     ),
   },
   {
+    id: 'summary-value-text',
+    title: 'Externally formatted summary',
+    description: 'Keeps a supplied center value when all metrics are zero.',
+    dataset: 'zero-values',
+    usesDashboardDataset: false,
+    coverage: ['DonutSummary.valueText'],
+    render: () => (
+      <DonutVariationChart data={zeroDonutData} donutProps={{ color: 'browser', metric: 'count' }}>
+        <DonutSummary label="Total" valueText="No units" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'summary-all-hidden',
+    title: 'Supplied summary with all segments hidden',
+    description: 'Keeps the supplied summary while the chart displays an empty ring.',
+    dataset: 'canonical',
+    coverage: ['DonutSummary.valueText', 'Chart.hiddenSeries=[all]'],
+    render: () => (
+      <DonutVariationChart chartProps={(data) => ({ hiddenSeries: data.map(({ series }) => series) })}>
+        <DonutSummary label="Total" valueText="100 units" />
+      </DonutVariationChart>
+    ),
+  },
+  {
     id: 'summary-hidden-value',
     title: 'Summary without value',
     description: 'Keeps the center label while hiding the calculated metric.',
@@ -283,7 +328,31 @@ const baseDonutVariations: Variation[] = [
     coverage: ['DonutSummary.hideValue=true'],
     render: () => (
       <DonutVariationChart>
-        <DonutSummary hideValue label="Visitors" />
+        <DonutSummary hideValue label="Visitors" valueText="Hidden override" />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'summary-label-spacing',
+    title: 'Spaced summary label',
+    description: 'Adds room between the supplied value and its caption.',
+    dataset: 'canonical',
+    coverage: ['DonutSummary.labelGap'],
+    render: () => (
+      <DonutVariationChart>
+        <DonutSummary label="Average time on site" valueText="3m 42s" labelGap={6} />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'summary-hidden-label',
+    title: 'Summary without caption',
+    description: 'Centers the value while retaining fit reporting for an external caption.',
+    dataset: 'canonical',
+    coverage: ['DonutSummary.hideLabel'],
+    render: () => (
+      <DonutVariationChart>
+        <DonutSummary label="Average time on site" valueText="3m 42s" hideLabel />
       </DonutVariationChart>
     ),
   },
@@ -426,6 +495,15 @@ const baseDonutVariations: Variation[] = [
         <SegmentLabel labelMode="deemphasized" value valueFormat="shortNumber" />
       </DonutVariationChart>
     ),
+  },
+  {
+    id: 'pointer-callbacks',
+    title: 'Pointer callbacks and formatted labels',
+    description: 'Arc and label callbacks work without inspect; the summary is not a hit target.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['onClick', 'onMouseOver', 'onMouseOut', 'onContextMenu', 'SegmentLabel.labelKey=shareLabel'],
+    render: () => <DonutPointerVariation />,
   },
   {
     id: 'interactive-children',
@@ -753,7 +831,9 @@ export const DonutDashboard = (): ReactElement => (
     datasets={donutDatasetOptions}
     filters={donutVariationFilters}
     getSizeDescription={(size, viewMode) =>
-      `Full-circle diameter: ${Math.round(getEffectiveDonutDiameter(size, viewMode))}px; both variants fill the container width, with ${DONUT_BASE_PADDING}px minimum padding on each side.`
+      `Full-circle diameter: ${Math.round(
+        getEffectiveDonutDiameter(size, viewMode)
+      )}px; both variants fill the container width, with ${DONUT_BASE_PADDING}px minimum padding on each side.`
     }
     initialSize={getDonutContainerSize(200, 'none')}
     initialDataset="standard"
@@ -776,19 +856,31 @@ const donutCoverage: PropCoverage<DonutProps> = {
   isBoolean: ['boolean'],
   metric: ['defaults', 'boolean'],
   name: ['named-interactive'],
+  onClick: ['pointer-callbacks'],
+  onMouseOver: ['pointer-callbacks'],
+  onMouseOut: ['pointer-callbacks'],
+  onContextMenu: ['pointer-callbacks'],
   sortOrder: ['defaults', 'sort-order-data', 'semicircle', 'semicircle-sort-order-data'],
   variant: ['semicircle'],
 };
 
 const donutSummaryCoverage: PropCoverage<DonutSummaryProps> = {
-  delta: ['summary-positive-delta', 'summary-negative-delta', 'semicircle-negative-delta', 'semicircle-all-summary-options'],
+  delta: [
+    'summary-positive-delta',
+    'summary-negative-delta',
+    'semicircle-negative-delta',
+    'semicircle-all-summary-options',
+  ],
+  hideLabel: ['summary-hidden-label'],
   hideValue: ['summary-hidden-value', 'semicircle-hidden-value-summary'],
   label: ['summary-format', 'summary-negative-delta'],
+  labelGap: ['summary-label-spacing'],
   numberFormat: ['summary-format', 'semicircle-formatted-summary', 'locale'],
+  valueText: ['summary-value-text', 'summary-all-hidden', 'summary-hidden-value', 'pointer-callbacks'],
 };
 
 const segmentLabelCoverage: PropCoverage<SegmentLabelProps> = {
-  labelKey: ['segment-label-key'],
+  labelKey: ['segment-label-key', 'pointer-callbacks'],
   labelMode: ['segment-label-modes', 'hidden-deemphasized-labels'],
   percent: ['segment-label-percent'],
   percentFormat: ['segment-label-percent-format', 'locale'],
@@ -835,7 +927,7 @@ const chartCoverage: SiblingCoverage<ChartProps> = {
   colors: ['boolean'],
   colorScheme: ['dark-background'],
   emptyStateText: ['empty-state'],
-  hiddenSeries: ['controlled-hidden-series'],
+  hiddenSeries: ['controlled-hidden-series', 'summary-all-hidden'],
   highlightedItem: ['controlled-highlighted-item'],
   highlightedSeries: ['controlled-highlighted-series'],
   idKey: ['controlled-highlighted-item'],

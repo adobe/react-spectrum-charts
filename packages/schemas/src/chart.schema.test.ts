@@ -47,7 +47,7 @@ describe('ChartSchema', () => {
   test('rejects a mark with an unrecognized component discriminator', () => {
     const result = ChartSchema.safeParse({
       ...validBarRequest,
-      children: [{ component: 'Donut', dimension: 'browser', metric: 'downloads' }],
+      children: [{ component: 'Unknown', dimension: 'category', metric: 'value' }],
     });
     expect(result.success).toBe(false);
   });

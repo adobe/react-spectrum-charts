@@ -16,6 +16,46 @@ import { buildSpec, getVegaEmbedOptions } from '@spectrum-charts/vega-spec-build
 import { getChartGeometry } from './chartGeometryUtils.js';
 
 test.each([false, true])(
+  'reports complete summary fit through resize independently of hideLabel=%s',
+  async (hideLabel) => {
+    const rows = [{ series: 'Alpha', value: 100 }];
+    const spec = buildSpec({
+      data: rows,
+      animations: false,
+      marks: [
+        {
+          markType: 'donut',
+          name: 'responsive',
+          donutSummaries: [
+            {
+              label: 'Average time on site',
+              valueText: '3m 42s',
+              labelGap: 6,
+              hideLabel,
+            },
+          ],
+        },
+      ],
+    });
+    const options = getVegaEmbedOptions({});
+    Object.entries(options.expressionFunctions ?? {}).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const view = new View(parse(structuredClone(spec), options.config), { renderer: 'none' }).insert('table', rows);
+    try {
+      for (const width of [80, 500, 80, 500]) {
+        await view.width(width).height(width).runAsync();
+        expect(getChartGeometry(view, spec, []).donutSummaries).toEqual([{ name: 'responsive', fits: width === 500 }]);
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        expect(Boolean(svg.querySelector('g.responsive_summaryLabel text'))).toBe(!hideLabel);
+        if (width === 500) expect(svg.querySelector('g.responsive_summaryValue text')?.textContent).toBe('3m 42s');
+      }
+    } finally {
+      view.finalize();
+    }
+  }
+);
+
+test.each([false, true])(
   'projects against actual temporal/dual-axis SVG geometry with hidden labels %s',
   async (hideDefaultLabels) => {
     const start = Date.UTC(2026, 0, 1);

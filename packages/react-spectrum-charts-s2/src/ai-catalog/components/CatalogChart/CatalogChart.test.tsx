@@ -220,11 +220,36 @@ describe('CatalogChart', () => {
           request={{
             component: 'Chart',
             data: barData,
-            children: [{ component: 'Donut', dimension: 'browser', metric: 'downloads' }],
+            children: [{ component: 'Unknown', dimension: 'category', metric: 'value' }],
           }}
         />
       )
     ).toThrow();
     consoleError.mockRestore();
+  });
+
+  test('renders supplied Donut summary and segment labels from the schema without numeric recomputation', async () => {
+    render(
+      <CatalogChart
+        request={{
+          component: 'Chart',
+          data: { values: [
+            { series: 'Alpha', value: 60, shareLabel: '60,0 %' },
+            { series: 'Beta', value: 40, shareLabel: '40,0 %' },
+          ] },
+          children: [{
+            component: 'Donut',
+            decorations: [
+              { component: 'DonutSummary', valueText: '100 units' },
+              { component: 'SegmentLabel', labelKey: 'shareLabel', value: false, percent: false },
+            ],
+          }],
+        }}
+      />
+    );
+    const chart = await findChart();
+    expect(chart.querySelector('g.donut0_summaryValue text')).toHaveTextContent('100 units');
+    expect(chart.querySelectorAll('g.donut0_segmentLabel text')).toHaveLength(2);
+    expect(chart.querySelector('g.donut0_segmentLabelValue')).toBeNull();
   });
 });

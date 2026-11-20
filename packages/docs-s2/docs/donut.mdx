@@ -111,9 +111,23 @@ Ring width and `DonutSummary` text change with the donut's size; see [Responsive
 
 - `numberFormat` formats the value. It accepts `shortNumber`, `standardNumber`, or a
   [d3-format](https://d3js.org/d3-format) specifier.
+- `valueText` uses your already formatted string instead of the calculated value, including
+  for boolean donuts and all-zero rings. Omit it to keep normal formatting; `""` is an explicit
+  empty value. The text retains the usual responsive measurement, truncation, and hiding.
+  With nonempty source data, the supplied summary remains visible even when every segment
+  is hidden through `hiddenSeries` or the legend.
 - `delta` adds a change below the label, green when zero or positive and red when negative
   (`0.025` shows as `+2.5%`).
-- `hideValue` shows only the label.
+- `hideValue` hides the value even when `valueText` is supplied.
+- `labelGap` adds extra pixels between the value and caption; it defaults to `0`.
+- `hideLabel` hides the caption and recenters the value without changing fit reporting.
+
+`Chart.onGeometryChange` reports `donutSummaries`, with each donut's `name` and `fits`.
+Fit checks the full caption and supplied `valueText` at their responsive font sizes,
+including `labelGap` and an 8px horizontal caption inset per side. It is independent of
+`hideLabel`, so a host can show the full caption outside a small donut and move it
+back inside after enlargement. Keep the chart's dimensions stable when moving a
+caption to avoid resize oscillation.
 
 Numbers follow the chart's `locale`, which also applies to segment labels, `ChartInspect`, and
 `ChartPopover`.
@@ -144,6 +158,25 @@ set `labelKey` to another field in the data.
 <DataCode name="browserLabelData" />
 
 <SegmentLabelKeyPlayground />
+
+To display an externally formatted share without recalculating it, supply the text as data
+and turn off both numeric rows. Segment geometry still uses `value`, not the text:
+
+```tsx
+const data = [
+  { id: 'alpha', series: 'Alpha', value: 60, shareLabel: '60,0 %' },
+  { id: 'beta', series: 'Beta', value: 40, shareLabel: '40,0 %' },
+];
+
+<Chart data={data} idKey="id">
+  <Donut>
+    <DonutSummary valueText="100 units" label="Total" />
+    <SegmentLabel labelKey="shareLabel" value={false} percent={false} />
+  </Donut>
+</Chart>;
+```
+
+These labels retain the usual collision and size rules; they aren't guaranteed to all fit.
 
 ### Emphasized segments
 
@@ -279,8 +312,28 @@ own content.
 <DonutInteractionPlayground />
 
 Hovering an interactive segment fades the other segments and their labels. A donut without
-`ChartInspect`, `ChartPopover`, `SegmentLabel`, or a `Legend` with `highlight` doesn't respond to
-the pointer.
+callbacks, `ChartInspect`, `ChartPopover`, `SegmentLabel`, or a `Legend` with `highlight` doesn't
+respond to the pointer.
+
+### Pointer callbacks
+
+`onMouseOver`, `onMouseOut`, and `onClick` receive the segment datum. `onContextMenu` receives
+`(event: MouseEvent, datum)` so you can position a custom menu. These callbacks work on arcs
+and segment labels without `ChartInspect`; they do not fire on the summary or legend.
+The native context menu is unchanged when no context-menu callback or right-click popover
+is present. Use `Chart.idKey` and your own row fields for stable identity: labels may supply
+a transformed copy of a row, not the original object.
+
+```tsx
+<Chart data={data} idKey="id">
+  <Donut
+    onMouseOver={(datum) => setHoveredId(datum.id)}
+    onMouseOut={() => setHoveredId(null)}
+    onClick={(datum) => selectSegment(datum.id)}
+    onContextMenu={(event, datum) => openMenu(event.clientX, event.clientY, datum.id)}
+  />
+</Chart>
+```
 
 ### Highlighting
 

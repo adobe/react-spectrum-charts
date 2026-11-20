@@ -9,9 +9,9 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Content, Heading, Text } from '@react-spectrum/s2';
 import React, { Children, ReactElement, ReactNode, isValidElement } from 'react';
 
+import { Content, Heading, Text } from '@react-spectrum/s2';
 import {
   ChartInspect,
   ChartPopover,
@@ -290,6 +290,7 @@ export const DonutSurveyPlayground = () => (
 
 const summaryControls: PlaygroundControl[] = [
   { name: 'label', type: 'text', defaultValue: 'Visitors' },
+  { name: 'valueText', type: 'text', defaultValue: '' },
   {
     name: 'numberFormat',
     type: 'select',
@@ -298,6 +299,8 @@ const summaryControls: PlaygroundControl[] = [
   },
   { name: 'delta', type: 'select', options: ['none', '0.025', '-0.04'], defaultValue: 'none' },
   { name: 'hideValue', type: 'boolean', defaultValue: false },
+  { name: 'hideLabel', type: 'boolean', defaultValue: false },
+  { name: 'labelGap', type: 'select', options: ['0', '6', '12'], defaultValue: '0' },
   { group: 'Chart', name: 'locale', type: 'select', options: ['en-US', 'de-DE', 'fr-FR'], defaultValue: 'en-US' },
 ];
 
@@ -310,14 +313,17 @@ export const DonutSummaryPlayground = () => (
     previewSize={getDonutPreviewSize}
     controls={summaryControls}
     component="DonutSummary"
-    render={({ label, numberFormat, delta, hideValue, locale }) => (
+    render={({ label, numberFormat, delta, hideValue, hideLabel, labelGap, locale, valueText }) => (
       <Chart data={browserData} locale={locale as Locale | undefined}>
         <Donut metric="count" color="browser">
           <DonutSummary
             label={(label ?? 'Visitors') as string}
+            valueText={typeof valueText === 'string' && valueText !== '' ? valueText : undefined}
             numberFormat={numberFormat as string | undefined}
             delta={optional(delta) ? Number(delta) : undefined}
             hideValue={hideValue as boolean | undefined}
+            hideLabel={typeof hideLabel === 'boolean' ? hideLabel : undefined}
+            labelGap={optional(labelGap) ? Number(labelGap) : undefined}
           />
         </Donut>
       </Chart>

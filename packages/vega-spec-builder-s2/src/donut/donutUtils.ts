@@ -451,7 +451,7 @@ export const getDonutCenterYSignal = (options: DonutSpecOptions): string =>
   options.variant === 'semicircle' ? `height - ${DONUT_SEMICIRCLE_BOTTOM_INSET}` : 'height / 2';
 
 export const getArcMark = (options: DonutSpecOptions): ArcMark => {
-  const { chartPopovers, chartInspects, colorScheme, idKey, legendHighlightSignals, name } = options;
+  const { chartPopovers, chartInspects, colorScheme, hasOnClick, idKey, legendHighlightSignals, name } = options;
   const outerRadius = getDonutOuterRadiusExpr(options);
   const sliceStrokeWidth = getSliceStrokeWidthExpr(options, `${name}_sliceGap`);
   const offset = `(${sliceStrokeWidth}) / 2`;
@@ -489,7 +489,7 @@ export const getArcMark = (options: DonutSpecOptions): ArcMark => {
           ...(options.isHoverAnimate ? [] : getLegendHighlightOpacityRules(legendHighlightSignals)),
           ...getDonutOpacity(options),
         ],
-        cursor: getCursor(chartPopovers),
+        cursor: getCursor(chartPopovers, hasOnClick),
         strokeWidth: [
           {
             test: `${SELECTED_ITEM} === datum.${idKey}`,

@@ -15,7 +15,7 @@ import { DonutProps } from '../types/index.js';
 import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getDonutOptions = (
-  { children, ...donutProps }: DonutProps,
+  { children, onClick, onContextMenu, onMouseOver, onMouseOut, ...donutProps }: DonutProps,
   childrenToOptions: ChildrenToOptions
 ): DonutOptions => {
   const { chartInspects, chartPopovers, donutSummaries, segmentLabels } = childrenToOptions(children);
@@ -24,6 +24,9 @@ export const getDonutOptions = (
     chartInspects,
     chartPopovers,
     donutSummaries,
+    hasOnClick: Boolean(onClick),
+    hasOnContextMenu: Boolean(onContextMenu),
+    ...(onMouseOver || onMouseOut ? { hasOnMouseInput: true } : {}),
     markType: 'donut',
     segmentLabels,
   };

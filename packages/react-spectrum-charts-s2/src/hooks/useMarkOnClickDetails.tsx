@@ -12,15 +12,16 @@
 import { createElement, useMemo } from 'react';
 
 import { Bar } from '../components/Bar/index.js';
+import { Donut } from '../components/Donut/index.js';
 import { Line } from '../components/Line/index.js';
 import { Scatter } from '../lab/components/Scatter/index.js';
-import { BarElement, ChartChildElement, LineElement, MarkCallback, ScatterElement } from '../types/index.js';
+import { BarElement, ChartChildElement, DonutElement, LineElement, MarkCallback, ScatterElement } from '../types/index.js';
 import { ContextMenuMode } from '../types/marks/line.types.js';
 import { ContextMenuCallback } from '../types/util.types.js';
 import { getAllMarkElements } from '../utils/index.js';
 import { ChartContainer } from './ChartContainer.js';
 
-type MappedMarkElement = { name: string; element: BarElement | LineElement | ScatterElement };
+type MappedMarkElement = { name: string; element: BarElement | DonutElement | LineElement | ScatterElement };
 
 export type MarkOnClickDetail = {
   markName?: string;
@@ -33,6 +34,7 @@ export default function useMarkOnClickDetails(children: ChartChildElement[]): Ma
   const markElements = useMemo(() => {
     return [
       ...getAllMarkElements(createElement(ChartContainer, undefined, children), Bar, []),
+      ...getAllMarkElements(createElement(ChartContainer, undefined, children), Donut, []),
       ...getAllMarkElements(createElement(ChartContainer, undefined, children), Line, []),
       ...getAllMarkElements(createElement(ChartContainer, undefined, children), Scatter, []),
     ] as MappedMarkElement[];

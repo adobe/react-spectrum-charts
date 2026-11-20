@@ -27,6 +27,34 @@ describe('getDonutOptions()', () => {
     expect(options.chartPopovers).toHaveLength(0);
     expect(options.chartInspects).toHaveLength(0);
     expect(options.donutSummaries).toHaveLength(0);
+    expect(options.hasOnClick).toBe(false);
+    expect(options.hasOnContextMenu).toBe(false);
+    expect(options.hasOnMouseInput).toBeUndefined();
+  });
+  it.each(['onClick', 'onContextMenu', 'onMouseOver', 'onMouseOut'] as const)(
+    'converts %s to interaction flags without serializing the callback',
+    (callback) => {
+      const options = getDonutOptions({ [callback]: jest.fn() }, childrenToOptions);
+      expect(options).not.toHaveProperty(callback);
+      expect(options.hasOnClick).toBe(callback === 'onClick');
+      expect(options.hasOnContextMenu).toBe(callback === 'onContextMenu');
+      expect(options.hasOnMouseInput).toBe(
+        callback === 'onMouseOver' || callback === 'onMouseOut' ? true : undefined
+      );
+    }
+  );
+  it('preserves externally formatted summary text and labels', () => {
+    const options = getDonutOptions(
+      {
+        children: [
+          createElement(DonutSummary, { valueText: '1,234 units' }),
+          createElement(SegmentLabel, { labelKey: 'shareLabel', value: false, percent: false }),
+        ],
+      },
+      childrenToOptions
+    );
+    expect(options.donutSummaries).toEqual([{ valueText: '1,234 units' }]);
+    expect(options.segmentLabels).toEqual([{ labelKey: 'shareLabel', value: false, percent: false }]);
   });
   it('should convert popover children to chartPopovers array', () => {
     const options = getDonutOptions({ children: [createElement(ChartPopover)] }, childrenToOptions);

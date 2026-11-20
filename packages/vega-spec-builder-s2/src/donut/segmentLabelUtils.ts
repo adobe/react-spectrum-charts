@@ -74,9 +74,9 @@ const getRichSegmentLabelName = ({ donutOptions, labelMode }: SegmentLabelSpecOp
   return `${donutOptions.name}_${suffix}`;
 };
 
-const getSegmentLabelInteractionEncode = ({ chartInspects, chartPopovers, name }: DonutSpecOptions) => ({
+const getSegmentLabelInteractionEncode = ({ chartInspects, chartPopovers, hasOnClick, name }: DonutSpecOptions) => ({
   tooltip: getInspectEncoding(chartInspects, name),
-  cursor: getCursor(chartPopovers),
+  cursor: getCursor(chartPopovers, hasOnClick),
 });
 
 /** Unique field/data-source prefix for direct labels' collision fields, distinct from rich labels' */

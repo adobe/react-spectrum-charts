@@ -30,6 +30,10 @@ const Donut: FC<DonutProps> = ({
   isBoolean = false,
   metric = DEFAULT_METRIC,
   name,
+  onClick,
+  onContextMenu,
+  onMouseOver,
+  onMouseOut,
   sortOrder = 'valueDescending',
   variant = 'circle',
 }) => {

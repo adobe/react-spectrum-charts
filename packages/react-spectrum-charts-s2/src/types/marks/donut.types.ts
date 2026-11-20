@@ -14,12 +14,30 @@ import { JSXElementConstructor, ReactElement } from 'react';
 import { DonutOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { ChartInspectElement, ChartPopoverElement } from '../dialogs/index.js';
-import { Children } from '../util.types.js';
+import { Children, ContextMenuCallback, MarkCallback } from '../util.types.js';
 import { DonutSummaryElement, SegmentLabelElement } from './supplemental/index.js';
 
 export interface DonutProps
-  extends Omit<DonutOptions, 'chartPopovers' | 'chartInspects' | 'donutSummaries' | 'markType' | 'segmentLabels'> {
+  extends Omit<
+    DonutOptions,
+    | 'chartPopovers'
+    | 'chartInspects'
+    | 'donutSummaries'
+    | 'hasOnClick'
+    | 'hasOnContextMenu'
+    | 'hasOnMouseInput'
+    | 'markType'
+    | 'segmentLabels'
+  > {
   children?: Children<ChartPopoverElement | ChartInspectElement | DonutSummaryElement | SegmentLabelElement>;
+  /** Called with the segment's data when an arc or segment label is clicked. */
+  onClick?: MarkCallback;
+  /** Called with the segment's data when entering an arc or segment label. */
+  onMouseOver?: MarkCallback;
+  /** Called with the segment's data when leaving an arc or segment label. */
+  onMouseOut?: MarkCallback;
+  /** Called with the native event and segment data when an arc or segment label is right-clicked. */
+  onContextMenu?: ContextMenuCallback;
 }
 
 export type DonutElement = ReactElement<DonutProps, JSXElementConstructor<DonutProps>>;

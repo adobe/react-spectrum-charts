@@ -42,7 +42,7 @@ import usePopovers from './usePopovers.js';
  * @returns onNewView
  */
 const useNewChartView = (
-  { idKey }: RscChartProps,
+  { idKey }: Pick<RscChartProps, 'idKey'>,
   sanitizedChildren: ChartChildElement[],
   legendProps: UseLegendProps
 ) => {
@@ -88,7 +88,15 @@ const useNewChartView = (
   });
 
   // the container outlives views, so its contextmenu listener is added once
-  const contextMenuContainer = useRef<Element | null>(null);
+  const contextMenuContainer = useRef<{ element: Element; listener: EventListener } | null>(null);
+  useEffect(
+    () => () => {
+      const current = contextMenuContainer.current;
+      current?.element.removeEventListener('contextmenu', current.listener);
+      contextMenuContainer.current = null;
+    },
+    []
+  );
 
   return useCallback(
     (view: View) => {
@@ -123,14 +131,17 @@ const useNewChartView = (
       }
 
       const chartContainer = document.querySelector(`#${chartId}`);
-      if (chartContainer && contextMenuContainer.current !== chartContainer) {
-        contextMenuContainer.current = chartContainer;
-        chartContainer.addEventListener('contextmenu', (e) => {
+      if (chartContainer && contextMenuContainer.current?.element !== chartContainer) {
+        const current = contextMenuContainer.current;
+        current?.element.removeEventListener('contextmenu', current.listener);
+        const listener: EventListener = (e) => {
           const { hasRightClickPopover, hasMarkContextMenu } = latest.current;
           if (hasRightClickPopover || hasMarkContextMenu) {
             e.preventDefault();
           }
-        });
+        };
+        contextMenuContainer.current = { element: chartContainer, listener };
+        chartContainer.addEventListener('contextmenu', listener);
       }
 
       view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) => {

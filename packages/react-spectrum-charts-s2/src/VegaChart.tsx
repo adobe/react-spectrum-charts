@@ -129,8 +129,8 @@ export const VegaChart: FC<VegaChartProps> = ({
       table: chartData.table,
       width,
       onRenderComplete: (view) => {
-        if (axisProjections !== undefined) {
-          const geometry = getChartGeometry(view, spec, axisProjections);
+        if (axisProjections !== undefined || callbacks.current.onGeometryChange) {
+          const geometry = getChartGeometry(view, spec, axisProjections ?? []);
           callbacks.current.onGeometryChange?.({ ...event, ...geometry });
         }
         callbacks.current.onRenderComplete?.(event);

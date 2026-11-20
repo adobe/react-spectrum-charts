@@ -19,10 +19,16 @@ export interface DonutSummaryOptions {
    * see {@link https://d3js.org/d3-format#locale_format}
    */
   numberFormat?: NumberFormat;
+  /** Externally formatted center value, independent of hidden segments; overrides numeric formatting unless hideValue is true. Omit to format the metric as usual. */
+  valueText?: string;
   /** Label for the metric summary */
   label?: string;
   /** Hides the value portion of the donut summary, only showing the label */
   hideValue?: boolean;
+  /** Hides the label without changing the reported fit of the complete summary. Defaults to false. */
+  hideLabel?: boolean;
+  /** Extra space in pixels between the value and label. Defaults to 0. */
+  labelGap?: number;
   /** Sentiment-colored delta (e.g. 0.025 renders as "+2.5%") shown below the label; hidden at XS/S for semicircles. */
   delta?: number;
 }

@@ -184,6 +184,19 @@ describe('VegaChart init render cycle', () => {
       unmount();
     });
 
+    test('publishes geometry without requiring axis projections', async () => {
+      const view = new View(parse({}), { renderer: 'none' }).width(800).height(600);
+      mockEmbed.mockResolvedValue({ view } as Awaited<ReturnType<typeof embed>>);
+      const onGeometryChange = jest.fn();
+      const { unmount } = render(<VegaChart {...defaultProps} onGeometryChange={onGeometryChange} />);
+      await waitFor(() => expect(onGeometryChange).toHaveBeenCalledTimes(1));
+      expect(onGeometryChange.mock.calls[0][0]).toMatchObject({
+        plotBounds: { width: 800, height: 600 },
+        projections: [],
+      });
+      unmount();
+    });
+
     test('surfaces projection failures without publishing render completion', async () => {
       const spec: Spec = {
         scales: [{ name: 'x', type: 'linear', domain: [0, 100], range: 'width' }],

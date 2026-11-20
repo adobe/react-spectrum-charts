@@ -11,10 +11,17 @@
  */
 import { View, expressionFunction, parse } from 'vega';
 
-import { DONUT_SUMMARY_LABEL_FONT_SIZES, DONUT_SUMMARY_VALUE_FONT_SIZES } from '@spectrum-charts/core-s2/constants';
+import {
+  DONUT_SUMMARY_LABEL_FONT_SIZES,
+  DONUT_SUMMARY_VALUE_FONT_SIZES,
+  FILTERED_TABLE,
+  TABLE,
+} from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
 
-import { DonutSummarySpecOptions } from '../types/index.js';
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
+import { DonutSummaryOptions, DonutSummarySpecOptions } from '../types/index.js';
 import {
   getBooleanDonutSummaryGroupMark,
   getDonutSummaryData,
@@ -38,6 +45,133 @@ const defaultDonutSummaryOptions: DonutSummarySpecOptions = {
   label: 'Visitors',
   numberFormat: 'shortNumber',
 };
+
+describe('externally formatted summary values in Vega', () => {
+  test.each([
+    { isBoolean: false, hideValue: false },
+    { isBoolean: false, hideValue: true },
+    { isBoolean: true, hideValue: false },
+    { isBoolean: true, hideValue: true },
+  ])('retains the supplied summary through hide-all and unhide: %o', async ({ isBoolean, hideValue }) => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [
+      { series: 'Alpha', value: 0.6 },
+      { series: 'Beta', value: 0.4 },
+    ];
+    const spec = buildSpec({
+      data,
+      animations: false,
+      hiddenSeries: ['Alpha', 'Beta'],
+      marks: [
+        {
+          markType: 'donut',
+          name: 'filtered',
+          isBoolean,
+          donutSummaries: [{ valueText: '100 units', label: 'Total', hideValue, delta: 0.025 }],
+        },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(500).height(500);
+    try {
+      for (const hidden of [['Alpha', 'Beta'], [], ['Alpha'], ['Alpha', 'Beta'], []]) {
+        await view.signal('hiddenSeries', hidden).runAsync();
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const prefix = isBoolean ? 'filtered_booleanSummary' : 'filtered_summary';
+        expect(svg.querySelector(`g.${prefix}Value text`)?.textContent).toBe(hideValue ? undefined : '100 units');
+        expect(svg.querySelector(`g.${prefix}Label text`)?.textContent).toBe('Total');
+        expect(svg.querySelector(`g.${prefix}Delta text`)?.textContent).toBe('+2.5%');
+        expect(view.data(FILTERED_TABLE)).toHaveLength(data.length - hidden.length);
+        expect(svg.querySelector('g.filtered_emptyState path')?.getAttribute('opacity')).toBe(
+          hidden.length === data.length ? '1' : '0'
+        );
+      }
+    } finally {
+      view.finalize();
+    }
+  });
+
+  test.each([
+    { summary: { valueText: '1.234,50 units' }, expected: '1.234,50 units' },
+    { summary: { valueText: 'Owner\'s "total"\\value' }, expected: 'Owner\'s "total"\\value' },
+    { summary: { valueText: '' }, expected: '' },
+    { summary: {}, expected: '100' },
+  ] satisfies { summary: DonutSummaryOptions; expected: string }[])(
+    'renders the supplied value and retains responsive measurement: %o',
+    async ({ summary, expected }) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', (width: number) => width);
+      const data = [{ series: 'Alpha', value: 100 }];
+      const spec = buildSpec({
+        data,
+        animations: false,
+        marks: [{ markType: 'donut', name: 'formatted', donutSummaries: [{ ...summary, label: 'Total' }] }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(500).height(500);
+      try {
+        await view.runAsync();
+        const getValue = async () => {
+          const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+          return svg.querySelector('g.formatted_summaryValue text');
+        };
+        expect((await getValue())?.textContent).toBe(expected);
+        const getFontSize = async () => Number.parseFloat((await getValue())?.getAttribute('font-size') ?? 'NaN');
+        const initialFont = await getFontSize();
+        if (expected) expect(initialFont).toBeGreaterThan(0);
+        await view.width(25).height(25).runAsync();
+        expect(await getFontSize()).toBe(0);
+        await view.width(500).height(500).runAsync();
+        expect((await getValue())?.textContent).toBe(expected);
+        expect(await getFontSize()).toBe(initialFont);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
+  test.each([false, true])('preserves zero rings and hideValue precedence (boolean=%s)', async (isBoolean) => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const data = [
+      { series: 'Alpha', value: 0 },
+      { series: 'Beta', value: 0 },
+    ];
+    for (const hideValue of [false, true]) {
+      const spec = buildSpec({
+        data,
+        animations: false,
+        marks: [
+          {
+            markType: 'donut',
+            name: 'zero',
+            isBoolean,
+            donutSummaries: [{ valueText: 'No units', hideValue, label: 'Total' }],
+          },
+        ],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(400).height(400);
+      try {
+        await view.runAsync();
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const value = svg.querySelector(`g.zero_${isBoolean ? 'booleanSummary' : 'summary'}Value text`);
+        expect(value?.textContent).toBe(hideValue ? undefined : 'No units');
+        expect(svg.querySelector('g.zero_emptyState path')?.getAttribute('opacity')).toBe('1');
+        expect(svg.querySelectorAll('g.zero path[opacity="0"]')).toHaveLength(2);
+      } finally {
+        view.finalize();
+      }
+    }
+  });
+});
 
 const evaluateSummarySignal = async (encoding: unknown, innerRadius = 100, sizeTier = 2): Promise<number> => {
   if (!encoding || typeof encoding !== 'object' || !('signal' in encoding) || typeof encoding.signal !== 'string') {
@@ -94,7 +228,7 @@ describe('getDonutSummarySignals()', () => {
       ...defaultDonutOptions,
       donutSummaries: [{ label: 'Visitors' }],
     });
-    expect(signals).toHaveLength(2);
+    expect(signals).toHaveLength(3);
     expect(signals[0]).toEqual({
       name: 'testName_summaryValueFontSize',
       update: `[${DONUT_SUMMARY_VALUE_FONT_SIZES.join(', ')}][testName_sizeTier]`,
@@ -103,6 +237,23 @@ describe('getDonutSummarySignals()', () => {
       name: 'testName_summaryLabelFontSize',
       update: `[${DONUT_SUMMARY_LABEL_FONT_SIZES.join(', ')}][testName_sizeTier]`,
     });
+  });
+
+  test('adds the requested caption gap and recenters the value when its label is hidden', async () => {
+    const options = { ...defaultDonutSummaryOptions, labelGap: 6 };
+    const distance = async (summary: DonutSummarySpecOptions) => {
+      const value = getSummaryValueEncode(summary);
+      const label = getSummaryLabelEncode({ ...summary, label: 'Visitors' });
+      return (await evaluateSummarySignal(label.update?.dy)) - (await evaluateSummarySignal(value.update?.dy));
+    };
+    expect((await distance(options)) - (await distance(defaultDonutSummaryOptions))).toBeCloseTo(6);
+    expect(await evaluateSummarySignal(getSummaryValueEncode({ ...options, hideLabel: true }).update?.dy)).toBe(0);
+    expect(() =>
+      getDonutSummarySignals({
+        ...defaultDonutOptions,
+        donutSummaries: [{ label: 'Visitors', labelGap: -1 }],
+      })
+    ).toThrow('finite nonnegative');
   });
 
   test.each([
@@ -116,8 +267,10 @@ describe('getDonutSummarySignals()', () => {
       variant: 'semicircle',
       donutSummaries: [summary],
     });
-    expect(signals).toHaveLength(2);
-    expect(signals.map(({ name }) => name)).toEqual(['testName_summaryValueFontSize', 'testName_summaryLabelFontSize']);
+    expect(signals.filter(({ name }) => name.endsWith('FontSize')).map(({ name }) => name)).toEqual([
+      'testName_summaryValueFontSize',
+      'testName_summaryLabelFontSize',
+    ]);
   });
 });
 

@@ -16,7 +16,7 @@ import { AxisInput, MarkInput, parseChartRequest } from '@spectrum-charts/schema
 
 import { Chart } from '../../../Chart.js';
 import { Axis } from '../../../components/index.js';
-import { renderCatalogBar, renderCatalogLine } from './marks/index.js';
+import { renderCatalogBar, renderCatalogDonut, renderCatalogLine } from './marks/index.js';
 
 export interface CatalogChartProps {
   /** Raw agent-supplied payload, validated against @spectrum-charts/schemas' ChartSchema. */
@@ -32,6 +32,8 @@ function renderMark(mark: MarkInput, key: number): ReactElement {
   switch (mark.component) {
     case 'Bar':
       return renderCatalogBar(mark, key);
+    case 'Donut':
+      return renderCatalogDonut(mark, key);
     case 'Line':
       return renderCatalogLine(mark, key);
   }

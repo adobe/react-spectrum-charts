@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 
@@ -108,6 +108,36 @@ const LabeledDonutStory: StoryFn<DonutProps> = (args): ReactElement => {
   );
 };
 
+const PointerInputsStory: StoryFn<DonutProps> = (args): ReactElement => {
+  const [lastEvent, setLastEvent] = useState('Hover, click, or right-click a segment or label');
+  const data = [
+    { id: 'alpha', series: 'Alpha', value: 60, shareLabel: '60,0 %' },
+    { id: 'beta', series: 'Beta', value: 40, shareLabel: '40,0 %' },
+  ];
+  const chartProps = useChartProps({ data, width: 560, height: 400, idKey: 'id' });
+  return (
+    <>
+      <Chart {...chartProps}>
+        <Donut
+          {...args}
+          onMouseOver={(datum) => setLastEvent(`Enter: ${datum.id}`)}
+          onMouseOut={(datum) => setLastEvent(`Leave: ${datum.id}`)}
+          onClick={(datum) => setLastEvent(`Click: ${datum.id}`)}
+          onContextMenu={(event, datum) => setLastEvent(`Context: ${datum.id} at ${event.clientX}, ${event.clientY}`)}
+        >
+          <DonutSummary label="Total" valueText="100 units" />
+          <SegmentLabel labelKey="shareLabel" value={false} percent={false} />
+        </Donut>
+      </Chart>
+      <output>{lastEvent}</output>
+    </>
+  );
+};
+
+const PointerInputs = bindWithProps(PointerInputsStory);
+PointerInputs.args = {};
+Object.assign(PointerInputs, { parameters: { controls: { include: [] } } });
+
 const Basic = bindWithProps(DonutStory);
 Basic.args = { ...defaultArgs };
 Object.assign(Basic, { parameters: { controls: { include: [] } } });
@@ -180,6 +210,7 @@ export {
   Variant,
   EmphasizedItems,
   HideDeemphasizedLabels,
+  PointerInputs,
   ChartInspectStory as ChartInspect,
   ChartPopoverStory as ChartPopover,
 };

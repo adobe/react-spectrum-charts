@@ -13,10 +13,11 @@ import { z } from 'zod';
 
 import { AxisSchema } from './axis.schema.js';
 import { BarSchema } from './marks/bar.schema.js';
+import { DonutSchema } from './marks/donut.schema.js';
 import { LineSchema } from './marks/line.schema.js';
 
 // Add each new mark schema to this union as it's built out.
-export const MarkSchema = z.discriminatedUnion('component', [BarSchema, LineSchema]);
+export const MarkSchema = z.discriminatedUnion('component', [BarSchema, DonutSchema, LineSchema]);
 
 export const ChartSchema = z.object({
   component: z.literal('Chart'),

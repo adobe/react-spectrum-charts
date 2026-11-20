@@ -78,6 +78,8 @@ export interface ChartGeometryEvent extends ChartRenderEvent {
   plotBounds: { x: number; y: number; width: number; height: number };
   /** Horizontal or vertical coordinates in the same frame; null means outside the scale domain or plot. */
   projections: readonly { id: string; coordinate: number | null }[];
+  /** Full labels and supplied valueText fit together, including an 8px caption inset per side. Independent of hideLabel. */
+  donutSummaries?: readonly { name: string; fits: boolean }[];
 }
 
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {

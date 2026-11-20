@@ -38,6 +38,25 @@ const DonutSummaryStory: StoryFn<DonutSummaryProps> = (args): ReactElement => {
   );
 };
 
+const HiddenSegmentsStory: StoryFn<DonutSummaryProps> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    data: [
+      { series: 'Alpha', value: 60 },
+      { series: 'Beta', value: 40 },
+    ],
+    width: 460,
+    height: 350,
+  });
+  return (
+    <Chart {...chartProps}>
+      <Donut>
+        <DonutSummary {...args} />
+      </Donut>
+      <Legend isToggleable defaultHiddenSeries={['Alpha', 'Beta']} />
+    </Chart>
+  );
+};
+
 const Basic = bindWithProps(DonutSummaryStory);
 Basic.args = {};
 Object.assign(Basic, { parameters: { controls: { include: [] } } });
@@ -59,8 +78,21 @@ const HideValue = bindWithProps(DonutSummaryStory);
 HideValue.args = { label: 'Visitors', hideValue: true };
 Object.assign(HideValue, { parameters: { controls: { include: ['hideValue'] } } });
 
+const ValueText = bindWithProps(DonutSummaryStory);
+ValueText.args = { label: 'Total', valueText: '36.000 units' };
+Object.assign(ValueText, { parameters: { controls: { include: ['valueText', 'hideValue'] } } });
+
+const HiddenSegments = bindWithProps(HiddenSegmentsStory);
+HiddenSegments.args = { label: 'Total', valueText: '100 units' };
+Object.assign(HiddenSegments, { parameters: { controls: { include: ['valueText', 'hideValue'] } } });
+
 const Delta = bindWithProps(DonutSummaryStory);
 Delta.args = { label: 'Visitors', delta: 0.025 };
 Object.assign(Delta, { parameters: { controls: { include: ['delta'] } } });
 
-export { Basic, Label, NumberFormat, HideValue, Delta };
+const SpacedLabel = bindWithProps(DonutSummaryStory);
+SpacedLabel.args = { label: 'Average time on site', valueText: '3m 42s', labelGap: 6 };
+const HiddenLabel = bindWithProps(DonutSummaryStory);
+HiddenLabel.args = { ...SpacedLabel.args, hideLabel: true };
+
+export { Basic, Label, NumberFormat, HideValue, Delta, ValueText, HiddenSegments, SpacedLabel, HiddenLabel };

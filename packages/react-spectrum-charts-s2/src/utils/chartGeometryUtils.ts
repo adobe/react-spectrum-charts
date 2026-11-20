@@ -17,7 +17,7 @@ export function getChartGeometry(
   view: View,
   spec: Spec,
   requests: readonly AxisProjectionRequest[]
-): Pick<ChartGeometryEvent, 'plotBounds' | 'projections'> {
+): Pick<ChartGeometryEvent, 'plotBounds' | 'projections' | 'donutSummaries'> {
   if (
     !Array.isArray(requests) ||
     requests.some(
@@ -77,5 +77,13 @@ export function getChartGeometry(
     }
     return { id, coordinate: project(value) };
   });
-  return { plotBounds, projections };
+  const suffix = '_summaryFits';
+  const donutSummaries = (spec.signals ?? [])
+    .filter(({ name }) => name.endsWith(suffix))
+    .map(({ name }) => {
+      const fits: unknown = view.signal(name);
+      if (typeof fits !== 'boolean') throw new Error('Donut summary fit must be a settled boolean.');
+      return { name: name.slice(0, -suffix.length), fits };
+    });
+  return { plotBounds, projections, ...(donutSummaries.length ? { donutSummaries } : {}) };
 }

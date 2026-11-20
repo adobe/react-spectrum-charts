@@ -21,6 +21,12 @@ export interface DonutOptions {
 
   /** Key in the data that is used as the color facet */
   color?: string;
+  /** Whether the React mark has a click callback. Defaults to false. */
+  hasOnClick?: boolean;
+  /** Whether the React mark has a context menu callback. Defaults to false. */
+  hasOnContextMenu?: boolean;
+  /** Whether the React mark has mouse enter or leave callbacks. Defaults to false. */
+  hasOnMouseInput?: boolean;
   /** Inner radius as a share of the outer radius. `0` draws a pie. Defaults to `0.85`. */
   holeRatio?: number;
   /** Shows the first row's value as a percent in the center. Use with two rows whose values sum to 1. */
@@ -59,6 +65,8 @@ type DonutOptionsWithDefaults =
   | 'chartInspects'
   | 'color'
   | 'donutSummaries'
+  | 'hasOnClick'
+  | 'hasOnContextMenu'
   | 'holeRatio'
   | 'isBoolean'
   | 'metric'

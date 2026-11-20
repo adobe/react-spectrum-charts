@@ -27,6 +27,7 @@ import {
   DONUT_SUMMARY_MIN_RADIUS_S2,
   DONUT_SUMMARY_VALUE_FONT_SIZES,
   FILTERED_TABLE,
+  TABLE,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
@@ -35,7 +36,10 @@ import { DonutSpecOptions, DonutSummaryOptions, DonutSummarySpecOptions } from '
 import { getDonutCenterYSignal, getDonutInnerRadiusExpr, getSizeTierValueExpr } from './donutUtils.js';
 import { getTextRuleExpr } from './segmentLabelUtils.js';
 
-type DonutSummaryLayoutOptions = Pick<DonutSummarySpecOptions, 'donutOptions' | 'hideValue' | 'label' | 'delta'>;
+type DonutSummaryLayoutOptions = Pick<
+  DonutSummarySpecOptions,
+  'donutOptions' | 'hideValue' | 'hideLabel' | 'labelGap' | 'label' | 'delta'
+>;
 
 /** Gets the delta font size, hiding semicircle deltas below M. */
 const getSummaryDeltaFontSizeExpr = ({ name, variant }: DonutSpecOptions): string => {
@@ -48,9 +52,12 @@ const getDonutSummaryLayout = (options: DonutSummaryLayoutOptions) => {
   const {
     donutOptions: { name, variant },
     hideValue,
-    label,
+    label: suppliedLabel,
+    hideLabel,
+    labelGap: extraGap = 0,
     delta,
   } = options;
+  const label = hideLabel ? undefined : suppliedLabel;
   const hasDelta = delta !== undefined;
   const valueFont = `${name}_summaryValueFontSize`;
   const labelFont = `${name}_summaryLabelFontSize`;
@@ -63,7 +70,8 @@ const getDonutSummaryLayout = (options: DonutSummaryLayoutOptions) => {
   const valueBaseline = `round(${valueFont} * 0.3)`;
   const nextRowBaseline = `round(${nextRowHeight} * 0.79) - round(${nextRowHeight} * 0.3)`;
   const rowGap = `ceil(${valueFont} * 0.25) + ${valueBaseline} + ${nextRowBaseline} - (${valueFont} + ${nextRowHeight}) / 2`;
-  const valueGap = !hideValue && (label || hasDelta) ? `(${nextRowHeight} > 0 ? ${rowGap} : 0)` : '0';
+  const addedGap = label && extraGap ? ` + ${extraGap}` : '';
+  const valueGap = !hideValue && (label || hasDelta) ? `(${nextRowHeight} > 0 ? ${rowGap}${addedGap} : 0)` : '0';
   const labelGap = label && hasDelta ? `ceil(${deltaFont} * 0.25)` : '0';
   const height =
     [valueHeight, labelHeight, deltaHeight, valueGap, labelGap].filter((part) => part !== '0').join(' + ') || '0';
@@ -121,12 +129,12 @@ const getDonutSummary = (options: DonutSpecOptions): DonutSummarySpecOptions | u
 const applyDonutSummaryPropDefaults = (
   { numberFormat = 'shortNumber', hideValue = false, ...options }: DonutSummaryOptions,
   donutOptions: DonutSpecOptions
-): DonutSummarySpecOptions => ({
-  donutOptions,
-  hideValue,
-  numberFormat,
-  ...options,
-});
+): DonutSummarySpecOptions => {
+  if (options.labelGap !== undefined && (!Number.isFinite(options.labelGap) || options.labelGap < 0)) {
+    throw new Error('DonutSummary labelGap must be a finite nonnegative number.');
+  }
+  return { donutOptions, hideValue, numberFormat, ...options };
+};
 
 /**
  * Gets the data for the donut summary
@@ -135,13 +143,13 @@ const applyDonutSummaryPropDefaults = (
  */
 export const getDonutSummaryData = (donutOptions: DonutSpecOptions): SourceData[] => {
   const donutSummary = getDonutSummary(donutOptions);
-  if (!donutSummary || donutOptions.isBoolean) {
+  if (!donutSummary || (donutOptions.isBoolean && donutSummary.valueText === undefined)) {
     return [];
   }
   return [
     {
       name: `${donutOptions.name}_summaryData`,
-      source: FILTERED_TABLE,
+      source: donutSummary.valueText !== undefined ? TABLE : FILTERED_TABLE,
       transform: [
         {
           type: 'aggregate',
@@ -165,10 +173,31 @@ export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[]
     return [];
   }
   const { name } = donutOptions;
-  return [
+  const signals: Signal[] = [
     { name: `${name}_summaryValueFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_VALUE_FONT_SIZES) },
     { name: `${name}_summaryLabelFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_LABEL_FONT_SIZES) },
   ];
+  if (donutSummary.label) {
+    const centered = { ...donutSummary, hideLabel: false };
+    const labelFont = `${name}_summaryLabelFontSize`;
+    const labelLimit = getDonutSummaryTextLimit(centered, labelFont, getDonutSummaryLayout(centered).label);
+    const checks = [
+      `${getDonutInnerRadiusExpr(donutOptions)} >= ${DONUT_SUMMARY_MIN_RADIUS_S2}`,
+      `${labelFont} > 0`,
+      `getLabelWidth(${JSON.stringify(donutSummary.label)}, 700, ${labelFont}) + 16 <= (${labelLimit.signal})`,
+    ];
+    if (!donutSummary.hideValue && donutSummary.valueText !== undefined) {
+      const valueFont = `${name}_summaryValueFontSize`;
+      checks.push(
+        `${valueFont} > 0`,
+        `getLabelWidth(${JSON.stringify(donutSummary.valueText)}, 800, ${valueFont}) <= (${
+          getSummaryValueLimit(centered).signal
+        })`
+      );
+    }
+    signals.push({ name: `${name}_summaryFits`, update: checks.join(' && ') });
+  }
+  return signals;
 };
 
 /**
@@ -196,24 +225,27 @@ export const getDonutSummaryMarks = (options: DonutSpecOptions): GroupMark[] => 
  * @returns GorupMark
  */
 export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
-  const { donutOptions, hideValue, label, delta } = options;
+  const { donutOptions, hideValue, hideLabel, label, delta } = options;
   const groupMark: Mark = {
     type: 'group',
     name: `${donutOptions.name}_summaryGroup`,
+    interactive: false,
     marks: [],
   };
   if (!hideValue) {
     groupMark.marks?.push({
       type: 'text',
       name: `${donutOptions.name}_summaryValue`,
+      interactive: false,
       from: { data: `${donutOptions.name}_summaryData` },
       encode: getSummaryValueEncode(options),
     });
   }
-  if (label) {
+  if (label && !hideLabel) {
     groupMark.marks?.push({
       type: 'text',
       name: `${donutOptions.name}_summaryLabel`,
+      interactive: false,
       from: { data: `${donutOptions.name}_summaryData` },
       encode: getSummaryLabelEncode({ ...options, label }),
     });
@@ -222,6 +254,7 @@ export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): Grou
     groupMark.marks?.push({
       type: 'text',
       name: `${donutOptions.name}_summaryDelta`,
+      interactive: false,
       from: { data: `${donutOptions.name}_summaryData` },
       encode: getSummaryDeltaEncode({ ...options, delta }),
     });
@@ -235,25 +268,29 @@ export const getDonutSummaryGroupMark = (options: DonutSummarySpecOptions): Grou
  * @returns GroupMark
  */
 export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions): GroupMark => {
-  const { donutOptions, hideValue, label, delta } = options;
+  const { donutOptions, hideValue, hideLabel, label, delta, valueText } = options;
+  const dataName = valueText !== undefined ? `${donutOptions.name}_summaryData` : `${donutOptions.name}_booleanData`;
   const groupMark: Mark = {
     type: 'group',
     name: `${donutOptions.name}_percentText`,
+    interactive: false,
     marks: [],
   };
   if (!hideValue) {
     groupMark.marks?.push({
       type: 'text',
       name: `${donutOptions.name}_booleanSummaryValue`,
-      from: { data: `${donutOptions.name}_booleanData` },
+      interactive: false,
+      from: { data: dataName },
       encode: getSummaryValueEncode(options),
     });
   }
-  if (label) {
+  if (label && !hideLabel) {
     groupMark.marks?.push({
       type: 'text',
       name: `${donutOptions.name}_booleanSummaryLabel`,
-      from: { data: `${donutOptions.name}_booleanData` },
+      interactive: false,
+      from: { data: dataName },
       encode: getSummaryLabelEncode({ ...options, label }),
     });
   }
@@ -261,7 +298,8 @@ export const getBooleanDonutSummaryGroupMark = (options: DonutSummarySpecOptions
     groupMark.marks?.push({
       type: 'text',
       name: `${donutOptions.name}_booleanSummaryDelta`,
-      from: { data: `${donutOptions.name}_booleanData` },
+      interactive: false,
+      from: { data: dataName },
       encode: getSummaryDeltaEncode({ ...options, delta }),
     });
   }
@@ -308,6 +346,7 @@ export const getSummaryValueEncode = (
 ): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
   const { donutOptions } = options;
   const text = getSummaryValueText(options);
+  const textExpr = options.valueText !== undefined ? JSON.stringify(options.valueText) : getTextRuleExpr(text);
   const fontSize = `${donutOptions.name}_summaryValueFontSize`;
   const limit = getSummaryValueLimit(options);
   return {
@@ -316,7 +355,7 @@ export const getSummaryValueEncode = (
       y: { signal: getDonutSummaryAnchorYSignal(options) },
       dy: { signal: getDonutSummaryLayout(options).value },
       text,
-      fontSize: getSummaryTextFontSize(donutOptions, getTextRuleExpr(text), fontSize, 800, limit.signal),
+      fontSize: getSummaryTextFontSize(donutOptions, textExpr, fontSize, 800, limit.signal),
       fontWeight: { value: 800 }, // S2 font weight for value
       align: { value: 'center' },
       baseline: { value: 'middle' },
@@ -333,7 +372,9 @@ export const getSummaryValueEncode = (
 export const getSummaryValueText = ({
   donutOptions,
   numberFormat,
+  valueText,
 }: DonutSummarySpecOptions): ProductionRule<TextValueRef> => {
+  if (valueText !== undefined) return { value: valueText };
   if (donutOptions.isBoolean) {
     return { signal: `format(datum['${donutOptions.metric}'], '.0%')` };
   }
@@ -394,11 +435,13 @@ export const getSummaryLabelEncode = (
 export const getSummaryDeltaEncode = ({
   donutOptions,
   hideValue,
+  hideLabel,
+  labelGap,
   label,
   delta,
 }: DonutSummarySpecOptions & { delta: number }): Partial<Record<EncodeEntryName, TextEncodeEntry>> => {
   const { colorScheme } = donutOptions;
-  const options = { donutOptions, hideValue, label, delta };
+  const options = { donutOptions, hideValue, hideLabel, labelGap, label, delta };
   const dy = getDonutSummaryLayout(options).delta;
   const fontSize = getSummaryDeltaFontSizeExpr(donutOptions);
   const limit = getDonutSummaryTextLimit(options, fontSize, dy);
