@@ -23,6 +23,7 @@ import {
 } from '@spectrum-charts/core-s2/constants';
 import { Datum, MarkBounds } from '@spectrum-charts/vega-spec-builder-s2';
 
+import type { AxisAnnotationOnClickDetail } from '../hooks/useAxisAnnotationOnClickDetails.js';
 import type { AxisLabelOnClickDetail } from '../hooks/useAxisLabelOnClickDetails.js';
 import type { MarkMouseInputDetail } from '../hooks/useMarkMouseInputDetails.js';
 import type { MarkOnClickDetail } from '../hooks/useMarkOnClickDetails.js';
@@ -203,6 +204,25 @@ export const getOnAxisLabelClickCallback = (axisLabelOnClickDetails?: AxisLabelO
 
 const isAxisLabelItem = (item: ActionItem): boolean =>
   isItemSceneItem(item) && 'role' in item.mark && item.mark.role === 'axis-label';
+
+export const getOnAxisAnnotationClickCallback =
+  (details: AxisAnnotationOnClickDetail[]): ViewEventCallback =>
+  (event, item) => {
+    if (!isItemSceneItem(item)) return;
+    const detail = details.find((entry) => entry.markName === Reflect.get(item.mark, 'name'));
+    if (!detail) return;
+    const annotations: unknown = item.datum.annotations;
+    if (!Array.isArray(annotations) || !annotations.length) throw new Error('Axis annotation activation requires IDs.');
+    const ids = annotations.map((entry: unknown) => {
+      const id: unknown =
+        entry && typeof entry === 'object' ? Reflect.get(entry, `${detail.annotationName}_id`) : undefined;
+      if (typeof id !== 'string' || !id) throw new Error('Axis annotation activation requires valid IDs.');
+      return id;
+    });
+    const nativeEvent: unknown = 'sourceEvent' in event ? event.sourceEvent : event;
+    if (!(nativeEvent instanceof MouseEvent)) throw new Error('Axis annotation activation requires a mouse event.');
+    detail.onClick(nativeEvent, [...new Set(ids)]);
+  };
 
 /**
  * Vega's tick datum.index is a fraction (`i / (tickCount - 1)`, per vega-encode's AxisTicks),

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Axis, Data, Mark, ScaleType, Signal, SourceData, ValuesData } from 'vega';
+import { Axis, Data, Mark, ScaleType, Signal, SourceData, Transforms, ValuesData } from 'vega';
 
 import {
   ANNOTATION_RANGED_ICON_SVG,
@@ -23,6 +23,7 @@ import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
 import { getCursor } from '../marks/markUtils.js';
 import {
+  AxisAnnotationData,
   AxisAnnotationOptions,
   AxisAnnotationSpecOptions,
   AxisSpecOptions,
@@ -40,15 +41,38 @@ import {
  */
 export const addAxisAnnotationData = (
   data: Data[],
-  { name, dataKey, color, colorScheme, options, format }: AxisAnnotationSpecOptions,
+  { name, dataKey, color, colorScheme, options, format, data: positions }: AxisAnnotationSpecOptions,
   dimension = DEFAULT_TIME_DIMENSION
 ) => {
+  if (positions !== undefined) {
+    if (format !== 'span') throw new Error('Precomputed axis annotations require span format.');
+    if (
+      !Array.isArray(positions) ||
+      positions.some(
+        (row) =>
+          !row ||
+          typeof row.id !== 'string' ||
+          !row.id ||
+          !Number.isFinite(row.value) ||
+          (row.lower === undefined) !== (row.upper === undefined) ||
+          (row.lower !== undefined &&
+            (row.upper === undefined ||
+              !Number.isFinite(row.lower) ||
+              !Number.isFinite(row.upper) ||
+              row.lower > row.value ||
+              row.value > row.upper))
+      ) ||
+      new Set(positions.map((row) => row.id)).size !== positions.length
+    ) {
+      throw new Error('Axis annotation positions require unique IDs and finite, ordered coordinates.');
+    }
+  }
   data.push(getAxisAnnotationDetailData(name, options, colorScheme));
   if (format === 'summary') {
     data.push(getAxisAnnotationSummaryData(name, dataKey, color, colorScheme));
   } else {
     data.push(
-      getAxisAnnotationAggregateData(name, dataKey, color, colorScheme, dimension),
+      getAxisAnnotationAggregateData(name, dataKey, color, colorScheme, dimension, positions),
       getAxisAnnotationRangeData(name)
     );
   }
@@ -59,24 +83,42 @@ const getAxisAnnotationDetailData = (name: string, options, colorScheme): Values
   return { name: `${name}_details`, values: newOptions };
 };
 
-const getAxisAnnotationAggregateData = (name, dataKey, color, colorScheme, dimension: string): SourceData => {
+const getAxisAnnotationAggregateData = (
+  name,
+  dataKey,
+  color,
+  colorScheme,
+  dimension: string,
+  positions?: AxisAnnotationData[]
+): SourceData | ValuesData => {
+  const sourceTransforms: Transforms[] =
+    positions !== undefined
+      ? []
+      : [
+          { type: 'filter', expr: `datum.${dataKey}` },
+          { type: 'flatten', fields: [dataKey], as: [`${name}_id`] },
+          {
+            type: 'aggregate',
+            groupby: [`${name}_id`],
+            fields: [dimension, dimension],
+            ops: ['min', 'max'],
+            as: ['min_datetime', 'max_datetime'],
+          },
+        ];
   return {
     name: `${name}_aggregate`,
-    source: FILTERED_TABLE,
+    ...(positions !== undefined
+      ? {
+          values: positions.map((row) => ({
+            ...row,
+            [`${name}_id`]: row.id,
+            min_datetime: row.lower ?? row.value,
+            max_datetime: row.upper ?? row.value,
+          })),
+        }
+      : { source: FILTERED_TABLE }),
     transform: [
-      { type: 'filter', expr: `datum.${dataKey}` },
-      {
-        type: 'flatten',
-        fields: [dataKey],
-        as: [`${name}_id`],
-      },
-      {
-        type: 'aggregate',
-        groupby: [`${name}_id`],
-        fields: [dimension, dimension],
-        ops: ['min', 'max'],
-        as: ['min_datetime', 'max_datetime'],
-      },
+      ...sourceTransforms,
       {
         type: 'formula',
         expr: 'datum.max_datetime - datum.min_datetime',
@@ -84,7 +126,7 @@ const getAxisAnnotationAggregateData = (name, dataKey, color, colorScheme, dimen
       },
       {
         type: 'formula',
-        expr: 'datum.width / 2 + toNumber(datum.min_datetime)',
+        expr: positions !== undefined ? 'datum.value' : 'datum.width / 2 + toNumber(datum.min_datetime)',
         as: 'center',
       },
       {
@@ -261,7 +303,12 @@ export const addAxisAnnotationMarks = (
  * @param marks
  * @param param1
  */
-export const getAxisAnnotationSummaryMarks = ({ chartPopovers, name, offset }: AxisAnnotationSpecOptions): Mark => {
+export const getAxisAnnotationSummaryMarks = ({
+  chartPopovers,
+  name,
+  offset,
+  hasOnClick,
+}: AxisAnnotationSpecOptions): Mark => {
   return {
     name: `${name}_group`,
     type: 'group',
@@ -281,7 +328,7 @@ export const getAxisAnnotationSummaryMarks = ({ chartPopovers, name, offset }: A
             // adding a 2px transparent border increases the area of the icon so it's easier to hover
             stroke: { value: 'transparent' },
             strokeWidth: { value: 2 },
-            cursor: getCursor(chartPopovers),
+            cursor: getCursor(chartPopovers, hasOnClick),
           },
           update: {
             path: {
@@ -309,7 +356,7 @@ export const getAxisAnnotationSummaryMarks = ({ chartPopovers, name, offset }: A
  * @param param1
  */
 export const getAxisAnnotationSpanMarks = (
-  { chartPopovers, name, offset }: AxisAnnotationSpecOptions,
+  { chartPopovers, name, offset, hasOnClick }: AxisAnnotationSpecOptions,
   scaleName: string
 ): Mark => {
   return {
@@ -403,7 +450,7 @@ export const getAxisAnnotationSpanMarks = (
             // adding a 2px transparent border increases the area of the icon so it's easier to hover
             stroke: { value: 'transparent' },
             strokeWidth: { value: 2 },
-            cursor: getCursor(chartPopovers),
+            cursor: getCursor(chartPopovers, hasOnClick),
           },
           update: {
             path: {
@@ -470,6 +517,8 @@ export const applyDefaultAxisAnnotationOptions = (
     color = DEFAULT_AXIS_ANNOTATION_COLOR,
     dataKey = 'annotations',
     options = [],
+    data,
+    hasOnClick,
   }: AxisAnnotationOptions,
   annotationIndex: number,
   axisName: string,
@@ -487,6 +536,8 @@ export const applyDefaultAxisAnnotationOptions = (
     options,
     axisName,
     format: format ?? (scaleType === 'time' ? 'span' : 'summary'),
+    ...(data !== undefined ? { data } : {}),
+    ...(hasOnClick ? { hasOnClick } : {}),
   };
 };
 

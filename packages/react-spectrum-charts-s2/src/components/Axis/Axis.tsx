@@ -27,6 +27,8 @@ import { AxisProps } from '../../types/index.js';
  * @alpha
  */
 const Axis: FC<AxisProps> = ({
+  axisAnnotations,
+  onAnnotationClick,
   position,
   baseline = false,
   baselineOffset = 0,

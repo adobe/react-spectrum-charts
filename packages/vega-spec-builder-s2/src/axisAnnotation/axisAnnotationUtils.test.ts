@@ -121,7 +121,86 @@ test.each(['datetime', 'timestamp'])(
 );
 
 describe('Spec builder, AxisAnnotation', () => {
+  test.each([false, true])(
+    'precomputed positions preserve source domains and resize independently (empty=%s)',
+    async (empty) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 400);
+      const rows = [
+        { timestamp: 1000, value: 1 },
+        { timestamp: 3000, value: 2 },
+      ];
+      const positions = empty
+        ? []
+        : [
+            { id: 'point', value: 2000 },
+            { id: 'range', value: 2000, lower: 1500, upper: 2500 },
+            { id: 'outside', value: 6000 },
+          ];
+      const spec = buildSpec({
+        data: rows,
+        animations: false,
+        axes: [
+          { position: 'bottom', labelFormat: 'time', hideDefaultLabels: true, axisAnnotations: [{ data: positions }] },
+        ],
+        marks: [{ markType: 'line', dimension: 'timestamp' }],
+      });
+      const timeScale = spec.scales?.find((scale) => scale.type === 'time');
+      if (!timeScale) throw new Error('Missing time scale.');
+      const view = new View(parse(JSON.parse(JSON.stringify(spec))), { renderer: 'none' }).insert('table', rows);
+      try {
+        let transforms: (string | null)[] | undefined;
+        for (const width of [400, 520]) {
+          await view.width(width).height(240).runAsync();
+          expect(view.scale(timeScale.name).domain().map(Number)).toEqual([1000, 3000]);
+          expect(view.data('table')).toHaveLength(2);
+          const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+          const paths = Array.from(svg.querySelectorAll('.axis0Annotation0_icon path'));
+          expect(paths).toHaveLength(empty ? 0 : 2);
+          expect(svg.querySelectorAll('[aria-label^="X-axis"] text')).toHaveLength(0);
+          const next = paths.map((path) => path.getAttribute('transform'));
+          if (transforms && !empty) expect(next).not.toEqual(transforms);
+          transforms = next;
+          expect(await view.toSVG()).not.toMatch(/NaN|Infinity/);
+        }
+        if (!empty)
+          expect(view.data('axis0Annotation0_aggregate')[0]).toMatchObject({
+            center: 2000,
+            lower: 1500,
+            upper: 2500,
+            number: 2,
+          });
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
   describe('addAxisAnnotationData()', () => {
+    test.each([
+      { positions: [{ id: 'a', value: NaN }] },
+      { positions: [{ id: 'a', value: 1, lower: 0 }] },
+      { positions: [{ id: 'a', value: 1, lower: 2, upper: 0 }] },
+      { positions: [{ id: 'a', value: 1, lower: 0, upper: Infinity }] },
+      { positions: [{ id: '', value: 1 }] },
+      {
+        positions: [
+          { id: 'a', value: 1 },
+          { id: 'a', value: 2 },
+        ],
+      },
+    ])('rejects malformed or duplicate precomputed positions: $positions', ({ positions }) => {
+      expect(() => addAxisAnnotationData([], { ...testAxisAnnotation, data: positions })).toThrow(
+        'unique IDs and finite, ordered coordinates'
+      );
+    });
+
+    test('rejects precomputed positions in summary mode', () => {
+      expect(() => addAxisAnnotationData([], { ...testAxisAnnotationSummary, data: [] })).toThrow(
+        'require span format'
+      );
+    });
+
     test('test', () => {
       const data = [];
       addAxisAnnotationData(data, testAxisAnnotation);
