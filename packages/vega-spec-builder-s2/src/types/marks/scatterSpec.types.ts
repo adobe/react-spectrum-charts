@@ -61,7 +61,7 @@ export interface ScatterOptions {
   opacity?: OpacityFacet;
   /**
    * Thin border around points: `auto` only where a point's fill has under 3:1 contrast with the background, `always`, or `never`.
-   * `stroke` and `lineWidth` take precedence. Defaults to `auto`.
+   * `stroke` and `lineWidth` take precedence. Defaults to `never`.
    */
   outline?: ScatterOutline;
   /** Point width: a numeric data key scaled between the chart's `symbolSizes`, or a static size. Defaults to `{ value: 'M' }`. */

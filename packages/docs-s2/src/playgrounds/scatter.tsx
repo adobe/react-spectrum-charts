@@ -415,7 +415,7 @@ export const ScatterOpacityPlayground = () => (
 );
 
 const outlineControls: PlaygroundControl[] = [
-  { group: 'Scatter', name: 'outline', type: 'select', options: ['auto', 'always', 'never'], defaultValue: 'auto' },
+  { group: 'Scatter', name: 'outline', type: 'select', options: ['auto', 'always', 'never'], defaultValue: 'never' },
   {
     group: 'Scatter',
     name: 'lineWidth',

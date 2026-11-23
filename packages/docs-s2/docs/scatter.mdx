@@ -127,10 +127,10 @@ its own opacity. Opacities are evenly spaced unless you list them in `opacities`
 `outline` adds a thin border so pale points stay visible. The border is `gray-1000` at 42% opacity,
 1px wide, like the border on a Spectrum 2 color swatch.
 
-- `auto` (default) outlines only points whose fill has less than 3:1 contrast with the chart
+- `never` (default) draws no border.
+- `auto` outlines only points whose fill has less than 3:1 contrast with the chart
   background, so pale colors get a border and strong ones don't.
 - `always` outlines every point.
-- `never` turns the border off.
 
 For a custom outline, set `lineWidth` and `stroke` instead; they take precedence over `outline`.
 `lineWidth` takes `XS` (1px), `S` (1.5px),

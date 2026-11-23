@@ -106,7 +106,7 @@ export const addScatter = produce<
       metric = DEFAULT_METRIC,
       name,
       opacity = { value: 1 },
-      outline = 'auto',
+      outline = 'never',
       scatterAnnotations = [],
       scatterPaths = [],
       scatterSizeLegends = [],
