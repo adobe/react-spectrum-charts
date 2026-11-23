@@ -59,7 +59,7 @@ DateValuesWithHiddenLabels.args = {
   data: [24, 38, 30, 52, 44].map((value, index) => ({
     timestamp: new Date(Date.UTC(2026, 0, index + 1)),
     value,
-    annotations: index === 0 ? ['point'] : index >= 2 ? ['range'] : [],
+    annotations: [...(index === 0 ? ['point'] : []), ...(index >= 2 ? ['range'] : [])],
   })),
   width: 560,
   height: 280,
