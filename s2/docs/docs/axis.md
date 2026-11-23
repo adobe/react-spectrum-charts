@@ -342,6 +342,8 @@ import { Axis, Bar, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
 
 `range` fixes the minimum and maximum of a linear or time axis, such as `[0, 0.05]`, instead of fitting the data. It is ignored on band scales.
 
+For a Line with `dualMetricAxis`, each metric axis's `range` applies independently to its primary or secondary scale. Hiding axis labels does not remove its fixed range.
+
 ```jsx
 import { Axis, Chart, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 
