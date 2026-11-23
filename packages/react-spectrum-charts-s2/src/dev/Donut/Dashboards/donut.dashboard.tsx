@@ -36,6 +36,7 @@ import {
   SegmentLabelProps,
   TitleProps,
 } from '../../../types/index.js';
+import { ContextMenu, Scrolling, SharedLegendExample } from '../../Legend/Coverage/StandaloneLegend.story.js';
 import {
   Variation,
   VariationDashboard,
@@ -689,6 +690,42 @@ const baseDonutVariations: Variation[] = [
 
 const legendVariations: Variation[] = [
   {
+    id: 'legend-standalone',
+    title: 'Shared standalone legend',
+    description: 'One controlled legend hides the same series across two independent donuts.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Legend.items', 'Legend.hiddenSeries', 'Legend.onClick'],
+    render: () => <SharedLegendExample position="top" align="middle" />,
+  },
+  {
+    id: 'legend-standalone-side',
+    title: 'Standalone side legend',
+    description: 'Centers a shared vertical legend beside two donuts.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Legend.items', 'Legend.position=left', 'Legend.align=middle'],
+    render: () => <SharedLegendExample position="left" align="middle" />,
+  },
+  {
+    id: 'legend-standalone-scroll',
+    title: 'Scrollable standalone legend',
+    description: 'Keeps shared entries in one row inside a horizontal overflow container.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Legend.overflow=scroll'],
+    render: () => <SharedLegendExample {...Scrolling.args} />,
+  },
+  {
+    id: 'legend-standalone-context',
+    title: 'Standalone context dialog',
+    description: 'Right-click or press Shift+F10 on an entry to open its context dialog.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Legend.renderContextMenu'],
+    render: () => <SharedLegendExample {...ContextMenu.args} />,
+  },
+  {
     id: 'legend-default',
     title: 'Legend defaults',
     description: 'Adds a Legend with every default; it renders below the donut.',
@@ -967,6 +1004,13 @@ const chartPopoverCoverage: SiblingCoverage<ChartPopoverProps> = {
 };
 
 const legendCoverage: SiblingCoverage<LegendProps> = {
+  items: ['legend-standalone'],
+  hiddenSeries: ['legend-standalone'],
+  align: ['legend-standalone-side'],
+  overflow: ['legend-standalone-scroll'],
+  renderContextMenu: ['legend-standalone-context'],
+  colorScheme: { skip: 'Standalone color schemes are covered by Legend component tests and Storybook controls' },
+  dataTestId: { skip: 'Test hook; does not change visualization behavior' },
   defaultHiddenSeries: ['legend-toggleable'],
   descriptions: ['legend-descriptions'],
   hiddenEntries: ['legend-hidden-entries'],

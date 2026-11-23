@@ -18,6 +18,7 @@ import {
   LegendPlayground,
   LegendPopoverPlayground,
   LegendPositionPlayground,
+  LegendStandalonePlayground,
   LegendSymbolsPlayground,
   LegendTitlePlayground,
   LegendToggleablePlayground,
@@ -36,7 +37,7 @@ other series while an entry is hovered.
 
 ## Data
 
-The legend reads its entries from the chart's data and marks, so it has no data of its own. Most
+Inside `Chart`, the legend reads its entries from the chart's data and marks. Most
 examples on this page draw one line per marketing channel from `legendVisitsData`:
 
 <DataCode name="legendVisitsData" />
@@ -229,6 +230,82 @@ the legend or leave little room for the plot
 The S2 `Legend` doesn't support these S1 props yet: `_preferredColumns` and `_maxRows` (row limits
 with pagination) and `_labelWrap`.
 :::
+
+## Shared standalone legends
+
+Supply `items` to render `Legend` **outside** `Chart`, for example to control several charts
+with one shared legend. This mode uses Spectrum 2 controls and the same symbol paths and
+hidden-eye styling as chart-internal legends. Without `items`, existing SVG legends are unchanged.
+Render it inside a Spectrum 2 `Provider`, like other Spectrum 2 controls.
+
+<LegendStandalonePlayground />
+
+Each item supplies a unique, nonempty `seriesName`, a nonempty `label`, and a `color` (Spectrum
+2 token or CSS color). Optional `description` supplies the full hover and accessible description.
+Names must match the series identities in each controlled chart.
+
+Standalone visibility is controlled: pass `hiddenSeries` to both the legend and the charts,
+then update it from `onClick`. Clicking does not mutate visibility internally, and every series
+may be hidden. Do not use `isToggleable` or `defaultHiddenSeries` in this mode.
+
+```tsx
+import { useState } from 'react';
+
+import { Provider } from '@react-spectrum/s2';
+import { Chart, Donut, Legend } from '@spectrum-charts/react-spectrum-charts-s2';
+
+const items = [
+  { seriesName: 'Search', label: 'Search', color: 'categorical-100' },
+  { seriesName: 'Direct', label: 'Direct', color: 'categorical-200' },
+];
+const data = [
+  { series: 'Search', value: 60 },
+  { series: 'Direct', value: 40 },
+];
+
+function SharedLegend() {
+  const [hiddenSeries, setHiddenSeries] = useState<string[]>([]);
+  const toggle = (name: string) =>
+    setHiddenSeries((hidden) => (hidden.includes(name) ? hidden.filter((entry) => entry !== name) : [...hidden, name]));
+  return (
+    <Provider colorScheme="light">
+      <Legend items={items} hiddenSeries={hiddenSeries} onClick={toggle} position="top" />
+      {[1, 2].map((factor) => (
+        <Chart
+          key={factor}
+          data={data.map((row) => ({ ...row, value: row.value * factor }))}
+          colors={items.map((item) => item.color)}
+          hiddenSeries={hiddenSeries}
+        >
+          <Donut />
+        </Chart>
+      ))}
+    </Provider>
+  );
+}
+```
+
+- `position` selects horizontal (`top`/`bottom`) or vertical (`left`/`right`) entries;
+  place the component itself on the desired side. `align` selects start, middle, or end.
+- Horizontal entries wrap by default. `overflow="scroll"` keeps one row; put the legend
+  inside a container with `overflowX: 'auto'` to enable scrolling. Bounded vertical legends
+  can likewise use an `overflowY: 'auto'` container. Centered side lists grow from their
+  minimum full height, keeping the first entry reachable when the list overflows.
+- `labelLimit` caps the standalone label's width; full labels wrap rather than being struck
+  through or truncated. Hidden symbols change without changing their reserved width.
+- `colorScheme` defaults to `light`; supply `dark` alongside a dark Spectrum provider.
+- `onMouseOver` and `onMouseOut` also follow keyboard focus. Without event handlers or a
+  context-menu renderer, entries are static text and symbols, suitable for exports.
+- `renderContextMenu(seriesName, close)` supplies app-owned content in an anchored context
+  dialog. Right-click, Shift+F10, and the context-menu key open it without toggling visibility
+  or bubbling a context menu to the parent. Call `close()` after saving or cancelling;
+  Escape also closes it and focus returns to the entry. Use this instead of `ChartPopover`
+  children in standalone mode.
+- `dataTestId` optionally identifies the standalone list in tests.
+
+Only the standalone props above and the common layout/event props apply to this mode; facets,
+titles, highlighting, and `legendLabels`/`descriptions` maps remain chart-internal options.
+For standalone labels and descriptions, use the corresponding item fields.
 
 ## API
 

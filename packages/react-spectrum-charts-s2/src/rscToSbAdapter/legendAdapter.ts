@@ -15,9 +15,25 @@ import { LegendProps } from '../types/index.js';
 import { ChildrenToOptions } from './childOptions.types.js';
 
 export const getLegendOptions = (
-  { children, titleLimit, onClick, onMouseOut, onMouseOver, ...legendProps }: LegendProps,
+  {
+    children,
+    titleLimit,
+    onClick,
+    onMouseOut,
+    onMouseOver,
+    items,
+    hiddenSeries: _hiddenSeries,
+    colorScheme: _colorScheme,
+    overflow: _overflow,
+    renderContextMenu: _renderContextMenu,
+    dataTestId: _dataTestId,
+    ...legendProps
+  }: LegendProps,
   childrenToOptions: ChildrenToOptions
 ): LegendOptions => {
+  if (items !== undefined) {
+    throw new Error('A Legend with items must be rendered outside Chart.');
+  }
   const { chartPopovers } = childrenToOptions(children);
 
   return {

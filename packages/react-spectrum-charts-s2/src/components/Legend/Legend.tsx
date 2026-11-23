@@ -14,6 +14,7 @@
 import { FC } from 'react';
 
 import { LegendProps } from '../../types/index.js';
+import { StandaloneLegend } from './StandaloneLegend.js';
 
 /**
  * Adds a legend for the series in the chart.
@@ -28,6 +29,13 @@ const Legend: FC<LegendProps> = ({
   highlight = false,
   isToggleable = false,
   legendLabels,
+  items,
+  hiddenSeries,
+  colorScheme = 'light',
+  overflow = 'wrap',
+  renderContextMenu,
+  dataTestId,
+  labelLimit,
   titleLimit,
   lineType,
   lineWidth,
@@ -39,7 +47,26 @@ const Legend: FC<LegendProps> = ({
   symbolShape,
   title,
 }) => {
-  return null;
+  if (items === undefined) return null;
+  if (isToggleable || defaultHiddenSeries !== undefined) {
+    throw new Error('Standalone legends are controlled. Use hiddenSeries and onClick instead of isToggleable.');
+  }
+  return (
+    <StandaloneLegend
+      items={items}
+      hiddenSeries={hiddenSeries}
+      colorScheme={colorScheme}
+      overflow={overflow}
+      position={position}
+      align={align}
+      labelLimit={labelLimit}
+      renderContextMenu={renderContextMenu}
+      dataTestId={dataTestId}
+      onClick={onClick}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+    />
+  );
 };
 
 // displayName is used to validate the component type in the spec builder

@@ -36,7 +36,6 @@ import {
   TableView,
   Text,
 } from '@react-spectrum/s2';
-
 import { Axis, ChartInspect, ChartPopover, Legend, Line } from '@spectrum-charts/react-spectrum-charts-s2';
 
 import { DocsChart as Chart } from '../components/examples/DocsChart';
@@ -130,9 +129,7 @@ const getLegendPreviewSize = (element: ReactElement): PreviewSize => {
     const columns = Math.max(1, Math.floor(PLOT_WIDTH / (labelWidth + HORIZONTAL_ENTRY_PADDING)));
     const rows = Math.ceil(labels.length / columns);
     height +=
-      HORIZONTAL_LEGEND_PADDING +
-      rows * HORIZONTAL_LEGEND_ROW_HEIGHT +
-      (title ? HORIZONTAL_LEGEND_TITLE_HEIGHT : 0);
+      HORIZONTAL_LEGEND_PADDING + rows * HORIZONTAL_LEGEND_ROW_HEIGHT + (title ? HORIZONTAL_LEGEND_TITLE_HEIGHT : 0);
   }
   return { width: Math.min(width, MAX_WIDTH), height };
 };
@@ -435,6 +432,45 @@ const hiddenSeriesControls: PlaygroundControl[] = [
     defaultValue: 'Email',
   },
 ];
+
+export const LegendStandalonePlayground = () => {
+  const { colorMode } = useColorMode();
+  return (
+    <PropPlayground
+      component="Legend"
+      previewSize={() => ({ width: 360, height: 160 })}
+      controls={[
+        { name: 'position', type: 'select', options: ['top', 'left', 'right', 'bottom'], defaultValue: 'top' },
+        { name: 'overflow', type: 'select', options: ['wrap', 'scroll'], defaultValue: 'wrap' },
+        { name: 'hiddenSeries', type: 'select', options: ['none', 'Email', 'Email, Direct'], defaultValue: 'Email' },
+        { name: 'renderContextMenu', type: 'boolean', defaultValue: false },
+      ]}
+      render={({ position = 'top', overflow, hiddenSeries = 'Email', renderContextMenu }) => (
+        <Legend
+          items={['Search', 'Direct', 'Email'].map((name, index) => ({
+            seriesName: name,
+            label: name,
+            color: `categorical-${(index + 1) * 100}`,
+            description: `${name} channel`,
+          }))}
+          position={position as 'top' | 'left' | 'right' | 'bottom'}
+          overflow={overflow as 'wrap' | 'scroll' | undefined}
+          hiddenSeries={toList(hiddenSeries)}
+          dataTestId="standalone-legend-example"
+          colorScheme={colorMode}
+          renderContextMenu={
+            renderContextMenu
+              ? withSource(
+                  (name: string, close: () => void) => <Button onPress={close}>{name}</Button>,
+                  '(seriesName, close) => <Button onPress={close}>{seriesName}</Button>'
+                )
+              : undefined
+          }
+        />
+      )}
+    />
+  );
+};
 
 /**
  * Playground for hiding series from outside the chart.

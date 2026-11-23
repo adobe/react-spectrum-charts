@@ -18,6 +18,9 @@ import { childrenToOptions } from './childrenAdapter.js';
 import { getLegendOptions } from './legendAdapter.js';
 
 describe('getLegendOptions()', () => {
+  it('rejects standalone items inside Chart instead of silently ignoring them', () => {
+    expect(() => getLegendOptions({ items: [] }, childrenToOptions)).toThrow('outside Chart');
+  });
   it('should return all basic options', () => {
     const options = getLegendOptions({}, childrenToOptions);
     expect(options).toHaveProperty('hasOnClick', false);
