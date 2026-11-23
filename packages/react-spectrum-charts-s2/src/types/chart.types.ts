@@ -79,7 +79,12 @@ export interface ChartGeometryEvent extends ChartRenderEvent {
   /** Horizontal or vertical coordinates in the same frame; null means outside the scale domain or plot. */
   projections: readonly { id: string; coordinate: number | null }[];
   /** Full labels and supplied valueText fit together, including an 8px caption inset per side. Independent of hideLabel. */
-  donutSummaries?: readonly { name: string; fits: boolean }[];
+  donutSummaries?: readonly {
+    name: string;
+    fits: boolean;
+    /** Top of the ring and visible segment labels, in the same coordinate frame as plotBounds. */
+    top: number;
+  }[];
 }
 
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {

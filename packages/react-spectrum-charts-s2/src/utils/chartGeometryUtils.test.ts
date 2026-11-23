@@ -44,11 +44,79 @@ test.each([false, true])(
     try {
       for (const width of [80, 500, 80, 500]) {
         await view.width(width).height(width).runAsync();
-        expect(getChartGeometry(view, spec, []).donutSummaries).toEqual([{ name: 'responsive', fits: width === 500 }]);
+        expect(getChartGeometry(view, spec, []).donutSummaries).toEqual([
+          { name: 'responsive', fits: width === 500, top: expect.any(Number) },
+        ]);
         const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
         expect(Boolean(svg.querySelector('g.responsive_summaryLabel text'))).toBe(!hideLabel);
         if (width === 500) expect(svg.querySelector('g.responsive_summaryValue text')?.textContent).toBe('3m 42s');
       }
+    } finally {
+      view.finalize();
+    }
+  }
+);
+
+test('anchors external captions to the ring rather than the top of a tall chart', async () => {
+  const rows = [{ series: 'Alpha', value: 100 }];
+  const spec = buildSpec({
+    data: rows,
+    animations: false,
+    marks: [{ markType: 'donut', name: 'anchored', donutSummaries: [{ label: 'Long metric caption' }] }],
+  });
+  const options = getVegaEmbedOptions({});
+  Object.entries(options.expressionFunctions ?? {}).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', (width: number) => width);
+  const view = new View(parse(structuredClone(spec), options.config), { renderer: 'none' }).insert('table', rows);
+  try {
+    view.padding({ top: 11, bottom: 7, left: 0, right: 0 });
+    for (const height of [700, 400, 700]) {
+      await view.width(200).height(height).runAsync();
+      const { plotBounds, donutSummaries } = getChartGeometry(view, spec, []);
+      const ringTop = plotBounds.y + view.height() / 2 - view.signal('anchored_outerRadius');
+      const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+      const strokeWidth = Number(svg.querySelector('.anchored path')?.getAttribute('stroke-width'));
+      expect(strokeWidth).toBeGreaterThan(0);
+      expect(donutSummaries?.[0].top).toBeGreaterThan(50);
+      // Vega expands the gap-adjusted arc bounds by a full stroke width.
+      expect(donutSummaries?.[0].top).toBeCloseTo(ringTop - 1.5 * strokeWidth, 6);
+    }
+  } finally {
+    view.finalize();
+  }
+});
+
+test.each([false, true])(
+  'includes visible percentage labels without losing zero-valued ring geometry (%s)',
+  async (empty) => {
+    const rows = [
+      { series: 'Alpha', value: empty ? 0 : 5, shareLabel: '5%' },
+      { series: 'Beta', value: empty ? 0 : 95, shareLabel: '95%' },
+    ];
+    const spec = buildSpec({
+      data: rows,
+      animations: false,
+      marks: [
+        {
+          markType: 'donut',
+          name: 'labeled',
+          segmentLabels: [{ labelKey: 'shareLabel', percent: false, value: false }],
+          donutSummaries: [{ label: 'Long metric caption' }],
+        },
+      ],
+    });
+    const options = getVegaEmbedOptions({});
+    Object.entries(options.expressionFunctions ?? {}).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const view = new View(parse(structuredClone(spec), options.config), { renderer: 'none' }).insert('table', rows);
+    try {
+      await view.width(400).height(700).runAsync();
+      const { plotBounds, donutSummaries } = getChartGeometry(view, spec, []);
+      const top = donutSummaries?.[0].top;
+      const ringTop = plotBounds.y + view.height() / 2 - view.signal('labeled_outerRadius');
+      expect(Number.isFinite(top)).toBe(true);
+      if (empty) expect(top).toBeCloseTo(ringTop, 6);
+      else expect(top).toBeLessThan(ringTop - 5);
     } finally {
       view.finalize();
     }

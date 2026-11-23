@@ -122,7 +122,10 @@ Ring width and `DonutSummary` text change with the donut's size; see [Responsive
 - `labelGap` adds extra pixels between the value and caption; it defaults to `0`.
 - `hideLabel` hides the caption and recenters the value without changing fit reporting.
 
-`Chart.onGeometryChange` reports `donutSummaries`, with each donut's `name` and `fits`.
+`Chart.onGeometryChange` reports `donutSummaries`, with each donut's `name`, `fits`,
+and `top`. The `top` coordinate includes the ring and visible segment labels in
+the same SVG/canvas coordinate frame as `plotBounds`. Position an external caption's
+bottom a few pixels above `top` to keep it near the artwork in tall or narrow charts.
 Fit checks the full caption and supplied `valueText` at their responsive font sizes,
 including `labelGap` and an 8px horizontal caption inset per side. It is independent of
 `hideLabel`, so a host can show the full caption outside a small donut and move it

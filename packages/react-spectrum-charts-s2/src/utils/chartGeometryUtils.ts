@@ -9,9 +9,37 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { Spec, View } from 'vega';
+import { Scene, SceneGroup, SceneItem, Spec, View } from 'vega';
 
 import { AxisProjectionRequest, ChartGeometryEvent } from '../types/chart.types.js';
+import { getItemBounds, isItemSceneItem } from './markClickUtils.js';
+
+function getDonutTop(view: View, name: string): number {
+  const scene: Scene & { root?: Scene } = view.scenegraph();
+  if (!scene.root) throw new Error('Donut geometry requires a settled scenegraph.');
+  let top = Infinity;
+  const visit = (node: Scene | SceneGroup | SceneItem) => {
+    if (isItemSceneItem(node) && 'name' in node.mark && typeof node.mark.name === 'string') {
+      const markName = node.mark.name;
+      const isRing = markName === name || markName === `${name}_emptyState`;
+      const isLabel =
+        node.mark.marktype === 'text' &&
+        markName.startsWith(`${name}_`) &&
+        /(?:segmentLabel|SegmentLabel)/.test(markName.slice(name.length)) &&
+        (node.opacity ?? 1) > 0 &&
+        !('fontSize' in node && node.fontSize === 0) &&
+        !('text' in node && node.text === '');
+      if (isRing || isLabel) {
+        const bounds = getItemBounds(node);
+        if (Number.isFinite(bounds.y1) && bounds.y2 > bounds.y1) top = Math.min(top, bounds.y1);
+      }
+    }
+    if ('items' in node) node.items.forEach(visit);
+  };
+  visit(scene.root);
+  if (!Number.isFinite(top)) throw new Error('Donut geometry requires visible, settled ring bounds.');
+  return top;
+}
 
 export function getChartGeometry(
   view: View,
@@ -83,7 +111,8 @@ export function getChartGeometry(
     .map(({ name }) => {
       const fits: unknown = view.signal(name);
       if (typeof fits !== 'boolean') throw new Error('Donut summary fit must be a settled boolean.');
-      return { name: name.slice(0, -suffix.length), fits };
+      const donutName = name.slice(0, -suffix.length);
+      return { name: donutName, fits, top: plotBounds.y + getDonutTop(view, donutName) };
     });
   return { plotBounds, projections, ...(donutSummaries.length ? { donutSummaries } : {}) };
 }
