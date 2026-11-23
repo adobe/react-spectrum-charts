@@ -112,6 +112,18 @@ const getRequiredGroupMarks = (group: ReturnType<typeof getOnlyRichLabelGroup>) 
 };
 
 describe('getSegmentLabelMarks()', () => {
+  test.each([false, true])('applies primary label typography to direct and rich labels: rich=%s', (swatch) => {
+    const options: DonutSpecOptions = {
+      ...defaultDonutOptions,
+      segmentLabels: [{ fontSize: 12, fontWeight: 600, swatch, value: true }],
+    };
+    const signals = swatch ? getRichSegmentLabelSignals(options) : getSegmentLabelSignals(options);
+    expect(signals.find(({ name }) => name.endsWith('NameFontSize'))).toHaveProperty('update', '12');
+    const groups = swatch ? getRichSegmentLabelMarks(options) : getSegmentLabelMarks(options);
+    const nameMark = groups[0]?.marks?.find((mark) => mark.type === 'text');
+    expect(nameMark?.encode?.update).toHaveProperty('fontWeight', { value: 600 });
+  });
+
   test('should return empty array if isBoolean', () => {
     const marks = getSegmentLabelMarks({
       ...defaultDonutOptionsWithSegmentLabel,

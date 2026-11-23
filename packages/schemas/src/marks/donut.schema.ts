@@ -27,6 +27,22 @@ export const DonutSummarySchema = z.object({
 export const SegmentLabelSchema = z.object({
   component: z.literal('SegmentLabel'),
   labelKey: z.string().optional().describe('Field containing label text; defaults to the color field.'),
+  fontSize: z.number().positive().finite().optional().describe('Primary label size in pixels.'),
+  fontWeight: z
+    .union([
+      z.enum(['normal', 'bold', 'bolder', 'lighter']),
+      z.literal(100),
+      z.literal(200),
+      z.literal(300),
+      z.literal(400),
+      z.literal(500),
+      z.literal(600),
+      z.literal(700),
+      z.literal(800),
+      z.literal(900),
+    ])
+    .optional()
+    .describe('Primary label font weight.'),
   labelMode: z.enum(['emphasized', 'deemphasized']).optional(),
   value: z.boolean().optional(),
   valueFormat: z.string().optional(),
@@ -50,6 +66,7 @@ export const DonutSchema = z.object({
   metric: z.string().optional(),
   name: z.string().optional(),
   holeRatio: z.number().optional(),
+  labelSpaceRatio: z.number().min(0).max(1).optional(),
   isBoolean: z.boolean().optional(),
   sortOrder: z.enum(['valueDescending', 'data']).optional(),
   emphasizedItems: z.array(z.union([z.string(), z.number()])).optional(),

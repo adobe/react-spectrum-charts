@@ -18,7 +18,10 @@ import {
   DEFAULT_HOLE_RATIO,
   DEFAULT_OPACITY_RULE,
   DONUT_BOOLEAN_SECONDARY_COLOR,
+  DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
+  DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT,
   DONUT_LABELED_RADIUS,
+  DONUT_LABEL_EDGE_PADDING,
   DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_LABEL_RING_GAPS,
   DONUT_RADIUS,
@@ -35,6 +38,7 @@ import {
   HOVERED_ITEM,
   SELECTED_ITEM,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 
@@ -241,6 +245,32 @@ export const getDonutOuterRadiusExpr = ({ name }: Pick<DonutSpecOptions, 'name'>
  */
 export const getDonutInnerRadiusExpr = ({ name }: Pick<DonutSpecOptions, 'name'>): string => `${name}_innerRadius`;
 
+const usesMeasuredLabelSpace = (options: DonutSpecOptions): boolean =>
+  options.labelSpaceRatio !== undefined &&
+  options.segmentLabels.every(
+    (label) =>
+      label.value === false && label.percent === false && !label.swatch && !label.showValueRow && !label.showTotal
+  );
+
+const getLabelSpaceRatio = (options: DonutSpecOptions): number =>
+  Math.max(
+    options.labelSpaceRatio ?? DONUT_LABEL_MIN_SPACE_RATIO,
+    usesMeasuredLabelSpace(options) ? 0 : DONUT_LABEL_MIN_SPACE_RATIO
+  );
+
+const getLabelWidthExpr = ({ segmentLabels, color }: DonutSpecOptions, fontSize: number | string): string => {
+  const widths = segmentLabels.map(
+    ({ labelKey, fontSize: labelSize, fontWeight }) =>
+      `getMaxLabelWidth(data('${TABLE}'), ${JSON.stringify(labelKey ?? color)}, ${JSON.stringify(
+        fontWeight ?? DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT
+      )}, ${labelSize ?? fontSize})`
+  );
+  return `max(0, ${widths.join(', ')})`;
+};
+
+const getMaxLabelFontSize = ({ segmentLabels }: DonutSpecOptions, fontSize: number): number =>
+  Math.max(0, ...segmentLabels.map((label) => label.fontSize ?? fontSize));
+
 /**
  * Gets the donut's outer radius; with labels, shrinks the donut so its labels fit inside the chart, keeping it within its size tier.
  * @param donutOptions
@@ -254,7 +284,20 @@ const getDonutOuterRadiusUpdate = (options: DonutSpecOptions): string => {
   // the radius + the label gap + the minimum label space (radius × DONUT_LABEL_MIN_SPACE_RATIO) fills the base radius
   const baseRadius = DONUT_LABELED_RADIUS;
   const ringGap = getDonutLabelRingGapSignalName(options.name);
-  const labelFitRadius = `(${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MIN_SPACE_RATIO})`;
+  let labelFitRadius = `(${baseRadius} - ${ringGap}) / (1 + ${getLabelSpaceRatio(options)})`;
+  if (usesMeasuredLabelSpace(options)) {
+    const fontSize = getSizeTierValueExpr(
+      options.name,
+      DONUT_DIRECT_LABEL_NAME_FONT_SIZES.map((size) => getMaxLabelFontSize(options, size))
+    );
+    const tierFontSize = getSizeTierValueExpr(options.name, DONUT_DIRECT_LABEL_NAME_FONT_SIZES);
+    const textWidth = getLabelWidthExpr(options, tierFontSize);
+    const horizontalRadius = `width / 2 - ${DONUT_LABEL_EDGE_PADDING} - ${ringGap} - (${textWidth})`;
+    const verticalRadius = `height / 2 - 2 - ${ringGap} - (${fontSize})`;
+    const standardRadius = `(${baseRadius} - ${ringGap}) / (1 + ${DONUT_LABEL_MIN_SPACE_RATIO})`;
+    const fallbackRadius = `${getDonutSizeTierSignalName(options.name)} === 0 ? ${standardRadius} : 0`;
+    labelFitRadius = `max(0, ${fallbackRadius}, min(${labelFitRadius}, ${horizontalRadius}, ${verticalRadius}))`;
+  }
 
   // half the next tier's min diameter; XL has no max
   const tierMaxDiameter = getSizeTierValueExpr(options.name, [...DONUT_SIZE_TIER_CUTPOINTS, 'MAX_VALUE']);
@@ -268,16 +311,31 @@ const getDonutOuterRadiusUpdate = (options: DonutSpecOptions): string => {
  * @param donutOptions
  * @returns ThresholdScale
  */
-export const getSizeTierScale = (options: DonutSpecOptions): ThresholdScale => ({
-  name: `${options.name}_sizeTierScale`,
-  type: 'threshold',
-  // labels need their own breakpoints, since the label gap and label space shrink the donut
-  domain: isDonutLabelSpaceReserved(options)
+export const getSizeTierScale = (options: DonutSpecOptions): ThresholdScale => {
+  let domain: ThresholdScale['domain'] = isDonutLabelSpaceReserved(options)
     ? DONUT_SIZE_TIER_LABELED_CHART_SIZES
-    : DONUT_SIZE_TIER_UNLABELED_CHART_SIZES,
-  // tier indexes 0-4 (XS-XL)
-  range: [0, ...DONUT_SIZE_TIER_CUTPOINTS.map((_, index) => index + 1)],
-});
+    : DONUT_SIZE_TIER_UNLABELED_CHART_SIZES;
+  if (isDonutLabelSpaceReserved(options) && options.labelSpaceRatio !== undefined) {
+    const ratio = getLabelSpaceRatio(options);
+    const breakpoints = DONUT_SIZE_TIER_CUTPOINTS.map((diameter, index) => {
+      const gap = DONUT_LABEL_RING_GAPS[index + 1];
+      const reservedSize = diameter * (1 + ratio) + 2 * gap + 4;
+      if (!usesMeasuredLabelSpace(options)) return String(reservedSize);
+      const fontSize = DONUT_DIRECT_LABEL_NAME_FONT_SIZES[index + 1];
+      const width = getLabelWidthExpr(options, fontSize);
+      const horizontalSize = `${diameter} + 2 * (${DONUT_LABEL_EDGE_PADDING} + ${gap} + (${width}))`;
+      const verticalSize = diameter + 2 * (2 + gap + getMaxLabelFontSize(options, fontSize));
+      return `width >= (${horizontalSize}) ? max(${reservedSize}, ${verticalSize}) : MAX_VALUE`;
+    });
+    domain = { signal: `[${breakpoints.join(', ')}]` };
+  }
+  return {
+    name: `${options.name}_sizeTierScale`,
+    type: 'threshold',
+    domain,
+    range: [0, ...DONUT_SIZE_TIER_CUTPOINTS.map((_, index) => index + 1)],
+  };
+};
 
 /**
  * Gets the donut's size tier from its available full-diameter space.

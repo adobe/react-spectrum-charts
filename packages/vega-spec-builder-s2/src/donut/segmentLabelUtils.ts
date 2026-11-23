@@ -131,17 +131,31 @@ const applySegmentLabelPropDefaults = (
     ...options
   }: SegmentLabelOptions,
   donutOptions: DonutSpecOptions
-): SegmentLabelSpecOptions => ({
-  donutOptions,
-  percent,
-  percentFormat,
-  swatch,
-  value,
-  valueFormat,
-  showValueRow,
-  showTotal,
-  ...options,
-});
+): SegmentLabelSpecOptions => {
+  const { fontSize, fontWeight } = options;
+  if (fontSize !== undefined && (!Number.isFinite(fontSize) || fontSize <= 0)) {
+    throw new Error('SegmentLabel fontSize must be a positive finite number.');
+  }
+  if (
+    fontWeight !== undefined &&
+    (typeof fontWeight === 'number'
+      ? ![100, 200, 300, 400, 500, 600, 700, 800, 900].includes(fontWeight)
+      : !['normal', 'bold', 'bolder', 'lighter'].includes(fontWeight))
+  ) {
+    throw new Error('SegmentLabel fontWeight must be a supported font weight.');
+  }
+  return {
+    donutOptions,
+    percent,
+    percentFormat,
+    swatch,
+    value,
+    valueFormat,
+    showValueRow,
+    showTotal,
+    ...options,
+  };
+};
 
 const getLabelModeFilter = ({ donutOptions, labelMode }: SegmentLabelSpecOptions): string | undefined => {
   const { emphasizedItems, color } = donutOptions;
@@ -160,7 +174,13 @@ const getSegmentLabelSignalsForLabel = (segmentLabel: SegmentLabelSpecOptions): 
   const labelName = getSegmentLabelName(segmentLabel);
   const { name } = segmentLabel.donutOptions;
   return [
-    { name: `${labelName}NameFontSize`, update: getSizeTierValueExpr(name, DONUT_DIRECT_LABEL_NAME_FONT_SIZES) },
+    {
+      name: `${labelName}NameFontSize`,
+      update:
+        segmentLabel.fontSize === undefined
+          ? getSizeTierValueExpr(name, DONUT_DIRECT_LABEL_NAME_FONT_SIZES)
+          : String(segmentLabel.fontSize),
+    },
     { name: `${labelName}ValueFontSize`, update: getSizeTierValueExpr(name, DONUT_DIRECT_LABEL_VALUE_FONT_SIZES) },
   ];
 };
@@ -366,7 +386,9 @@ const getWidthExprs = (
     {
       type: 'formula',
       as: nameWidthField,
-      expr: `getLabelWidth(${nameTextExpr}, ${DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`,
+      expr: `getLabelWidth(${nameTextExpr}, ${JSON.stringify(
+        options.fontWeight ?? DONUT_DIRECT_LABEL_NAME_FONT_WEIGHT
+      )}, ${labelName}NameFontSize)`,
     },
     ...(hasValue
       ? [
@@ -453,6 +475,7 @@ export const getSegmentLabelTextMark = (options: SegmentLabelSpecOptions): TextM
         // drop all labels when there isn't any data to display, the empty state ring is shown instead
         text: [{ test: getDonutEmptyStateTest(name), value: '' }, { field: labelKey ?? color }],
         ...getSegmentLabelUpdateEncode(options, `${labelName}NameFontSize`),
+        ...(options.fontWeight !== undefined && { fontWeight: { value: options.fontWeight } }),
         dy:
           value || percent
             ? {
@@ -666,7 +689,13 @@ export const getRichSegmentLabelSignals = (donutOptions: DonutSpecOptions): Sign
     const { labelName } = segmentLabel;
     const { name } = donutOptions;
     return [
-      { name: `${labelName}NameFontSize`, update: getSizeTierValueExpr(name, DONUT_ADVANCED_LABEL_NAME_FONT_SIZES) },
+      {
+        name: `${labelName}NameFontSize`,
+        update:
+          segmentLabel.fontSize === undefined
+            ? getSizeTierValueExpr(name, DONUT_ADVANCED_LABEL_NAME_FONT_SIZES)
+            : String(segmentLabel.fontSize),
+      },
       { name: `${labelName}ValueFontSize`, update: getSizeTierValueExpr(name, DONUT_ADVANCED_LABEL_VALUE_FONT_SIZES) },
       {
         name: `${labelName}DetailFontSize`,
@@ -818,7 +847,9 @@ const getRichSegmentLabelLayout = (
   };
   const nameTextWidth = addWidthField(
     'nameWidth',
-    `getLabelWidth(${nameTextExpr}, ${DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT}, ${labelName}NameFontSize)`
+    `getLabelWidth(${nameTextExpr}, ${JSON.stringify(
+      options.fontWeight ?? DONUT_ADVANCED_LABEL_NAME_FONT_WEIGHT
+    )}, ${labelName}NameFontSize)`
   );
   const nameWidth = `${swatchReservedWidth} + ${nameTextWidth}`;
   const valueWidth = hasValue
@@ -1065,6 +1096,7 @@ const getRichSegmentLabelNameTextMark = (options: RichSegmentLabelSpecOptions): 
         },
         dy: { signal: nameRow.dy },
         fontSize: getRichSegmentLabelFontSize(options, nameRow.fontSize, DONUT_SIZE_TIER.S),
+        ...(options.fontWeight !== undefined && { fontWeight: { value: options.fontWeight } }),
         limit: {
           signal: getRichSegmentLabelLimitExpr(options, layout.swatchReservedWidth),
         },

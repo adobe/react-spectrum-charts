@@ -57,6 +57,7 @@ export const getExpressionFunctions = (
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
+    getMaxLabelWidth,
     hoverAnimFraction,
     hoverDeemphasisOpacity,
     rscLineHover: getAdaptiveLineHover,
@@ -209,6 +210,14 @@ const consoleLog = (value) => {
   console.log(value);
   return value;
 };
+
+const getMaxLabelWidth = (
+  rows: readonly Record<string, unknown>[],
+  field: string,
+  fontWeight: FontWeight,
+  fontSize: number
+): number =>
+  rows.reduce((width, row) => Math.max(width, getLabelWidth(String(row[field] ?? ''), fontWeight, fontSize)), 0);
 
 const LABEL_WIDTH_CACHE_MAX_SIZE = 5000;
 const labelWidthCache = new Map<string, number>();
@@ -494,6 +503,7 @@ export const expressionFunctions = {
   formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
   formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
   getLabelWidth,
+  getMaxLabelWidth,
   hoverAnimFraction,
   hoverDeemphasisOpacity,
   hoverFraction,

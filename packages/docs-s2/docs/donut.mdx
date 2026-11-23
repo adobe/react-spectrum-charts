@@ -103,6 +103,16 @@ the smaller of the two, so a semicircle in a wide container can be much larger t
 at the same height. Use `width`, `height`, `minWidth`, and `maxWidth` on `Chart` to constrain it.
 Ring width and `DonutSummary` text change with the donut's size; see [Responsive](#responsive).
 
+`Donut.labelSpaceRatio` sets the minimum label reservation as a fraction of the
+radius, from `0` to `1` (default `0.6`). For single-row labels such as formatted
+values or percentages, use `labelSpaceRatio={0}` with `<SegmentLabel labelKey="share" value={false}
+percent={false} />` to let the ring fill more of its chart. Text width is still measured
+and reserved independently against chart width and height, and responsive tiers
+adjust with the available space. Visible labels reserve their full measured width,
+without the standard radius overriding that fit. Multi-row and swatch labels retain
+at least the standard reservation. Below the visible-label tier, long labels do not
+collapse the ring.
+
 <DonutSizePlayground />
 
 ## DonutSummary
@@ -113,7 +123,9 @@ Ring width and `DonutSummary` text change with the donut's size; see [Responsive
   [d3-format](https://d3js.org/d3-format) specifier.
 - `valueText` uses your already formatted string instead of the calculated value, including
   for boolean donuts and all-zero rings. Omit it to keep normal formatting; `""` is an explicit
-  empty value. The text retains the usual responsive measurement, truncation, and hiding.
+  empty value. Long supplied values shrink from their normal responsive size down to
+  12px to fit the donut hole with a 2px inset before the usual truncation and hiding.
+  Short values and calculated summaries retain their normal responsive font sizes.
   With nonempty source data, the supplied summary remains visible even when every segment
   is hidden through `hiddenSeries` or the legend.
 - `delta` adds a change below the label, green when zero or positive and red when negative
@@ -180,6 +192,16 @@ const data = [
 ```
 
 These labels retain the usual collision and size rules; they aren't guaranteed to all fit.
+
+### Primary label typography
+
+Use `fontSize` (positive pixels) and `fontWeight` to override the primary label text.
+Omitting them preserves the responsive defaults. Secondary value and detail rows retain
+their own typography. Width measurement and collision layout use the overrides too.
+
+```tsx
+<SegmentLabel labelKey="formattedCount" value={false} percent={false} fontSize={12} fontWeight={600} />
+```
 
 ### Emphasized segments
 

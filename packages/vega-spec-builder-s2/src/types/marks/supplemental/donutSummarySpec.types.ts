@@ -19,7 +19,7 @@ export interface DonutSummaryOptions {
    * see {@link https://d3js.org/d3-format#locale_format}
    */
   numberFormat?: NumberFormat;
-  /** Externally formatted center value, independent of hidden segments; overrides numeric formatting unless hideValue is true. Omit to format the metric as usual. */
+  /** Externally formatted center value, independent of hidden segments; shrinks to 12px before truncating. Overrides numeric formatting unless hideValue is true. Omit to format the metric as usual. */
   valueText?: string;
   /** Label for the metric summary */
   label?: string;

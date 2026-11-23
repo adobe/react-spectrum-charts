@@ -23,6 +23,8 @@ import { SegmentLabelProps } from '../../types/index.js';
 const SegmentLabel: FC<SegmentLabelProps> = ({
   labelMode,
   labelKey,
+  fontSize,
+  fontWeight,
   percent = false,
   percentFormat = '.0%',
   swatch = false,

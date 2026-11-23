@@ -14,8 +14,8 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
+import { Donut, DonutSummary, SegmentLabel } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
-import { Donut, DonutSummary } from '../../../components/index.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps, DonutSummaryProps } from '../../../types/index.js';
@@ -49,4 +49,28 @@ NoLabel.args = {};
 const NumberFormat = bindWithProps(DonutStory);
 NumberFormat.args = { numberFormat: 'standardNumber', label: 'Visitors' };
 
-export { Basic, NoLabel, NumberFormat };
+const FittedValue = bindWithProps(DonutStory);
+FittedValue.args = { width: 240, height: 130, valueText: '888,888,888' };
+
+const CompactLabelsStory: StoryFn<DonutSummaryProps> = (args): ReactElement => {
+  const chartProps = useChartProps({
+    data: [
+      { series: 'Alpha', value: 60, share: '60.0%' },
+      { series: 'Beta', value: 40, share: '40.0%' },
+    ],
+    width: 274,
+    height: 180,
+  });
+  return (
+    <Chart {...chartProps}>
+      <Donut labelSpaceRatio={0}>
+        <DonutSummary {...args} />
+        <SegmentLabel labelKey="share" value={false} percent={false} />
+      </Donut>
+    </Chart>
+  );
+};
+const CompactLabels = bindWithProps(CompactLabelsStory);
+CompactLabels.args = { valueText: '888,888,888' };
+
+export { Basic, NoLabel, NumberFormat, FittedValue, CompactLabels };

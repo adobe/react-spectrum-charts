@@ -29,6 +29,8 @@ export interface DonutOptions {
   hasOnMouseInput?: boolean;
   /** Inner radius as a share of the outer radius. `0` draws a pie. Defaults to `0.85`. */
   holeRatio?: number;
+  /** Minimum fraction of the radius reserved for segment labels. Defaults to 0.6; single-row text labels also reserve their measured width. */
+  labelSpaceRatio?: number;
   /** Shows the first row's value as a percent in the center. Use with two rows whose values sum to 1. */
   isBoolean?: boolean;
   /** Key in the data that is used as the metric */

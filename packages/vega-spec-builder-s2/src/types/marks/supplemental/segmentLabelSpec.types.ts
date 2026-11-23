@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { FontWeight } from 'vega';
+
 import { PartiallyRequired } from '../../specUtil.types.js';
 import { DonutSpecOptions } from '../donutSpec.types.js';
 
@@ -17,6 +19,10 @@ export interface SegmentLabelOptions {
   labelMode?: 'emphasized' | 'deemphasized';
   /** Data field with the segment label text. Defaults to the `Donut` `color` field. */
   labelKey?: string;
+  /** Primary label size in pixels; defaults to the responsive size tier. */
+  fontSize?: number;
+  /** Primary label weight; does not change the secondary value and detail rows. */
+  fontWeight?: FontWeight;
   /** Shows the donut segment percentage */
   percent?: boolean;
   /** Shows a color swatch before the segment label */

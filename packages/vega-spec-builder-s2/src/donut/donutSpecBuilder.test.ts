@@ -13,7 +13,9 @@ import { View, expressionFunction, parse } from 'vega';
 
 import {
   COLOR_SCALE,
+  DONUT_DIRECT_LABEL_NAME_FONT_SIZES,
   DONUT_LABEL_COLLISION_GAP,
+  DONUT_LABEL_EDGE_PADDING,
   DONUT_LABEL_MIN_SPACE_RATIO,
   DONUT_SEMICIRCLE_BOTTOM_INSET,
   FILTERED_TABLE,
@@ -26,6 +28,7 @@ import { buildSpec } from '../chartSpecBuilder.js';
 import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { defaultSignals } from '../specTestUtils.js';
 import { initializeSpec } from '../specUtils.js';
+import { SegmentLabelOptions } from '../types/index.js';
 import { addData, addDonut, addMarks, addScales, addSignals } from './donutSpecBuilder.js';
 import { defaultDonutOptions } from './donutTestUtils.js';
 
@@ -42,6 +45,171 @@ interface DonutSceneNode {
   strokeWidth?: number;
   items?: DonutSceneNode[];
 }
+
+test.each([200, 284, 1000])('compact single-row labels grow the ring and retain text space at %spx', async (width) => {
+  const functions = getExpressionFunctions('en-US');
+  Object.entries(functions).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', (width: number) => width);
+  const data = Array.from({ length: 5 }, (_, index) => ({ series: String(index), value: 20, share: '20.0%' }));
+  const radii: number[] = [];
+  for (const labelSpaceRatio of [undefined, 0.3]) {
+    const spec = buildSpec({
+      data,
+      animations: false,
+      marks: [
+        {
+          markType: 'donut',
+          name: 'compact',
+          labelSpaceRatio,
+          segmentLabels: [{ labelKey: 'share', value: false, percent: false }],
+        },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' }).width(width).height(216);
+    try {
+      await view.runAsync();
+      const radius: number = view.signal('compact_outerRadius');
+      radii.push(radius);
+      if (labelSpaceRatio !== undefined) {
+        const font = DONUT_DIRECT_LABEL_NAME_FONT_SIZES[view.signal('compact_sizeTier')];
+        const textWidth = functions.getMaxLabelWidth(data, 'share', 400, font);
+        const gap: number = view.signal('compact_labelRingGap');
+        expect(radius + gap + textWidth + DONUT_LABEL_EDGE_PADDING).toBeLessThanOrEqual(width / 2);
+        expect(radius + gap + font + 2).toBeLessThanOrEqual(view.height() / 2);
+      }
+    } finally {
+      view.finalize();
+    }
+  }
+  expect(radii[1]).toBeGreaterThan(radii[0] * (width >= 284 ? 1.2 : 1));
+});
+
+test('fills short, wide plots without letting label width impose a height breakpoint through resize', async () => {
+  const functions = getExpressionFunctions('en-US');
+  Object.entries(functions).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', (width: number) => width);
+  expressionFunction('getMaxLabelWidth', (_rows, _field, _weight, size: number) => size * 3);
+  const data = Array.from({ length: 5 }, (_, index) => ({ series: String(index), value: 20, share: '20.0%' }));
+  const spec = buildSpec({
+    data,
+    animations: false,
+    marks: [
+      {
+        markType: 'donut',
+        name: 'compact',
+        labelSpaceRatio: 0,
+        segmentLabels: [{ labelKey: 'share', value: false, percent: false }],
+      },
+    ],
+  });
+  const table = spec.data?.find(({ name }) => name === TABLE);
+  if (!table || !('values' in table)) throw new Error('Expected inline table data');
+  table.values = data;
+  const view = new View(parse(spec), { renderer: 'none' });
+  try {
+    for (const [width, height] of [
+      [274, 180],
+      [500, 180],
+      [274, 220],
+      [500, 320],
+      [274, 180],
+    ]) {
+      await view.width(width).height(height).runAsync();
+      const diameter = 2 * view.signal('compact_outerRadius');
+      const fontSize = DONUT_DIRECT_LABEL_NAME_FONT_SIZES[view.signal('compact_sizeTier')];
+      expect(diameter).toBeGreaterThanOrEqual(Math.min(width, height - 2 * fontSize) * 0.85);
+      const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+      const labels = svg.querySelectorAll('g.compact_segmentLabel text');
+      expect(labels).toHaveLength(5);
+      labels.forEach((label) => {
+        expect(label.textContent).toBe('20.0%');
+        expect(Number.parseFloat(label.getAttribute('font-size') ?? 'NaN')).toBeGreaterThan(0);
+      });
+    }
+  } finally {
+    view.finalize();
+    expressionFunction('getMaxLabelWidth', functions.getMaxLabelWidth);
+  }
+});
+
+test.each([
+  { fontSize: undefined, fontWeight: undefined },
+  { fontSize: 12, fontWeight: 600 },
+] as const)('reserves complete numeric label widths through resize with typography %p', async (typography) => {
+  const functions = getExpressionFunctions('en-US');
+  Object.entries(functions).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', (width: number) => width);
+  expressionFunction(
+    'getMaxLabelWidth',
+    (_rows, _field, weight: number, size: number) => size * 5.65 + (weight === 600 ? 4 : 0)
+  );
+  const data = Array.from({ length: 5 }, (_, index) => ({
+    series: String(index),
+    value: 20,
+    formattedValue: '20,000,000',
+  }));
+  const spec = buildSpec({
+    data,
+    animations: false,
+    marks: [
+      {
+        markType: 'donut',
+        name: 'compact',
+        labelSpaceRatio: 0,
+        segmentLabels: [{ labelKey: 'formattedValue', value: false, percent: false, ...typography }],
+      },
+    ],
+  });
+  const table = spec.data?.find(({ name }) => name === TABLE);
+  if (!table || !('values' in table)) throw new Error('Expected inline table data');
+  table.values = data;
+  const view = new View(parse(spec), { renderer: 'none' });
+  try {
+    const narrowWidth = typography.fontSize ? 300 : 252;
+    for (const width of [narrowWidth, 350, 500, narrowWidth]) {
+      await view.width(width).height(274).runAsync();
+      const tier: number = view.signal('compact_sizeTier');
+      expect(tier).toBeGreaterThan(0);
+      const fontSize = typography.fontSize ?? DONUT_DIRECT_LABEL_NAME_FONT_SIZES[tier];
+      const textWidth = fontSize * 5.65 + (typography.fontWeight === 600 ? 4 : 0);
+      const radius: number = view.signal('compact_outerRadius');
+      const gap: number = view.signal('compact_labelRingGap');
+      expect(radius + gap + textWidth + DONUT_LABEL_EDGE_PADDING).toBeLessThanOrEqual(width / 2);
+      expect(radius + gap + fontSize + 2).toBeLessThanOrEqual(view.height() / 2);
+      if (typography.fontSize) {
+        expect(view.signal('compact_segmentLabelNameFontSize')).toBe(typography.fontSize);
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const labels = svg.querySelectorAll('g.compact_segmentLabel text');
+        expect(labels).toHaveLength(5);
+        labels.forEach((label) => {
+          expect(Number.parseFloat(label.getAttribute('font-size') ?? 'NaN')).toBe(12);
+          expect(label.getAttribute('font-weight')).toBe('600');
+        });
+      }
+    }
+  } finally {
+    view.finalize();
+    expressionFunction('getMaxLabelWidth', functions.getMaxLabelWidth);
+  }
+});
+
+test.each([{ fontSize: 0 }, { fontSize: Infinity }, { fontWeight: 0 }, { fontWeight: 1001 }])(
+  'rejects invalid primary label typography: %p',
+  (typography) => {
+    expect(() =>
+      buildSpec({ data: [], marks: [{ markType: 'donut', segmentLabels: [typography as SegmentLabelOptions] }] })
+    ).toThrow('SegmentLabel');
+  }
+);
+
+test.each([-1, 1.1, NaN, Infinity])('rejects an invalid label space ratio: %s', (labelSpaceRatio) => {
+  expect(() => buildSpec({ data: [], marks: [{ markType: 'donut', labelSpaceRatio }] })).toThrow(
+    'finite number between 0 and 1'
+  );
+});
 
 describe('addData', () => {
   test.each([

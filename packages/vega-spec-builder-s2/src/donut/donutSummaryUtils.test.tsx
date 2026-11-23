@@ -135,6 +135,51 @@ describe('externally formatted summary values in Vega', () => {
     }
   );
 
+  test('shrinks supplied totals to keep the full number readable in a small hole through resize', async () => {
+    Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+    expressionFunction('rscContainerWidth', (width: number) => width);
+    const measure = expressionFunction('getLabelWidth');
+    expressionFunction('getLabelWidth', (text: string, _weight: number, size: number) => text.length * size * 0.6);
+    const data = [{ series: 'Alpha', value: 100 }];
+    const spec = buildSpec({
+      data,
+      animations: false,
+      marks: [
+        {
+          markType: 'donut',
+          name: 'fitted',
+          segmentLabels: [{ percent: true, value: false }],
+          donutSummaries: [{ valueText: '888,888,888', label: 'Total', hideLabel: true }],
+        },
+      ],
+    });
+    const table = spec.data?.find(({ name }) => name === TABLE);
+    if (!table || !('values' in table)) throw new Error('Expected inline table data');
+    table.values = data;
+    const view = new View(parse(spec), { renderer: 'none' });
+    try {
+      const fonts: number[] = [];
+      for (const height of [218, 500, 218]) {
+        await view.width(500).height(height).runAsync();
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const text = svg.querySelector('g.fitted_summaryValue text');
+        expect(text?.textContent).toBe('888,888,888');
+        const font = Number.parseFloat(text?.getAttribute('font-size') ?? 'NaN');
+        expect(font).toBeGreaterThanOrEqual(12);
+        const width = expressionFunction('getLabelWidth')('888,888,888', 800, font);
+        const radius: number = view.signal('fitted_innerRadius');
+        expect(Math.hypot(width / 2, font / 2)).toBeLessThanOrEqual(radius - 2);
+        fonts.push(font);
+      }
+      expect(fonts[0]).toBeLessThan(20);
+      expect(fonts[1]).toBeGreaterThan(fonts[0]);
+      expect(fonts[2]).toBe(fonts[0]);
+    } finally {
+      view.finalize();
+      expressionFunction('getLabelWidth', measure);
+    }
+  });
+
   test.each([false, true])('preserves zero rings and hideValue precedence (boolean=%s)', async (isBoolean) => {
     Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
     expressionFunction('rscContainerWidth', (width: number) => width);

@@ -109,6 +109,12 @@ export const addDonut = produce<
       ...options
     }
   ) => {
+    if (
+      options.labelSpaceRatio !== undefined &&
+      (!Number.isFinite(options.labelSpaceRatio) || options.labelSpaceRatio < 0 || options.labelSpaceRatio > 1)
+    ) {
+      throw new Error('Donut labelSpaceRatio must be a finite number between 0 and 1.');
+    }
     // put options back together now that all defaults are set
     const donutOptions: DonutSpecOptions = {
       chartPopovers,

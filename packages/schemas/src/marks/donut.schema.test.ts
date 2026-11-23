@@ -10,16 +10,24 @@
  * governing permissions and limitations under the License.
  */
 import { ChartSchema } from '../chart.schema.js';
-import { DonutSummarySchema } from './donut.schema.js';
+import { DonutSchema, DonutSummarySchema, SegmentLabelSchema } from './donut.schema.js';
 
 test('preserves supplied Donut summary and label text through chart validation', () => {
   const mark = {
     component: 'Donut',
     color: 'category',
     metric: 'value',
+    labelSpaceRatio: 0.3,
     decorations: [
       { component: 'DonutSummary', valueText: '100 units', hideValue: false },
-      { component: 'SegmentLabel', labelKey: 'shareLabel', value: false, percent: false },
+      {
+        component: 'SegmentLabel',
+        labelKey: 'shareLabel',
+        value: false,
+        percent: false,
+        fontSize: 12,
+        fontWeight: 600,
+      },
     ],
   };
   const result = ChartSchema.parse({
@@ -34,3 +42,14 @@ test('accepts empty valueText but rejects non-string formatted values', () => {
   expect(DonutSummarySchema.parse({ component: 'DonutSummary', valueText: '' })).toHaveProperty('valueText', '');
   expect(DonutSummarySchema.safeParse({ component: 'DonutSummary', valueText: 123 }).success).toBe(false);
 });
+
+test.each([-1, 1.1, NaN, Infinity])('rejects invalid label space ratios: %s', (labelSpaceRatio) => {
+  expect(DonutSchema.safeParse({ component: 'Donut', labelSpaceRatio }).success).toBe(false);
+});
+
+test.each([{ fontSize: 0 }, { fontSize: Infinity }, { fontWeight: 0 }, { fontWeight: 1001 }, { fontWeight: 'heavy' }])(
+  'rejects invalid primary label typography: %p',
+  (typography) => {
+    expect(SegmentLabelSchema.safeParse({ component: 'SegmentLabel', ...typography }).success).toBe(false);
+  }
+);

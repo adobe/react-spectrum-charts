@@ -173,8 +173,18 @@ export const getDonutSummarySignals = (donutOptions: DonutSpecOptions): Signal[]
     return [];
   }
   const { name } = donutOptions;
+  const tierValueFontSize = getSizeTierValueExpr(name, DONUT_SUMMARY_VALUE_FONT_SIZES);
+  let valueFontSize = tierValueFontSize;
+  if (donutSummary.valueText !== undefined) {
+    const textWidth = `getLabelWidth(${JSON.stringify(donutSummary.valueText)}, 800, ${tierValueFontSize})`;
+    const aspectRatio = `(${textWidth}) / (${tierValueFontSize})`;
+    const diameter = `2 * max(0, ${getDonutInnerRadiusExpr(donutOptions)} - 2)`;
+    // Fit the text's full rectangle inside the hole, independently of caption placement.
+    const fittedSize = `floor((${diameter}) / sqrt(pow(${aspectRatio}, 2) + 1))`;
+    valueFontSize = `min(${tierValueFontSize}, max(12, ${fittedSize}))`;
+  }
   const signals: Signal[] = [
-    { name: `${name}_summaryValueFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_VALUE_FONT_SIZES) },
+    { name: `${name}_summaryValueFontSize`, update: valueFontSize },
     { name: `${name}_summaryLabelFontSize`, update: getSizeTierValueExpr(name, DONUT_SUMMARY_LABEL_FONT_SIZES) },
   ];
   if (donutSummary.label) {

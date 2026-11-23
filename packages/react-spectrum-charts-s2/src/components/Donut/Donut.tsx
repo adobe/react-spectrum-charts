@@ -28,6 +28,7 @@ const Donut: FC<DonutProps> = ({
   holeRatio = 0.85,
   hideDeemphasizedLabels = false,
   isBoolean = false,
+  labelSpaceRatio,
   metric = DEFAULT_METRIC,
   name,
   onClick,

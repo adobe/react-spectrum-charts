@@ -14,8 +14,8 @@ import { ReactElement } from 'react';
 import { StoryFn } from '@storybook/react';
 
 import { Chart } from '../../../Chart.js';
-import useChartProps from '../../../hooks/useChartProps.js';
 import { Donut, SegmentLabel } from '../../../components/index.js';
+import useChartProps from '../../../hooks/useChartProps.js';
 import { basicDonutData } from '../../../storyShared/Donut/data.js';
 import { bindWithProps } from '../../../test-utils/index.js';
 import { ChartProps } from '../../../types/index.js';
@@ -52,4 +52,7 @@ Value.args = { value: true };
 const ValueFormat = bindWithProps(SegmentLabelStory);
 ValueFormat.args = { value: true, valueFormat: 'shortNumber' };
 
-export { Basic, Percent, Value, ValueFormat };
+const Typography = bindWithProps(SegmentLabelStory);
+Typography.args = { value: false, percent: false, fontSize: 12, fontWeight: 600 };
+
+export { Basic, Percent, Value, ValueFormat, Typography };

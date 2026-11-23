@@ -309,6 +309,59 @@ const baseDonutVariations: Variation[] = [
     ),
   },
   {
+    id: 'compact-label-space',
+    title: 'Compact measured labels',
+    description: 'Fills a short, wide plot using measured labels without an extra proportional margin.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Donut.labelSpaceRatio'],
+    render: () => (
+      <DonutVariationChart
+        data={[
+          { series: 'Alpha', value: 60, share: '60.0%' },
+          { series: 'Beta', value: 40, share: '40.0%' },
+        ]}
+        chartProps={{ width: 274, height: 180 }}
+        donutProps={{ labelSpaceRatio: 0 }}
+      >
+        <SegmentLabel labelKey="share" value={false} percent={false} />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'compact-value-labels',
+    title: 'Compact formatted values',
+    description: 'Reserves complete supplied numeric labels with larger, stronger primary text.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Donut.labelSpaceRatio', 'SegmentLabel.labelKey', 'SegmentLabel.fontSize', 'SegmentLabel.fontWeight'],
+    render: () => (
+      <DonutVariationChart
+        data={Array.from({ length: 5 }, (_, index) => ({
+          series: String(index),
+          value: 20,
+          formattedValue: '20,000,000',
+        }))}
+        chartProps={{ width: 350, height: 274 }}
+        donutProps={{ labelSpaceRatio: 0 }}
+      >
+        <SegmentLabel labelKey="formattedValue" value={false} percent={false} fontSize={12} fontWeight={600} />
+      </DonutVariationChart>
+    ),
+  },
+  {
+    id: 'summary-fitted-value',
+    title: 'Fitted summary value',
+    description: 'Shrinks a long supplied total before truncating, with a readable 12px minimum.',
+    dataset: 'canonical',
+    coverage: ['DonutSummary.valueText'],
+    render: () => (
+      <DonutVariationChart>
+        <DonutSummary valueText="888,888,888" />
+      </DonutVariationChart>
+    ),
+  },
+  {
     id: 'summary-all-hidden',
     title: 'Supplied summary with all segments hidden',
     description: 'Keeps the supplied summary while the chart displays an empty ring.',
@@ -854,6 +907,7 @@ const donutCoverage: PropCoverage<DonutProps> = {
   hideDeemphasizedLabels: ['hidden-deemphasized-labels'],
   holeRatio: ['defaults', 'pie', 'wide-ring'],
   isBoolean: ['boolean'],
+  labelSpaceRatio: ['compact-label-space', 'compact-value-labels'],
   metric: ['defaults', 'boolean'],
   name: ['named-interactive'],
   onClick: ['pointer-callbacks'],
@@ -876,10 +930,18 @@ const donutSummaryCoverage: PropCoverage<DonutSummaryProps> = {
   label: ['summary-format', 'summary-negative-delta'],
   labelGap: ['summary-label-spacing'],
   numberFormat: ['summary-format', 'semicircle-formatted-summary', 'locale'],
-  valueText: ['summary-value-text', 'summary-all-hidden', 'summary-hidden-value', 'pointer-callbacks'],
+  valueText: [
+    'summary-value-text',
+    'summary-fitted-value',
+    'summary-all-hidden',
+    'summary-hidden-value',
+    'pointer-callbacks',
+  ],
 };
 
 const segmentLabelCoverage: PropCoverage<SegmentLabelProps> = {
+  fontSize: ['compact-value-labels'],
+  fontWeight: ['compact-value-labels'],
   labelKey: ['segment-label-key', 'pointer-callbacks'],
   labelMode: ['segment-label-modes', 'hidden-deemphasized-labels'],
   percent: ['segment-label-percent'],
