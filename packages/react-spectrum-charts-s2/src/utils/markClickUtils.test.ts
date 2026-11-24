@@ -21,6 +21,7 @@ import {
   getItemBounds,
   getItemName,
   getLegendItemValue,
+  getOnAxisAnnotationClickCallback,
   getOnAxisLabelClickCallback,
   getOnChartMarkContextMenuCallback,
   getOnMarkClickCallback,
@@ -41,6 +42,67 @@ const defaultMarkClickArgs: GetOnMarkClickCallbackArgs = {
   legendHasPopover: false,
   trigger: 'click',
 };
+
+test('precomputed annotations between source dates activate all grouped IDs using the native event', async () => {
+  Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', () => 400);
+  const data = [
+    { timestamp: 1000, value: 1 },
+    { timestamp: 3000, value: 2 },
+  ];
+  const spec = buildSpec({
+    data,
+    animations: false,
+    axes: [
+      {
+        position: 'bottom',
+        labelFormat: 'time',
+        axisAnnotations: [
+          {
+            name: 'event_dates',
+            hasOnClick: true,
+            data: [
+              { id: 'point', value: 2000 },
+              { id: 'range', value: 2000, lower: 1500, upper: 2500 },
+            ],
+          },
+        ],
+      },
+    ],
+    marks: [{ markType: 'line', dimension: 'timestamp' }],
+  });
+  const table = spec.data?.find(({ name }) => name === TABLE);
+  if (!table || !('values' in table)) throw new Error('Expected inline source data.');
+  table.values = data;
+  const container = document.createElement('div');
+  const view = new View(parse(spec), { renderer: 'svg' }).width(500).height(300).initialize(container);
+  const onClick = jest.fn();
+  view.addEventListener(
+    'click',
+    getOnAxisAnnotationClickCallback([
+      {
+        markName: 'event_dates_icon',
+        annotationName: 'event_dates',
+        onClick,
+      },
+    ])
+  );
+  try {
+    await view.runAsync();
+    const icon = container.querySelector('.event_dates_icon path');
+    if (!icon) throw new Error('Missing annotation icon.');
+    const event = new MouseEvent('click', { bubbles: true, clientX: 120, clientY: 240 });
+    icon.dispatchEvent(event);
+    expect(onClick).toHaveBeenCalledWith(event, ['point', 'range']);
+    expect(view.data('table')).toHaveLength(2);
+    expect(view.data('event_dates_aggregate')[0]).toMatchObject({ center: 2000, lower: 1500, upper: 2500 });
+    await view.signal('event_dates_highlighted', view.data('event_dates_aggregate')[0]).runAsync();
+    expect(container.querySelectorAll('.event_dates_range .mark-rect path')).toHaveLength(3);
+    expect(container.innerHTML).not.toMatch(/NaN|Infinity/);
+  } finally {
+    view.finalize();
+  }
+});
 
 describe('getItemBounds()', () => {
   test('should return default bounds if null or undefined', () => {

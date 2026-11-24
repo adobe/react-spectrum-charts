@@ -18,6 +18,7 @@ import { useChartContext } from '../context/RscChartContext.js';
 import { ChartChildElement, RscChartProps } from '../types/index.js';
 import {
   ActionItem,
+  getOnAxisAnnotationClickCallback,
   getOnAxisLabelClickCallback,
   getOnChartMarkClickCallback,
   getOnChartMarkContextMenuCallback,
@@ -26,6 +27,7 @@ import {
   setSelectedSignals,
 } from '../utils/index.js';
 import useActionBars from './useActionBars.js';
+import useAxisAnnotationOnClickDetails from './useAxisAnnotationOnClickDetails.js';
 import useAxisLabelOnClickDetails from './useAxisLabelOnClickDetails.js';
 import { UseLegendProps } from './useLegend.js';
 import useMarkMouseInputDetails from './useMarkMouseInputDetails.js';
@@ -49,6 +51,7 @@ const useNewChartView = (
   const popovers = usePopovers(sanitizedChildren);
   const markClickDetails = useMarkOnClickDetails(sanitizedChildren);
   const axisLabelOnClickDetails = useAxisLabelOnClickDetails(sanitizedChildren);
+  const axisAnnotationOnClickDetails = useAxisAnnotationOnClickDetails(sanitizedChildren);
   const markMouseInputDetails = useMarkMouseInputDetails(sanitizedChildren);
 
   const derived = useMemo(
@@ -75,6 +78,7 @@ const useNewChartView = (
     legendProps,
     markClickDetails,
     axisLabelOnClickDetails,
+    axisAnnotationOnClickDetails,
     onMouseInput,
     ...derived,
   };
@@ -150,6 +154,9 @@ const useNewChartView = (
       );
       view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
         getOnAxisLabelClickCallback(latest.current.axisLabelOnClickDetails)(event, item)
+      );
+      view.addEventListener('click', (event: ScenegraphEvent, item: ActionItem) =>
+        getOnAxisAnnotationClickCallback(latest.current.axisAnnotationOnClickDetails)(event, item)
       );
       view.addEventListener('mouseover', (event: ScenegraphEvent, item: ActionItem) =>
         latest.current.onMouseInput(event, item)
