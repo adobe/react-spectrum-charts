@@ -236,9 +236,9 @@ The interactive example has these controls. The code above uses the shown values
 
 `outline` adds a thin border so pale points stay visible. The border is `gray-1000` at 42% opacity, 1px wide, like the border on a Spectrum 2 color swatch.
 
--   `auto` (default) outlines only points whose fill has less than 3:1 contrast with the chart background, so pale colors get a border and strong ones don't.
+-   `never` (default) draws no border.
+-   `auto` outlines only points whose fill has less than 3:1 contrast with the chart background, so pale colors get a border and strong ones don't.
 -   `always` outlines every point.
--   `never` turns the border off.
 
 For a custom outline, set `lineWidth` and `stroke` instead; they take precedence over `outline`. `lineWidth` takes `XS` (1px), `S` (1.5px), `M` (2px), `L` (3px), `XL` (4px), or a number of pixels. `lineType` sets the outline dash pattern, and `stroke` sets its color, which defaults to the point's `color`. A translucent fill with a solid outline keeps overlapping points readable.
 
@@ -264,7 +264,7 @@ import { Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 The interactive example has these controls. The code above uses the shown values.
 
--   `outline` on `Scatter`: `auto`, `always` or `never`. Shown: `auto`.
+-   `outline` on `Scatter`: `auto`, `always` or `never`. Shown: `never`.
 -   `lineWidth` on `Scatter`: `0`, `XS`, `S`, `M`, `L`, `XL` or `audience`. Shown: `0`.
 -   `lineType` on `Scatter`: `solid`, `dashed`, `dotted` or `audience`. Shown: `solid`.
 -   `stroke` on `Scatter`: `none`, `gray-800` or `audience`. Shown: `none`.
@@ -910,7 +910,7 @@ Draw-in plays once when the chart mounts; re-renders, data updates, and resizing
 | `onMouseOut` — Called with the row's data when the pointer leaves a point. | `MarkCallback` | – |
 | `onMouseOver` — Called with the row's data when the pointer moves onto a point. | `MarkCallback` | – |
 | `opacity` — Point opacity: a data key mapped to the chart's `opacities`, or a static value. | `OpacityFacet` | `{ value: 1 }` |
-| `outline` — Thin border around points: `auto` only where a point's fill has under 3:1 contrast with the background, `always`, or `never`. `stroke` and `lineWidth` take precedence. | `"auto" \| "always" \| "never"` | `'auto'` |
+| `outline` — Thin border around points: `auto` only where a point's fill has under 3:1 contrast with the background, `always`, or `never`. `stroke` and `lineWidth` take precedence. | `"auto" \| "always" \| "never"` | `'never'` |
 | `size` — Point width: a numeric data key scaled between the chart's `symbolSizes`, or a static size. | `SymbolSizeFacet` | `{ value: DEFAULT_SYMBOL_SIZE }` |
 | `stroke` — Outline color: a data key mapped to the color scale, or a static color. | `ColorFacet` | `'color'` |
 
