@@ -9,20 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { ReactElement } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 
 import { StoryFn } from '@storybook/react';
 import { action } from 'storybook/actions';
+import type { View } from 'vega';
+
+import { ActionButton } from '@react-spectrum/s2';
 
 import { Chart } from '../../../Chart.js';
 import { Axis, ChartPopover, Legend, Line } from '../../../components/index.js';
 import useChartProps from '../../../hooks/useChartProps.js';
 import { bindWithProps } from '../../../test-utils/index.js';
+import type { ChartProps, LegendPage } from '../../../types/index.js';
 import { LegendBarStory, LegendDisconnectedStory, LegendLineStory, defaultProps } from './LegendStoryUtils.js';
 
 const WEEK_DATETIMES = [
-  1780293600000, 1780380000000, 1780466400000, 1780552800000,
-  1780639200000, 1780725600000, 1780812000000,
+  1780293600000, 1780380000000, 1780466400000, 1780552800000, 1780639200000, 1780725600000, 1780812000000,
 ];
 
 const fiveSeriesNames = ['CJA Users', 'Accounts', 'Events', 'Page Views', 'Sessions'];
@@ -30,20 +33,32 @@ const legendColumns5SeriesData = fiveSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 900 + di * 180, series }))
 );
 
-const longLabelSeriesNames = [
-  'Users',
-  'Events',
-  'Conversion Rate From All Marketing Channel Sources',
-];
+const longLabelSeriesNames = ['Users', 'Events', 'Conversion Rate From All Marketing Channel Sources'];
 const legendColumnsLongLabelData = longLabelSeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 1000 + si * 1200 + di * 150, series }))
 );
 
 const twentySeriesNames = [
-  'DAU', 'MAU', 'CTR', 'CVR', 'Sessions',
-  'Accounts', 'Visitors', 'Pageviews', 'New Users', 'Returning',
-  'Unique Visitors', 'Time on Page', 'Bounce Rate', 'Revenue', 'Avg Session',
-  'Cart Abandonment', 'Email Open Rate', 'Customer LTV', 'Revenue Per Visit', 'Mobile Sessions',
+  'DAU',
+  'MAU',
+  'CTR',
+  'CVR',
+  'Sessions',
+  'Accounts',
+  'Visitors',
+  'Pageviews',
+  'New Users',
+  'Returning',
+  'Unique Visitors',
+  'Time on Page',
+  'Bounce Rate',
+  'Revenue',
+  'Avg Session',
+  'Cart Abandonment',
+  'Email Open Rate',
+  'Customer LTV',
+  'Revenue Per Visit',
+  'Mobile Sessions',
 ];
 const legendColumns20SeriesData = twentySeriesNames.flatMap((series, si) =>
   WEEK_DATETIMES.map((datetime, di) => ({ datetime, value: 500 + si * 250 + di * 80, series }))
@@ -139,7 +154,9 @@ Popover.args = {
       {(datum) => (
         <div>
           <div>{datum.series}</div>
-          <div>{datum.category}: {datum.value}</div>
+          <div>
+            {datum.category}: {datum.value}
+          </div>
         </div>
       )}
     </ChartPopover>
@@ -193,7 +210,9 @@ PositionAndColumns.args = {
   position: 'right',
   title: 'Metrics',
 };
-Object.assign(PositionAndColumns, { parameters: { controls: { include: ['position', 'align', 'labelLimit', 'title'] } } });
+Object.assign(PositionAndColumns, {
+  parameters: { controls: { include: ['position', 'align', 'labelLimit', 'title'] } },
+});
 
 const ResizableWith5Series = makeResizableLegendLineStory(legendColumns5SeriesData);
 const LegendColumnsExtended = bindWithProps(ResizableWith5Series);
@@ -216,6 +235,78 @@ LegendColumns20Series.args = {
   highlight: true,
 };
 
+export function PaginatedChartLegendExample({
+  animationTypes,
+  renderer,
+  width = 'auto',
+  height = 350,
+}: Pick<ChartProps, 'animationTypes' | 'renderer' | 'width'> & { height?: number } = {}): ReactElement {
+  const [view, setView] = useState<View>();
+  const [pages, setPages] = useState<readonly LegendPage[]>([]);
+  const [page, setPage] = useState(0);
+  const chartProps = useChartProps({ data: legendColumns20SeriesData, width, height });
+  useEffect(() => {
+    if (!view) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const commit = (_name: string, next: readonly LegendPage[]) =>
+      setPages((previous) => (JSON.stringify(previous) === JSON.stringify(next) ? previous : next));
+    commit('legend0_pages', view.signal('legend0_pages'));
+    const update = (name: string, next: readonly LegendPage[]) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => commit(name, next), 150);
+    };
+    view.addSignalListener('legend0_pages', update);
+    return () => {
+      clearTimeout(timer);
+      view.removeSignalListener('legend0_pages', update);
+    };
+  }, [view]);
+  useEffect(() => setPage((current) => Math.min(current, Math.max(0, pages.length - 1))), [pages.length]);
+  const currentPage = Math.min(page, Math.max(0, pages.length - 1));
+  const range = pages[currentPage];
+  return (
+    <div style={{ minWidth: 240, width: '100%' }}>
+      {pages.length > 1 && (
+        <div role="group" aria-label="Legend pages" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <ActionButton isQuiet isDisabled={currentPage === 0} onPress={() => setPage(currentPage - 1)}>
+            Previous
+          </ActionButton>
+          <span aria-live="polite">
+            {currentPage + 1} of {pages.length}
+          </span>
+          <ActionButton isQuiet isDisabled={currentPage === pages.length - 1} onPress={() => setPage(currentPage + 1)}>
+            Next
+          </ActionButton>
+        </div>
+      )}
+      <Chart
+        {...chartProps}
+        height={Math.max(1, height - (pages.length > 1 ? 32 : 0))}
+        animationTypes={animationTypes}
+        renderer={renderer}
+        onVegaViewReady={setView}
+      >
+        <Axis position="left" grid />
+        <Axis position="bottom" labelFormat="time" />
+        <Line color="series" dimension="datetime" metric="value" scaleType="time" />
+        <Legend
+          position="top"
+          align="start"
+          preferredColumns={[5, 3]}
+          maxRows={2}
+          labelWrap={3}
+          hiddenEntries={
+            range ? twentySeriesNames.filter((_, index) => index < range.start || index > range.end) : undefined
+          }
+        />
+      </Chart>
+    </div>
+  );
+}
+
+const MeasuredPagination: StoryFn<typeof Legend> = () => <PaginatedChartLegendExample />;
+Object.assign(MeasuredPagination, { parameters: { controls: { include: [] } } });
+
 export {
   Basic,
   LabelsDescriptionsAndTitle,
@@ -229,6 +320,7 @@ export {
   LegendColumnsExtended,
   LegendColumnsLongLabel,
   LegendColumns20Series,
+  MeasuredPagination,
   OnClick,
   Position,
   Supreme,

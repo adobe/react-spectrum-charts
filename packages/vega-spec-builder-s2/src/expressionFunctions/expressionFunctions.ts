@@ -27,11 +27,12 @@ import {
   getLocale,
   numberLocales,
 } from '@spectrum-charts/core-s2/locales';
-import { ADOBE_CLEAN_FONT } from '@spectrum-charts/core-s2/tokens';
 
 import { getAdaptiveLineHover } from '../line/adaptiveHoverUtils.js';
 import { NumberFormat } from '../types/index.js';
+import { getLegendColumnLayout, getLegendColumnLayoutForPage, getLegendPages, wrapLabelText } from './legendLayout.js';
 import { legendSymbolShape } from './legendSymbolShape.js';
+import { getLabelWidth, truncateText } from './textMeasurement.js';
 
 export interface LabelDatum {
   index: number;
@@ -57,6 +58,9 @@ export const getExpressionFunctions = (
     formatHorizontalTimeAxisLabels: formatHorizontalTimeAxisLabels(),
     formatVerticalAxisTimeLabels: formatVerticalAxisTimeLabels(),
     getLabelWidth,
+    getLegendColumnLayout,
+    getLegendColumnLayoutForPage,
+    getLegendPages,
     getMaxLabelWidth,
     hoverAnimFraction,
     hoverDeemphasisOpacity,
@@ -66,6 +70,7 @@ export const getExpressionFunctions = (
     isDonutLabelVisible,
     legendSymbolShape,
     truncateText,
+    wrapLabelText,
   };
 };
 
@@ -219,52 +224,6 @@ const getMaxLabelWidth = (
 ): number =>
   rows.reduce((width, row) => Math.max(width, getLabelWidth(String(row[field] ?? ''), fontWeight, fontSize)), 0);
 
-const LABEL_WIDTH_CACHE_MAX_SIZE = 5000;
-const labelWidthCache = new Map<string, number>();
-let measureContext: CanvasRenderingContext2D | null | undefined;
-
-/**
- * Gets the shared canvas context used to measure text, creating it on first use.
- * @returns canvas 2d context or null if unavailable
- */
-const getMeasureContext = (): CanvasRenderingContext2D | null => {
-  if (measureContext === undefined) {
-    measureContext = document.createElement('canvas').getContext('2d');
-    // Widths measured before a web font loads use the fallback font, so drop them once fonts finish loading.
-    document.fonts?.addEventListener?.('loadingdone', () => {
-      labelWidthCache.clear();
-    });
-  }
-  return measureContext;
-};
-
-/**
- * Figures out the rendered width of text by drawing it on a canvas
- * @param text
- * @param fontWeight
- * @param fontSize
- * @returns width in pixels
- */
-const getLabelWidth = (text: string, fontWeight: FontWeight = 'bold', fontSize: number = 12) => {
-  const font = `${fontWeight} ${fontSize}px ${ADOBE_CLEAN_FONT}`;
-  const key = `${font}|${text}`;
-  const cached = labelWidthCache.get(key);
-  if (cached !== undefined) return cached;
-
-  const context = getMeasureContext();
-  if (context === null) return 0;
-
-  context.font = font;
-  const width = context.measureText(text).width;
-  if (document.fonts?.status !== 'loading') {
-    if (labelWidthCache.size >= LABEL_WIDTH_CACHE_MAX_SIZE) {
-      labelWidthCache.delete(labelWidthCache.keys().next().value as string);
-    }
-    labelWidthCache.set(key, width);
-  }
-  return width;
-};
-
 /**
  * Gets the smallest top y of a donut label's collision boxes.
  * @param candidate
@@ -342,23 +301,6 @@ export const isDonutLabelVisible = (
   }
 
   return false;
-};
-
-const truncateText = (text: string, maxWidth: number, fontWeight: FontWeight = 'normal', fontSize: number = 12) => {
-  maxWidth = maxWidth - 4;
-  const textWidth = getLabelWidth(text, fontWeight, fontSize);
-  const elipsisWidth = getLabelWidth('\u2026', fontWeight, fontSize);
-  if (textWidth <= maxWidth) return text;
-
-  let truncatedText = text.slice(0, -1).trim();
-
-  for (let i = truncatedText.length; i > 0; i--) {
-    truncatedText = truncatedText.slice(0, -1).trim();
-    if (getLabelWidth(truncatedText, fontWeight, fontSize) + elipsisWidth <= maxWidth) break;
-  }
-
-  if (truncatedText.length === 0) return text;
-  return truncatedText + '\u2026';
 };
 
 type HoverFractionRow = Record<string, unknown> & { fraction?: number };

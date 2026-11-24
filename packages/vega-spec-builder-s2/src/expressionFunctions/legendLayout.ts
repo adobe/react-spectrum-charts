@@ -11,7 +11,7 @@
  */
 import { DEFAULT_FONT_SIZE, DEFAULT_LEGEND_COLUMN_PADDING } from '@spectrum-charts/core-s2/constants';
 
-import { expressionFunctions } from './expressionFunctions.js';
+import { getLabelWidth, truncateText } from './textMeasurement.js';
 
 export interface LegendLabelWidthDatum {
   entryKey: string;
@@ -33,12 +33,12 @@ export interface LegendColumnLayout {
 
 const LEGEND_ITEM_BASE = 22;
 const LEGEND_COLUMN_FIT_MARGIN = 2;
-const measure = (text: string) => expressionFunctions.getLabelWidth(text, 'normal', DEFAULT_FONT_SIZE);
+const measure = (text: string) => getLabelWidth(text, 'normal', DEFAULT_FONT_SIZE);
 
 /** Wraps labels using the same greedy word packing as the chart-internal legend. */
 export function wrapLabelText(text: string, maxWidth: number, maxLines: number): string[] {
   const fitLine = (line: string) =>
-    measure(line) <= maxWidth ? line : expressionFunctions.truncateText(line, maxWidth, 'normal', DEFAULT_FONT_SIZE);
+    measure(line) <= maxWidth ? line : truncateText(line, maxWidth, 'normal', DEFAULT_FONT_SIZE);
   const words = text.split(/\s+/).filter(Boolean);
   const limit = Math.max(1, Math.floor(maxLines));
   if (limit <= 1 || !words.length) return [fitLine(text)];

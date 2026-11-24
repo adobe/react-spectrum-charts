@@ -16,8 +16,8 @@ import userEvent from '@testing-library/user-event';
 
 import { Provider } from '@react-spectrum/s2';
 import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/core-s2/constants';
-import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
-import { expressionFunctions, legendSymbolShape } from '@spectrum-charts/vega-spec-builder-s2';
+import { ADOBE_CLEAN_FONT, spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
+import { legendSymbolShape } from '@spectrum-charts/vega-spec-builder-s2';
 
 import '../../test-utils/__mocks__/matchMedia.mock.js';
 import { Legend } from './Legend.js';
@@ -190,6 +190,32 @@ describe('measured standalone pagination', () => {
   });
   const resize = (width: number) => act(() => observers.get(screen.getByTestId('measured'))?.(width));
 
+  test.each([true, false])(
+    'uses measured typography and only planned line breaks when interactive=%s',
+    (interactive) => {
+      const dates = ['Nov 5, 2026', 'Nov 17, 2026', 'Nov 16, 2026'].map((label, index) => ({
+        seriesName: String(index),
+        label,
+        color: 'categorical-100',
+      }));
+      render(
+        <Legend
+          items={dates}
+          preferredColumns={[5, 3]}
+          maxRows={2}
+          labelWrap={3}
+          dataTestId="measured"
+          onClick={interactive ? jest.fn() : undefined}
+        />
+      );
+      resize(1680);
+      for (const { label } of dates) {
+        expect(screen.getByText(label)).toHaveStyle({ fontFamily: ADOBE_CLEAN_FONT, whiteSpace: 'pre' });
+        if (interactive) expect(screen.getByRole('button', { name: label })).toHaveStyle({ columnGap: '0' });
+      }
+    }
+  );
+
   test('reports native pages, caps rows, and pages separately from controlled visibility', async () => {
     const onPagesChange = jest.fn(),
       onClick = jest.fn();
@@ -249,52 +275,5 @@ describe('measured standalone pagination', () => {
     act(() => jest.advanceTimersByTime(1));
     expect(onPagesChange).toHaveBeenCalledTimes(2);
     expect(onPagesChange.mock.lastCall[0]).toHaveLength(5);
-  });
-
-  test('fills automatic columns across the width and paginates only beyond two complete rows', () => {
-    jest.useFakeTimers();
-    jest.spyOn(expressionFunctions, 'getLabelWidth').mockImplementation((text) => text.length * 7);
-    const onPagesChange = jest.fn();
-    const props = {
-      items: entries,
-      preferredColumns: 'auto' as const,
-      maxRows: 2,
-      labelWrap: 3,
-      dataTestId: 'measured',
-      onPagesChange,
-      onClick: jest.fn(),
-    };
-    const { rerender } = render(<Legend {...props} hiddenSeries={['24']} />);
-    resize(694);
-    expect(onPagesChange).toHaveBeenLastCalledWith([
-      { columns: 6, start: 0, end: 11 },
-      { columns: 6, start: 12, end: 23 },
-      { columns: 6, start: 24, end: 24 },
-    ]);
-    expect(screen.getAllByRole('listitem')).toHaveLength(12);
-    expect(screen.getByTestId('measured')).toHaveStyle({ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' });
-    rerender(
-      <Legend {...props} hiddenSeries={['24']} hiddenEntries={entries.slice(0, 24).map((item) => item.seriesName)} />
-    );
-    expect(screen.getByRole('button', { name: 'Category 24' })).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByTestId('measured')).toHaveStyle({ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' });
-    resize(693);
-    act(() => jest.advanceTimersByTime(150));
-    expect(onPagesChange.mock.lastCall[0][0]).toEqual({ columns: 5, start: 0, end: 9 });
-    resize(1527);
-    act(() => jest.advanceTimersByTime(150));
-    expect(onPagesChange).toHaveBeenLastCalledWith([{ columns: 13, start: 0, end: 24 }]);
-    rerender(<Legend {...props} hiddenSeries={['24']} />);
-    expect(screen.getAllByRole('listitem')).toHaveLength(25);
-  });
-
-  test('keeps every automatic-column entry in static layouts and honors the label width limit', () => {
-    jest.spyOn(expressionFunctions, 'getLabelWidth').mockImplementation((text) => text.length * 7);
-    render(<Legend items={entries} preferredColumns="auto" labelLimit={49} labelWrap={3} dataTestId="measured" />);
-    resize(800);
-    expect(screen.getAllByRole('listitem')).toHaveLength(25);
-    expect(screen.getByTestId('measured')).toHaveStyle({ gridTemplateColumns: 'repeat(9, minmax(0, 1fr))' });
-    expect(screen.getByTestId('measured').querySelector('.rsc-legend-label')).toHaveStyle({ maxWidth: '49px' });
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

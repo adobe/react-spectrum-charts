@@ -50,6 +50,12 @@ export interface LegendOptions {
   legendLabels?: LegendLabel[];
   /** Max label width in pixels before truncating; also sets the column width of bottom/top legends. Defaults to `184`. */
   labelLimit?: number;
+  /** Preferred horizontal column counts, tried in order using measured labels. Unset by default. */
+  preferredColumns?: readonly number[];
+  /** Maximum horizontal rows with preferredColumns; reports pages via onPagesChange (standalone) or legendN_pages (chart-internal). Unset by default. */
+  maxRows?: number;
+  /** Maximum lines per label; preferredColumns supplies the wrap width, otherwise labelLimit does. Defaults to 1. */
+  labelWrap?: number;
   /** Symbol outline line type: a data field to facet by, or a static value like `{ value: 'dashed' }`. */
   lineType?: LineTypeFacet;
   /** Symbol outline width: a data field to facet by, or a static value like `{ value: 'L' }`. */

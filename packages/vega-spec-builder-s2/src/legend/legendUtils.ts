@@ -14,6 +14,7 @@ import {
   BaseValueRef,
   Color,
   ColorValueRef,
+  Data,
   FilterTransform,
   GuideEncodeEntry,
   LegendEncode,
@@ -27,6 +28,7 @@ import {
   COLOR_SCALE,
   CONTROLLED_HIGHLIGHTED_SERIES,
   CONTROLLED_HIGHLIGHTED_TABLE,
+  DEFAULT_FONT_SIZE,
   DEFAULT_LEGEND_COLUMN_PADDING,
   DEFAULT_LEGEND_LABEL_LIMIT,
   DEFAULT_LEGEND_SYMBOL_WIDTH,
@@ -55,7 +57,6 @@ import {
   FacetRef,
   FacetType,
   LegendDescription,
-  LegendLabel,
   LegendSpecOptions,
   Position,
   SecondaryFacetType,
@@ -91,6 +92,21 @@ export const getMaxLabelWidthExpr = (name: string, labelLimit?: number): string 
   return `min(${maxWidthExpr}, ${effectiveLabelLimit})`;
 };
 
+export const getDisplayLabelExpr = (name: string): string =>
+  `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
+
+/** Measures either the visible page or the full, unfiltered legend. */
+export const getLabelWidthsData = (name: string, all = false): Data => ({
+  name: `${name}_${all ? 'pagesLabelWidths' : 'labelWidths'}`,
+  source: `${name}Aggregate${all ? 'All' : ''}`,
+  transform: [
+    { type: 'formula', as: 'entryKey', expr: `datum.${name}Entries` },
+    { type: 'formula', as: 'displayLabel', expr: getDisplayLabelExpr(name) },
+    { type: 'formula', as: 'labelWidth', expr: "getLabelWidth(datum.displayLabel, 'normal', 14)" },
+    { type: 'window', ops: ['row_number'], as: ['legendIndex'] },
+  ],
+});
+
 /**
  * Gets the filter transform for hidden entries
  * @param hiddenEntries
@@ -115,7 +131,7 @@ export const getHiddenEntriesFilter = (hiddenEntries: string[], name: string): F
 export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, userMeta: UserMeta): LegendEncode => {
   const symbolEncodings = getSymbolEncodings(facets, legendOptions);
   const hoverEncodings = getHoverEncodings(legendOptions, userMeta);
-  const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions.name, legendOptions.legendLabels);
+  const legendLabelsEncodings = getLegendLabelsEncodings(legendOptions);
   const showHideEncodings = getShowHideEncodings(legendOptions);
   const clickEncodings = getClickEncodings(legendOptions);
   // merge the encodings together
@@ -128,7 +144,32 @@ export const getEncodings = (facets: Facet[], legendOptions: LegendSpecOptions, 
   ]);
 };
 
-const getLegendLabelsEncodings = (name: string, legendLabels: LegendLabel[] | undefined): LegendEncode => {
+const getLegendLabelsEncodings = ({
+  name,
+  legendLabels,
+  labelLimit,
+  labelWrap,
+  preferredColumns,
+  position,
+}: LegendSpecOptions): LegendEncode => {
+  if (labelWrap && labelWrap > 1) {
+    const resolvedLabel = legendLabels
+      ? `indexof(pluck(${name}_labels, 'seriesName'), datum.value) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.value)].label : datum.value`
+      : 'datum.value';
+    const wrapWidth =
+      preferredColumns?.length && ['top', 'bottom'].includes(position)
+        ? `${name}_columnLayout.wrapWidth`
+        : `${labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT}`;
+    const lines = `wrapLabelText(${resolvedLabel}, ${wrapWidth}, ${labelWrap})`;
+    return {
+      labels: {
+        update: {
+          text: { signal: lines },
+          dy: { signal: `-(length(${lines}) - 1) * ${DEFAULT_FONT_SIZE / 2}` },
+        },
+      },
+    };
+  }
   if (legendLabels) {
     return {
       labels: {

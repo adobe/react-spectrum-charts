@@ -38,12 +38,6 @@ export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMous
   colorScheme?: ColorScheme;
   /** Standalone horizontal entries wrap by default; scroll keeps one row for an overflow container. */
   overflow?: 'wrap' | 'scroll';
-  /** Horizontal standalone columns: auto fills the available width; arrays try measured counts in order. Unset by default. */
-  preferredColumns?: readonly number[] | 'auto';
-  /** Maximum horizontal standalone rows per page; reports the plan through onPagesChange. Unset by default. */
-  maxRows?: number;
-  /** Maximum lines per standalone label in preferred-column layouts. Defaults to 1. */
-  labelWrap?: number;
   /** Reports the standalone page plan without changing series visibility. Unset by default. */
   onPagesChange?: (pages: readonly LegendPage[]) => void;
   /** Renders a standalone entry's context dialog on right-click, Shift+F10, or the context-menu key. */

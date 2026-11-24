@@ -606,11 +606,65 @@ test.each(['range', 'trend'])('supports hover-only %s marks with a non-highlight
       },
     ],
   });
+
   const view = new View(parse(spec), { renderer: 'none' }).insert('table', rows);
   try {
     await view.width(400).height(240).runAsync();
     expect(await view.toSVG()).not.toMatch(/NaN|undefined/);
   } finally {
     view.finalize();
+  }
+});
+
+test.each([400, 800])('renders measured two-row pages without filtering marks at %ipx', async (width) => {
+  const { View, expressionFunction, parse } = await import('vega');
+  const { buildSpec } = await import('../chartSpecBuilder.js');
+  const { getExpressionFunctions } = await import('../expressionFunctions/index.js');
+  const { getLegendPages } = await import('../expressionFunctions/legendLayout.js');
+  Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+  expressionFunction('rscContainerWidth', (value: number) => value);
+  const rows = Array.from({ length: 23 }, (_, index) => ({
+    datetime: 1000,
+    value: index + 10,
+    series: `series-${index}`,
+  }));
+  const legendLabels = rows.map(({ series }, index) => ({
+    seriesName: series,
+    label: index === 11 ? 'International marketing campaigns and paid search revenue' : `Category ${index}`,
+  }));
+  const createView = async (hiddenEntries: string[] = []) => {
+    const spec = buildSpec({
+      data: rows,
+      animations: false,
+      legends: [{ position: 'top', preferredColumns: [5, 3], maxRows: 2, labelWrap: 3, legendLabels, hiddenEntries }],
+      marks: [{ markType: 'line', color: 'series' }],
+    });
+    const view = new View(parse(spec), { renderer: 'none' }).insert('table', rows);
+    await view.width(width).height(320).runAsync();
+    return view;
+  };
+  const initial = await createView();
+  const pages = initial.signal('legend0_pages');
+  try {
+    expect(pages).toEqual(getLegendPages(initial.data('legend0_pagesLabelWidths'), initial.width(), [5, 3], 2, 3));
+    expect(pages.length).toBeGreaterThan(1);
+  } finally {
+    initial.finalize();
+  }
+  for (const page of pages) {
+    const view = await createView(
+      rows.filter((_, index) => index < page.start || index > page.end).map(({ series }) => series)
+    );
+    try {
+      expect(view.signal('legend0_pages')).toEqual(pages);
+      expect(view.signal('legend0_columnLayout')).toHaveProperty('columns', page.columns);
+      expect(view.data('legend0AggregateCapped').map((entry) => entry.legend0Entries)).toEqual(
+        rows.slice(page.start, page.end + 1).map(({ series }) => series)
+      );
+      expect(view.data('table')).toHaveLength(rows.length);
+      expect(await view.toSVG()).not.toMatch(/NaN|undefined/);
+    } finally {
+      view.finalize();
+    }
   }
 });

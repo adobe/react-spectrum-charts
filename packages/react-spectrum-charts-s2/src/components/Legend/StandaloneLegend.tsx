@@ -18,7 +18,7 @@ import {
   DEFAULT_LEGEND_SYMBOL_WIDTH,
   ROUNDED_SQUARE_PATH,
 } from '@spectrum-charts/core-s2/constants';
-import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
+import { ADOBE_CLEAN_FONT, getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import {
   expressionFunctions,
   getLegendColumnLayout,
@@ -60,11 +60,9 @@ export function StandaloneLegend(props: Props) {
   }
   const side = props.position === 'left' || props.position === 'right';
   const scroll = !side && props.overflow === 'scroll';
-  const automatic = props.preferredColumns === 'auto';
   const preferred = !side && !scroll && Boolean(props.preferredColumns?.length);
   if (
-    (props.preferredColumns !== 'auto' &&
-      props.preferredColumns?.some((columns) => !Number.isInteger(columns) || columns < 1)) ||
+    props.preferredColumns?.some((columns) => !Number.isInteger(columns) || columns < 1) ||
     (props.maxRows !== undefined && (!Number.isInteger(props.maxRows) || props.maxRows < 1)) ||
     (props.labelWrap !== undefined && (!Number.isInteger(props.labelWrap) || props.labelWrap < 1))
   ) {
@@ -111,22 +109,7 @@ export function StandaloneLegend(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [preferred, labelsKey, fontRevision]
   );
-  const automaticLabelWidth = Math.min(
-    props.labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT,
-    measured.reduce((maximum, item) => Math.max(maximum, item.labelWidth), 0)
-  );
-  const itemChrome = DEFAULT_LEGEND_SYMBOL_WIDTH + 6;
-  const automaticColumns = Math.max(
-    1,
-    Math.min(
-      props.items.length,
-      Math.floor(
-        ((width ?? 0) + DEFAULT_LEGEND_COLUMN_PADDING) /
-          (automaticLabelWidth + itemChrome + DEFAULT_LEGEND_COLUMN_PADDING)
-      )
-    )
-  );
-  const candidates = props.preferredColumns === 'auto' ? [automaticColumns] : props.preferredColumns ?? [];
+  const candidates = props.preferredColumns ?? [];
   const lines = props.labelWrap ?? 1;
   const pages =
     preferred && props.maxRows ? getLegendPages(measured, width ?? 0, candidates, props.maxRows, lines) : [];
@@ -145,26 +128,14 @@ export function StandaloneLegend(props: Props) {
   const visibleItems = props.items
     .filter((item) => !props.hiddenEntries?.includes(item.seriesName))
     .slice(0, layout && props.maxRows ? layout.columns * props.maxRows : undefined);
-  const wrapWidth = layout
-    ? Math.max(
-        1,
-        automatic
-          ? Math.min(
-              props.labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT,
-              ((width ?? 0) - (layout.columns - 1) * DEFAULT_LEGEND_COLUMN_PADDING) / layout.columns - itemChrome
-            )
-          : lines > 1
-          ? layout.wrapWidth
-          : layout.labelLimit || width || 1
-      )
-    : undefined;
+  const wrapWidth = layout ? Math.max(1, lines > 1 ? layout.wrapWidth : layout.labelLimit || width || 1) : undefined;
   const wrapped = new Map(
     layout
       ? visibleItems.map((item) => [item.seriesName, wrapLabelText(item.label, wrapWidth ?? 1, lines).join('\n')])
       : []
   );
   const columnWidths: number[] = new Array(Math.max(1, Math.min(layout?.columns ?? 1, visibleItems.length))).fill(0);
-  if (layout && !automatic) {
+  if (layout) {
     visibleItems.forEach((item, index) => {
       const textWidth = Math.max(
         0,
@@ -186,9 +157,7 @@ export function StandaloneLegend(props: Props) {
       style={{
         display: side || scroll ? 'flex' : 'grid',
         gridTemplateColumns: layout
-          ? automatic
-            ? `repeat(${layout.columns}, minmax(0, 1fr))`
-            : preferredGrid
+          ? preferredGrid
           : side || scroll
           ? undefined
           : `repeat(auto-fit, minmax(0, ${(props.labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT) + 32}px))`,
@@ -264,7 +233,7 @@ function StandaloneLegendEntry({
     width: side ? '100%' : undefined,
     padding: wrappedLabel !== undefined ? 0 : compact ? `4px ${side ? 8 : 12}px` : undefined,
     boxSizing: 'border-box',
-    whiteSpace: wrappedLabel !== undefined ? 'pre-line' : 'nowrap',
+    whiteSpace: wrappedLabel !== undefined ? 'pre' : 'nowrap',
     textAlign: 'start',
   };
   const content = (
@@ -283,8 +252,9 @@ function StandaloneLegendEntry({
         title={item.description ?? item.label}
         style={{
           fontSize: wrappedLabel !== undefined ? 14 : 12,
+          fontFamily: wrappedLabel !== undefined ? ADOBE_CLEAN_FONT : undefined,
           lineHeight: wrappedLabel !== undefined ? '14px' : '18px',
-          whiteSpace: wrappedLabel !== undefined ? 'pre-line' : 'nowrap',
+          whiteSpace: wrappedLabel !== undefined ? 'pre' : 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           maxWidth: wrapWidth ?? props.labelLimit,
@@ -357,6 +327,7 @@ function StandaloneLegendEntry({
               whiteSpace: 'normal',
               width: side ? '100%' : undefined,
               padding: compact || wrappedLabel !== undefined ? 0 : undefined,
+              columnGap: wrappedLabel !== undefined ? 0 : undefined,
               justifyContent: compact ? 'flex-start' : undefined,
             }}
             onPress={() => props.onClick?.(item.seriesName)}

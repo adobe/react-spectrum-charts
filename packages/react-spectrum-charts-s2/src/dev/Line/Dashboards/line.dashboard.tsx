@@ -41,6 +41,7 @@ import {
   LineProps,
   TitleProps,
 } from '../../../types/index.js';
+import { PaginatedChartLegendExample } from '../../Legend/Coverage/Legend.story.js';
 import {
   Variation,
   VariationDashboard,
@@ -1121,7 +1122,27 @@ const axisVariations: Variation[] = [
   },
 ];
 
+const MeasuredLegendVariation = (): ReactElement => {
+  const width = useVariationSize();
+  return (
+    <PaginatedChartLegendExample
+      width={width}
+      height={Math.round(width * LINE_ASPECT_RATIO)}
+      animationTypes={useVariationAnimationTypes()}
+      renderer={useVariationRenderer()}
+    />
+  );
+};
+
 const legendVariations: Variation[] = [
+  {
+    id: 'legend-measured-pagination',
+    title: 'Measured legend pages',
+    description: 'Twenty series use preferred 5/3 columns, two-row pages, and wrapped labels without hiding lines.',
+    dataset: 'standard',
+    coverage: ['Legend.preferredColumns', 'Legend.maxRows', 'Legend.labelWrap'],
+    render: () => <MeasuredLegendVariation />,
+  },
   {
     id: 'legend-default',
     title: 'Legend',
@@ -1490,6 +1511,9 @@ const axisCoverage: SiblingCoverage<AxisProps> = {
 };
 
 const legendCoverage: SiblingCoverage<LegendProps> = {
+  preferredColumns: ['legend-measured-pagination'],
+  maxRows: ['legend-measured-pagination'],
+  labelWrap: ['legend-measured-pagination'],
   defaultHiddenSeries: ['legend-toggleable'],
   descriptions: ['legend-descriptions'],
   hiddenEntries: ['legend-hidden-entries'],

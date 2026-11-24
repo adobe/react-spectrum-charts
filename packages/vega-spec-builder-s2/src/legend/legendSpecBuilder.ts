@@ -49,7 +49,15 @@ import {
   setHoverOpacityForMarks,
   setHoverStrokeWidthForMarks,
 } from './legendHighlightUtils.js';
-import { Facet, getColumns, getEncodings, getHiddenEntriesFilter, getSymbolType } from './legendUtils.js';
+import {
+  Facet,
+  getColumns,
+  getDisplayLabelExpr,
+  getEncodings,
+  getHiddenEntriesFilter,
+  getLabelWidthsData,
+  getSymbolType,
+} from './legendUtils.js';
 
 export const addLegend = produce<
   ScSpec,
@@ -136,7 +144,16 @@ export const addLegend = produce<
       spec.scales.push({
         name: `${name}Entries`,
         type: 'ordinal',
-        domain: { data: `${name}Aggregate`, field: `${name}Entries` },
+        domain: {
+          data: `${name}Aggregate${
+            legendOptions.preferredColumns?.length &&
+            legendOptions.maxRows !== undefined &&
+            ['top', 'bottom'].includes(position)
+              ? 'Capped'
+              : ''
+          }`,
+          field: `${name}Entries`,
+        },
       });
 
       // just want the unique fields
@@ -216,15 +233,16 @@ export const formatFacetRefsWithPresets = (
  * @returns
  */
 const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userMeta: UserMeta): Legend => {
-  const { name, position, title, labelLimit, titleLimit } = options;
+  const { name, position, title, labelLimit, titleLimit, preferredColumns, labelWrap } = options;
+  const preferred = preferredColumns?.length && ['top', 'bottom'].includes(position);
   const legend: Legend = {
     fill: `${name}Entries`,
     direction: ['top', 'bottom'].includes(position) ? 'horizontal' : 'vertical',
     orient: position,
     title,
     encode: getEncodings(facets, options, userMeta),
-    columns: getColumns(position, name, labelLimit),
-    labelLimit,
+    columns: preferred ? { signal: `${name}_columnLayout.columns` } : getColumns(position, name, labelLimit),
+    labelLimit: preferred ? { signal: `${name}_columnLayout.labelLimit` } : labelLimit,
   };
   // Empty Vega legends have invalid bounds and must not participate in chart layout.
   if (options.hiddenEntries.length) {
@@ -233,6 +251,7 @@ const getCategoricalLegend = (facets: Facet[], options: LegendSpecOptions, userM
     if (title !== undefined) legend.title = { signal: `${hasEntries} ? ${JSON.stringify(title)} : null` };
   }
   if (titleLimit !== undefined) legend.titleLimit = titleLimit;
+  if (labelWrap && labelWrap > 1) legend.gridAlign = 'none';
   return legend;
 };
 
@@ -295,7 +314,7 @@ const addMarks = produce<Mark[], [LegendSpecOptions]>((marks, { highlight, keys,
  * Each unique combination gets joined with a pipe to create a single string to use as legend entries
  */
 export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }]>(
-  (data, { facets, hiddenEntries, highlight, keys, name }) => {
+  (data, { facets, hiddenEntries, highlight, keys, name, position, preferredColumns, maxRows }) => {
     // expression for combining all the facets into a single key
     const expr = facets.map((facet) => `datum.${facet}`).join(' + " | " + ');
     data.push({
@@ -316,7 +335,6 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
     });
 
     // Measure the actual max display label width so getColumns can compute an accurate column count.
-    const labelLookupExpr = `indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries) > -1 ? ${name}_labels[indexof(pluck(${name}_labels, 'seriesName'), datum.${name}Entries)].label : datum.${name}Entries`;
     data.push({
       name: `${name}_maxLabelWidth`,
       source: `${name}Aggregate`,
@@ -324,7 +342,7 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
         {
           type: 'formula',
           as: 'displayLabel',
-          expr: labelLookupExpr,
+          expr: getDisplayLabelExpr(name),
         },
         {
           type: 'formula',
@@ -339,6 +357,31 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
         },
       ],
     });
+
+    if (preferredColumns?.length && ['top', 'bottom'].includes(position)) {
+      data.push(getLabelWidthsData(name));
+      if (maxRows !== undefined) {
+        data.push(
+          {
+            name: `${name}AggregateAll`,
+            source: 'table',
+            transform: [
+              { type: 'aggregate', groupby: facets },
+              { type: 'formula', as: `${name}Entries`, expr },
+            ],
+          },
+          getLabelWidthsData(name, true),
+          {
+            name: `${name}AggregateCapped`,
+            source: `${name}Aggregate`,
+            transform: [
+              { type: 'window', ops: ['row_number'], as: [`${name}RowIndex`] },
+              { type: 'filter', expr: `datum.${name}RowIndex <= ${name}_columnLayout.columns * ${maxRows}` },
+            ],
+          }
+        );
+      }
+    }
 
     if (keys?.length) {
       const tableData = getTableData(data);
@@ -366,7 +409,10 @@ export const addData = produce<Data[], [LegendSpecOptions & { facets: string[] }
 );
 
 export const addSignals = produce<Signal[], [LegendSpecOptions]>(
-  (signals, { hiddenSeries, highlight, isToggleable, keys, legendLabels, name }) => {
+  (
+    signals,
+    { hiddenSeries, highlight, isToggleable, keys, legendLabels, name, position, preferredColumns, maxRows, labelWrap }
+  ) => {
     if (highlight) {
       addHighlightSignalLegendHoverEvents(signals, name, Boolean(isToggleable || hiddenSeries), keys);
     }
@@ -374,5 +420,25 @@ export const addSignals = produce<Signal[], [LegendSpecOptions]>(
     // Always emit _labels so the _maxLabelWidth data transform can safely reference it.
     // Defaults to [] when no legendLabels prop is set; the lookup falls through to datum.${name}Entries.
     signals.push(getGenericValueSignal(`${name}_labels`, legendLabels ?? []));
+    if (preferredColumns?.length && ['top', 'bottom'].includes(position)) {
+      const candidates = JSON.stringify(preferredColumns);
+      if (maxRows !== undefined) {
+        signals.push({
+          name: `${name}_pages`,
+          update: `getLegendPages(data('${name}_pagesLabelWidths'), width, ${candidates}, ${maxRows}, ${
+            labelWrap ?? 1
+          })`,
+        });
+      }
+      signals.push({
+        name: `${name}_columnLayout`,
+        update:
+          maxRows === undefined
+            ? `getLegendColumnLayout(data('${name}_labelWidths'), width, ${candidates}, ${labelWrap ?? 1})`
+            : `getLegendColumnLayoutForPage(data('${name}_labelWidths'), data('${name}_pagesLabelWidths'), ${name}_pages, ${candidates}, width, ${
+                labelWrap ?? 1
+              })`,
+      });
+    }
   }
 );

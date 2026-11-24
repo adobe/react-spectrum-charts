@@ -96,6 +96,21 @@ export const AlignedRows = () => (
   </div>
 );
 
+export const DateLabels = () => (
+  <div style={{ width: 1000, maxWidth: '100%' }}>
+    <SharedLegendExample
+      preferredColumns={[5, 3]}
+      maxRows={2}
+      labelWrap={3}
+      items={[5, 4, 3, 2, 17, 16, 18, 23, 12, 19].map((day, index) => ({
+        seriesName: `day-${day}`,
+        label: `Nov ${day}, 2026`,
+        color: `categorical-${(index + 1) * 100}`,
+      }))}
+    />
+  </div>
+);
+
 export function PaginatedLegendExample() {
   const [pages, setPages] = useState<readonly LegendPage[]>([]);
   const [page, setPage] = useState(0);
@@ -127,7 +142,7 @@ export function PaginatedLegendExample() {
       )}
       <SharedLegendExample
         items={entries}
-        preferredColumns="auto"
+        preferredColumns={[5, 3]}
         maxRows={2}
         labelWrap={3}
         onPagesChange={setPages}

@@ -226,10 +226,95 @@ labels, titles, and extra rows all shrink the plot. On small charts, keep labels
 the legend or leave little room for the plot
 ([#1010](https://github.com/adobe/react-spectrum-charts/issues/1010)).
 
-:::note
-The S2 `Legend` doesn't support these S1 props yet: `_preferredColumns` and `_maxRows` (row limits
-with pagination) and `_labelWrap`.
-:::
+### Measured columns and pagination
+
+For horizontal legends, `preferredColumns={[5, 3]}` tries five measured columns, then three.
+`labelWrap={3}` allows up to three lines per label. Labels on later pages do not reduce
+earlier pages' column counts. Omit these props to retain the default layout.
+
+Add `maxRows={2}` to cap the rendered legend at two rows and expose the inclusive page
+plan through the Vega `legend0_pages` signal (`legend1_pages` for the second legend, and so on).
+Read it from `onVegaViewReady`, subscribe to changes, and use each range with `hiddenEntries`.
+Keep the complete chart data and color domain: paging entries must not hide their series.
+Place app-owned pagination controls above the chart rather than over its labels.
+`onPagesChange` is only for standalone legends.
+
+```tsx
+import { useEffect, useState } from 'react';
+
+import type { View } from 'vega';
+
+import { Button } from '@react-spectrum/s2';
+import { Chart, Legend, type LegendPage, Line } from '@spectrum-charts/react-spectrum-charts-s2';
+
+const names = Array.from({ length: 24 }, (_, index) => `Channel ${index + 1}`);
+const data = names.flatMap((series, index) => [
+  { series, day: 1, visits: 20 + index },
+  { series, day: 2, visits: 30 + index },
+]);
+
+function PagedChartLegend() {
+  const [view, setView] = useState<View>();
+  const [pages, setPages] = useState<readonly LegendPage[]>([]);
+  const [page, setPage] = useState(0);
+  useEffect(() => {
+    if (!view) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const commit = (_name: string, next: readonly LegendPage[]) =>
+      setPages((previous) => (JSON.stringify(previous) === JSON.stringify(next) ? previous : next));
+    commit('legend0_pages', view.signal('legend0_pages'));
+    const update = (name: string, next: readonly LegendPage[]) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => commit(name, next), 150);
+    };
+    view.addSignalListener('legend0_pages', update);
+    return () => {
+      clearTimeout(timer);
+      view.removeSignalListener('legend0_pages', update);
+    };
+  }, [view]);
+  useEffect(() => setPage((current) => Math.min(current, Math.max(0, pages.length - 1))), [pages.length]);
+  const currentPage = Math.min(page, Math.max(0, pages.length - 1));
+  const range = pages[currentPage];
+  return (
+    <>
+      {pages.length > 1 && (
+        <div role="group" aria-label="Legend pages">
+          <Button variant="secondary" isDisabled={currentPage === 0} onPress={() => setPage(currentPage - 1)}>
+            Previous
+          </Button>
+          <span aria-live="polite">
+            {currentPage + 1} of {pages.length}
+          </span>
+          <Button
+            variant="secondary"
+            isDisabled={currentPage === pages.length - 1}
+            onPress={() => setPage(currentPage + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+      <Chart data={data} width={600} height={300} onVegaViewReady={setView}>
+        <Line dimension="day" metric="visits" color="series" scaleType="point" />
+        <Legend
+          position="top"
+          preferredColumns={[5, 3]}
+          maxRows={2}
+          labelWrap={3}
+          hiddenEntries={range ? names.filter((_, index) => index < range.start || index > range.end) : undefined}
+        />
+      </Chart>
+    </>
+  );
+}
+```
+
+The initial plan is available immediately; this example settles subsequent plans for 150ms
+and ignores unchanged plans. Clamp the current page on resize and reset it when ordered
+series identities change. For static exports, omit `maxRows` and `hiddenEntries` to include
+every entry. Vertical legends ignore `preferredColumns` and `maxRows`; `labelWrap` uses
+`labelLimit` as its wrap width there.
 
 ## Shared standalone legends
 
@@ -299,16 +384,11 @@ function SharedLegend() {
   `{ columns, start, end }` ranges through `onPagesChange`. Each page is planned from its own
   labels, so a long label on a later page does not reduce earlier pages' column counts.
   Preferred layouts align at the start by default, share column boundaries, and wrap labels
-  by word up to `labelWrap` lines before truncating. Full descriptions remain accessible.
+  by word up to `labelWrap` lines before truncating. Labels use the same font for measurement
+  and rendering, and stay on one line when they fit. Full descriptions remain accessible.
   Resize-driven page plans settle for 150ms; unchanged plans do not trigger callbacks.
   Use the reported ranges with `hiddenEntries`, clamp the current page after resize, and reset
   it when the ordered item identities change. Omit `maxRows` and `hiddenEntries` for exports.
-- Use `preferredColumns="auto"` to fill the available width with equal-width columns instead
-  of a fixed candidate list. The column count uses the widest measured label, capped by
-  `labelLimit` (184px by default), plus symbol and column spacing. All pages share those
-  column boundaries, including incomplete rows. With `maxRows={2}`, pagination starts only
-  after two complete rows; a wider container fits more entries before needing another page.
-  Without `maxRows`, all entries remain visible for static layouts.
 - `colorScheme` defaults to `light`; supply `dark` alongside a dark Spectrum provider.
 - `onMouseOver` and `onMouseOut` also follow keyboard focus. Without event handlers or a
   context-menu renderer, entries are static text and symbols, suitable for exports.
@@ -357,7 +437,7 @@ function PagedLegend({ items }: { items: readonly LegendItem[] }) {
       )}
       <Legend
         items={items}
-        preferredColumns="auto"
+        preferredColumns={[5, 3]}
         maxRows={2}
         labelWrap={3}
         onPagesChange={setPages}
