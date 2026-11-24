@@ -121,6 +121,76 @@ test.each(['datetime', 'timestamp'])(
 );
 
 describe('Spec builder, AxisAnnotation', () => {
+  test.each(['source', 'precomputed'])(
+    'controlled %s selection persists at coordinate zero and survives source updates',
+    async (mode) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 400);
+      const quotedId = "point'\\id";
+      const rows = [
+        { timestamp: -1000, value: 1, annotations: ['range'] },
+        { timestamp: 0, value: 2, annotations: ['range', quotedId] },
+        { timestamp: 1000, value: 3, annotations: ['range'] },
+        { timestamp: 1500, value: 4, annotations: ['other'] },
+        { timestamp: 2500, value: 5, annotations: ['other'] },
+      ];
+      for (const selectedIds of [[quotedId], [], [quotedId, 'other'], ['missing']]) {
+        const positions =
+          mode === 'precomputed'
+            ? [
+                { id: 'range', value: 0, lower: -1000, upper: 1000 },
+                { id: quotedId, value: 0 },
+                { id: 'other', value: 2000, lower: 1500, upper: 2500 },
+              ]
+            : undefined;
+        const spec = buildSpec({
+          data: rows,
+          animations: false,
+          axes: [{ position: 'bottom', labelFormat: 'time', axisAnnotations: [{ data: positions, selectedIds }] }],
+          marks: [{ markType: 'line', dimension: 'timestamp' }],
+        });
+        const view = new View(parse(JSON.parse(JSON.stringify(spec))), { renderer: 'none' }).insert('table', rows);
+        try {
+          await view.width(400).height(240).runAsync();
+          await view.signal('axis0Annotation0_highlighted', null).signal('axis0Annotation0_clicked', {}).runAsync();
+          const selected = selectedIds.filter((id) => id !== 'missing').length;
+          expect(view.data('axis0Annotation0_selection')).toHaveLength(selected);
+          let previousPath: string | null = null;
+          for (const width of [400, 520]) {
+            await view.width(width).runAsync();
+            const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+            const rangePaths = [...svg.querySelectorAll('.axis0Annotation0_range .mark-rect path')];
+            expect(rangePaths).toHaveLength(selected * 3);
+            expect(rangePaths.every((path) => path.getAttribute('fill-opacity') === '1')).toBe(true);
+            const icons = [...svg.querySelectorAll('.axis0Annotation0_icon path')];
+            expect(icons.filter((path) => path.getAttribute('fill-opacity') !== '0')).toHaveLength(selected || 2);
+            if (selected) {
+              const path = rangePaths[1].getAttribute('d');
+              if (previousPath) expect(path).not.toBe(previousPath);
+              previousPath = path;
+            }
+            expect(await view.toSVG()).not.toMatch(/NaN|Infinity/);
+          }
+          if (mode === 'source' && selectedIds.length === 1 && selectedIds[0] === quotedId) {
+            await view.remove('table', (row) => row.timestamp === 0).runAsync();
+            expect(view.data('axis0Annotation0_selection')).toHaveLength(0);
+            const cleared = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+            expect(cleared.querySelectorAll('.axis0Annotation0_range .mark-rect path')).toHaveLength(0);
+            await view.insert('table', [{ timestamp: 0, value: 2, annotations: ['range', quotedId] }]).runAsync();
+            expect(view.data('axis0Annotation0_selection')[0]).toMatchObject({ center: 0, isSelected: 1 });
+          }
+          if (!selected) {
+            await view.signal('axis0Annotation0_highlighted', view.data('axis0Annotation0_aggregate')[1]).runAsync();
+            const hovered = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+            expect(hovered.querySelectorAll('.axis0Annotation0_range .mark-rect path')).toHaveLength(3);
+          }
+        } finally {
+          view.finalize();
+        }
+      }
+    }
+  );
+
   test.each([false, true])(
     'precomputed positions preserve source domains and resize independently (empty=%s)',
     async (empty) => {
@@ -177,6 +247,22 @@ describe('Spec builder, AxisAnnotation', () => {
   );
 
   describe('addAxisAnnotationData()', () => {
+    test.each([
+      { selectedIds: null },
+      { selectedIds: 'not-an-array' },
+      { selectedIds: [''] },
+      { selectedIds: ['duplicate', 'duplicate'] },
+    ])('rejects malformed controlled selection: $selectedIds', ({ selectedIds }) => {
+      const options = { ...testAxisAnnotation };
+      Reflect.set(options, 'selectedIds', selectedIds);
+      expect(() => addAxisAnnotationData([], options)).toThrow('selection requires unique, nonempty string IDs');
+    });
+
+    test('rejects controlled summary selection', () => {
+      expect(() => addAxisAnnotationData([], { ...testAxisAnnotationSummary, selectedIds: [] })).toThrow(
+        'selection requires span format'
+      );
+    });
     test.each([
       { positions: [{ id: 'a', value: NaN }] },
       { positions: [{ id: 'a', value: 1, lower: 0 }] },

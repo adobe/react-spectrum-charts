@@ -327,4 +327,22 @@ An empty `data` array clears annotations. Precomputed data requires `format: 'sp
 including every member of a coincident group. No private Vega fields are exposed.
 The callback does not persist selection by itself or provide keyboard activation.
 
+Set `selectedIds` on a span annotation to control selection independently of
+pointer hover, for example while an external details dialog is open. IDs must be
+unique, nonempty strings. Selecting any member selects its coincident group.
+Selected icons and ranges remain fully opaque after pointer leave; other icons
+are hidden. Multiple groups may be selected. Pass `[]` when details close to
+restore ordinary hover, or omit the option to preserve the default press/hover
+behavior. Unavailable source IDs have no effect and become selected if they
+return during source updates. This also supports anchors at numeric zero.
+
+```tsx
+axisAnnotations={[{
+  format: 'span',
+  data: annotationPositions,
+  selectedIds: selectedAnnotationIds
+}]}
+```
+
+Clear controlled selection when its owning dialog, source, or chart is disposed.
 Provide keyboard activation and accessible details dialogs in the consuming application.
