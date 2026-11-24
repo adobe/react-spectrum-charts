@@ -367,6 +367,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
           onRenderStart={props.onRenderStart}
           onRenderComplete={props.onRenderComplete}
           onRenderError={props.onRenderError}
+          axisProjections={props.axisProjections}
+          onGeometryChange={props.onGeometryChange}
         />
         {accessibleNavigation && navChartType && (
           <Navigator

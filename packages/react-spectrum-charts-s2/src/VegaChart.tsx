@@ -19,6 +19,7 @@ import { ChartData } from '@spectrum-charts/vega-spec-builder-s2';
 import { useDebugSpec } from './hooks/useDebugSpec.js';
 import { extractValues, isVegaData } from './hooks/useSpec.js';
 import { ChartProps } from './types/index.js';
+import { getChartGeometry } from './utils/chartGeometryUtils.js';
 import { ViewHost, createViewHost } from './viewHost/index.js';
 
 // Register a custom expression function that returns the full container width (including axis space).
@@ -39,7 +40,11 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export interface VegaChartProps {
+export interface VegaChartProps
+  extends Pick<
+    ChartProps,
+    'renderId' | 'onRenderStart' | 'onRenderComplete' | 'onRenderError' | 'axisProjections' | 'onGeometryChange'
+  > {
   config: Config;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: ChartData[];
@@ -47,10 +52,6 @@ export interface VegaChartProps {
   height: number;
   locale: ChartProps['locale'];
   onNewView: (view: View) => void;
-  renderId?: NonNullable<ChartProps['renderId']>;
-  onRenderStart?: NonNullable<ChartProps['onRenderStart']>;
-  onRenderComplete?: NonNullable<ChartProps['onRenderComplete']>;
-  onRenderError?: NonNullable<ChartProps['onRenderError']>;
   padding: Padding;
   renderer: Renderers;
   signals?: Record<string, unknown>;
@@ -71,6 +72,8 @@ export const VegaChart: FC<VegaChartProps> = ({
   onRenderStart,
   onRenderComplete,
   onRenderError,
+  axisProjections,
+  onGeometryChange,
   padding,
   renderer = 'svg',
   signals,
@@ -81,8 +84,8 @@ export const VegaChart: FC<VegaChartProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const host = useRef<ViewHost | undefined>(undefined);
   const generation = useRef(0);
-  const callbacks = useRef({ onRenderStart, onRenderComplete, onRenderError });
-  callbacks.current = { onRenderStart, onRenderComplete, onRenderError };
+  const callbacks = useRef({ onRenderStart, onRenderComplete, onRenderError, onGeometryChange });
+  callbacks.current = { onRenderStart, onRenderComplete, onRenderError, onGeometryChange };
 
   // Need to de a deep copy of the data because vega tries to transform the data
   const chartData = useMemo(() => {
@@ -125,7 +128,11 @@ export const VegaChart: FC<VegaChartProps> = ({
       spec,
       table: chartData.table,
       width,
-      onRenderComplete: () => {
+      onRenderComplete: (view) => {
+        if (axisProjections !== undefined) {
+          const geometry = getChartGeometry(view, spec, axisProjections);
+          callbacks.current.onGeometryChange?.({ ...event, ...geometry });
+        }
         callbacks.current.onRenderComplete?.(event);
       },
       onRenderError: (error, phase) => {
@@ -136,7 +143,21 @@ export const VegaChart: FC<VegaChartProps> = ({
         }
       },
     });
-  }, [chartData.table, config, height, locale, onNewView, padding, renderId, renderer, signals, spec, tooltip, width]);
+  }, [
+    axisProjections,
+    chartData.table,
+    config,
+    height,
+    locale,
+    onNewView,
+    padding,
+    renderId,
+    renderer,
+    signals,
+    spec,
+    tooltip,
+    width,
+  ]);
 
   return <div ref={containerRef} className="rsc"></div>;
 };

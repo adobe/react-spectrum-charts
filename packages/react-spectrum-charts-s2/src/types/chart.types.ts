@@ -66,6 +66,20 @@ export interface ChartRenderErrorEvent extends ChartRenderEvent {
   error: unknown;
 }
 
+export interface AxisProjectionRequest {
+  id: string;
+  position: 'top' | 'bottom' | 'left' | 'right';
+  /** Numeric axis value, or epoch milliseconds for a temporal axis. */
+  value: number;
+}
+
+export interface ChartGeometryEvent extends ChartRenderEvent {
+  /** Plot rectangle in pixels relative to the chart's rendered SVG or canvas. */
+  plotBounds: { x: number; y: number; width: number; height: number };
+  /** Horizontal or vertical coordinates in the same frame; null means outside the scale domain or plot. */
+  projections: readonly { id: string; coordinate: number | null }[];
+}
+
 export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' | 'marks' | 'titles'> {
   // children is optional because it is a pain to make this required with how children get defined in stories
   // we have a check at the beginning of Chart to make sure this isn't undefined
@@ -89,6 +103,10 @@ export interface SharedChartProps extends Omit<ChartOptions, 'axes' | 'legends' 
   onRenderStart?: (event: ChartRenderEvent) => void;
   /** Called after embed and both resize passes settle for the current generation. Disable animations when final pixels are required. */
   onRenderComplete?: (event: ChartRenderEvent) => void;
+  /** Project numeric or temporal values using declared axes, without changing data or scale domains. */
+  axisProjections?: readonly AxisProjectionRequest[];
+  /** Current-generation geometry after layout settles, before onRenderComplete. Disable animations for fixed overlays. */
+  onGeometryChange?: (event: ChartGeometryEvent) => void;
   /** Reports current-generation embed and resize failures. Without a handler, errors are logged. */
   onRenderError?: (event: ChartRenderErrorEvent) => void;
   /** Draws the chart as `svg` or `canvas`. `canvas` is faster for large data sets but exposes less to screen readers. Defaults to `svg`. */
