@@ -26,5 +26,5 @@
     }
   },
   "include": ["packages", "packages/constants/webpack.config.js"],
-  "exclude": ["node_modules", "dist", "dist-storybook"]
+  "exclude": ["node_modules", "dist", "dist-storybook", "packages/chart-engine"]
 }

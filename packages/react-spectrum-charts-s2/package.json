@@ -70,6 +70,7 @@
   },
   "dependencies": {
     "@internationalized/string": "^3.2.1",
+    "@spectrum-charts/chart-engine": "0.1.0",
     "@spectrum-charts/core-s2": "0.11.1",
     "@spectrum-charts/schemas": "^2.1.0",
     "@spectrum-charts/vega-spec-builder-s2": "0.11.1",

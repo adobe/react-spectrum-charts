@@ -1,0 +1,55 @@
+{
+  "name": "@spectrum-charts/chart-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Spectrum 2 chart rendering engine (SVG and canvas), built on d3 modules.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adobe/react-spectrum-charts.git"
+  },
+  "scripts": {
+    "build": "echo 'S2 package - skipping default build. Use yarn build:s2 to build explicitly.'",
+    "build:s2": "rm -rf dist && rollup -c && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "d3-array": "^3.2.4",
+    "d3-delaunay": "^6.0.4",
+    "d3-ease": "^3.0.1",
+    "d3-format": "^3.1.0",
+    "d3-interpolate": "^3.0.1",
+    "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0",
+    "d3-time": "^3.1.0",
+    "d3-time-format": "^4.1.0",
+    "data-navigator": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/d3-array": "^3.2.1",
+    "@types/d3-delaunay": "^6.0.4",
+    "@types/d3-ease": "^3.0.2",
+    "@types/d3-format": "^3.0.4",
+    "@types/d3-interpolate": "^3.0.4",
+    "@types/d3-scale": "^4.0.8",
+    "@types/d3-shape": "^3.1.6",
+    "@types/d3-time": "^3.0.3",
+    "@types/d3-time-format": "^4.0.3"
+  }
+}
