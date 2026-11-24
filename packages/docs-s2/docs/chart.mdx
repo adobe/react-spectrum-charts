@@ -81,6 +81,24 @@ before you render one.
 
 ## Size
 
+### Render lifecycle
+
+`renderId` optionally identifies a caller's requested revision. `onRenderStart`
+and `onRenderComplete` receive `{ generation, renderId }`; `generation` increases
+within a mounted chart. Completion waits for embed, view listeners, and both
+asynchronous layout passes. Size-only updates reuse the view. Superseded or
+unmounted work does not emit completion or errors.
+
+`onRenderError` receives `{ generation, renderId, phase, error }`, where `phase`
+is `embed` or `resize`. Without a handler, errors are logged. This includes
+rejected second-pass resize work, not only initial embed failures.
+
+Disable animations when final pixels are required. Completion does not wait for
+application-owned overlays, external fonts/assets, or subsequent interactions;
+callers must coordinate those separately. Zero-sized charts do not complete.
+
+### Dimensions
+
 `width` is a number of pixels, `auto` (the default) to fill the parent's width, or a percentage of
 the parent's width, like `'75%'`. `height` is a number of pixels (default `300`) or a percentage of
 the parent's height. The chart resizes when its parent does.

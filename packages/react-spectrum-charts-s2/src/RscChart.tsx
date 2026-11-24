@@ -9,20 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import {
-  CSSProperties,
-  Ref,
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { CSSProperties, Ref, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
 import { Focusable } from 'react-aria-components';
 import { View as VegaView } from 'vega';
+
+import { Popover, Tooltip, TooltipTrigger } from '@react-spectrum/s2';
 import {
   COMPONENT_NAME,
   DEFAULT_CATEGORICAL_DIMENSION,
@@ -33,20 +25,26 @@ import {
   FOCUSED_ITEM,
   FOCUSED_REGION,
 } from '@spectrum-charts/core-s2/constants';
-import { ChartHandle, Datum, Orientation, SimpleData, SymbolSize, getChartConfig } from '@spectrum-charts/vega-spec-builder-s2';
+import {
+  ChartHandle,
+  Datum,
+  Orientation,
+  SimpleData,
+  SymbolSize,
+  getChartConfig,
+} from '@spectrum-charts/vega-spec-builder-s2';
 
 import './Chart.css';
 import { VegaChart } from './VegaChart.js';
-import { DonutDialogContent, getDonutSwatchColor } from './components/Donut/DonutDialogContent.js';
 import { Axis } from './components/Axis/index.js';
-import { ChartActionBarDialog } from './lab/components/ChartActionBar/ChartActionBarDialog.js';
 import { ChartInspect } from './components/ChartInspect/index.js';
+import { DonutDialogContent, getDonutSwatchColor } from './components/Donut/DonutDialogContent.js';
 import { Legend } from './components/Legend/index.js';
-import { AxisRegionOptions } from './dataNavigator/buildChartStructure.js';
-import { isDualMetricAxisNavigation } from './dataNavigator/buildBarStructure.js';
-import { Navigator } from './dataNavigator/Navigator.js';
-import { getNavigableChartType } from './dataNavigator/navigableMarks.js';
 import { useChartContext } from './context/RscChartContext.js';
+import { Navigator } from './dataNavigator/Navigator.js';
+import { isDualMetricAxisNavigation } from './dataNavigator/buildBarStructure.js';
+import { AxisRegionOptions } from './dataNavigator/buildChartStructure.js';
+import { getNavigableChartType } from './dataNavigator/navigableMarks.js';
 import useActionBars from './hooks/useActionBars.js';
 import useChartImperativeHandle from './hooks/useChartImperativeHandle.js';
 import { useChartInteractions } from './hooks/useChartInteractions.js';
@@ -54,8 +52,15 @@ import useMarkOnClickDetails from './hooks/useMarkOnClickDetails.js';
 import usePopovers, { PopoverDetail } from './hooks/usePopovers.js';
 import useSpec from './hooks/useSpec.js';
 import useSpecProps from './hooks/useSpecProps.js';
+import { ChartActionBarDialog } from './lab/components/ChartActionBar/ChartActionBarDialog.js';
 import { RscChartProps } from './types/index.js';
-import { clearHoverSignals, sanitizeMarkChildren, sanitizeRscChartChildren, setSelectedSignals, shouldClearHoverSignalsOnClose } from './utils/index.js';
+import {
+  clearHoverSignals,
+  sanitizeMarkChildren,
+  sanitizeRscChartChildren,
+  setSelectedSignals,
+  shouldClearHoverSignalsOnClose,
+} from './utils/index.js';
 
 interface ChartDialogProps {
   targetElement: RefObject<HTMLElement | null>;
@@ -158,8 +163,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   useEffect(() => {
     const inspectElement = document.getElementById('vg-tooltip-element');
     if (inspectElement) {
-    // Hide the vega inspect panel on all charts when a popover is open
-    inspectElement.hidden = isPopoverOpen;
+      // Hide the vega inspect panel on all charts when a popover is open
+      inspectElement.hidden = isPopoverOpen;
     }
   }, [isPopoverOpen]);
 
@@ -217,9 +222,8 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
   // (for bars without a ChartInspect) its focus tooltip read as the chart's own titles rather than
   // raw field names or every data column. Insertion order (dimension, series, metric) sets read order.
   const legendTitle = (
-    sanitizedChildren.find((child) => 'displayName' in child.type && child.type.displayName === Legend.displayName)?.props as
-      | { title?: string }
-      | undefined
+    sanitizedChildren.find((child) => 'displayName' in child.type && child.type.displayName === Legend.displayName)
+      ?.props as { title?: string } | undefined
   )?.title;
   const fieldLabels = useMemo(() => {
     const titleAt = (position: 'bottom' | 'left') => getAxisTitle(sanitizedChildren, position);
@@ -359,6 +363,10 @@ export const RscChart = ({ ref, ...props }: RscChartProps & { ref?: Ref<ChartHan
           signals={signals}
           tooltip={tooltip}
           onNewView={handleNewView}
+          renderId={props.renderId}
+          onRenderStart={props.onRenderStart}
+          onRenderComplete={props.onRenderComplete}
+          onRenderError={props.onRenderError}
         />
         {accessibleNavigation && navChartType && (
           <Navigator
@@ -439,7 +447,15 @@ const ChartDialog = ({
     []
   );
   const { chartPopoverProps, name } = popover;
-  const { children, onOpenChange, containerPadding, contentMargin, rightClick, UNSAFE_highlightBy: _highlightBy, ...sizingProps } = chartPopoverProps;
+  const {
+    children,
+    onOpenChange,
+    containerPadding,
+    contentMargin,
+    rightClick,
+    UNSAFE_highlightBy: _highlightBy,
+    ...sizingProps
+  } = chartPopoverProps;
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -557,7 +573,11 @@ const ChartDialog = ({
         UNSAFE_className="rsc-popover"
       >
         <div data-testid="rsc-popover" style={popoverStyle}>
-          <div data-testid="rsc-popover-content" className="rsc-popover-content" style={{ margin: contentMargin ?? 12 }}>
+          <div
+            data-testid="rsc-popover-content"
+            className="rsc-popover-content"
+            style={{ margin: contentMargin ?? 12 }}
+          >
             {content}
           </div>
         </div>
