@@ -1,5 +1,42 @@
 # @spectrum-charts/vega-spec-builder-s2
 
+## 0.12.0
+
+### Minor Changes
+
+- 815e890: S2 Scatter (lab) now animates: points grow in from left to right when the chart mounts, and hovering a point or legend entry, or a controlled highlight, eases points in and out of their faded state. `animationTypes` and `animations` on `Chart` control both.
+
+  `Scatter` also gains `onClick` and `onContextMenu`, called with the nearest point's row.
+
+  New `outline` prop on `Scatter` draws a thin gray border so pale points stay visible: `auto` (default) outlines only points with less than 3:1 contrast against the background, `always` outlines every point, and `never` turns it off. `stroke` and `lineWidth` still take precedence.
+
+- bf94229: `Scatter` (lab) gains `onMouseOver` and `onMouseOut`, called with the nearest point's row as the pointer moves onto and off it.
+- b640069: New lab `ScatterSizeLegend` component explains point sizes when `Scatter`'s `size` is a data field: the smallest, middle, and largest values drawn at their true size, with their own `title`, a `position`, and a `direction` (vertical on the left or right, horizontal on the top or bottom). It sits after the `Legend`.
+
+  `Legend` no longer shows a size legend for `Scatter`; add `ScatterSizeLegend` inside `Scatter` instead:
+
+  ```diff
+  - <Scatter size="revenue" />
+  - <Legend title="Revenue" />
+  + <Scatter size="revenue">
+  +   <ScatterSizeLegend title="Revenue" />
+  + </Scatter>
+  ```
+
+- 992d9b7: `Trendline` (lab) replaces `lineWidth` and `opacity` with `size` (`XS`–`L`, like `ReferenceLine`); without `size`, its width follows the chart size. Trendlines and their annotations now fade smoothly with their series on hover and fade in after the chart draws in, and `TrendlineAnnotation` uses the standard bold direct-label text with a background halo. `TrendlineAnnotation`'s `badge` prop is removed. Hovering a trendline with a `ChartInspect` now fades the other series' points too.
+- 7bac1c1: Charts now apply data, size and highlight changes to the current view instead of recreating it, so `onVegaViewReady` fires less often.
+
+### Patch Changes
+
+- 5dd95d8: Apply fixed dual metric axis ranges to the corresponding primary and secondary scales for Line and Bar charts, including horizontal Bars. Recompute Line, gradient, and point Y positions during layout updates so dual-axis geometry follows initial sizing and later resizes. Clip fixed-range dual lines and exclude hover candidates outside their own metric scale.
+- f0696b4: Preserve gaps for null and nonfinite metrics in line and gradient marks, update validity when data changes, and exclude invalid values from hover geometry.
+- 9ccd54e: S2 bar, scatter, donut and bullet marks now update in place when data changes instead of being redrawn, and a data update during the draw-in animation continues it smoothly.
+- e43cb3e: Built-in chart text (empty and loading states, accessible navigation labels, and action bar labels) now follows the chart `locale`, ready for translations. The chart `locale` also sets the language of everything rendered inside the chart.
+- 994b3a5: Scatter points no longer draw an outline by default; set `outline="auto"` or `outline="always"` to turn it back on.
+- 645cca9: Toggling legend entries and changing `hiddenSeries`, `highlightedItem`, or `highlightedSeries` now update the chart in place instead of recreating it, and re-shown series keep their stacking order. Legend entries may be spaced slightly wider so the hidden-series icon fits.
+- 25c7e6a: Re-rendering a chart with the same children or an inline `onVegaViewReady` no longer recreates the chart view, and interaction callbacks always use the latest props.
+  - @spectrum-charts/core-s2@0.12.0
+
 ## 0.11.1
 
 ### Patch Changes
