@@ -15,6 +15,7 @@ export * from './legendSpec.types.js';
 export * from './spectrumVizColor.types.js';
 export * from './titleSpec.types.js';
 export * from './specUtil.types.js';
+export * from './updateClassification.types.js';
 
 export * from './axis/index.js';
 export * from './dialogs/index.js';

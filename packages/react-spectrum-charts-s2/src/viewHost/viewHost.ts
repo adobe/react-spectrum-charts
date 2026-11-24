@@ -38,9 +38,18 @@ export interface ViewHostInputs {
 /** How an update was applied to the chart. */
 export type UpdateRoute = 'none' | 'deferred' | 'rebuild' | 'incremental' | 'noop';
 
+/** A part of a live view that an incremental update changed. */
+export type UpdateChannel = 'signal' | 'data' | 'size';
+
+export interface UpdateResult {
+  route: UpdateRoute;
+  /** Parts of the live view changed by an incremental update; empty for other routes */
+  channels: UpdateChannel[];
+}
+
 export interface ViewHost {
   /** Routes new inputs to a rebuild, signal and data updates, a resize, or nothing; equal inputs are a no-op */
-  update: (inputs: ViewHostInputs) => UpdateRoute;
+  update: (inputs: ViewHostInputs) => UpdateResult;
   /** Finalizes the view and detaches it from the animation ticker */
   destroy: () => void;
 }
@@ -49,6 +58,8 @@ export interface ViewHost {
 export type ViewHostAdapter = ViewAdapter<Spec, View, VegaEnvironment>;
 
 type PendingDrawIn = { holdUntil: number; faded: boolean };
+
+const routed = (route: UpdateRoute, channels: UpdateChannel[] = []): UpdateResult => ({ route, channels });
 
 /** A view that has been embedded or is being embedded, and the inputs it currently reflects. */
 interface ActiveView {
@@ -239,41 +250,45 @@ export const createViewHost = (container: HTMLElement, adapter: ViewHostAdapter 
       });
   };
 
-  const applyIncremental = (current: ActiveView, view: View, inputs: ViewHostInputs, split: SplitSpec): UpdateRoute => {
+  const applyIncremental = (current: ActiveView, view: View, inputs: ViewHostInputs, split: SplitSpec): UpdateResult => {
     const signals = getChangedSignals(current.signalValues, split.signalValues);
     const tableJson = split.table === current.table ? current.tableJson : JSON.stringify(split.table);
     const tableChanged = tableJson !== current.tableJson;
     const resized = inputs.width !== current.inputs.width || inputs.height !== current.inputs.height;
     Object.assign(current, { inputs, signalValues: split.signalValues, table: split.table, tableJson });
 
-    if (!signals.length && !tableChanged && !resized) {
-      return 'noop';
+    const channels: UpdateChannel[] = [];
+    if (signals.length) channels.push('signal');
+    if (tableChanged) channels.push('data');
+    if (resized) channels.push('size');
+    if (!channels.length) {
+      return routed('noop');
     }
     adapter.updateView(view, {
       signals,
       table: tableChanged ? split.table ?? [] : undefined,
       size: resized ? { width: inputs.width, height: inputs.height } : undefined,
     });
-    return 'incremental';
+    return routed('incremental', channels);
   };
 
-  const update = (inputs: ViewHostInputs): UpdateRoute => {
+  const update = (inputs: ViewHostInputs): UpdateResult => {
     latest = inputs;
     if (destroyed || !inputs.width || !inputs.height) {
-      return 'none';
+      return routed('none');
     }
     if (active?.inputs === inputs) {
-      return 'noop';
+      return routed('noop');
     }
     const spec = adapter.prepareSpec(inputs.spec, inputs.table, inputs.signals);
     const split = adapter.splitSpec(spec);
     if (!active || needsRebuild(adapter, active, inputs, split)) {
       build(inputs, spec, split);
-      return 'rebuild';
+      return routed('rebuild');
     }
     // applied once the pending view is created
     if (!active.view) {
-      return 'deferred';
+      return routed('deferred');
     }
     return applyIncremental(active, active.view, inputs, split);
   };

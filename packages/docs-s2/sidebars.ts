@@ -46,6 +46,7 @@ const sidebars: SidebarsConfig = {
         'guides/localization',
         'guides/interactivity',
         'guides/animation',
+        'update-behavior',
         'guides/accessibility',
         'guides/exporting',
         'guides/testing-and-troubleshooting',

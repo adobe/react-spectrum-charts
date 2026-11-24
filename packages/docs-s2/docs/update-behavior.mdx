@@ -1,0 +1,442 @@
+---
+title: Update behavior
+description: How a chart applies a change to each prop, from updating the live view to building a new one.
+---
+
+{/* Generated from the update class tables in react-spectrum-charts-s2. Run `yarn docs:update-behavior` to regenerate; don't edit by hand. */}
+
+# Update behavior
+
+When a prop changes, the chart compares what it would give Vega with what the live view already has and applies the smallest update that covers the difference. Each prop below lists the update a change to it takes. A change that produces the same chart, such as a new `data` array with identical rows, is a no-op whatever the prop.
+
+| Update | View | Interaction state | Draw-in |
+| --- | --- | --- | --- |
+| No-op | Kept; nothing re-renders | Kept | Continues |
+| Signal | Kept; signal values change in place | Kept | Continues |
+| Data | Kept; table rows change in place | Kept | Continues |
+| Size | Kept; the view resizes | Kept | Continues |
+| Rebuild | Replaced by a new view | Hover and selection reset; hidden series and controlled props carry over | Continues |
+| Rebuild + replay | Replaced by a new view | Hover and selection reset; hidden series and controlled props carry over | Continues; will replay, since the change makes it a different chart |
+
+`onVegaViewReady` fires once per view, so after mount it fires again only on a rebuild.
+
+## Chart
+
+| Prop | Update |
+| --- | --- |
+| `accessibleNavigation` | Rebuild |
+| `animations` | Rebuild |
+| `animationTypes` | Rebuild |
+| `backgroundColor` | Rebuild |
+| `chartHeight` | Size |
+| `chartWidth` | Size |
+| `children` | Rebuild |
+| `colors` | Rebuild |
+| `colorScheme` | Rebuild |
+| `config` | Rebuild |
+| `data` | Data |
+| `dataTestId` | No-op |
+| `debug` | No-op |
+| `description` | Rebuild |
+| `emptyStateText` | No-op |
+| `height` | Size |
+| `hiddenSeries` | Signal |
+| `highlightedItem` | Signal |
+| `highlightedSeries` | Signal |
+| `idKey` | Rebuild |
+| `lineTypes` | Rebuild |
+| `lineWidths` | Rebuild |
+| `loading` | Rebuild |
+| `locale` | Rebuild |
+| `maxHeight` | Size |
+| `maxWidth` | Size |
+| `minHeight` | Size |
+| `minWidth` | Size |
+| `onVegaViewReady` | No-op |
+| `opacities` | Rebuild |
+| `padding` | Rebuild |
+| `renderer` | Rebuild |
+| `symbolShapes` | Rebuild |
+| `symbolSizes` | Rebuild |
+| `title` | Rebuild |
+| `tooltipAnchor` | No-op |
+| `tooltipPlacement` | No-op |
+| `UNSAFE_vegaSpec` | Rebuild + replay |
+| `width` | Size |
+
+## Line
+
+| Prop | Update |
+| --- | --- |
+| `alternateSegmentKey` | Rebuild |
+| `alternateSegmentLabel` | No-op |
+| `alternateSegmentLineType` | Rebuild |
+| `children` | Rebuild |
+| `color` | Rebuild + replay |
+| `contextMenuMode` | No-op |
+| `dimension` | Rebuild + replay |
+| `dimensionHover` | Rebuild |
+| `dualMetricAxis` | Rebuild |
+| `gradient` | Rebuild |
+| `hoverLabelKey` | Rebuild |
+| `interactionMode` | Rebuild |
+| `interpolate` | Rebuild |
+| `isMethodLast` | Rebuild |
+| `isSparkline` | Rebuild |
+| `lineCap` | Rebuild |
+| `lineType` | Rebuild |
+| `metric` | Rebuild + replay |
+| `metricAxis` | Rebuild |
+| `metricRanges` | Rebuild |
+| `name` | Rebuild |
+| `onClick` | Rebuild |
+| `onContextMenu` | Rebuild |
+| `opacity` | Rebuild |
+| `otherSeriesColor` | Rebuild |
+| `padding` | Rebuild |
+| `pointSize` | Rebuild |
+| `primarySeries` | Rebuild |
+| `scaleType` | Rebuild |
+| `showHoverLabel` | Rebuild |
+| `staticPoint` | Rebuild |
+| `trendlines` | Rebuild |
+
+## LineDirectLabel
+
+| Prop | Update |
+| --- | --- |
+| `excludeSeries` | Rebuild |
+| `fontSize` | Rebuild |
+| `format` | Rebuild |
+| `position` | Rebuild |
+| `prefix` | Rebuild |
+| `value` | Rebuild |
+
+## LineForecast
+
+| Prop | Update |
+| --- | --- |
+| `label` | Rebuild |
+| `metric` | Rebuild |
+| `start` | Rebuild |
+
+## LinePointAnnotation
+
+| Prop | Update |
+| --- | --- |
+| `anchor` | Rebuild |
+| `matchLineColor` | Rebuild |
+| `textKey` | Rebuild |
+
+## Bar
+
+| Prop | Update |
+| --- | --- |
+| `children` | Rebuild |
+| `color` | Rebuild + replay |
+| `colorOverride` | Rebuild |
+| `dimension` | Rebuild + replay |
+| `dimensionDataType` | Rebuild |
+| `diverging` | Rebuild |
+| `dualMetricAxis` | Rebuild |
+| `groupedPadding` | Rebuild |
+| `hasSquareCorners` | Rebuild |
+| `lineType` | Rebuild |
+| `lineWidth` | Rebuild |
+| `metric` | Rebuild + replay |
+| `metricAxis` | Rebuild |
+| `name` | Rebuild |
+| `onClick` | Rebuild |
+| `onContextMenu` | No-op |
+| `onMouseOut` | No-op |
+| `onMouseOver` | No-op |
+| `opacity` | Rebuild |
+| `order` | Rebuild |
+| `orientation` | Rebuild |
+| `paddingOuter` | Rebuild |
+| `paddingRatio` | Rebuild |
+| `trellis` | Rebuild |
+| `trellisOrientation` | Rebuild |
+| `trellisPadding` | Rebuild |
+| `trendlines` | Rebuild |
+| `type` | Rebuild |
+
+## BarDirectLabel
+
+| Prop | Update |
+| --- | --- |
+| `dataKey` | Rebuild |
+| `format` | Rebuild |
+| `overflow` | Rebuild |
+| `position` | Rebuild |
+
+## Donut
+
+| Prop | Update |
+| --- | --- |
+| `children` | Rebuild |
+| `color` | Rebuild + replay |
+| `emphasizedItems` | Rebuild |
+| `hideDeemphasizedLabels` | Rebuild |
+| `holeRatio` | Rebuild |
+| `isBoolean` | Rebuild |
+| `metric` | Rebuild + replay |
+| `name` | Rebuild |
+| `sortOrder` | Rebuild |
+| `variant` | Rebuild |
+
+## DonutSummary
+
+| Prop | Update |
+| --- | --- |
+| `delta` | Rebuild |
+| `hideValue` | Rebuild |
+| `label` | Rebuild |
+| `numberFormat` | Rebuild |
+
+## SegmentLabel
+
+| Prop | Update |
+| --- | --- |
+| `labelKey` | Rebuild |
+| `labelMode` | Rebuild |
+| `percent` | Rebuild |
+| `percentFormat` | Rebuild |
+| `showTotal` | Rebuild |
+| `showValueRow` | Rebuild |
+| `swatch` | Rebuild |
+| `value` | Rebuild |
+| `valueFormat` | Rebuild |
+
+## Axis
+
+| Prop | Update |
+| --- | --- |
+| `axisAnnotations` | Rebuild |
+| `baseline` | Rebuild |
+| `baselineOffset` | Rebuild |
+| `children` | Rebuild |
+| `currencyCode` | Rebuild |
+| `currencyLocale` | Rebuild |
+| `granularity` | Rebuild |
+| `grid` | Rebuild |
+| `hasTooltip` | Rebuild |
+| `hideDefaultLabels` | Rebuild |
+| `labelAlign` | Rebuild |
+| `labelFontWeight` | Rebuild |
+| `labelFormat` | Rebuild |
+| `labelLimit` | Rebuild |
+| `labelOrientation` | Rebuild |
+| `labels` | Rebuild |
+| `name` | Rebuild |
+| `numberFormat` | Rebuild |
+| `onClick` | Rebuild |
+| `position` | Rebuild |
+| `range` | Rebuild |
+| `subLabels` | Rebuild |
+| `tickCountLimit` | Rebuild |
+| `tickCountMinimum` | Rebuild |
+| `tickMinStep` | Rebuild |
+| `ticks` | Rebuild |
+| `title` | Rebuild |
+| `tooltipText` | Signal |
+| `truncateLabels` | Rebuild |
+
+## AxisThumbnail
+
+| Prop | Update |
+| --- | --- |
+| `urlKey` | Rebuild |
+
+## ReferenceLine
+
+| Prop | Update |
+| --- | --- |
+| `label` | Rebuild |
+| `position` | Rebuild |
+| `secondary` | Rebuild |
+| `size` | Rebuild |
+| `value` | Rebuild |
+
+## Legend
+
+| Prop | Update |
+| --- | --- |
+| `align` | Rebuild |
+| `chartPopovers` | No-op |
+| `children` | Rebuild |
+| `color` | Rebuild |
+| `defaultHiddenSeries` | No-op |
+| `descriptions` | Rebuild |
+| `hiddenEntries` | Rebuild |
+| `highlight` | Rebuild |
+| `isToggleable` | Rebuild |
+| `keys` | Rebuild |
+| `labelLimit` | Rebuild |
+| `legendLabels` | Rebuild |
+| `lineType` | Rebuild |
+| `lineWidth` | Rebuild |
+| `name` | Rebuild |
+| `onClick` | Rebuild |
+| `onMouseOut` | Rebuild |
+| `onMouseOver` | Rebuild |
+| `opacity` | Rebuild |
+| `position` | Rebuild |
+| `symbolShape` | Rebuild |
+| `title` | Rebuild |
+| `titleLimit` | Rebuild |
+
+## Title
+
+| Prop | Update |
+| --- | --- |
+| `fontSize` | Rebuild |
+| `fontWeight` | Rebuild |
+| `orient` | Rebuild |
+| `position` | Rebuild |
+| `text` | Rebuild |
+
+## ChartInspect
+
+| Prop | Update |
+| --- | --- |
+| `children` | No-op |
+| `excludeDataKeys` | Rebuild |
+| `highlightBy` | Rebuild |
+| `targets` | Rebuild |
+
+## ChartPopover
+
+| Prop | Update |
+| --- | --- |
+| `children` | No-op |
+| `containerPadding` | No-op |
+| `contentMargin` | No-op |
+| `height` | No-op |
+| `maxHeight` | No-op |
+| `maxWidth` | No-op |
+| `minHeight` | No-op |
+| `minWidth` | No-op |
+| `onOpenChange` | No-op |
+| `rightClick` | No-op |
+| `UNSAFE_highlightBy` | Rebuild |
+| `width` | No-op |
+
+## Area (lab)
+
+| Prop | Update |
+| --- | --- |
+| `children` | Rebuild |
+| `color` | Rebuild + replay |
+| `dimension` | Rebuild + replay |
+| `metric` | Rebuild + replay |
+| `metricEnd` | Rebuild |
+| `metricStart` | Rebuild |
+| `name` | Rebuild |
+| `opacity` | Rebuild |
+| `order` | Rebuild |
+| `padding` | Rebuild |
+| `scaleType` | Rebuild |
+
+## Bullet (lab)
+
+| Prop | Update |
+| --- | --- |
+| `children` | Rebuild |
+| `color` | Rebuild + replay |
+| `dimension` | Rebuild + replay |
+| `direction` | Rebuild |
+| `labelPosition` | Rebuild |
+| `maxScaleValue` | Rebuild |
+| `metric` | Rebuild + replay |
+| `metricAxis` | Rebuild |
+| `metricLabel` | Rebuild |
+| `name` | Rebuild |
+| `numberFormat` | Rebuild |
+| `scaleType` | Rebuild |
+| `showTarget` | Rebuild |
+| `showTargetValue` | Rebuild |
+| `target` | Rebuild |
+| `targetLabel` | Rebuild |
+| `thresholdBarColor` | Rebuild |
+| `thresholds` | Rebuild |
+| `track` | Rebuild |
+
+## ChartActionBar (lab)
+
+| Prop | Update |
+| --- | --- |
+| `children` | No-op |
+| `isEmphasized` | No-op |
+| `maxActions` | No-op |
+| `onClearSelection` | No-op |
+
+## Combo (lab)
+
+| Prop | Update |
+| --- | --- |
+| `children` | Rebuild |
+| `dimension` | Rebuild + replay |
+| `name` | Rebuild |
+
+## Scatter (lab)
+
+| Prop | Update |
+| --- | --- |
+| `blend` | Rebuild |
+| `children` | Rebuild |
+| `clip` | Rebuild |
+| `color` | Rebuild + replay |
+| `colorScaleType` | Rebuild |
+| `dimension` | Rebuild + replay |
+| `dimensionScaleType` | Rebuild |
+| `lineType` | Rebuild |
+| `lineWidth` | Rebuild |
+| `metric` | Rebuild + replay |
+| `name` | Rebuild |
+| `opacity` | Rebuild |
+| `size` | Rebuild |
+| `stroke` | Rebuild |
+
+## ScatterAnnotation (lab)
+
+| Prop | Update |
+| --- | --- |
+| `anchor` | Rebuild |
+| `textKey` | Rebuild |
+
+## ScatterPath (lab)
+
+| Prop | Update |
+| --- | --- |
+| `color` | Rebuild |
+| `groupBy` | Rebuild |
+| `opacity` | Rebuild |
+| `pathWidth` | Rebuild |
+
+## Trendline (lab)
+
+| Prop | Update |
+| --- | --- |
+| `children` | Rebuild |
+| `color` | Rebuild |
+| `dimensionExtent` | Rebuild |
+| `dimensionRange` | Rebuild |
+| `displayOnHover` | Rebuild |
+| `excludeDataKeys` | Rebuild |
+| `hidePartialWindows` | Rebuild |
+| `highlightRawPoint` | Rebuild |
+| `lineType` | Rebuild |
+| `lineWidth` | Rebuild |
+| `method` | Rebuild |
+| `opacity` | Rebuild |
+| `orientation` | Rebuild |
+
+## TrendlineAnnotation (lab)
+
+| Prop | Update |
+| --- | --- |
+| `badge` | Rebuild |
+| `dimensionValue` | Rebuild |
+| `numberFormat` | Rebuild |
+| `prefix` | Rebuild |
