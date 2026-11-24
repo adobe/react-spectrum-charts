@@ -148,6 +148,7 @@ export const addLine = produce<
       chartInspects = [],
       color = { value: 'categorical-100' },
       colorScheme = DEFAULT_COLOR_SCHEME,
+      connectAlternateSegments = true,
       dimension = DEFAULT_TIME_DIMENSION,
       dualMetricAxis = false,
       forecasts = [],
@@ -191,6 +192,7 @@ export const addLine = produce<
       chartInspects,
       color,
       colorScheme,
+      connectAlternateSegments,
       dimension,
       dualMetricAxis,
       forecasts,
@@ -550,7 +552,8 @@ const getLineFacetContext = (
   const usesAlternateSegments = !!alternateSegmentKey || hasForecast;
   // when primarySeries is set, use a pre-sorted source so "other" series facets are drawn first (behind primary)
   const defaultFacetData = primarySeries ? `${name}_primarySeriesFacetData` : FILTERED_TABLE;
-  const facetData = usesAlternateSegments ? `${name}_with_bridges` : defaultFacetData;
+  const segmentData = options.connectAlternateSegments ? `${name}_with_bridges` : `${name}_segmented`;
+  const facetData = usesAlternateSegments ? segmentData : defaultFacetData;
   const facetGroupby = usesAlternateSegments ? [...facets, `${name}_segmentId`] : facets;
 
   const markOptions = hasForecast

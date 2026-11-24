@@ -583,6 +583,16 @@ const seriesVariations: Variation[] = [
     render: () => <LineVariationChart lineProps={{ alternateSegmentKey: 'isEstimated' }} />,
   },
   {
+    id: 'alternate-segment-gap',
+    title: 'Disconnected alternate segments',
+    description: 'Leaves a gap between the last observed point and the first estimated point.',
+    dataset: 'standard',
+    coverage: ['connectAlternateSegments=false', 'alternateSegmentKey=isEstimated'],
+    render: () => (
+      <LineVariationChart lineProps={{ alternateSegmentKey: 'isEstimated', connectAlternateSegments: false }} />
+    ),
+  },
+  {
     id: 'alternate-segment-styled',
     title: 'Styled alternate segment',
     description: 'Dotted estimated segment; hover shows the "(Estimated)" label suffix.',
@@ -1364,6 +1374,7 @@ export const LineDashboard = (): ReactElement => (
 );
 
 const lineCoverage: PropCoverage<LineProps> = {
+  connectAlternateSegments: ['alternate-segment', 'alternate-segment-gap'],
   alternateSegmentKey: ['alternate-segment', 'alternate-segment-styled'],
   alternateSegmentLabel: ['alternate-segment-styled'],
   alternateSegmentLineType: ['alternate-segment-styled'],

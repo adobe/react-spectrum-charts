@@ -36,6 +36,7 @@ export const defaultLineMarkOptions: LineMarkOptions = {
 };
 
 export const defaultLineOptions: LineSpecOptions = {
+  connectAlternateSegments: true,
   chartActionBars: [],
   chartPopovers: [],
   chartInspects: [],

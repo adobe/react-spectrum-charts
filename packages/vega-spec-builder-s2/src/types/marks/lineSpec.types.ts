@@ -102,6 +102,8 @@ export interface LineOptions {
    * Alternate segments render with a different line type (see `alternateSegmentLineType`).
    */
   alternateSegmentKey?: string;
+  /** Connect adjacent base and alternate segments. Defaults to true. */
+  connectAlternateSegments?: boolean;
   /**
    * Line type used for alternate segments identified by `alternateSegmentKey`.
    * @default 'dotted'
@@ -151,6 +153,7 @@ type LineOptionsWithDefaults =
   | 'chartPopovers'
   | 'chartInspects'
   | 'color'
+  | 'connectAlternateSegments'
   | 'dimension'
   | 'dimensionHover'
   | 'forecasts'
