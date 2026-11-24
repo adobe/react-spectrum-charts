@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { View, expressionFunction, parse } from 'vega';
+
 import {
   CHART_SIZE_HOVER_STROKE_WIDTH,
   CHART_SIZE_STROKE_WIDTH,
@@ -26,10 +28,13 @@ import {
   FILTERED_TABLE,
   MARK_ID,
   SERIES_ID,
+  TABLE,
 } from '@spectrum-charts/core-s2/constants';
 
+import { buildSpec } from '../chartSpecBuilder.js';
+import { getExpressionFunctions } from '../expressionFunctions/index.js';
 import { getSeriesFacet } from '../marks/markUtils.js';
-import { LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types/index.js';
+import { AxisOptions, LineSpecOptions, MetricRangeOptions, MetricRangeSpecOptions } from '../types/index.js';
 import {
   applyMetricRangeOptionDefaults,
   getMetricRangeData,
@@ -148,10 +153,13 @@ const basicMetricRangeMarks = [
     encode: {
       update: {
         tooltip: undefined,
-        y: { scale: 'yLinear', field: 'metricStart' },
-        y2: { scale: 'yLinear', field: 'metricEnd' },
         fill: { scale: COLOR_SCALE, field: 'series' },
-        defined: { signal: 'isValid(datum["metricStart"]) || isValid(datum["metricEnd"])' },
+        y: [{ scale: 'yLinear', field: 'metricStart' }],
+        y2: [{ scale: 'yLinear', field: 'metricEnd' }],
+        defined: {
+          signal:
+            'isValid(datum["metricStart"]) && isFinite(datum["metricStart"]) && isValid(datum["metricEnd"]) && isFinite(datum["metricEnd"])',
+        },
         cursor: undefined,
         x: { scale: 'xTime', field: DEFAULT_TRANSFORMED_TIME_DIMENSION },
         fillOpacity: { value: 0.2 },
@@ -205,6 +213,71 @@ describe('applyMetricRangePropDefaults', () => {
 });
 
 describe('getMetricRangeMark', () => {
+  test.each([false, true])(
+    'range geometry follows its parent scale through hover and resize (dual=%s)',
+    async (dualMetricAxis) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', (width: number) => width);
+      const data = ['A', 'B'].flatMap((series, seriesIndex) =>
+        [0, 1, 2, 3].map((index) => ({
+          series,
+          timestamp: Date.UTC(2026, 0, index + 1),
+          value: (10 + index * 5) * (seriesIndex ? 100 : 1),
+          lower: (8 + index * 5) * (seriesIndex ? 100 : 1),
+          upper: index === 1 ? (dualMetricAxis ? null : Infinity) : (12 + index * 5) * (seriesIndex ? 100 : 1),
+          isForecasted: index >= 2,
+          pointMarked: true,
+          label: `${series}: ${index}`,
+        }))
+      );
+      const spec = buildSpec({
+        data,
+        legends: [{ highlight: true }],
+        axes: [
+          { position: 'left', name: dualMetricAxis ? undefined : 'custom', range: [0, 25] },
+          ...(dualMetricAxis ? [{ position: 'right', range: [0, 2500] } satisfies AxisOptions] : []),
+        ],
+        marks: [
+          {
+            markType: 'line',
+            name: 'testLine',
+            color: 'series',
+            dimension: 'timestamp',
+            metricAxis: dualMetricAxis ? undefined : 'custom',
+            dualMetricAxis,
+            chartInspects: [{}],
+            staticPoint: 'pointMarked',
+            metricRanges: [{ metricStart: 'lower', metricEnd: 'upper', displayOnHover: true }],
+          },
+        ],
+      });
+      const view = new View(parse(spec), { renderer: 'none' }).insert(TABLE, data);
+      try {
+        await view.runAsync();
+        expect((await view.toSVG()).includes('class="mark-area role-mark testLineMetricRange0_area"')).toBe(false);
+        for (const [width, height] of [
+          [400, 240],
+          [600, 320],
+        ]) {
+          await view.width(width).height(height).resize().runAsync();
+          for (const series of dualMetricAxis ? ['A', 'B'] : ['A']) {
+            await view.signal(CONTROLLED_HIGHLIGHTED_SERIES, series).runAsync();
+            const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+            const path = svg.querySelector('.testLineMetricRange0_area path')?.getAttribute('d');
+            const scale = dualMetricAxis ? `yLinear${series === 'A' ? 'Primary' : 'Secondary'}` : 'custom';
+            expect(path).toBeTruthy();
+            expect(path).not.toContain('NaN');
+            expect(path?.match(/M/g)).toHaveLength(2);
+            expect(Number(path?.match(/^M0,([^L]+)/)?.[1])).toBeCloseTo(view.scale(scale)(series === 'A' ? 8 : 800), 3);
+            expect(svg.querySelector('.testLineMetricRange0_group')?.getAttribute('clip-path')).toMatch(/^url\(#/);
+          }
+        }
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
   test('creates MetricRange mark from basic input', () => {
     expect(getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions)).toEqual(basicMetricRangeMarks);
   });
