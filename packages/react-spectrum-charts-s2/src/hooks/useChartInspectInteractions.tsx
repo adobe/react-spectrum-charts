@@ -44,12 +44,13 @@ interface LegendInspectProps {
 const getLegendInspectMarkup = (
   value: Datum,
   legendDescriptions: LegendDescription[] | undefined,
+  legendName: string,
   chartView: { current?: { scale: (name: string) => { domain: () => string[] } } } | null,
   debug: boolean | undefined
 ): string | undefined => {
   const componentName = value[COMPONENT_NAME];
   const index = (value as { index?: number }).index;
-  if (typeof componentName === 'string' && componentName.startsWith('legend') && legendDescriptions && typeof index === 'number') {
+  if (typeof componentName === 'string' && componentName === legendName && legendDescriptions && typeof index === 'number') {
     debugLog(debug, {
       title: 'Legend descriptions',
       contents: legendDescriptions,
@@ -58,7 +59,7 @@ const getLegendInspectMarkup = (
       <LegendInspect
         value={{ index }}
         descriptions={legendDescriptions}
-        domain={chartView?.current?.scale('legend0Entries').domain() ?? []}
+        domain={chartView?.current?.scale(`${legendName}Entries`).domain() ?? []}
       />
     );
   }
@@ -124,7 +125,8 @@ const getInspectContent = (
 const useChartInspectInteractions = (
   props: RscChartProps,
   sanitizedChildren: ChartChildElement[],
-  legendDescriptions: LegendDescription[] | undefined
+  legendDescriptions: LegendDescription[] | undefined,
+  legendName = 'legend0'
 ) => {
   const { chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal } = useChartContext();
   const { debug, colorScheme, idKey, locale, tooltipAnchor, tooltipPlacement } = props;
@@ -137,7 +139,7 @@ const useChartInspectInteractions = (
       options.formatTooltip = (value) => {
         debugLog(debug, { title: 'Inspect datum', contents: value });
 
-        const legendInspect = getLegendInspectMarkup(value, legendDescriptions, chartView, debug);
+        const legendInspect = getLegendInspectMarkup(value, legendDescriptions, legendName, chartView, debug);
         if (legendInspect) return legendInspect;
 
         const dimensionAreaInspect = getDimensionAreaInspectMarkup(value, inspects, chartView);
@@ -177,7 +179,7 @@ const useChartInspectInteractions = (
     }
 
     return options;
-  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, debug, idKey, locale, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
+  }, [colorScheme, tooltipAnchor, tooltipPlacement, inspects, legendDescriptions, legendName, debug, idKey, locale, chartView, controlledHoveredIdSignal, controlledHoveredGroupSignal]);
 
   return { inspectOptions };
 };

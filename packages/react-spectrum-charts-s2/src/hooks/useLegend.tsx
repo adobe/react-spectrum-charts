@@ -15,13 +15,14 @@ import { LegendDescription } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { Legend } from '../components/Legend/index.js';
 import { ChartChildElement, LegendElement } from '../types/index.js';
-import { getElement } from '../utils/index.js';
+import { getComponentName, getElement } from '../utils/index.js';
 import { ChartContainer } from './ChartContainer.js';
 
 export type UseLegendProps = {
   legendHiddenSeries: string[];
   setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
   descriptions?: LegendDescription[];
+  name?: string;
   isToggleable?: boolean;
   onClick?: (seriesName: string) => void;
   onMouseOut?: (seriesName: string) => void;
@@ -36,5 +37,14 @@ export default function useLegend(children: ChartChildElement[]): UseLegendProps
 
   if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
   const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
-  return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
+  return {
+    legendHiddenSeries,
+    setLegendHiddenSeries,
+    descriptions,
+    name: getComponentName(legend, 'legend0'),
+    isToggleable,
+    onClick,
+    onMouseOut,
+    onMouseOver,
+  };
 }
