@@ -12,7 +12,11 @@
 import { CSSProperties, ComponentRef, useId, useLayoutEffect, useRef, useState } from 'react';
 
 import { ActionButton, Popover } from '@react-spectrum/s2';
-import { DEFAULT_LEGEND_SYMBOL_WIDTH, ROUNDED_SQUARE_PATH } from '@spectrum-charts/core-s2/constants';
+import {
+  DEFAULT_LEGEND_LABEL_LIMIT,
+  DEFAULT_LEGEND_SYMBOL_WIDTH,
+  ROUNDED_SQUARE_PATH,
+} from '@spectrum-charts/core-s2/constants';
 import { getS2ColorValue } from '@spectrum-charts/core-s2/tokens';
 import { legendSymbolShape } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -24,6 +28,7 @@ type Props = Pick<
   | 'colorScheme'
   | 'dataTestId'
   | 'hiddenSeries'
+  | 'hiddenEntries'
   | 'labelLimit'
   | 'onClick'
   | 'onMouseOut'
@@ -49,13 +54,17 @@ export function StandaloneLegend(props: Props) {
       data-testid={props.dataTestId}
       className="rsc-legend"
       style={{
-        display: 'flex',
+        display: side || scroll ? 'flex' : 'grid',
+        gridTemplateColumns:
+          side || scroll
+            ? undefined
+            : `repeat(auto-fit, minmax(0, ${(props.labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT) + 32}px))`,
         flexDirection: side ? 'column' : 'row',
         flexWrap: side || scroll ? 'nowrap' : 'wrap',
         alignItems: side || scroll ? 'stretch' : 'center',
         justifyContent: scroll || align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center',
-        gap: side || scroll ? 0 : '4px 12px',
-        padding: side || scroll ? 0 : '4px 12px',
+        gap: 0,
+        padding: 0,
         margin: 0,
         listStyle: 'none',
         boxSizing: 'border-box',
@@ -64,9 +73,11 @@ export function StandaloneLegend(props: Props) {
         minWidth: scroll ? '100%' : 0,
       }}
     >
-      {props.items.map((item) => (
-        <StandaloneLegendEntry key={item.seriesName} {...props} item={item} side={side} compact={side || scroll} />
-      ))}
+      {props.items
+        .filter((item) => !props.hiddenEntries?.includes(item.seriesName))
+        .map((item) => (
+          <StandaloneLegendEntry key={item.seriesName} {...props} item={item} side={side} compact={side || scroll} />
+        ))}
     </ul>
   );
 }
@@ -107,7 +118,7 @@ function StandaloneLegendEntry({
     width: side ? '100%' : undefined,
     padding: compact ? `4px ${side ? 8 : 12}px` : undefined,
     boxSizing: 'border-box',
-    whiteSpace: 'normal',
+    whiteSpace: 'nowrap',
     textAlign: 'start',
   };
   const content = (
@@ -127,7 +138,9 @@ function StandaloneLegendEntry({
         style={{
           fontSize: 12,
           lineHeight: '18px',
-          overflowWrap: 'anywhere',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
           maxWidth: props.labelLimit,
           color: textColor,
         }}

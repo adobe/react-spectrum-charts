@@ -127,6 +127,18 @@ test('renders complete static entries without controls, including when every ser
   expect(screen.getByText('Beta')).toBeVisible();
 });
 
+test('pages entries independently of series visibility and preserves their supplied colors', async () => {
+  const onClick = jest.fn();
+  const { rerender } = render(<Legend items={items} hiddenEntries={['b']} hiddenSeries={['b']} onClick={onClick} />);
+  expect(screen.queryByRole('button', { name: 'Beta' })).not.toBeInTheDocument();
+  rerender(<Legend items={items} hiddenEntries={['a']} hiddenSeries={['b']} onClick={onClick} />);
+  const beta = screen.getByRole('button', { name: 'Beta' });
+  expect(beta).toHaveAttribute('aria-pressed', 'false');
+  await userEvent.click(beta);
+  expect(onClick).toHaveBeenLastCalledWith('b');
+  expect(screen.queryByRole('button', { name: 'Alpha' })).not.toBeInTheDocument();
+});
+
 test('rejects duplicate identities and uncontrolled standalone toggling', () => {
   const error = jest.spyOn(console, 'error').mockImplementation(() => undefined);
   try {

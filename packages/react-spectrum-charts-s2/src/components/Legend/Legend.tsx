@@ -55,6 +55,7 @@ const Legend: FC<LegendProps> = ({
     <StandaloneLegend
       items={items}
       hiddenSeries={hiddenSeries}
+      hiddenEntries={hiddenEntries}
       colorScheme={colorScheme}
       overflow={overflow}
       position={position}

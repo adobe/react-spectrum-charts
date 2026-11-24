@@ -36,7 +36,13 @@ import {
   SegmentLabelProps,
   TitleProps,
 } from '../../../types/index.js';
-import { ContextMenu, Scrolling, SharedLegendExample } from '../../Legend/Coverage/StandaloneLegend.story.js';
+import {
+  AlignedRows,
+  ContextMenu,
+  Page,
+  Scrolling,
+  SharedLegendExample,
+} from '../../Legend/Coverage/StandaloneLegend.story.js';
 import {
   Variation,
   VariationDashboard,
@@ -689,6 +695,24 @@ const baseDonutVariations: Variation[] = [
 ];
 
 const legendVariations: Variation[] = [
+  {
+    id: 'legend-standalone-columns',
+    title: 'Aligned standalone columns',
+    description: 'Keeps incomplete legend rows aligned with the first row.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Legend.labelLimit'],
+    render: () => <AlignedRows />,
+  },
+  {
+    id: 'legend-standalone-page',
+    title: 'Standalone legend page',
+    description: 'Excludes entries from the legend without hiding their wedges.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Legend.hiddenEntries'],
+    render: () => <SharedLegendExample {...Page.args} />,
+  },
   {
     id: 'legend-standalone',
     title: 'Shared standalone legend',

@@ -287,12 +287,13 @@ function SharedLegend() {
 
 - `position` selects horizontal (`top`/`bottom`) or vertical (`left`/`right`) entries;
   place the component itself on the desired side. `align` selects start, middle, or end.
-- Horizontal entries wrap by default. `overflow="scroll"` keeps one row; put the legend
-  inside a container with `overflowX: 'auto'` to enable scrolling. Bounded vertical legends
-  can likewise use an `overflowY: 'auto'` container. Centered side lists grow from their
-  minimum full height, keeping the first entry reachable when the list overflows.
-- `labelLimit` caps the standalone label's width; full labels wrap rather than being struck
-  through or truncated. Hidden symbols change without changing their reserved width.
+- Horizontal entries wrap into aligned columns based on `labelLimit`, just like chart-internal
+  legends. Incomplete rows retain the same column boundaries as complete rows.
+- Use `hiddenEntries` for host-controlled pagination: omit entries outside the current page
+  without changing `hiddenSeries`, chart data, or colors. Render all entries for static exports.
+  The opt-in `overflow="scroll"` mode remains available for existing consumers.
+- `labelLimit` caps label width before truncation; the full description remains available
+  on hover and to assistive technology. Hidden symbols keep the same reserved width.
 - `colorScheme` defaults to `light`; supply `dark` alongside a dark Spectrum provider.
 - `onMouseOver` and `onMouseOut` also follow keyboard focus. Without event handlers or a
   context-menu renderer, entries are static text and symbols, suitable for exports.

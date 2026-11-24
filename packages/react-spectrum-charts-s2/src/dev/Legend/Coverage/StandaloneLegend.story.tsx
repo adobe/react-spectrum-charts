@@ -80,6 +80,22 @@ Shared.args = { position: 'top', align: 'middle' };
 export const Side = bindWithProps(SharedLegendExample);
 Side.args = { position: 'left', align: 'middle' };
 
+export const Page = bindWithProps(SharedLegendExample);
+Page.args = { position: 'top', hiddenEntries: ['Search'], labelLimit: 100 };
+
+export const AlignedRows = () => (
+  <div style={{ width: 420 }}>
+    <SharedLegendExample
+      labelLimit={100}
+      items={Array.from({ length: 7 }, (_, index) => ({
+        seriesName: `series-${index}`,
+        label: `Series ${index + 1}`,
+        color: `categorical-${(index + 1) * 100}`,
+      }))}
+    />
+  </div>
+);
+
 export const Scrolling = bindWithProps(SharedLegendExample);
 Scrolling.args = {
   position: 'top',
