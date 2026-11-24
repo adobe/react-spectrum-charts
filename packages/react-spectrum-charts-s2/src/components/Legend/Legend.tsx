@@ -32,7 +32,6 @@ const Legend: FC<LegendProps> = ({
   items,
   hiddenSeries,
   colorScheme = 'light',
-  overflow = 'wrap',
   preferredColumns,
   maxRows,
   labelWrap,
@@ -61,7 +60,6 @@ const Legend: FC<LegendProps> = ({
       hiddenSeries={hiddenSeries}
       hiddenEntries={hiddenEntries}
       colorScheme={colorScheme}
-      overflow={overflow}
       preferredColumns={preferredColumns}
       maxRows={maxRows}
       labelWrap={labelWrap}

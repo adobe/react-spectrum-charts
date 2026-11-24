@@ -36,8 +36,6 @@ export interface LegendProps extends Omit<LegendOptions, 'hasOnClick' | 'hasMous
   hiddenSeries?: readonly string[];
   /** Color scheme for standalone legend symbols and labels. Defaults to light. */
   colorScheme?: ColorScheme;
-  /** Standalone horizontal entries wrap by default; scroll keeps one row for an overflow container. */
-  overflow?: 'wrap' | 'scroll';
   /** Reports the standalone page plan without changing series visibility. Unset by default. */
   onPagesChange?: (pages: readonly LegendPage[]) => void;
   /** Renders a standalone entry's context dialog on right-click, Shift+F10, or the context-menu key. */

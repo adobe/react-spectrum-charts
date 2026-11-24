@@ -376,7 +376,7 @@ function SharedLegend() {
   legends. Incomplete rows retain the same column boundaries as complete rows.
 - Use `hiddenEntries` for host-controlled pagination: omit entries outside the current page
   without changing `hiddenSeries`, chart data, or colors. Render all entries for static exports.
-  The opt-in `overflow="scroll"` mode remains available for existing consumers.
+  Use pagination rather than an internal legend scroll viewport.
 - `labelLimit` caps label width before truncation; the full description remains available
   on hover and to assistive technology. Hidden symbols keep the same reserved width.
 - For content-aware standalone pages, set `preferredColumns`, `maxRows`, and `labelWrap`.

@@ -41,7 +41,6 @@ type Props = Pick<
   | 'onClick'
   | 'onMouseOut'
   | 'onMouseOver'
-  | 'overflow'
   | 'preferredColumns'
   | 'maxRows'
   | 'labelWrap'
@@ -59,8 +58,7 @@ export function StandaloneLegend(props: Props) {
     names.add(item.seriesName);
   }
   const side = props.position === 'left' || props.position === 'right';
-  const scroll = !side && props.overflow === 'scroll';
-  const preferred = !side && !scroll && Boolean(props.preferredColumns?.length);
+  const preferred = !side && Boolean(props.preferredColumns?.length);
   if (
     props.preferredColumns?.some((columns) => !Number.isInteger(columns) || columns < 1) ||
     (props.maxRows !== undefined && (!Number.isInteger(props.maxRows) || props.maxRows < 1)) ||
@@ -155,16 +153,16 @@ export function StandaloneLegend(props: Props) {
       data-testid={props.dataTestId}
       className="rsc-legend"
       style={{
-        display: side || scroll ? 'flex' : 'grid',
+        display: side ? 'flex' : 'grid',
         gridTemplateColumns: layout
           ? preferredGrid
-          : side || scroll
+          : side
           ? undefined
           : `repeat(auto-fit, minmax(0, ${(props.labelLimit ?? DEFAULT_LEGEND_LABEL_LIMIT) + 32}px))`,
         flexDirection: side ? 'column' : 'row',
-        flexWrap: side || scroll ? 'nowrap' : 'wrap',
-        alignItems: side || scroll ? 'stretch' : 'center',
-        justifyContent: scroll || align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center',
+        flexWrap: side ? 'nowrap' : 'wrap',
+        alignItems: side ? 'stretch' : 'center',
+        justifyContent: align === 'start' ? 'flex-start' : align === 'end' ? 'flex-end' : 'center',
         gap: 0,
         rowGap: layout ? 8 : undefined,
         columnGap: layout ? DEFAULT_LEGEND_COLUMN_PADDING : undefined,
@@ -173,8 +171,7 @@ export function StandaloneLegend(props: Props) {
         listStyle: 'none',
         boxSizing: 'border-box',
         minHeight: side && align === 'middle' ? '100%' : undefined,
-        width: scroll ? 'max-content' : undefined,
-        minWidth: scroll ? '100%' : 0,
+        minWidth: 0,
       }}
     >
       {visibleItems.map((item) => (
@@ -183,7 +180,6 @@ export function StandaloneLegend(props: Props) {
           {...props}
           item={item}
           side={side}
-          compact={side || scroll}
           wrappedLabel={wrapped.get(item.seriesName)}
           wrapWidth={wrapWidth}
         />
@@ -195,14 +191,12 @@ export function StandaloneLegend(props: Props) {
 function StandaloneLegendEntry({
   item,
   side,
-  compact,
   wrappedLabel,
   wrapWidth,
   ...props
 }: Props & {
   item: LegendItem;
   side: boolean;
-  compact: boolean;
   wrappedLabel?: string;
   wrapWidth?: number;
 }) {
@@ -231,7 +225,7 @@ function StandaloneLegendEntry({
     minHeight: wrappedLabel !== undefined ? 18 : undefined,
     maxWidth: '100%',
     width: side ? '100%' : undefined,
-    padding: wrappedLabel !== undefined ? 0 : compact ? `4px ${side ? 8 : 12}px` : undefined,
+    padding: wrappedLabel !== undefined ? 0 : side ? '4px 8px' : undefined,
     boxSizing: 'border-box',
     whiteSpace: wrappedLabel !== undefined ? 'pre' : 'nowrap',
     textAlign: 'start',
@@ -271,8 +265,8 @@ function StandaloneLegendEntry({
       style={{
         display: 'flex',
         minWidth: 0,
-        maxWidth: compact && !side ? undefined : '100%',
-        flexShrink: compact ? 0 : undefined,
+        maxWidth: '100%',
+        flexShrink: side ? 0 : undefined,
       }}
     >
       {item.description && (
@@ -326,9 +320,9 @@ function StandaloneLegendEntry({
               minHeight: wrappedLabel !== undefined ? 18 : 28,
               whiteSpace: 'normal',
               width: side ? '100%' : undefined,
-              padding: compact || wrappedLabel !== undefined ? 0 : undefined,
+              padding: side || wrappedLabel !== undefined ? 0 : undefined,
               columnGap: wrappedLabel !== undefined ? 0 : undefined,
-              justifyContent: compact ? 'flex-start' : undefined,
+              justifyContent: side ? 'flex-start' : undefined,
             }}
             onPress={() => props.onClick?.(item.seriesName)}
             onFocus={() => props.onMouseOver?.(item.seriesName)}

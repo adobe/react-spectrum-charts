@@ -29,8 +29,8 @@ export function SharedLegendExample(props: LegendProps) {
   const entries = props.items ?? items;
   const side = props.position === 'left' || props.position === 'right';
   return (
-    <div style={{ display: 'flex', flexDirection: side ? 'row' : 'column', height: 280, minWidth: 0 }}>
-      <div style={{ overflow: 'auto', flexShrink: 0, width: side ? 140 : undefined, maxHeight: side ? '100%' : '35%' }}>
+    <div style={{ display: 'flex', flexDirection: side ? 'row' : 'column', height: side ? 280 : undefined, minWidth: 0 }}>
+      <div style={{ flexShrink: 0, minWidth: 0, width: side ? 140 : undefined }}>
         <Legend
           {...props}
           items={entries}
@@ -71,7 +71,7 @@ export default {
   tags: ['alpha'],
   component: Legend,
   excludeStories: ['SharedLegendExample', 'PaginatedLegendExample'],
-  parameters: { controls: { include: ['position', 'overflow', 'colorScheme'] } },
+  parameters: { controls: { include: ['position', 'colorScheme'] } },
 };
 
 export const Shared = bindWithProps(SharedLegendExample);
@@ -157,17 +157,6 @@ export function PaginatedLegendExample() {
 }
 
 export const Paginated = () => <PaginatedLegendExample />;
-
-export const Scrolling = bindWithProps(SharedLegendExample);
-Scrolling.args = {
-  position: 'top',
-  overflow: 'scroll',
-  items: Array.from({ length: 12 }, (_, index) => ({
-    seriesName: `series-${index}`,
-    label: `Series ${index + 1}`,
-    color: `categorical-${((index % 12) + 1) * 100}`,
-  })),
-};
 
 export const ContextMenu = bindWithProps(SharedLegendExample);
 ContextMenu.args = {

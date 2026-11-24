@@ -41,7 +41,6 @@ import {
   ContextMenu,
   Page,
   PaginatedLegendExample,
-  Scrolling,
   SharedLegendExample,
 } from '../../Legend/Coverage/StandaloneLegend.story.js';
 import {
@@ -742,15 +741,6 @@ const legendVariations: Variation[] = [
     render: () => <SharedLegendExample position="left" align="middle" />,
   },
   {
-    id: 'legend-standalone-scroll',
-    title: 'Scrollable standalone legend',
-    description: 'Keeps shared entries in one row inside a horizontal overflow container.',
-    dataset: 'canonical',
-    usesDashboardDataset: false,
-    coverage: ['Legend.overflow=scroll'],
-    render: () => <SharedLegendExample {...Scrolling.args} />,
-  },
-  {
     id: 'legend-standalone-context',
     title: 'Standalone context dialog',
     description: 'Right-click or press Shift+F10 on an entry to open its context dialog.',
@@ -1045,7 +1035,6 @@ const legendCoverage: SiblingCoverage<LegendProps> = {
   items: ['legend-standalone'],
   hiddenSeries: ['legend-standalone'],
   align: ['legend-standalone-side'],
-  overflow: ['legend-standalone-scroll'],
   renderContextMenu: ['legend-standalone-context'],
   colorScheme: { skip: 'Standalone color schemes are covered by Legend component tests and Storybook controls' },
   dataTestId: { skip: 'Test hook; does not change visualization behavior' },

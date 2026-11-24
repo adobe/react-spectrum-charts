@@ -4,4 +4,4 @@
 '@spectrum-charts/docs-s2': patch
 ---
 
-Add a standalone S2 Legend for shared, controlled visibility across charts, with native hidden-series symbols, responsive overflow, and accessible context dialogs.
+Add shared, controlled S2 legends with accessible context dialogs, native hidden-state symbols, and measured preferred-column pagination with multiline labels for standalone and chart-internal legends.

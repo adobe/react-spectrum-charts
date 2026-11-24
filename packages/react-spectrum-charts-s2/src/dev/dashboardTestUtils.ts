@@ -13,6 +13,11 @@
 /** Stubs browser APIs used by S2 controls that jsdom does not implement. */
 export const stubS2BrowserApis = (): void => {
   Element.prototype.getAnimations ??= () => [];
+  globalThis.ResizeObserver ??= class implements ResizeObserver {
+    observe = jest.fn();
+    unobserve = jest.fn();
+    disconnect = jest.fn();
+  };
   globalThis.IntersectionObserver ??= class {
     observe = jest.fn();
     unobserve = jest.fn();

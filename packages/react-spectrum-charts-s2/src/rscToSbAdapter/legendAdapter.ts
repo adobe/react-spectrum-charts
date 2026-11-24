@@ -24,7 +24,6 @@ export const getLegendOptions = (
     items,
     hiddenSeries: _hiddenSeries,
     colorScheme: _colorScheme,
-    overflow: _overflow,
     renderContextMenu: _renderContextMenu,
     dataTestId: _dataTestId,
     onPagesChange: _onPagesChange,

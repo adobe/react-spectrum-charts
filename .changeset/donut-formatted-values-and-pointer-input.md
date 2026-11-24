@@ -5,5 +5,4 @@
 "@spectrum-charts/docs-s2": patch
 ---
 
-Add Donut pointer callbacks for arcs and segment labels and an optional DonutSummary `valueText` override for externally formatted center values.
-Supplied summaries remain visible when all segments are hidden.
+Support externally formatted and fitted Donut summaries, responsive caption placement, pointer callbacks, and measured segment-label typography; preserve supplied summary values when all segments are hidden.

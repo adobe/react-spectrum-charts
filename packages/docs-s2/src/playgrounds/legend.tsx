@@ -441,11 +441,10 @@ export const LegendStandalonePlayground = () => {
       previewSize={() => ({ width: 360, height: 160 })}
       controls={[
         { name: 'position', type: 'select', options: ['top', 'left', 'right', 'bottom'], defaultValue: 'top' },
-        { name: 'overflow', type: 'select', options: ['wrap', 'scroll'], defaultValue: 'wrap' },
         { name: 'hiddenSeries', type: 'select', options: ['none', 'Email', 'Email, Direct'], defaultValue: 'Email' },
         { name: 'renderContextMenu', type: 'boolean', defaultValue: false },
       ]}
-      render={({ position = 'top', overflow, hiddenSeries = 'Email', renderContextMenu }) => (
+      render={({ position = 'top', hiddenSeries = 'Email', renderContextMenu }) => (
         <Legend
           items={['Search', 'Direct', 'Email'].map((name, index) => ({
             seriesName: name,
@@ -454,7 +453,6 @@ export const LegendStandalonePlayground = () => {
             description: `${name} channel`,
           }))}
           position={position as 'top' | 'left' | 'right' | 'bottom'}
-          overflow={overflow as 'wrap' | 'scroll' | undefined}
           hiddenSeries={toList(hiddenSeries)}
           dataTestId="standalone-legend-example"
           colorScheme={colorMode}
