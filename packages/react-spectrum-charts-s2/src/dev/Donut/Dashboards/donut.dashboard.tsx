@@ -40,6 +40,7 @@ import {
   AlignedRows,
   ContextMenu,
   Page,
+  PaginatedLegendExample,
   Scrolling,
   SharedLegendExample,
 } from '../../Legend/Coverage/StandaloneLegend.story.js';
@@ -696,6 +697,15 @@ const baseDonutVariations: Variation[] = [
 
 const legendVariations: Variation[] = [
   {
+    id: 'legend-standalone-paginated',
+    title: 'Measured standalone pages',
+    description: 'Chooses preferred columns from measured labels, wraps text, and limits pages to two rows.',
+    dataset: 'canonical',
+    usesDashboardDataset: false,
+    coverage: ['Legend.preferredColumns', 'Legend.maxRows', 'Legend.labelWrap', 'Legend.onPagesChange'],
+    render: () => <PaginatedLegendExample />,
+  },
+  {
     id: 'legend-standalone-columns',
     title: 'Aligned standalone columns',
     description: 'Keeps incomplete legend rows aligned with the first row.',
@@ -1028,6 +1038,10 @@ const chartPopoverCoverage: SiblingCoverage<ChartPopoverProps> = {
 };
 
 const legendCoverage: SiblingCoverage<LegendProps> = {
+  preferredColumns: ['legend-standalone-paginated'],
+  maxRows: ['legend-standalone-paginated'],
+  labelWrap: ['legend-standalone-paginated'],
+  onPagesChange: ['legend-standalone-paginated'],
   items: ['legend-standalone'],
   hiddenSeries: ['legend-standalone'],
   align: ['legend-standalone-side'],

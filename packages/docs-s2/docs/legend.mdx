@@ -294,6 +294,21 @@ function SharedLegend() {
   The opt-in `overflow="scroll"` mode remains available for existing consumers.
 - `labelLimit` caps label width before truncation; the full description remains available
   on hover and to assistive technology. Hidden symbols keep the same reserved width.
+- For content-aware standalone pages, set `preferredColumns`, `maxRows`, and `labelWrap`.
+  The legend measures labels at 14px, tries column counts in order, and reports inclusive
+  `{ columns, start, end }` ranges through `onPagesChange`. Each page is planned from its own
+  labels, so a long label on a later page does not reduce earlier pages' column counts.
+  Preferred layouts align at the start by default, share column boundaries, and wrap labels
+  by word up to `labelWrap` lines before truncating. Full descriptions remain accessible.
+  Resize-driven page plans settle for 150ms; unchanged plans do not trigger callbacks.
+  Use the reported ranges with `hiddenEntries`, clamp the current page after resize, and reset
+  it when the ordered item identities change. Omit `maxRows` and `hiddenEntries` for exports.
+- Use `preferredColumns="auto"` to fill the available width with equal-width columns instead
+  of a fixed candidate list. The column count uses the widest measured label, capped by
+  `labelLimit` (184px by default), plus symbol and column spacing. All pages share those
+  column boundaries, including incomplete rows. With `maxRows={2}`, pagination starts only
+  after two complete rows; a wider container fits more entries before needing another page.
+  Without `maxRows`, all entries remain visible for static layouts.
 - `colorScheme` defaults to `light`; supply `dark` alongside a dark Spectrum provider.
 - `onMouseOver` and `onMouseOut` also follow keyboard focus. Without event handlers or a
   context-menu renderer, entries are static text and symbols, suitable for exports.
@@ -307,6 +322,55 @@ function SharedLegend() {
 Only the standalone props above and the common layout/event props apply to this mode; facets,
 titles, highlighting, and `legendLabels`/`descriptions` maps remain chart-internal options.
 For standalone labels and descriptions, use the corresponding item fields.
+
+```tsx
+import { useEffect, useState } from 'react';
+
+import { Button } from '@react-spectrum/s2';
+import { Legend, type LegendItem, type LegendPage } from '@spectrum-charts/react-spectrum-charts-s2';
+
+function PagedLegend({ items }: { items: readonly LegendItem[] }) {
+  const [pages, setPages] = useState<readonly LegendPage[]>([]);
+  const [page, setPage] = useState(0);
+  const identities = JSON.stringify(items.map((item) => item.seriesName));
+  useEffect(() => setPage(0), [identities]);
+  const currentPage = Math.min(page, Math.max(0, pages.length - 1));
+  const current = pages[currentPage];
+  return (
+    <>
+      {pages.length > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
+          <Button variant="secondary" isDisabled={currentPage === 0} onPress={() => setPage(currentPage - 1)}>
+            Previous
+          </Button>
+          <span aria-live="polite">
+            {currentPage + 1} of {pages.length}
+          </span>
+          <Button
+            variant="secondary"
+            isDisabled={currentPage === pages.length - 1}
+            onPress={() => setPage(currentPage + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+      <Legend
+        items={items}
+        preferredColumns="auto"
+        maxRows={2}
+        labelWrap={3}
+        onPagesChange={setPages}
+        hiddenEntries={
+          current
+            ? items.filter((_, index) => index < current.start || index > current.end).map((item) => item.seriesName)
+            : undefined
+        }
+      />
+    </>
+  );
+}
+```
 
 ## API
 

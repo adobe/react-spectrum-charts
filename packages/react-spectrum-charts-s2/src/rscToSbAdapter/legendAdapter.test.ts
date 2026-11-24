@@ -26,6 +26,14 @@ describe('getLegendOptions()', () => {
     expect(options).toHaveProperty('hasOnClick', false);
     expect(options).toHaveProperty('hasMouseInteraction', false);
   });
+  it('keeps standalone page callbacks and layout options out of chart specs', () => {
+    const options = getLegendOptions(
+      { preferredColumns: [5, 3], maxRows: 2, labelWrap: 3, onPagesChange: jest.fn() },
+      childrenToOptions
+    );
+    for (const property of ['preferredColumns', 'maxRows', 'labelWrap', 'onPagesChange'])
+      expect(options).not.toHaveProperty(property);
+  });
   test('should set hasOnClick to true if onClickProp exists and is not undefined', () => {
     expect(getLegendOptions({ onClick: () => {} }, childrenToOptions).hasOnClick).toBe(true);
     expect(getLegendOptions({ onClick: undefined }, childrenToOptions).hasOnClick).toBe(false);

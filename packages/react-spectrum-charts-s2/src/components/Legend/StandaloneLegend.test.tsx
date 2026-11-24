@@ -11,13 +11,13 @@
  */
 import { ReactElement } from 'react';
 
-import { fireEvent, render as renderElement, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render as renderElement, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { Provider } from '@react-spectrum/s2';
 import { ROUNDED_SQUARE_PATH } from '@spectrum-charts/core-s2/constants';
 import { spectrum2Colors } from '@spectrum-charts/core-s2/tokens';
-import { legendSymbolShape } from '@spectrum-charts/vega-spec-builder-s2';
+import { expressionFunctions, legendSymbolShape } from '@spectrum-charts/vega-spec-builder-s2';
 
 import '../../test-utils/__mocks__/matchMedia.mock.js';
 import { Legend } from './Legend.js';
@@ -144,7 +144,157 @@ test('rejects duplicate identities and uncontrolled standalone toggling', () => 
   try {
     expect(() => render(<Legend items={[items[0], items[0]]} />)).toThrow('unique nonempty series names');
     expect(() => render(<Legend items={items} isToggleable />)).toThrow('Standalone legends are controlled');
+    expect(() => render(<Legend items={items} preferredColumns={[0]} />)).toThrow('positive integers');
   } finally {
     error.mockRestore();
   }
+});
+
+describe('measured standalone pagination', () => {
+  const originalObserver = globalThis.ResizeObserver;
+  const observers = new Map<Element, (width: number) => void>();
+  const entries = Array.from({ length: 25 }, (_, index) => ({
+    seriesName: String(index),
+    label: `Category ${index}`,
+    color: 'categorical-100',
+  }));
+  beforeEach(() => {
+    globalThis.ResizeObserver = class implements ResizeObserver {
+      constructor(private callback: ResizeObserverCallback) {}
+      observe(target: Element) {
+        observers.set(target, (width) =>
+          this.callback(
+            [
+              {
+                target,
+                contentRect: { ...target.getBoundingClientRect(), width },
+                borderBoxSize: [],
+                contentBoxSize: [],
+                devicePixelContentBoxSize: [],
+              },
+            ],
+            this
+          )
+        );
+      }
+      unobserve(target: Element) {
+        observers.delete(target);
+      }
+      disconnect() {}
+    };
+  });
+  afterEach(() => {
+    globalThis.ResizeObserver = originalObserver;
+    observers.clear();
+    jest.useRealTimers();
+  });
+  const resize = (width: number) => act(() => observers.get(screen.getByTestId('measured'))?.(width));
+
+  test('reports native pages, caps rows, and pages separately from controlled visibility', async () => {
+    const onPagesChange = jest.fn(),
+      onClick = jest.fn();
+    const props = {
+      items: entries,
+      preferredColumns: [5, 3],
+      maxRows: 2,
+      labelWrap: 3,
+      dataTestId: 'measured',
+      onPagesChange,
+      onClick,
+    };
+    const { rerender } = render(<Legend {...props} hiddenSeries={['12']} />);
+    resize(800);
+    expect(onPagesChange).toHaveBeenLastCalledWith([
+      { columns: 5, start: 0, end: 9 },
+      { columns: 5, start: 10, end: 19 },
+      { columns: 5, start: 20, end: 24 },
+    ]);
+    expect(screen.getAllByRole('listitem')).toHaveLength(10);
+    rerender(
+      <Legend
+        {...props}
+        hiddenSeries={['12']}
+        hiddenEntries={entries.filter((_, index) => index < 10 || index > 19).map((item) => item.seriesName)}
+      />
+    );
+    expect(screen.getAllByRole('listitem')).toHaveLength(10);
+    const hidden = screen.getByRole('button', { name: 'Category 12' });
+    expect(hidden).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(hidden);
+    expect(onClick).toHaveBeenLastCalledWith('12');
+    expect(onPagesChange).toHaveBeenCalledTimes(1);
+  });
+
+  test('settles resize bursts for 150ms and does not report unchanged page plans', () => {
+    jest.useFakeTimers();
+    const onPagesChange = jest.fn();
+    render(
+      <Legend
+        items={entries}
+        preferredColumns={[5, 3]}
+        maxRows={2}
+        labelWrap={3}
+        dataTestId="measured"
+        onPagesChange={onPagesChange}
+      />
+    );
+    resize(800);
+    resize(200);
+    resize(600);
+    act(() => jest.advanceTimersByTime(150));
+    expect(onPagesChange).toHaveBeenCalledTimes(1);
+    resize(200);
+    act(() => jest.advanceTimersByTime(149));
+    expect(onPagesChange).toHaveBeenCalledTimes(1);
+    act(() => jest.advanceTimersByTime(1));
+    expect(onPagesChange).toHaveBeenCalledTimes(2);
+    expect(onPagesChange.mock.lastCall[0]).toHaveLength(5);
+  });
+
+  test('fills automatic columns across the width and paginates only beyond two complete rows', () => {
+    jest.useFakeTimers();
+    jest.spyOn(expressionFunctions, 'getLabelWidth').mockImplementation((text) => text.length * 7);
+    const onPagesChange = jest.fn();
+    const props = {
+      items: entries,
+      preferredColumns: 'auto' as const,
+      maxRows: 2,
+      labelWrap: 3,
+      dataTestId: 'measured',
+      onPagesChange,
+      onClick: jest.fn(),
+    };
+    const { rerender } = render(<Legend {...props} hiddenSeries={['24']} />);
+    resize(694);
+    expect(onPagesChange).toHaveBeenLastCalledWith([
+      { columns: 6, start: 0, end: 11 },
+      { columns: 6, start: 12, end: 23 },
+      { columns: 6, start: 24, end: 24 },
+    ]);
+    expect(screen.getAllByRole('listitem')).toHaveLength(12);
+    expect(screen.getByTestId('measured')).toHaveStyle({ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' });
+    rerender(
+      <Legend {...props} hiddenSeries={['24']} hiddenEntries={entries.slice(0, 24).map((item) => item.seriesName)} />
+    );
+    expect(screen.getByRole('button', { name: 'Category 24' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('measured')).toHaveStyle({ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' });
+    resize(693);
+    act(() => jest.advanceTimersByTime(150));
+    expect(onPagesChange.mock.lastCall[0][0]).toEqual({ columns: 5, start: 0, end: 9 });
+    resize(1527);
+    act(() => jest.advanceTimersByTime(150));
+    expect(onPagesChange).toHaveBeenLastCalledWith([{ columns: 13, start: 0, end: 24 }]);
+    rerender(<Legend {...props} hiddenSeries={['24']} />);
+    expect(screen.getAllByRole('listitem')).toHaveLength(25);
+  });
+
+  test('keeps every automatic-column entry in static layouts and honors the label width limit', () => {
+    jest.spyOn(expressionFunctions, 'getLabelWidth').mockImplementation((text) => text.length * 7);
+    render(<Legend items={entries} preferredColumns="auto" labelLimit={49} labelWrap={3} dataTestId="measured" />);
+    resize(800);
+    expect(screen.getAllByRole('listitem')).toHaveLength(25);
+    expect(screen.getByTestId('measured')).toHaveStyle({ gridTemplateColumns: 'repeat(9, minmax(0, 1fr))' });
+    expect(screen.getByTestId('measured').querySelector('.rsc-legend-label')).toHaveStyle({ maxWidth: '49px' });
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
 });

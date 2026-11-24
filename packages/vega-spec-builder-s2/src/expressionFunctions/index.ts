@@ -12,3 +12,4 @@
 
 export * from './expressionFunctions.js';
 export * from './legendSymbolShape.js';
+export * from './legendLayout.js';

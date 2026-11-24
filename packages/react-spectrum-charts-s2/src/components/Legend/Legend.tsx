@@ -33,6 +33,10 @@ const Legend: FC<LegendProps> = ({
   hiddenSeries,
   colorScheme = 'light',
   overflow = 'wrap',
+  preferredColumns,
+  maxRows,
+  labelWrap,
+  onPagesChange,
   renderContextMenu,
   dataTestId,
   labelLimit,
@@ -58,6 +62,10 @@ const Legend: FC<LegendProps> = ({
       hiddenEntries={hiddenEntries}
       colorScheme={colorScheme}
       overflow={overflow}
+      preferredColumns={preferredColumns}
+      maxRows={maxRows}
+      labelWrap={labelWrap}
+      onPagesChange={onPagesChange}
       position={position}
       align={align}
       labelLimit={labelLimit}

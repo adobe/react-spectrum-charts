@@ -16,7 +16,7 @@ import { Button } from '@react-spectrum/s2';
 import { Chart } from '../../../Chart.js';
 import { Donut, DonutSummary, Legend } from '../../../components/index.js';
 import { bindWithProps } from '../../../test-utils/bindWithProps.js';
-import { LegendItem, LegendProps } from '../../../types/index.js';
+import { LegendItem, LegendPage, LegendProps } from '../../../types/index.js';
 
 const items: LegendItem[] = ['Search', 'Direct', 'Email'].map((seriesName, index) => ({
   seriesName,
@@ -70,7 +70,7 @@ export default {
   title: 'React Spectrum Charts 2/Legend/Coverage/Standalone',
   tags: ['alpha'],
   component: Legend,
-  excludeStories: ['SharedLegendExample'],
+  excludeStories: ['SharedLegendExample', 'PaginatedLegendExample'],
   parameters: { controls: { include: ['position', 'overflow', 'colorScheme'] } },
 };
 
@@ -95,6 +95,53 @@ export const AlignedRows = () => (
     />
   </div>
 );
+
+export function PaginatedLegendExample() {
+  const [pages, setPages] = useState<readonly LegendPage[]>([]);
+  const [page, setPage] = useState(0);
+  const currentPage = Math.min(page, Math.max(0, pages.length - 1));
+  const current = pages[currentPage];
+  const entries = Array.from({ length: 25 }, (_, index) => ({
+    seriesName: `series-${index}`,
+    label: index === 11 ? 'International product sales from partner campaigns' : `Series ${index + 1}`,
+    color: `categorical-${((index % 10) + 1) * 100}`,
+  }));
+  return (
+    <div style={{ width: 420, maxWidth: '100%' }}>
+      {pages.length > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
+          <Button variant="secondary" isDisabled={currentPage === 0} onPress={() => setPage(currentPage - 1)}>
+            Previous
+          </Button>
+          <span>
+            {currentPage + 1} of {pages.length}
+          </span>
+          <Button
+            variant="secondary"
+            isDisabled={currentPage === pages.length - 1}
+            onPress={() => setPage(currentPage + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
+      <SharedLegendExample
+        items={entries}
+        preferredColumns="auto"
+        maxRows={2}
+        labelWrap={3}
+        onPagesChange={setPages}
+        hiddenEntries={
+          current
+            ? entries.filter((_, index) => index < current.start || index > current.end).map((item) => item.seriesName)
+            : undefined
+        }
+      />
+    </div>
+  );
+}
+
+export const Paginated = () => <PaginatedLegendExample />;
 
 export const Scrolling = bindWithProps(SharedLegendExample);
 Scrolling.args = {

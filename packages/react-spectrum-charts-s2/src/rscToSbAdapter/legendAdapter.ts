@@ -27,6 +27,10 @@ export const getLegendOptions = (
     overflow: _overflow,
     renderContextMenu: _renderContextMenu,
     dataTestId: _dataTestId,
+    preferredColumns: _preferredColumns,
+    maxRows: _maxRows,
+    labelWrap: _labelWrap,
+    onPagesChange: _onPagesChange,
     ...legendProps
   }: LegendProps,
   childrenToOptions: ChildrenToOptions
