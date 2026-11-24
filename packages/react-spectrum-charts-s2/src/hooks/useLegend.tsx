@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { createElement, useMemo, useState } from 'react';
+import { Dispatch, SetStateAction, createElement, useMemo, useState } from 'react';
 
 import { LegendDescription } from '@spectrum-charts/vega-spec-builder-s2';
 
@@ -20,8 +20,9 @@ import { ChartContainer } from './ChartContainer.js';
 
 export type UseLegendProps = {
   legendHiddenSeries: string[];
-  setLegendHiddenSeries: (legendHiddenSeries: string[]) => void;
+  setLegendHiddenSeries: Dispatch<SetStateAction<string[]>>;
   descriptions?: LegendDescription[];
+  hiddenEntries?: string[];
   isToggleable?: boolean;
   onClick?: (seriesName: string) => void;
   onMouseOut?: (seriesName: string) => void;
@@ -35,6 +36,15 @@ export default function useLegend(children: ChartChildElement[]): UseLegendProps
   const [legendHiddenSeries, setLegendHiddenSeries] = useState<string[]>(legend?.props?.defaultHiddenSeries ?? []);
 
   if (!legend) return { legendHiddenSeries, setLegendHiddenSeries };
-  const { descriptions, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
-  return { legendHiddenSeries, setLegendHiddenSeries, descriptions, isToggleable, onClick, onMouseOut, onMouseOver };
+  const { descriptions, hiddenEntries, isToggleable, onClick, onMouseOut, onMouseOver } = legend.props;
+  return {
+    legendHiddenSeries,
+    setLegendHiddenSeries,
+    descriptions,
+    hiddenEntries,
+    isToggleable,
+    onClick,
+    onMouseOut,
+    onMouseOver,
+  };
 }

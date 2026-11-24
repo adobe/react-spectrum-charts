@@ -245,6 +245,38 @@ describe('update equals fresh mount', () => {
     expect(updated).toEqual(fresh);
   });
 
+  // restored series and categories take their first-appearance position, as on a fresh mount
+  describe('restored ahead of the others', () => {
+    const threeSeries = [...data, { datetime: 1, value: 1, series: 'c' }, { datetime: 2, value: 2, series: 'c' }];
+    const withoutA = { data: threeSeries.filter((row) => row.series !== 'a') };
+
+    test('a series', async () => {
+      const { updated, fresh } = await harness.compareUpdateToMount(stableChart, withoutA, { data: threeSeries });
+
+      expect(updated).toEqual(fresh);
+    });
+
+    // keyed bars append a returning item to the scene, so compare bar items in data order
+    const sortBarItems = (node: unknown): unknown => {
+      if (Array.isArray(node)) return node.map(sortBarItems);
+      if (!node || typeof node !== 'object') return node;
+      const sorted = Object.fromEntries(Object.entries(node).map(([key, value]) => [key, sortBarItems(value)]));
+      if (typeof sorted.name === 'string' && sorted.name.startsWith('bar0') && Array.isArray(sorted.items)) {
+        sorted.items = [...sorted.items].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+      }
+      return sorted;
+    };
+
+    // no axis, since Vega appends a returning tick to the axis scene without moving it
+    test('a bar category', async () => {
+      const barChildren = [<Bar key="bar" dimension="series" metric="value" />];
+      const barChart = (props: Partial<ChartProps>) => stableChart(props, barChildren);
+      const { updated, fresh } = await harness.compareUpdateToMount(barChart, withoutA, { data: threeSeries });
+
+      expect(sortBarItems(updated)).toEqual(sortBarItems(fresh));
+    });
+  });
+
   test.each<[string, Partial<ChartProps>, Partial<ChartProps>]>([
     ['controlled hiddenSeries', {}, { hiddenSeries: ['a'] }],
     ['changed controlled hiddenSeries', { hiddenSeries: ['a'] }, { hiddenSeries: ['b'] }],

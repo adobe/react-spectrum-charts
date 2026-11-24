@@ -231,6 +231,77 @@ describe('createViewHost()', () => {
     expect(embedSpy).not.toHaveBeenCalled();
   });
 
+  describe('interaction reset', () => {
+    const interactiveSpec: Spec = {
+      ...spec,
+      signals: [
+        { name: 'highlightedSeries', value: null },
+        { name: 'selectedItem', value: null },
+        { name: 'line0_hoveredItem', value: null },
+      ],
+    };
+
+    const mountInteractive = async () => {
+      const view = createFakeView() as unknown as View;
+      const adapter: ViewHostAdapter = {
+        ...vegaViewAdapter,
+        createView: jest.fn(() => Promise.resolve(view)),
+        startView: jest.fn(),
+        updateView: jest.fn(),
+      };
+      const inputs = { ...base, spec: interactiveSpec, onInteractionReset: jest.fn() };
+      const host = createViewHost(document.createElement('div'), adapter);
+      host.update(inputs);
+      await flush();
+      return { adapter, host, inputs, view };
+    };
+
+    test('should reset selection and hover in the same update as a data change', async () => {
+      const { adapter, host, inputs, view } = await mountInteractive();
+
+      host.update({ ...inputs, table: [{ x: 2 }], signals: { selectedItem: 3 } });
+
+      expect(adapter.updateView).toHaveBeenCalledWith(
+        view,
+        expect.objectContaining({ signals: [
+            ['selectedItem', 3],
+            ['line0_hoveredItem', null],
+          ],
+        })
+      );
+      expect(inputs.onInteractionReset).toHaveBeenCalledWith(view);
+    });
+
+    test('should keep selection and hover on a signal update', async () => {
+      const { adapter, host, inputs } = await mountInteractive();
+
+      host.update({ ...inputs, signals: { highlightedSeries: 'a' } });
+
+      expect(adapter.updateView).toHaveBeenCalledWith(expect.anything(), { signals: [['highlightedSeries', 'a']], table: undefined, size: undefined });
+      expect(inputs.onInteractionReset).not.toHaveBeenCalled();
+    });
+
+    test('should not rebuild when only onInteractionReset changes', async () => {
+      const { host, inputs } = await mountInteractive();
+
+      expect(host.update({ ...inputs, onInteractionReset: jest.fn() })).toBe('noop');
+    });
+
+    test('should reset after a rebuild replaces a view, but not on mount', async () => {
+      const onInteractionReset = jest.fn();
+      const host = await mount({ ...base, onInteractionReset });
+
+      expect(onInteractionReset).not.toHaveBeenCalled();
+
+      host.update({ ...base, onInteractionReset, ...withEnvironment({ padding: 4 }) });
+      resolvers.at(-1)?.();
+      await flush();
+
+      expect(onInteractionReset).toHaveBeenCalledTimes(1);
+      expect(onInteractionReset).toHaveBeenCalledWith(fakeViews[1]);
+    });
+  });
+
   describe('animation', () => {
     const animatedSpec: Spec = {
       ...spec,

@@ -61,6 +61,8 @@ export interface ViewAdapter<TSpec, TView, TEnvironment> {
   prepareSpec: (spec: TSpec, table: unknown[] | undefined, signals?: Record<string, unknown>) => TSpec;
   /** Splits a prepared spec into its program, signal values and table rows */
   splitSpec: (spec: TSpec) => SplitSpec;
+  /** Checks whether a signal holds selection or hover state, which a data update resets */
+  isInteractionSignal: (name: string) => boolean;
   /** Checks whether a view built in one environment can be kept for another */
   isSameEnvironment: (previous: TEnvironment, next: TEnvironment) => boolean;
   /** Creates a view that renders the spec into the container */
