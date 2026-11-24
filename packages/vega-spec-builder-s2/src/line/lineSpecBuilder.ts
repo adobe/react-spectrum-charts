@@ -197,6 +197,7 @@ export const addLine = produce<
       gradient,
       hasOnClick,
       hasOnContextMenu,
+      hasOnMouseInput: options.hasOnMouseInput,
       index,
       lineCap,
       lineDirectLabels,
