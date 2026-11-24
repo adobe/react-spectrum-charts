@@ -13,15 +13,27 @@ import { createElement } from 'react';
 
 import { DEFAULT_COLOR } from '@spectrum-charts/core-s2/constants';
 
-import { ChartActionBar } from '../lab/components/ChartActionBar/index.js';
 import { ChartInspect } from '../components/ChartInspect/index.js';
 import { ChartPopover } from '../components/ChartPopover/index.js';
 import { LineForecast } from '../components/LineForecast/index.js';
 import { LinePointAnnotation } from '../components/LinePointAnnotation/index.js';
+import { ChartActionBar } from '../lab/components/ChartActionBar/index.js';
+import { Trendline } from '../lab/index.js';
 import { childrenToOptions } from './childrenAdapter.js';
 import { getLineOptions } from './lineAdapter.js';
 
 describe('getLineOptions()', () => {
+  it('retains explicit trendlines and forwards precomputed Trendline children', () => {
+    const data = [{ datetime: 1000, value: 10, series: 'A' }];
+    const options = getLineOptions(
+      {
+        trendlines: [{ method: 'logarithmic' }],
+        children: [createElement(Trendline, { data, displayOnHover: true })],
+      },
+      childrenToOptions
+    );
+    expect(options.trendlines).toMatchObject([{ method: 'logarithmic' }, { data, displayOnHover: true }]);
+  });
   it('should return all basic options', () => {
     const options = getLineOptions({}, childrenToOptions);
     expect(options.markType).toBe('line');
