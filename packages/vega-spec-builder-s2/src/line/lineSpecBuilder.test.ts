@@ -41,7 +41,7 @@ import {
 
 import { buildSpec } from '../chartSpecBuilder.js';
 import { getExpressionFunctions } from '../expressionFunctions/index.js';
-import { getLineDrawInClip } from '../marks/drawInAnimationUtils.js';
+import { getLineDrawInClip, getLineGeometryClip } from '../marks/drawInAnimationUtils.js';
 import { getSeriesFacet } from '../marks/markUtils.js';
 import * as signalSpecBuilder from '../signal/signalSpecBuilder.js';
 import { defaultSignals } from '../specTestUtils.js';
@@ -98,6 +98,60 @@ describe('null metric gaps', () => {
 });
 
 describe('fixed metric axis hover', () => {
+  test.each(['linear', 'monotone'] as const)(
+    'preserves the full boundary stroke with %s interpolation',
+    async (interpolate) => {
+      Object.entries(getExpressionFunctions('en-US')).forEach(([name, fn]) => expressionFunction(name, fn));
+      expressionFunction('rscContainerWidth', () => 360);
+      const data = [0, 80, 100, 99, 0, 150].map((value, index) => ({
+        datetime: Date.UTC(2026, 0, index + 1),
+        value,
+      }));
+      const spec = buildSpec({
+        animations: false,
+        data,
+        axes: [
+          { position: 'left', range: [0, 100] },
+          { position: 'bottom', labelFormat: 'time' },
+        ],
+        marks: [{ markType: 'line', name: 'line0', interpolate, chartInspects: [{}] }],
+      });
+      const table = spec.data?.find(({ name }) => name === TABLE);
+      if (!table || !('values' in table)) throw new Error('Expected inline table data');
+      table.values = data;
+      const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
+      try {
+        await view.runAsync();
+        expect(view.scale('yLinear').domain()).toEqual([0, 100]);
+        expect(view.scale('yLinear')(100)).toBeCloseTo(0);
+        expect(view.data('line0_visibleHoverData').some((datum) => datum.value === 150)).toBe(false);
+        const svg = new DOMParser().parseFromString(await view.toSVG(), 'image/svg+xml');
+        const clipUrl = svg
+          .querySelector('.line0_group[clip-path], .line0_group [clip-path]')
+          ?.getAttribute('clip-path');
+        const clipId = clipUrl?.match(/#([^)]*)/)?.[1];
+        const shape = svg.querySelector(`#${clipId} path, #${clipId} rect`);
+        if (!shape) throw new Error('Expected the line geometry clip.');
+        const bounds =
+          shape.tagName === 'rect'
+            ? [
+                Number(shape.getAttribute('x') || 0),
+                Number(shape.getAttribute('y') || 0),
+                Number(shape.getAttribute('x') || 0) + Number(shape.getAttribute('width')),
+                Number(shape.getAttribute('y') || 0) + Number(shape.getAttribute('height')),
+              ]
+            : (shape.getAttribute('d')?.match(/-?\d+(?:\.\d+)?/g) ?? []).slice(0, 4).map(Number);
+        const halfStroke = view.signal(CHART_SIZE_HOVER_STROKE_WIDTH) / 2;
+        expect(bounds[0]).toBeLessThanOrEqual(-halfStroke);
+        expect(bounds[1]).toBeLessThanOrEqual(-halfStroke);
+        expect(bounds[2]).toBeGreaterThanOrEqual(view.width() + halfStroke);
+        expect(bounds[3]).toBeGreaterThanOrEqual(view.height() + halfStroke);
+      } finally {
+        view.finalize();
+      }
+    }
+  );
+
   test.each<[string, number[], Partial<LineOptions>, boolean, [number, number]?]>([
     [
       'sparse data above the range',
@@ -166,7 +220,13 @@ describe('fixed metric axis hover', () => {
     const clippedGroups = new Set(['line0_group', 'line0_highlightOverlay_group', 'line0_hoverGroup']);
     spec.marks
       ?.filter((mark) => mark.name?.startsWith('line0'))
-      .forEach((mark) => expect(mark.clip).toBe(clippedGroups.has(mark.name ?? '') || undefined));
+      .forEach((mark) => {
+        const clip =
+          mark.name === 'line0_hoverGroup'
+            ? true
+            : getLineGeometryClip({ name: 'line0', hasFixedMetricAxis: true }).clip;
+        expect(mark.clip).toEqual(clippedGroups.has(mark.name ?? '') ? clip : undefined);
+      });
     const view = new View(parse(spec), { renderer: 'none' }).width(360).height(216);
     try {
       await view.runAsync();
