@@ -19,7 +19,7 @@ import useChartProps from '../../../hooks/useChartProps.js';
 import { workspaceTrendsData } from '../../../storyShared/data/data.js';
 import { formatTimestamp } from '../../../storyShared/storyUtils.js';
 import { bindWithProps } from '../../../test-utils/index.js';
-import { ChartProps } from '../../../types/index.js';
+import { ChartProps, LineProps } from '../../../types/index.js';
 
 export default {
   title: 'React Spectrum Charts 2/Line/Coverage/Inspect',
@@ -36,8 +36,10 @@ const defaultArgs = {
   onClick: undefined,
 };
 
-const BasicLineStory: StoryFn<typeof Line> = (args): ReactElement => {
-  const chartProps = useChartProps(defaultChartProps);
+type LineInspectArgs = LineProps & { data?: ChartProps['data'] };
+
+const BasicLineStory: StoryFn<LineInspectArgs> = ({ data, ...args }: LineInspectArgs): ReactElement => {
+  const chartProps = useChartProps(data === undefined ? defaultChartProps : { ...defaultChartProps, data });
   return (
     <Chart {...chartProps}>
       <Line {...args} />
@@ -68,4 +70,36 @@ ItemInspect.args = {
   interactionMode: 'item',
 };
 
-export { Inspect, ItemInspect };
+const adaptiveInspectData = ['Series A', 'Series B', 'Series C'].flatMap((series, seriesIndex) =>
+  [12, 22, 18, 28, 24].map((value, index) => ({
+    datetime: Date.UTC(2026, 0, index + 1),
+    value: value + seriesIndex * 12,
+    series,
+  }))
+);
+
+const AdaptiveInspect = bindWithProps(BasicLineStory);
+AdaptiveInspect.args = {
+  ...defaultArgs,
+  data: adaptiveInspectData,
+  interactionMode: 'adaptive',
+  children: (
+    <ChartInspect>
+      {(datum) => (
+        <div>
+          <div>{formatTimestamp(datum.datetime as number)}</div>
+          {(datum.rscHoverTarget === 'item'
+            ? [datum]
+            : adaptiveInspectData.filter((point) => point.datetime === datum.datetime)
+          ).map((point) => (
+            <div key={String(point.series)}>
+              {String(point.series)}: {Number(point.value).toLocaleString()}
+            </div>
+          ))}
+        </div>
+      )}
+    </ChartInspect>
+  ),
+};
+
+export { Inspect, ItemInspect, AdaptiveInspect };
