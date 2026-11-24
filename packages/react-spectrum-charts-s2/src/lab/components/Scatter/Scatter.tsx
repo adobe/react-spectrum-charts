@@ -42,7 +42,7 @@ const Scatter: FC<ScatterProps> = ({
   onMouseOut,
   onMouseOver,
   opacity = { value: 1 },
-  outline = 'auto',
+  outline = 'never',
   size = { value: DEFAULT_SYMBOL_SIZE },
   stroke,
 }) => {

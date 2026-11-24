@@ -297,9 +297,13 @@ describe('scatter outline', () => {
     return widths;
   };
 
+  test('draws no outline by default', async () => {
+    expect(await strokeWidths('yellow-400')).toEqual([0, 0, 0]);
+  });
+
   test('auto outlines pale points and leaves strong ones alone', async () => {
-    expect(await strokeWidths('yellow-400')).toEqual([1, 1, 1]);
-    expect(await strokeWidths('indigo-900')).toEqual([0, 0, 0]);
+    expect(await strokeWidths('yellow-400', 'auto')).toEqual([1, 1, 1]);
+    expect(await strokeWidths('indigo-900', 'auto')).toEqual([0, 0, 0]);
   });
 
   test('always and never ignore contrast', async () => {
