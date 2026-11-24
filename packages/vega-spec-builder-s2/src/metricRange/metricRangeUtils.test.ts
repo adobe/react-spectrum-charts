@@ -282,6 +282,12 @@ describe('getMetricRangeMark', () => {
     expect(getMetricRangeMark(defaultLineOptions, defaultMetricRangeSpecOptions)).toEqual(basicMetricRangeMarks);
   });
 
+  test('keeps center-line opacity independent and interpolates the band like its parent', () => {
+    const [line, area] = getMetricRangeMark(defaultLineOptions, { ...defaultMetricRangeSpecOptions, lineOpacity: 0.5 });
+    expect(line.encode?.update?.strokeOpacity).toEqual({ value: 0.5 });
+    expect(area.encode?.update?.fillOpacity).toEqual({ value: 0.2 });
+  });
+
   test('boundary line opacity stays the static instant-rule array even when the parent line is animated', () => {
     // the boundary line renders under `${metricRangeName}_line`, which has no `_hoverFractionData` of
     // its own — getMetricRangeMark forces isHoverAnimate: false for exactly this reason, otherwise this

@@ -20,6 +20,8 @@ export interface MetricRangeOptions {
   lineType?: LineType;
   /** The line width of the metric line. Defaults to `'S'`. */
   lineWidth?: LineWidth;
+  /** Opacity of the center line, independent of the range area. Use `0` to render only the area. */
+  lineOpacity?: number;
   /** The opacity of the area around the metric. Defaults to `0.2`. */
   rangeOpacity?: number;
   /** The key for the upper range in the data */

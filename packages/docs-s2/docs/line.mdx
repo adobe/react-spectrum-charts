@@ -382,4 +382,6 @@ Ranges follow the parent Line's interpolation and metric scale, including custom
 and dual axes. Both bounds must be finite at a row; missing bounds leave a gap.
 `displayOnHover` limits the range to highlighted series, and `scaleAxisToFit`
 includes its bounds in automatic domains. An explicit Axis range remains fixed.
-`rangeOpacity` controls the area. These options do not compute predictions or confidence bounds.
+`rangeOpacity` controls the area; `lineOpacity` independently controls the center
+line (`0` renders only the band). These options do not compute predictions or
+confidence bounds.
