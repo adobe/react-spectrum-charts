@@ -26,6 +26,7 @@ import {
 } from '@spectrum-charts/constants';
 import { spectrumColors } from '@spectrum-charts/themes';
 
+import { buildSpec } from '../chartSpecBuilder';
 import { SubLabel } from '../types';
 import {
   addAxes,
@@ -300,6 +301,51 @@ describe('Spec builder, Axis', () => {
 
         expect(resultScales?.at(0)?.domain).toEqual([100, 1000]);
         expect(resultScales?.at(0)?.zero).toEqual(false);
+      });
+    });
+    describe('dual metric axis ranges', () => {
+      const getMetricScales = (
+        axes: { position: 'left' | 'right'; range?: [number, number] }[],
+        markType: 'line' | 'bar'
+      ) => {
+        const spec = buildSpec({
+          data: [],
+          axes,
+          marks: [
+            markType === 'bar'
+              ? { markType, color: 'series', dualMetricAxis: true, type: 'dodged' }
+              : { markType, color: 'series', dualMetricAxis: true },
+          ],
+        });
+        const findScale = (name: string) => spec.scales?.find((scale) => scale.name === name) as LinearScale;
+        return { primary: findScale('yLinearPrimary'), secondary: findScale('yLinearSecondary') };
+      };
+
+      test.each(['line', 'bar'] as const)('applies each %s metric axis range to its own scale', (markType) => {
+        const { primary, secondary } = getMetricScales(
+          [
+            { position: 'left', range: [5, 25] },
+            { position: 'right', range: [1000, 3000] },
+          ],
+          markType
+        );
+        expect(primary).toMatchObject({ domain: [5, 25], nice: false, zero: false });
+        expect(secondary).toMatchObject({ domain: [1000, 3000], nice: false, zero: false });
+      });
+
+      test('keeps zero on dual metric scales when no range is set', () => {
+        const { primary, secondary } = getMetricScales([{ position: 'left' }, { position: 'right' }], 'line');
+        expect(primary).toHaveProperty('zero', true);
+        expect(secondary).toHaveProperty('zero', true);
+      });
+
+      test('throws if the dual metric range scale is missing', () => {
+        expect(() =>
+          addAxis(
+            { usermeta: {}, signals: [{ name: FIRST_RSC_SERIES_ID, value: 'A' }], scales: [] },
+            { position: 'left', range: [10, 100] }
+          )
+        ).toThrow('Missing continuous dual metric axis scale: yLinearPrimary');
       });
     });
     describe('no scales', () => {
