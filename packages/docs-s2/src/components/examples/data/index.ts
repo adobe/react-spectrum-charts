@@ -16,6 +16,7 @@ export * from './area';
 export * from './bullet';
 export * from './combo';
 export * from './scatter';
+export * from './histogram';
 export * from './chart';
 export * from './axis';
 export * from './legend';

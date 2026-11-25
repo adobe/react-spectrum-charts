@@ -15,6 +15,7 @@ export * from './bar.types.js';
 export * from './bullet.types.js';
 export * from './combo.types.js';
 export * from './donut.types.js';
+export * from './histogram.types.js';
 export * from './line.types.js';
 export * from './scatter.types.js';
 

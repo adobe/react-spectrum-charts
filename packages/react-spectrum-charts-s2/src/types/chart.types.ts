@@ -35,6 +35,7 @@ import {
   ComboElement,
   DonutElement,
   DonutSummaryElement,
+  HistogramElement,
   LineElement,
 } from './marks/index.js';
 import { ScatterElement } from './marks/scatter.types.js';
@@ -48,6 +49,7 @@ export type ChartChildElement =
   | BulletElement
   | ComboElement
   | DonutElement
+  | HistogramElement
   | LegendElement
   | LineElement
   | ScatterElement

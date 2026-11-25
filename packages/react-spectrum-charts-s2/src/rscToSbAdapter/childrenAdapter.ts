@@ -55,6 +55,7 @@ import {
   Area,
   Bullet,
   Combo,
+  Histogram,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
@@ -75,6 +76,7 @@ import {
   ComboProps,
   DonutProps,
   DonutSummaryProps,
+  HistogramProps,
   LegendProps,
   LineForecastProps,
   LineDirectLabelProps,
@@ -101,6 +103,7 @@ import { getChartInspectOptions } from './chartInspectAdapter.js';
 import { ChildrenToOptions } from './childOptions.types.js';
 import { getComboOptions } from './comboAdapter.js';
 import { getDonutOptions } from './donutAdapter.js';
+import { getHistogramOptions } from './histogramAdapter.js';
 import { getLegendOptions } from './legendAdapter.js';
 import { getLineOptions } from './lineAdapter.js';
 import { getScatterOptions } from './scatterAdapter.js';
@@ -187,6 +190,10 @@ export const childrenToOptions: ChildrenToOptions = (children) => {
 
       case DonutSummary.displayName:
         donutSummaries.push(child.props as DonutSummaryProps);
+        break;
+
+      case Histogram.displayName:
+        marks.push(getHistogramOptions(child.props as HistogramProps, childrenToOptions));
         break;
 
       case Legend.displayName:

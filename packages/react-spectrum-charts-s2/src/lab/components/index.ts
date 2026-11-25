@@ -14,6 +14,7 @@ export * from './Area/index.js';
 export * from './Bullet/index.js';
 export * from './ChartActionBar/index.js';
 export * from './Combo/index.js';
+export * from './Histogram/index.js';
 export * from './Scatter/index.js';
 export * from './ScatterAnnotation/index.js';
 export * from './ScatterPath/index.js';

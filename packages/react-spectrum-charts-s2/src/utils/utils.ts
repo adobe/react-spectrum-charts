@@ -48,6 +48,7 @@ import {
   Bullet,
   ChartActionBar,
   Combo,
+  Histogram,
   Scatter,
   ScatterAnnotation,
   ScatterPath,
@@ -71,6 +72,7 @@ import {
   ComboElement,
   DonutElement,
   DonutSummaryElement,
+  HistogramElement,
   LegendElement,
   LineForecastElement,
   LineDirectLabelElement,
@@ -107,6 +109,7 @@ type RscElement =
   | BulletElement
   | ComboElement
   | DonutElement
+  | HistogramElement
   | LegendElement
   | LineElement
   | ScatterElement
@@ -121,6 +124,7 @@ type ElementCounts = {
   bullet: number;
   combo: number;
   donut: number;
+  histogram: number;
   legend: number;
   line: number;
   scatter: number;
@@ -160,6 +164,7 @@ export const sanitizeChildren = (children: unknown): (ChartChildElement | MarkCh
     Combo.displayName,
     Donut.displayName,
     DonutSummary.displayName,
+    Histogram.displayName,
     Legend.displayName,
     Line.displayName,
     LineDirectLabel.displayName,
@@ -191,6 +196,7 @@ export const sanitizeRscChartChildren = (children: unknown): ChartChildElement[]
     Bullet.displayName,
     Combo.displayName,
     Donut.displayName,
+    Histogram.displayName,
     Legend.displayName,
     Line.displayName,
     Scatter.displayName,
@@ -289,7 +295,7 @@ export function getElement(
  */
 export const getAllMarkElements = (
   target: unknown,
-  source: typeof Bar | typeof Donut | typeof Line | typeof Scatter,
+  source: typeof Bar | typeof Donut | typeof Histogram | typeof Line | typeof Scatter,
   elements: MappedElement[] = [],
   name: string = '',
   parent?: string
@@ -407,6 +413,9 @@ const getElementName = (element: unknown, elementCounts: ElementCounts) => {
     case Donut.displayName:
       elementCounts.donut++;
       return getComponentName(element as DonutElement, `donut${elementCounts.donut}`);
+    case Histogram.displayName:
+      elementCounts.histogram++;
+      return getComponentName(element as HistogramElement, `histogram${elementCounts.histogram}`);
     case Legend.displayName:
       elementCounts.legend++;
       return getComponentName(element as LegendElement, `legend${elementCounts.legend}`);
@@ -438,6 +447,7 @@ const initElementCounts = (): ElementCounts => ({
   bullet: -1,
   combo: -1,
   donut: -1,
+  histogram: -1,
   legend: -1,
   line: -1,
   scatter: -1,

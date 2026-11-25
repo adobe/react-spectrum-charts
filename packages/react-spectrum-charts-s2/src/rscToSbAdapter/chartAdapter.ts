@@ -9,18 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { DEFAULT_LOCALE } from '@spectrum-charts/core-s2/constants';
 import { ChartOptions } from '@spectrum-charts/vega-spec-builder-s2';
 
 import { SanitizedSpecProps } from '../types/index.js';
 import { childrenToOptions } from './childrenAdapter.js';
+import { applyHistogramAxisTitleDefaults, applyHistogramCellLegendTitleDefaults } from './histogramAdapter.js';
 
-export const rscPropsToSpecBuilderOptions = ({ children, ...specProps }: SanitizedSpecProps): ChartOptions => {
+export const rscPropsToSpecBuilderOptions = (
+  { children, ...specProps }: SanitizedSpecProps,
+  locale: string = DEFAULT_LOCALE
+): ChartOptions => {
   const { axes, marks, legends, titles } = childrenToOptions(children);
 
   return {
     ...specProps,
-    axes,
-    marks,
+    axes: applyHistogramAxisTitleDefaults(axes, marks, locale),
+    marks: applyHistogramCellLegendTitleDefaults(marks, locale),
     legends,
     titles,
   };

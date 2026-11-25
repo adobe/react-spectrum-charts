@@ -60,6 +60,7 @@ import { addCombo } from './combo/comboSpecBuilder.js';
 import { getSeriesIdTransform } from './data/dataUtils.js';
 import { addDonutLegendLayout } from './donut/donutLegendLayoutUtils.js';
 import { addDonut } from './donut/donutSpecBuilder.js';
+import { addHistogram } from './histogram/histogramSpecBuilder.js';
 import { getLegendHighlightSignals, setHoverOpacityForMarks, setHoverStrokeWidthForMarks } from './legend/legendHighlightUtils.js';
 import { addLegend } from './legend/legendSpecBuilder.js';
 import { addLine, getLineDomainData } from './line/lineSpecBuilder.js';
@@ -156,7 +157,7 @@ export function buildSpec({
   spec.signals = getDefaultSignals(options);
   spec.scales = getDefaultScales(colors, colorScheme, lineTypes, lineWidths, opacities, symbolShapes, symbolSizes);
 
-  let { areaCount, barCount, bulletCount, comboCount, donutCount, lineCount, scatterCount, vennCount } =
+  let { areaCount, barCount, bulletCount, comboCount, donutCount, histogramCount, lineCount, scatterCount, vennCount } =
     initializeComponentCounts();
   const legendHighlightSignals = getLegendHighlightSignals(legends);
   const specOptions = {
@@ -187,6 +188,9 @@ export function buildSpec({
       case 'donut':
         donutCount++;
         return addDonut(acc, { ...mark, ...specOptions, index: donutCount, data });
+      case 'histogram':
+        histogramCount++;
+        return addHistogram(acc, { ...mark, ...specOptions, index: histogramCount });
       case 'line':
         lineCount++;
         return addLine(acc, { ...mark, ...specOptions, axes, index: lineCount, data });
@@ -283,6 +287,7 @@ const initializeComponentCounts = () => {
     comboCount: -1,
     donutCount: -1,
     bulletCount: -1,
+    histogramCount: -1,
     lineCount: -1,
     scatterCount: -1,
     vennCount: -1,

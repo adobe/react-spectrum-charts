@@ -19,6 +19,7 @@ import { Playground as BarPlayground } from './Bar/Playground/BarPlayground.stor
 import { Playground as BulletPlayground } from './Bullet/Playground/BulletPlayground.story.js';
 import { Playground as ComboPlayground } from './Combo/Playground/ComboPlayground.story.js';
 import { Playground as DonutPlayground } from './Donut/Playground/DonutPlayground.story.js';
+import { Playground as HistogramPlayground } from './Histogram/Playground/HistogramPlayground.story.js';
 import { Playground as LegendPlayground } from './Legend/Playground/LegendPlayground.story.js';
 import { Playground as LinePlayground } from './Line/Playground/LinePlayground.story.js';
 import { Playground as ScatterPlayground } from './Scatter/Playground/ScatterPlayground.story.js';
@@ -30,6 +31,7 @@ const playgrounds = {
   BulletPlayground,
   ComboPlayground,
   DonutPlayground,
+  HistogramPlayground,
   LegendPlayground,
   LinePlayground,
   ScatterPlayground,

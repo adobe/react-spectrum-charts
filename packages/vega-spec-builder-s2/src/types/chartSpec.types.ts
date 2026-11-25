@@ -22,6 +22,7 @@ import {
   BulletOptions,
   ComboOptions,
   DonutOptions,
+  HistogramOptions,
   LineOptions,
   ScatterOptions,
   VennOptions,
@@ -60,6 +61,7 @@ export type MarkOptions =
   | BulletOptions
   | ComboOptions
   | DonutOptions
+  | HistogramOptions
   | LineOptions
   | ScatterOptions
   | VennOptions;

@@ -25,7 +25,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Lab charts',
       collapsed: false,
-      items: ['area', 'bullet', 'combo', 'scatter'],
+      items: ['area', 'bullet', 'combo', 'histogram', 'scatter'],
     },
     {
       type: 'category',

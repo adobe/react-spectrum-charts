@@ -1,0 +1,323 @@
+---
+stage: lab
+sidebar_position: 10
+title: Histogram
+description: Histograms that show how a numeric field is distributed by counting or summing rows in bins, as counts, shares, densities, density curves, or a 2D grid.
+---
+
+import { PropsTable } from '@site/src/components/PropsTable';
+import { DataCode } from '@site/src/components/examples/DataCode';
+import {
+  Histogram2DCellsPlayground,
+  Histogram2DPlayground,
+  HistogramAnimationPlayground,
+  HistogramAxisPlayground,
+  HistogramBinAnchorPlayground,
+  HistogramBinEdgesPlayground,
+  HistogramBinsPlayground,
+  HistogramColorPlayground,
+  HistogramDensityCurvePlayground,
+  HistogramInteractionPlayground,
+  HistogramLegendPlayground,
+  HistogramOrientationPlayground,
+  HistogramPlayground,
+  HistogramSeriesStatePlayground,
+  HistogramStatesPlayground,
+  HistogramWeightPlayground,
+  HistogramYValuePlayground,
+} from '@site/src/playgrounds/histogram';
+
+# Histogram
+
+<StageBadge />
+
+Histograms show how a numeric field is distributed. `Histogram` splits the field's range into bins
+on a continuous x axis and draws one bar per bin, as tall as the number of rows in it.
+
+<HistogramPlayground />
+
+Use a histogram to see the shape of one measure: where values cluster, how far they spread, and
+whether they skew or have gaps. Use a [bar chart](./bar.mdx) to compare values across named
+categories, and a box plot when you only need medians and quartiles to compare many groups side by
+side.
+
+`Histogram` is a lab component. Import it from the `lab` subpath:
+
+```tsx
+import { Axis, Chart } from '@spectrum-charts/react-spectrum-charts-s2';
+import { Histogram } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+```
+
+## Data
+
+`data` goes on `Chart` as an array of raw rows, one per observation; `Histogram` does the binning
+and counting. `metric` names the numeric field to bin (default `value`). Rows where that field
+isn't a finite number, such as `null`, are left out of every bin and every total. The examples on
+this page use `histogramResponseData`, one row per API request, where two timed-out requests have
+no `responseTime`:
+
+<DataCode name="histogramResponseData" />
+
+```tsx
+<Chart data={histogramResponseData}>
+  <Axis position="left" grid />
+  <Axis position="bottom" baseline title="Response time (ms)" />
+  <Histogram metric="responseTime" />
+</Chart>
+```
+
+Add `Axis` siblings to label the scales. The x scale spans the bins, and the y scale starts at 0.
+
+### Empty and loading
+
+When `data` is an empty array, `Chart` shows `emptyStateText` instead. Set `loading` on `Chart` to
+show a spinner while data loads.
+
+<HistogramStatesPlayground />
+
+## Bins
+
+By default the bins are evenly sized and cover the data's range. The number of bins follows the
+number of rows (the Rice rule: twice the cube root of the row count, rounded up and kept between 5
+and 50), and the bin width is rounded to a nice number, so 96 response times allow up to 10 bins
+and get 200ms bins. Bins inside the range with no rows draw at zero
+height, so gaps in the distribution stay visible.
+
+- `binCount` sets the maximum number of bins. The width is still rounded to a nice number, so you
+  may get fewer bins than you ask for.
+- `binSize` sets an exact bin width and overrides `binCount`.
+- `extent` sets the `[min, max]` range to bin over, for example to leave out a long tail. Rows
+  outside it are ignored, and the first bin starts exactly at `min` instead of a rounded value.
+
+<HistogramBinsPlayground />
+
+### Anchoring bins
+
+`binAnchor` sets a value that a bin edge lines up with. Bins keep their width and shift so one edge
+falls on the anchor, for example `binAnchor={50}` with `binSize={100}` makes bins of 50–150ms,
+150–250ms, and so on, centered on whole hundreds. It applies to evenly sized bins only and is
+ignored with `binEdges`.
+
+<HistogramBinAnchorPlayground />
+
+### Uneven bins
+
+`binEdges` sets the edges of each bin, for bins that match meaningful thresholds such as service
+levels. It overrides `binCount`, `binSize`, and `extent`; rows below the first edge or above the
+last are ignored. Wide bins collect more rows just because they're wide, so pair uneven bins with
+`yValue="density"` to keep bar areas proportional to their share of rows.
+
+<HistogramBinEdgesPlayground />
+
+## Series
+
+Set `color` to a field to split the histogram into one series per value, each in the next color of
+the chart's `colors`. Every series uses the same bins. `layout` sets how series share a bin:
+
+- `stacked` (default) stacks series on top of each other, so each stack is the overall
+  distribution.
+- `overlaid` draws every series from the baseline at 60% opacity, so you can compare their shapes.
+- `dodged` splits each bin's width between the series and draws their bars side by side, so you can
+  compare series bin by bin without bars covering each other.
+
+Without a field, every bar uses one static color, `categorical-100`. Pass `{ value: 'gray-700' }`
+or another color token for a different static color.
+
+<HistogramColorPlayground />
+
+## Bar height
+
+`yValue` sets what each bar's height measures:
+
+- `count` (default) is the number of rows in the bin.
+- `percent` is the bin's share of rows, from 0 to 1. Stacked series share the overall total, so
+  the whole stack adds up to 1; overlaid and dodged series each use their own total, so each
+  series adds up to 1 and series of different sizes compare fairly.
+- `density` is the share divided by the bin width, so bar area, not height, shows the share. Use it
+  with uneven bins.
+
+`cumulative` adds up bars from left to right, so each bar shows how many rows are at or below its
+bin's end. With `percent` or `density`, cumulative bars show the cumulative share and end at 1.
+
+<HistogramYValuePlayground />
+
+## Weighted bins
+
+By default each bar counts the rows in its bin. Set `weight` to a numeric field to add up that
+field per bin instead, for example the total payload transferred by requests of each response
+time. Rows where the weight isn't a finite number are left out, like rows without a `metric` value.
+
+- Bin rows get a `sum` field with the bin's total; `count` is still the number of rows.
+- `percent`, `density`, and `cumulative` are worked out from the sums, so `percent` is the bin's
+  share of the total weight.
+- The count axis title becomes "Sum of" and the field name, for example "Sum of payloadSize". Pass
+  `title` on the `Axis` for a friendlier label.
+
+<HistogramWeightPlayground />
+
+`weight` also works in [2D histograms](#2d-histogram), where it colors cells by their sum.
+
+## Orientation
+
+`orientation` sets which way bars grow:
+
+- `vertical` (default) puts bins along the x axis, with bars rising from the bottom.
+- `horizontal` puts bins up the y axis, lowest at the bottom, with bars growing to the right.
+
+In a horizontal histogram, the count axis is the bottom or top `Axis`: it gets the automatic
+title and percentage labels, and the bin field's title goes on the left or right `Axis`.
+`orientation` doesn't apply to 2D histograms.
+
+<HistogramOrientationPlayground />
+
+## Density curve
+
+Set `densityCurve` to draw a smoothed estimate of the distribution (a kernel density estimate) as a
+line over the bars. The curve is scaled to match the bars, whether they show counts, shares,
+densities, or cumulative values, so it reads on the same axis. It shows the overall shape without
+the steps that the choice of bins adds.
+
+- With one series, or with stacked series, there's a single neutral line for the whole histogram.
+- With overlaid or dodged series, each series gets its own line in the series color.
+
+<HistogramDensityCurvePlayground />
+
+The curve isn't drawn with `weight`, in 2D histograms, or with `binEdges` unless `yValue="density"`
+or `cumulative` is set, since uneven bins have no single bin width to scale it to.
+
+## 2D histogram
+
+Set `yMetric` to a second numeric field to bin both fields into a grid. Each cell is colored by its
+row count, or by its sum when `weight` is set, from light for few rows to dark for many; cells
+without rows aren't drawn. Rows where either field isn't a finite number are left out.
+
+- `binCount`, `binSize`, `extent`, and `binAnchor` bin the x field.
+- `yBinCount`, `yBinSize`, and `yExtent` do the same for the y field, with the same defaults.
+
+`color`, `layout`, `yValue`, `cumulative`, `orientation`, and `densityCurve` don't apply to 2D
+histograms.
+
+<Histogram2DPlayground />
+
+### Cell colors and legend
+
+- `cellColors` sets the sequential color scheme for the cells: `sequentialCerulean`,
+  `sequentialForest`, `sequentialMagma`, `sequentialRose`, or `sequentialViridis`, each with 5, 9,
+  or 16 steps, for example `sequentialViridis16`. It defaults to `sequentialCerulean9`.
+- `cellLegend` shows a gradient legend on the right of the chart for the cell colors (default
+  `true`). Set it to `false` to hide it, for example when a `ChartInspect` shows the counts.
+- `cellLegendTitle` sets the legend's title. It defaults to a localized "Count", or "Sum of" and
+  the field name when `weight` is set.
+
+<Histogram2DCellsPlayground />
+
+The cell legend is separate from `Legend`, which lists the series of a `color` field and doesn't
+apply to 2D histograms.
+
+## Axis
+
+The count axis is the left or right `Axis`, or the bottom or top `Axis` in a
+[horizontal histogram](#orientation). Without a `title`, it gets a localized title for what the
+bars measure: "Count", "Sum of" and the `weight` field, "Percent", "Density", "Cumulative count",
+or "Cumulative percent". Pass `title` to use your own, for example "Requests". 2D histograms don't
+add a title, since the y axis shows the second field.
+
+`percent` values, and cumulative shares (`cumulative` with `yValue="percent"` or `"density"`), go
+from 0 to 1, so the count axis labels them as percentages unless you set its `labelFormat`.
+
+Bars and cells are clipped to the plot area, so a fixed axis `range` that's narrower than the bins
+cuts bars off at the edge instead of drawing them over the axis.
+
+<HistogramAxisPlayground />
+
+See [Axis](./axis.mdx) for more options.
+
+## Legend
+
+Add `Legend` as a sibling of `Histogram` to list the series of a `color` field. The plot shrinks to
+make room for it.
+
+- `highlight` fades the other series while an entry is hovered.
+- `isToggleable` lets users click an entry to hide or show its series. The bins are recalculated
+  from the rows that are still visible.
+
+<HistogramLegendPlayground />
+
+See [Legend](./legend.mdx) for more options.
+
+### Hiding and highlighting series
+
+`hiddenSeries` on `Chart` hides series from outside the chart, for example from a filter control,
+and `highlightedSeries` highlights one, for example from a table row. To start with series hidden
+but let users toggle them, set `defaultHiddenSeries` on a toggleable `Legend` instead.
+
+<HistogramSeriesStatePlayground />
+
+## Interaction
+
+### ChartInspect and ChartPopover
+
+Add `ChartInspect` to show details on hover and `ChartPopover` to show details on click. Pass a
+function as children that takes the hovered bin's row and returns the content. Each bin row has:
+
+| Field | Value |
+| --- | --- |
+| `binStart`, `binEnd` | The bin's range on the x axis. |
+| `count` | Rows in the bin. |
+| `sum` | The total of the `weight` field in the bin, when `weight` is set. |
+| `percent` | The bin's share of rows (or of the total weight), from 0 to 1, using the same total as `yValue="percent"`. |
+| `density` | `percent` divided by the bin width (1D only). |
+| `cumulativeCount`, `cumulativePercent` | Running totals from the lowest bin, when `cumulative` is set. With `weight`, `cumulativeCount` adds up `sum`. |
+| `yBinStart`, `yBinEnd` | The cell's range on the y axis, in a 2D histogram. |
+| The `color` field | The bin's series, when `color` is a field. |
+
+Hovering a bin fades the other bins, and the bin with an open popover stays highlighted while the
+others fade. `rightClick` on `ChartPopover` opens it on right-click instead.
+
+<HistogramInteractionPlayground />
+
+See [Interaction](./interaction.mdx) for more about inspects and popovers.
+
+### Callbacks
+
+`onClick` on `Histogram` is called with the clicked bin's row, for example to filter a table to the
+requests in that bin.
+
+```tsx
+<Histogram
+  metric="responseTime"
+  onClick={(datum) => showRequests(datum.binStart, datum.binEnd)}
+/>
+```
+
+## Animation
+
+The chart's `animationTypes` lists which animations play. `drawIn` brings the bars in when the
+chart mounts, and `drawInEffect` on `Histogram` sets how:
+
+- `grow` (default) grows every bar from the baseline together over 700ms.
+- `sweep` grows bars one after another, starting from the lowest bin: left to right, or bottom to
+  top in a horizontal histogram. It takes slightly longer, 850ms.
+- `fade` fades bars in at full height over 700ms.
+
+In 2D histograms, `grow` grows cells out from their centers, `sweep` fades cells in from left to
+right, and `fade` fades them all in together. A density curve fades in alongside the bars.
+
+<HistogramAnimationPlayground />
+
+Draw-in plays once when the chart mounts. Set `animationTypes={['hover']}` to turn off draw-in, or
+`animations={false}` to turn off all animation. See [Animation](./guides/animation.mdx).
+
+:::note
+Hovered and faded bins switch opacity instantly; the `hover` animation doesn't apply to `Histogram`
+yet.
+:::
+
+## API
+
+### Histogram
+
+`name` identifies the histogram's marks and signals in the rendered Vega spec. It defaults to
+`histogram0`, `histogram1`, and so on.
+
+<PropsTable component="Histogram" />

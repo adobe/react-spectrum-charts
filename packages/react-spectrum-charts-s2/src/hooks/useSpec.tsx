@@ -16,6 +16,7 @@ import { Data, Spec, ValuesData } from 'vega';
 import { getColorValue } from '@spectrum-charts/core-s2/tokens';
 import { ChartData, ChartSpecOptions, baseData, buildSpec } from '@spectrum-charts/vega-spec-builder-s2';
 
+import { useChartLocale } from '../intl/index.js';
 import { rscPropsToSpecBuilderOptions } from '../rscToSbAdapter/index.js';
 import { SanitizedSpecProps } from '../types/index.js';
 
@@ -41,6 +42,7 @@ export default function useSpec({
   title,
   UNSAFE_vegaSpec,
 }: SanitizedSpecProps): Spec {
+  const locale = useChartLocale();
   return useMemo(() => {
     if (UNSAFE_vegaSpec) {
       const vegaSpecWithDefaults = initializeSpec(UNSAFE_vegaSpec, {
@@ -73,11 +75,12 @@ export default function useSpec({
       symbolShapes,
       symbolSizes,
       title,
-    });
+    }, locale);
 
     return buildSpec(chartOptions);
   }, [
     UNSAFE_vegaSpec,
+    locale,
     animations,
     animationTypes,
     accessibleNavigation,

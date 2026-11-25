@@ -20,6 +20,13 @@ export type MessageKey =
   | 'actionBar.moreActions'
   | 'chart.emptyState'
   | 'chart.loading'
+  | 'histogram.countTitle'
+  | 'histogram.cumulativeCountTitle'
+  | 'histogram.cumulativePercentTitle'
+  | 'histogram.cumulativeSumTitle'
+  | 'histogram.densityTitle'
+  | 'histogram.percentTitle'
+  | 'histogram.sumTitle'
   | 'navigation.axisDescription'
   | 'navigation.barDescription'
   | 'navigation.barDescriptionWithoutCount'
@@ -35,6 +42,13 @@ export const messages: Record<string, Record<MessageKey, LocalizedString>> = {
   "actionBar.moreActions": `More actions`,
   "chart.emptyState": `No data found`,
   "chart.loading": `Loading`,
+  "histogram.countTitle": `Count`,
+  "histogram.cumulativeCountTitle": `Cumulative count`,
+  "histogram.cumulativePercentTitle": `Cumulative percent`,
+  "histogram.cumulativeSumTitle": (args) => `Cumulative sum of ${args.field}`,
+  "histogram.densityTitle": `Density`,
+  "histogram.percentTitle": `Percent`,
+  "histogram.sumTitle": (args) => `Sum of ${args.field}`,
   "navigation.axisDescription": (args, formatter) => `${args.axisName} axis. ${formatter.plural(args.count, {one: () => `Contains ${formatter.number(args.count)} tick value.`, other: () => `Contains ${formatter.number(args.count)} tick values.`})} Use the left and right arrow keys to browse.`,
   "navigation.barDescription": (args, formatter) => `${args.metricLabel} by ${args.dimension} chart. ${formatter.plural(args.count, {one: () => `${formatter.number(args.count)} bar.`, other: () => `${formatter.number(args.count)} bars.`})}`,
   "navigation.barDescriptionWithoutCount": (args) => `${args.metricLabel} by ${args.dimension} chart.`,

@@ -13,14 +13,25 @@ import { createElement, useMemo } from 'react';
 
 import { Bar } from '../components/Bar/index.js';
 import { Line } from '../components/Line/index.js';
+import { Histogram } from '../lab/components/Histogram/index.js';
 import { Scatter } from '../lab/components/Scatter/index.js';
-import { BarElement, ChartChildElement, LineElement, MarkCallback, ScatterElement } from '../types/index.js';
+import {
+  BarElement,
+  ChartChildElement,
+  HistogramElement,
+  LineElement,
+  MarkCallback,
+  ScatterElement,
+} from '../types/index.js';
 import { ContextMenuMode } from '../types/marks/line.types.js';
 import { ContextMenuCallback } from '../types/util.types.js';
 import { getAllMarkElements } from '../utils/index.js';
 import { ChartContainer } from './ChartContainer.js';
 
-type MappedMarkElement = { name: string; element: BarElement | LineElement | ScatterElement };
+type MappedMarkElement = { name: string; element: BarElement | HistogramElement | LineElement | ScatterElement };
+
+const getOnContextMenu = ({ element }: MappedMarkElement): ContextMenuCallback | undefined =>
+  'onContextMenu' in element.props ? element.props.onContextMenu : undefined;
 
 export type MarkOnClickDetail = {
   markName?: string;
@@ -35,17 +46,18 @@ export default function useMarkOnClickDetails(children: ChartChildElement[]): Ma
       ...getAllMarkElements(createElement(ChartContainer, undefined, children), Bar, []),
       ...getAllMarkElements(createElement(ChartContainer, undefined, children), Line, []),
       ...getAllMarkElements(createElement(ChartContainer, undefined, children), Scatter, []),
+      ...getAllMarkElements(createElement(ChartContainer, undefined, children), Histogram, []),
     ] as MappedMarkElement[];
   }, [children]);
 
   return useMemo(
     () =>
       markElements
-        .filter((mark) => mark.element.props.onClick || mark.element.props.onContextMenu)
+        .filter((mark) => mark.element.props.onClick || getOnContextMenu(mark))
         .map((mark) => ({
           markName: mark.name,
           onClick: mark.element.props.onClick,
-          onContextMenu: mark.element.props.onContextMenu,
+          onContextMenu: getOnContextMenu(mark),
           contextMenuMode: 'contextMenuMode' in mark.element.props ? mark.element.props.contextMenuMode : undefined,
         })) as MarkOnClickDetail[],
     [markElements]

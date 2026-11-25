@@ -139,6 +139,24 @@ export const STACK_ID = 'rscStackId';
 export const COMPONENT_NAME = 'rscComponentName';
 export const TRENDLINE_VALUE = 'rscTrendlineValue';
 
+// histogram bin fields, exposed to ChartInspect and ChartPopover
+export const HISTOGRAM_BIN_START = 'binStart';
+export const HISTOGRAM_BIN_END = 'binEnd';
+export const HISTOGRAM_Y_BIN_START = 'yBinStart';
+export const HISTOGRAM_Y_BIN_END = 'yBinEnd';
+export const HISTOGRAM_COUNT = 'count';
+export const HISTOGRAM_SUM = 'sum';
+export const HISTOGRAM_PERCENT = 'percent';
+export const HISTOGRAM_DENSITY = 'density';
+export const HISTOGRAM_CUMULATIVE_COUNT = 'cumulativeCount';
+export const HISTOGRAM_CUMULATIVE_PERCENT = 'cumulativePercent';
+/** The plotted bar height of a histogram bin, after normalizing and accumulating. */
+export const HISTOGRAM_VALUE = 'rscHistogramValue';
+export const HISTOGRAM_Y0 = 'rscHistogramY0';
+export const HISTOGRAM_Y1 = 'rscHistogramY1';
+export const HISTOGRAM_CURVE_X = 'rscHistogramCurveX';
+export const HISTOGRAM_CURVE_Y = 'rscHistogramCurveY';
+
 // signal names
 export const HOVERED_ITEM = 'hoveredItem'; // hovered item suffix
 export const HOVERED_SERIES = 'hoveredSeries'; // hovered item suffix

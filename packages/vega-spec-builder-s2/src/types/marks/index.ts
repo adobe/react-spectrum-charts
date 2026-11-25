@@ -16,6 +16,7 @@ export * from './bigNumberSpec.types.js';
 export * from './bulletSpec.types.js';
 export * from './comboSpec.types.js';
 export * from './donutSpec.types.js';
+export * from './histogramSpec.types.js';
 export * from './lineSpec.types.js';
 export * from './scatterSpec.types.js';
 export * from './vennSpec.types.js';

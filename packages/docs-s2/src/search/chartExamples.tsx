@@ -12,7 +12,7 @@
 import React, { ComponentProps } from 'react';
 
 import { Bar, Chart, Donut, Line } from '@spectrum-charts/react-spectrum-charts-s2';
-import { Area, Bullet, Combo, Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
+import { Area, Bullet, Combo, Histogram, Scatter } from '@spectrum-charts/react-spectrum-charts-s2/lab';
 
 import {
   barChannelDeviceData,
@@ -20,6 +20,7 @@ import {
   bulletScoreData,
   channelSessionsData,
   comboTrafficData,
+  histogramResponseData,
   scatterCampaignData,
 } from '../components/examples/data';
 
@@ -65,7 +66,7 @@ export const chartExamples: ChartExample[] = [
     docId: 'bar',
     title: 'Bar',
     components: ['Bar', 'BarDirectLabel'],
-    keywords: 'column histogram stacked grouped dodged diverging trellis small multiples',
+    keywords: 'column stacked grouped dodged diverging trellis small multiples',
     data: barChannelDeviceData,
     marks: <Bar dimension="channel" metric="visits" color="device" />,
   },
@@ -105,6 +106,14 @@ export const chartExamples: ChartExample[] = [
         <Line metric="orders" scaleType="point" />
       </Combo>
     ),
+  },
+  {
+    docId: 'histogram',
+    title: 'Histogram',
+    components: ['Histogram'],
+    keywords: 'distribution frequency bins binned density cumulative 2d heatmap kde kernel density curve weighted horizontal',
+    data: histogramResponseData,
+    marks: <Histogram metric="responseTime" />,
   },
   {
     docId: 'scatter',
